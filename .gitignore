@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+input/keys/
+input/references/
+input/images/
+input/models/
+input/music/
+input/sfx/
+input/voice/
+input/video/*
+!input/video/RubUP Gifts banner.mov
+input/fonts/*
+!input/fonts/SF-Pro-Text/
+*.log
+**/build/
+**/review/
+**/voice/
+renders/
+old-drafts/
+.DS_Store
+Thumbs.db

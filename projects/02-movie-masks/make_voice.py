@@ -33,17 +33,18 @@ def main():
         window = b - a
         model = os.environ.get('FISH_TTS_MODEL', 's2.1-pro')
         tag = model.replace('.', '') + '_' + hashlib.sha1((model + vid + text).encode()).hexdigest()[:6]
-        speed, chosen = 1.0, None
-        for attempt in range(3):
+        if not text:
+            continue
+        chosen = None
+        for speed in (1.0, 1.05):
             take = folder / f'V{k:02d}_{tag}_s{int(round(speed * 100))}.wav'
             if not take.exists():
                 fish_tts.tts(text, take, vid, speed=speed)
             d = speech_len(take)
-            print(f'V{k:02d} speed {speed:.2f}: {d:.2f} c (окно {window:.2f})', flush=True)
+            print(f'V{k:02d} speed {speed:.2f}: {d:.2f} c (окно {window:.2f})' + ('' if d <= window else '  НЕ ВЛЕЗАЕТ'), flush=True)
             chosen = take
             if d <= window:
                 break
-            speed = min(1.35, round(speed * d / window * 1.03, 2))
         shutil.copyfile(chosen, folder / f'V{k:02d}.wav')
 
 

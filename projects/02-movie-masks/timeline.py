@@ -8,8 +8,8 @@ import config
 from script import DUR, AD_STOP, BLOCKS, SEGMENTS, VOICE, VOICE_WIN
 
 HERE = Path(__file__).resolve().parent
-VOICE_FILES = [HERE / 'voice' / f'V{k:02d}.wav' for k in range(1, len(SEGMENTS) + 1)]
-HAS_VOICE = not config.WITHOUT_NARRATION and all(p.is_file() for p in VOICE_FILES)
+VOICE_FILES = [HERE / 'voice' / f'V{k:02d}.wav' if VOICE[k - 1] else None for k in range(1, len(SEGMENTS) + 1)]
+HAS_VOICE = not config.WITHOUT_NARRATION and all(p.is_file() for p in VOICE_FILES if p)
 STRIP = '.,:—«»…?!'
 
 
@@ -35,7 +35,7 @@ if HAS_VOICE:
     captions.NUMBER_WORDS.update({'восьмом', 'второго', 'девятого', 'восемьдесят', 'семь', 'одна', 'десятая'})
 for k, (a, b, text, style) in enumerate(SEGMENTS):
     nxt = SEGMENTS[k + 1][0] if k + 1 < len(SEGMENTS) else DUR
-    if HAS_VOICE:
+    if HAS_VOICE and VOICE_FILES[k]:
         path = VOICE_FILES[k]
         on, end = voice.onset_end(path)
         va = VOICE_WIN[k][0]

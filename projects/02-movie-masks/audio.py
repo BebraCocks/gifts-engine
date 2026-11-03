@@ -103,9 +103,7 @@ def bed(t0, t1, x_fn, g, pan=(1, 1), fade=0.5):
 
 # ---------------- хук: гримёрка ----------------
 bed(0.0, 5.7, lambda d: lp(noise(d), 160), 0.06)                       # тон комнаты
-for k in range(16):                                                    # лампы щёлкают, зажигаясь
-    tt = np.arange(int(0.03 * SR)) / SR
-    put(hp(rng.standard_normal(len(tt)), 2000) * np.exp(-tt * 300), 0.03 * k, 0.10, 0.10)
+# лампы: без частых щелчков (серия через 30 мс давала жужжание 33 Гц под первым словом)
 riser(MASK_LAND, 1.15, 250, 3400, 0.22)
 impact(MASK_LAND, 0.85)
 for f in FLIPS:                                                        # смена маски: шорох + удар
@@ -203,7 +201,7 @@ def make_mix():
             vox[max(s, 0):max(s, 0) + m] += x[a:a + m]
         vox *= 0.86 / (np.abs(vox).max() + 1e-9)
         # эффекты уступают голосу: огибающая речи → приглушение до −7 дБ
-        env_ = lp(np.abs(vox).mean(1), 6, 1)
+        env_ = lp(lp(np.abs(vox).mean(1), 3, 1), 3, 1)          # плавное приглушение, без «качания»
         duck = 1 - 0.55 * np.clip(env_ / 0.05, 0, 1)
         mix = sfx * duck[:, None] * 0.8 + vox
         mix *= 0.89 / (np.abs(mix).max() + 1e-9)

@@ -12,6 +12,8 @@ from scipy import signal
 import banner
 import config
 from events import DUR, AD_STOP, TRANSITIONS, MASK_LAND, FLIPS, CURTAIN, TITLES
+from timeline import HAS_VOICE, VOICE_AT
+import sound
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
@@ -191,11 +193,25 @@ for t0, *_ in TITLES:
 
 
 def make_mix():
-    mix = np.stack([L, Rr], 1)
-    mix *= 0.72 / (np.abs(mix).max() + 1e-9)
+    sfx = np.stack([L, Rr], 1)
+    sfx *= 0.72 / (np.abs(sfx).max() + 1e-9)
+    if HAS_VOICE:
+        vox = np.zeros((N, 2))
+        for path, offset, _ in VOICE_AT:
+            x = sound.load_stereo(path, SR)
+            s = int(round(offset * SR)); a = max(0, -s); m = min(len(x) - a, N - max(s, 0))
+            vox[max(s, 0):max(s, 0) + m] += x[a:a + m]
+        vox *= 0.86 / (np.abs(vox).max() + 1e-9)
+        # эффекты уступают голосу: огибающая речи → приглушение до −7 дБ
+        env_ = lp(np.abs(vox).mean(1), 6, 1)
+        duck = 1 - 0.55 * np.clip(env_ / 0.05, 0, 1)
+        mix = sfx * duck[:, None] * 0.8 + vox
+        mix *= 0.89 / (np.abs(mix).max() + 1e-9)
+        print('Озвучка Fish Audio + саунд-дизайн + звук баннера.')
+    else:
+        mix = sfx
+        print('Дикторской озвучки нет: саунд-дизайн + звук баннера.')
     fade = int(0.35 * SR); mix[-fade:] *= np.linspace(1, 0, fade)[:, None]
-    if config.WITHOUT_NARRATION:
-        print('Дикторской озвучки нет (ключа Fish Audio нет): саунд-дизайн + звук баннера.')
     return BR.audio(mix, SR)
 
 

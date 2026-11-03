@@ -1,11 +1,6 @@
-"""Neutral scaffold. Replace these choices with the new author's visual brief."""
-STYLE_READY = False
-BACKGROUND = (32, 32, 32)
-TEXT_COLOR = (245, 245, 245)
-FONT_WEIGHT = 'Semibold'
-FONT_SIZE = 68
-# None means no downloaded gift. Set both names when the script needs a gift.
-GIFT_NAME = None
-MODEL_NAME = None
-# True explicitly chooses text-only mode, even if voice takes are present.
-WITHOUT_NARRATION = False
+"""Стиль ролика 02-movie-masks (утверждён автором по пробе 2026-11-03)."""
+STYLE_READY = True
+GIFT_NAME = 'Myth Mask'
+MODEL_NAME = None            # пять моделей, см. prep_masks.py
+# Ключа Fish Audio нет: только экранный текст + звук баннера.
+WITHOUT_NARRATION = True

@@ -1,21 +1,37 @@
-"""Use selected takes when complete, otherwise estimate a text-only timeline."""
-from pathlib import Path
-import wave
-import config
-from script import LINES
+"""Общая карта событий: слова, переходы, удары. Одни времена для картинки и звука."""
+from script import DUR, AD_STOP, BLOCKS, SEGMENTS
 
-HERE = Path(__file__).resolve().parent
-TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
-HAS_NARRATION = not config.WITHOUT_NARRATION and all(p.is_file() for p in TAKES)
-ON, END = [], []
-cursor = 0.3
-for k, (spoken, screen, style, pause) in enumerate(LINES):
-    if HAS_NARRATION:
-        with wave.open(str(TAKES[k])) as w:
-            duration = w.getnframes() / w.getframerate()
-    else:
-        duration = max(2.5, len(spoken.split()) / 2.5)
-    ON.append(cursor)
-    END.append(cursor + duration)
-    cursor += duration + pause
-DUR = cursor + 0.3
+WORDS = []          # (слово, начало, конец, стиль)
+for a, b, text, style in SEGMENTS:
+    words, carry = [], ''
+    for w in text.split():                      # короткие предлоги/союзы — вместе со следующим словом
+        if len(w.strip('.,:—«»…?')) <= 2 and w not in ('87',) and not w.endswith(('.', ',', '?')):
+            carry += w + ' '
+        else:
+            words.append(carry + w); carry = ''
+    if carry:
+        words[-1] += ' ' + carry.strip()
+    weights = [len(w.strip('.,:—«»…?')) + 4 for w in words]
+    total = sum(weights)
+    t = a
+    for w, k in zip(words, weights):
+        dt = (b - a) * k / total
+        WORDS.append((w, t, t + dt, style))
+        t += dt
+for k in range(len(WORDS) - 1):                     # слово держится до следующего, без наложения
+    w, t0, t1, s = WORDS[k]
+    if WORDS[k + 1][1] - t1 < 0.15:
+        WORDS[k] = (w, t0, WORDS[k + 1][1] - 0.01, s)
+
+# Переходы между локациями (середина скрещивания) — для картинки и звука
+TRANSITIONS = {
+    'mirror': 5.55,          # гримёрка → пригород (пролёт сквозь зеркало)
+    'window': 15.42,         # пригород → Лондон
+    'petals': 24.45,         # Лондон → Мадрид (после рекламы)
+    'notes': 32.55,          # Мадрид → Бронкс
+    'skyward': 40.65,        # Бронкс → Готэм
+    'signal': 48.85,         # Готэм → сцена
+}
+MASK_LAND = 2.45             # маска садится на лицо
+FLIPS = [2.93, 3.41, 3.89, 4.37, 4.85]   # смены масок в хуке (последняя — назад к Ghostface)
+CURTAIN = 51.7               # занавес закрывается

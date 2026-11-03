@@ -1,52 +1,16 @@
-// 3D-проход ролика 02-movie-masks: гримёрка → полёт сквозь зеркало → ночной пригород.
-// Кадр — чистая функция времени t (секунды содержания). Никакого состояния между кадрами,
-// кроме кэша текстур. Маска — 2D-карточка внутри сцены (кадры Lottie готовит Python).
+// Локация 1: гримёрка (хук) → пролёт сквозь зеркало → ночной пригород («Крик»).
 import * as THREE from 'three';
-
-const W = 1080, H = 1920;
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(1);
-renderer.setSize(W, H);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+import { rng, clamp01, smooth, easeIn, easeOut, lerp, V, ctex, std, glowTex, track, makeMask, rig, newCamera } from './common.js';
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0a0f24, 0.022);
-const camera = new THREE.PerspectiveCamera(58, W / H, 0.05, 500);
-
-// ---------- утилиты ----------
-function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const camera = newCamera();
 const R = rng(20261103);
-const clamp01 = x => Math.min(1, Math.max(0, x));
-const smooth = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
-const easeIn = x => { x = clamp01(x); return x * x * x; };
-const easeOut = x => { x = clamp01(x); return 1 - Math.pow(1 - x, 3); };
-const lerp = (a, b, k) => a + (b - a) * k;
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
-
-function ctex(w, h, fn, rep = [1, 1]) {
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  fn(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(rep[0], rep[1]); t.anisotropy = 8;
-  return t;
-}
-const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.8, metalness: 0, ...o });
 function add(geo, mat, x, y, z, parent = scene, shadow = true) {
   const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z);
   m.castShadow = shadow; m.receiveShadow = true; parent.add(m); return m;
 }
 const box = (w, h, d, mat, x, y, z, p, s) => add(new THREE.BoxGeometry(w, h, d), mat, x, y, z, p, s);
-
-const glowTex = ctex(128, 128, (g, w, h) => {
-  const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
-  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.45)');
-  gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
-});
 function glow(color, size, x, y, z, opacity = 0.7, parent = scene) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity, fog: false }));
   s.scale.set(size, size, 1); s.position.set(x, y, z); parent.add(s); return s;
@@ -148,7 +112,8 @@ box(0.12, MY1 - MY0 + 0.24, 0.1, gold, -MX - 0.06, (MY0 + MY1) / 2, MZ + 0.02, r
 box(0.12, MY1 - MY0 + 0.24, 0.1, gold, MX + 0.06, (MY0 + MY1) / 2, MZ + 0.02, room);
 const bulbs = [];
 const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffe6b0 });
-function bulb(x, y) { add(new THREE.SphereGeometry(0.045, 12, 8), bulbMat, x, y, MZ + 0.09, room, false); bulbs.push(glow(0xffb45c, 0.42, x, y, MZ + 0.12, 0.55, room)); }
+const bulbMeshes = [];
+function bulb(x, y) { bulbMeshes.push(add(new THREE.SphereGeometry(0.045, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffe6b0 }), x, y, MZ + 0.09, room, false)); bulbs.push(glow(0xffb45c, 0.42, x, y, MZ + 0.12, 0.55, room)); }
 for (let k = 0; k < 6; k++) { const y = MY0 + 0.12 + k * (MY1 - MY0 - 0.24) / 5; bulb(-MX - 0.06, y); bulb(MX + 0.06, y); }
 for (let k = 1; k < 5; k++) bulb(-MX + k * (2 * MX) / 5, MY1 + 0.06);
 // столик и мелочи
@@ -189,7 +154,6 @@ const glassTex = ctex(256, 512, (g, w, h) => {
   g.fillStyle = 'rgba(150,170,210,0.18)'; g.fillRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h);
 });
 const glass = add(new THREE.PlaneGeometry(2 * MX, MY1 - MY0), new THREE.MeshBasicMaterial({ map: glassTex, transparent: true, depthWrite: false, fog: false }), 0, (MY0 + MY1) / 2, MZ - 0.01, room, false);
-const flash = glow(0xcfe0ff, 3.5, 0, 1.86, MZ - 0.3, 0);
 
 // ---------- пригород (z < -6.2) ----------
 const town = new THREE.Group(); scene.add(town);
@@ -201,7 +165,7 @@ add(new THREE.PlaneGeometry(160, 1.8).rotateX(-Math.PI / 2), swMat, 0, 0.02, -8.
 const pathMat = std(0xffffff, { map: concreteTex.clone(), roughness: 0.85 }); pathMat.map.repeat.set(1, 10);
 add(new THREE.PlaneGeometry(1.5, 13.6).rotateX(-Math.PI / 2), pathMat, 0, 0.022, -24.1, town, false);
 
-function house(x, z, w, d, hBody, sidingColor, roofColor, lit, parent = town, detail = true) {
+function house(x, z, w, d, hBody, sidingColor, roofColor, lit, parent = town, detail = true, lights = false) {
   const g = new THREE.Group(); g.position.set(x, 0, z); parent.add(g);
   const sMat = std(sidingColor, { map: sidingTex, roughness: 0.85 });
   box(w, hBody, d, sMat, 0, hBody / 2, 0, g);
@@ -225,11 +189,11 @@ function house(x, z, w, d, hBody, sidingColor, roofColor, lit, parent = town, de
     const mat = state === 1 ? winLit : state === 2 ? winRed : winDark;
     add(new THREE.PlaneGeometry(0.9, 1.24), mat, wx, wy, front + 0.06, g, false);
     box(0.06, 1.24, 0.04, frame, wx, wy, front + 0.08, g, false);
-    if (state) { glow(state === 1 ? 0xffb35c : 0xff5a2a, 2.6, wx, wy, front + 0.4, 0.42, g); const pl = new THREE.PointLight(state === 1 ? 0xffb066 : 0xff5a2a, 3.5, 6, 2); pl.position.set(wx, wy, front + 0.8); g.add(pl); }
+    if (state) { glow(state === 1 ? 0xffb35c : 0xff5a2a, 2.6, wx, wy, front + 0.4, 0.42, g); if (lights) { const pl = new THREE.PointLight(state === 1 ? 0xffb066 : 0xff5a2a, 3.5, 6, 2); pl.position.set(wx, wy, front + 0.8); g.add(pl); } }
   });
   return g;
 }
-const hero = house(0, -36, 11, 8, 6.2, 0x9fb0c4, 0x2a2b33, [1, 0, 0, 1, 0, 2, 0, 0]);
+const hero = house(0, -36, 11, 8, 6.2, 0x9fb0c4, 0x2a2b33, [1, 0, 0, 1, 0, 2, 0, 0], town, true, true);
 // дверь, крыльцо, колонны, фонарь
 box(1.15, 2.25, 0.12, std(0x5a1f1a, { roughness: 0.5 }), 0, 1.45, -31.94, hero.parent);
 box(5.2, 0.32, 2.4, std(0x6a5a50), 0, 0.16, -30.8);
@@ -274,116 +238,71 @@ function streetLamp(x, z) {
 }
 streetLamp(-6.5, -9.2); streetLamp(7.5, -9.2); streetLamp(-24, -9.2); streetLamp(24, -9.2);
 
-// ---------- маска ----------
-const maskTex = new THREE.Texture(); maskTex.colorSpace = THREE.SRGBColorSpace;
-const maskMat = new THREE.MeshBasicMaterial({ map: maskTex, transparent: true, side: THREE.DoubleSide, toneMapped: false, fog: false, depthWrite: false });
-const mask = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), maskMat); mask.renderOrder = 10; scene.add(mask);
-const shadowTex = ctex(128, 128, (g, w, h) => { const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); gr.addColorStop(0, 'rgba(0,0,0,0.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
-const blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
-blob.position.y = 0.03; scene.add(blob);
-const maskLight = new THREE.PointLight(0xff3030, 0, 6, 1.5); scene.add(maskLight);
-
-const imgCache = new Map();
-function loadImg(url) {
-  if (!imgCache.has(url)) imgCache.set(url, new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; }));
-  if (imgCache.size > 64) imgCache.delete(imgCache.keys().next().value);
-  return imgCache.get(url);
-}
-
-// ---------- траектории (кубический Эрмит с касательными Катмулла–Рома по времени) ----------
-function track(keys) {
-  return t => {
-    if (t <= keys[0][0]) return keys[0][1].clone();
-    const n = keys.length; if (t >= keys[n - 1][0]) return keys[n - 1][1].clone();
-    let i = 0; while (keys[i + 1][0] < t) i++;
-    const [t0, p0, s0] = keys[i], [t1, p1, s1] = keys[i + 1], dt = t1 - t0, u = (t - t0) / dt;
-    const tan = j => { if (keys[j][2] === 'stop' || j === 0 || j === n - 1) return V(0, 0, 0); return keys[j + 1][1].clone().sub(keys[j - 1][1]).divideScalar(keys[j + 1][0] - keys[j - 1][0]); };
-    const m0 = tan(i).multiplyScalar(dt), m1 = tan(i + 1).multiplyScalar(dt);
-    const u2 = u * u, u3 = u2 * u;
-    return p0.clone().multiplyScalar(2 * u3 - 3 * u2 + 1).add(m0.multiplyScalar(u3 - 2 * u2 + u)).add(p1.clone().multiplyScalar(-2 * u3 + 3 * u2)).add(m1.multiplyScalar(u3 - u2));
-  };
-}
+// ---------- маска и камера ----------
+const mask = makeMask(scene, { blob: true });
 const FACE = V(0, 1.6, -4.11);
+const ORDER = ['ghostface', 'anonymous', 'bella-ciao', 'arthur-fool', 'dark-knight', 'ghostface'];
+const LAND = 2.45, FLIPS = [2.93, 3.41, 3.89, 4.37, 4.85];
+
 const camPos = track([
-  [0.0, V(0, 1.72, 0.9), 'stop'], [3.2, V(0, 1.66, -2.35)], [4.3, V(0, 1.64, -2.8)],
-  [4.78, V(0, 2.06, -3.95)], [5.08, V(0, 1.86, -6.0)], [5.5, V(0.2, 3.5, -11.6)],
-  [6.15, V(0.6, 2.0, -16.7)], [10.0, V(1.0, 1.42, -18.9), 'stop'],
+  [0.0, V(0, 1.78, 1.0), 'stop'], [LAND, V(0, 1.66, -2.3)], [4.85, V(0, 1.63, -2.9)],
+  [5.25, V(0.5, 1.8, -3.9)], [5.55, V(0.2, 1.86, -6.0)], [5.95, V(0.2, 3.4, -11.4)],
+  [6.65, V(0.6, 2.0, -16.7)], [10.6, V(1.7, 1.6, -18.4)], [14.85, V(1.2, 1.5, -19.4)],
+  [15.25, V(1.25, 3.3, -26.5)], [15.6, V(1.3, 4.55, -31.6)],
 ]);
 const camLook = track([
-  [0.0, V(0, 1.6, -4.3), 'stop'], [4.3, V(0, 1.6, -4.3)], [4.78, V(0, 1.82, -7.0)],
-  [5.08, V(0, 1.9, -11.0)], [5.5, V(0, 1.7, -22.0)], [6.15, V(0, 1.55, -24.0)], [10.0, V(0, 1.55, -24.2), 'stop'],
+  [0.0, V(0, 1.6, -4.3), 'stop'], [4.85, V(0, 1.6, -4.3)], [5.25, V(0, 1.8, -7.0)], [5.55, V(0, 1.9, -11)],
+  [5.95, V(0, 1.7, -22)], [6.65, V(0, 1.55, -24), 'stop'], [14.85, V(0.2, 1.7, -24.4), 'stop'], [15.25, V(1.3, 4.4, -33)], [15.6, V(1.3, 4.6, -40)],
 ]);
+const R0 = rig(camera, camPos, camLook, t => 58 + 7 * smooth((t - 5.1) / 0.3) * (1 - smooth((t - 5.8) / 0.7)) + 6 * smooth((t - 15.0) / 0.5));
 const maskFlight = track([
-  [4.3, FACE.clone(), 'stop'], [4.75, V(0, 1.78, -5.7)], [5.1, V(0, 2.0, -9.0)], [5.5, V(0, 2.6, -15.5)], [6.1, V(0, 1.6, -24.0), 'stop'],
+  [4.85, FACE.clone(), 'stop'], [5.2, V(0.1, 1.75, -5.5)], [5.55, V(0.1, 2.0, -8.5)], [5.95, V(0, 2.6, -15.5)], [6.65, V(0, 1.6, -24.0), 'stop'],
 ]);
 
-function setState(t) {
-  // камера + удар при посадке маски
-  const p = camPos(t), l = camLook(t);
-  const hit = t > 3.2 ? Math.exp(-(t - 3.2) * 7) : 0;
-  p.x += Math.sin(t * 61) * 0.022 * hit; p.y += Math.sin(t * 47 + 1) * 0.018 * hit;
-  camera.position.copy(p); camera.lookAt(l);
-  camera.rotation.z += Math.sin(t * 39) * 0.012 * hit;
-  camera.fov = 58 + 8 * smooth((t - 4.55) / 0.35) * (1 - smooth((t - 5.35) / 0.7)); camera.updateProjectionMatrix();
-
-  // свет гримёрки: красная вспышка на «МАНЬЯК»
-  const red = t > 3.2 ? Math.exp(-(t - 3.2) * 2.2) * (0.75 + 0.25 * Math.sin(t * 40)) : 0;
-  for (const L of [warmA, warmB]) L.color.setRGB(1, lerp(0.72, 0.12, red), lerp(0.44, 0.08, red));
-  for (const b of bulbs) b.material.color.setRGB(1, lerp(0.7, 0.15, red), lerp(0.36, 0.1, red));
-
-  // маска
-  let mp, size = 0.46, spin = 0, vis = t >= 2.0;
-  if (t < 3.2) {
-    const k = clamp01((t - 2.0) / 1.2);
-    mp = V(0, 2.3, -14).lerp(FACE, easeIn(k));
-    spin = (1 - easeOut(k)) * Math.PI * 4;
-  } else if (t < 4.3) {
-    mp = FACE.clone();
-    size = 0.46 * (1 + 0.14 * Math.exp(-(t - 3.2) * 9) * Math.cos((t - 3.2) * 30));
-  } else {
-    mp = maskFlight(t);
-    const k = smooth((t - 4.3) / 1.8);
-    size = lerp(0.46, 1.5, k);
-    if (t > 6.1) { const s = t - 6.1; size *= 1 + 0.08 * Math.exp(-s * 5) * Math.cos(s * 16); mp.y += Math.sin((t - 6.1) * 1.6) * 0.05; }
-    spin = t > 6.1 ? Math.sin((t - 6.1) * 0.9) * 0.14 : -Math.PI * 2 * smooth((t - 4.4) / 1.6);
-  }
-  mask.visible = vis;
-  mask.position.copy(mp); mask.scale.set(size, size, 1);
-  mask.quaternion.copy(camera.quaternion);
-  mask.rotateY(spin);
-  // тень-пятно на траве
-  const inTown = mp.z < -6.5;
-  blob.visible = vis && inTown;
-  blob.position.set(mp.x, 0.03, mp.z); const bs = size * 1.1 * (1.2 - Math.min(1, (mp.y - size / 2) / 4) * 0.5); blob.scale.set(bs, 1, bs * 0.6);
-  blob.material.opacity = 0.65 * smooth((t - 5.6) / 0.5);
-  maskLight.position.copy(mp).add(V(0, 0, 0.5)); maskLight.intensity = 0;
-  // стекло: дрожит перед пролётом, вспышка в момент прохода
-  const cross = Math.exp(-Math.pow((t - 5.04) / 0.05, 2));
-  glass.material.opacity = 1 - smooth((t - 4.95) / 0.12);
-  flash.material.opacity = 0.4 * cross; flash.scale.setScalar(2.5 + 2.5 * cross);
+function maskName(t) {
+  if (t < LAND) return 'ghostface';
+  let k = 0; for (const f of FLIPS) if (t >= f) k++;
+  return ORDER[Math.min(k, ORDER.length - 1)];
 }
 
-const acc = document.createElement('canvas'); acc.width = W; acc.height = H;
-const actx = acc.getContext('2d');
+function setState(t) {
+  R0.set(t);
+  const hit = t > LAND ? Math.exp(-(t - LAND) * 7) : 0;
+  camera.position.x += Math.sin(t * 61) * 0.022 * hit; camera.position.y += Math.sin(t * 47 + 1) * 0.018 * hit;
+  camera.rotation.z += Math.sin(t * 39) * 0.012 * hit;
+  // лампы зажигаются по очереди в первые 0,6 с
+  bulbs.forEach((b, k) => { const on = smooth((t - 0.03 * k) / 0.12); b.material.opacity = 0.55 * on; bulbMeshes[k].visible = on > 0.5; });
+  const on = smooth(t / 0.5);
+  warmA.intensity = 9 * on; warmB.intensity = 9 * on; warmC.intensity = 5 * on;
+  // красная вспышка на «МАНЬЯК», короткие вспышки на каждой смене маски
+  let red = t > LAND ? Math.exp(-(t - LAND) * 4) * (0.75 + 0.25 * Math.sin(t * 40)) : 0;
+  for (const f of FLIPS.slice(0, 4)) red = Math.max(red, 0.35 * Math.exp(-Math.abs(t - f) * 14));
+  for (const L of [warmA, warmB]) L.color.setRGB(1, lerp(0.72, 0.12, red), lerp(0.44, 0.08, red));
+  for (const b of bulbs) b.material.color.setRGB(1, lerp(0.7, 0.15, red), lerp(0.36, 0.1, red));
+  glass.material.opacity = 1 - smooth((t - 5.42) / 0.1);
 
-// Время → кадр Lottie (60 fps, 180 кадров). Сдвиг фазы: кровь (1,2–2,1 с цикла) совпадает с «МАНЬЯК».
-window.MASK = { name: 'ghostface', frames: 180, fps: 60, offset: 0.9 };
-window.renderAt = async (t) => {
-  const M = window.MASK;
-  const idx = Math.floor(((t + M.offset) * M.fps) + 1e-6) % M.frames;
-  const im = await loadImg(`/masks/${M.name}/${String(idx).padStart(3, '0')}.png`);
-  if (maskTex.image !== im) { maskTex.image = im; maskTex.needsUpdate = true; }
-  // скорость камеры → число подкадров для смаза движения (выдержка 1/2 кадра)
-  const dt = 1 / 60, a = camPos(t - dt / 2), b = camPos(t + dt / 2);
-  const speed = a.distanceTo(b) / dt;
-  const N = speed < 1.5 ? 1 : Math.min(10, Math.ceil(speed / 1.6));
-  const shutter = 0.5 / 60;
-  for (let k = 0; k < N; k++) {
-    const tk = N === 1 ? t : t + ((k + 0.5) / N - 0.5) * shutter;
-    setState(tk); renderer.render(scene, camera);
-    actx.globalAlpha = 1 / (k + 1); actx.drawImage(renderer.domElement, 0, 0);
+  let mp, size = 0.46, spin = 0, flip = 1;
+  mask.mesh.visible = t >= 1.3;
+  if (t < LAND) {
+    const k = clamp01((t - 1.3) / (LAND - 1.3));
+    mp = V(0, 2.3, -14).lerp(FACE, easeIn(k)); spin = (1 - easeOut(k)) * Math.PI * 4;
+  } else if (t < 4.85 + 0.08) {
+    mp = FACE.clone();
+    size = 0.46 * (1 + 0.14 * Math.exp(-(t - LAND) * 9) * Math.cos((t - LAND) * 30));
+    for (const f of FLIPS) { const u = (t - (f - 0.08)) / 0.16; if (u > 0 && u < 1) flip = Math.abs(Math.cos(Math.PI * u)); }
+  } else {
+    mp = maskFlight(t);
+    size = lerp(0.46, 1.5, smooth((t - 4.85) / 1.8));
+    if (t > 6.65) { const s = t - 6.65; size *= 1 + 0.08 * Math.exp(-s * 5) * Math.cos(s * 16); mp.y += Math.sin(s * 1.6) * 0.05; }
+    spin = t > 6.65 ? Math.sin((t - 6.65) * 0.9) * 0.14 : -Math.PI * 2 * smooth((t - 4.95) / 1.6);
   }
-  actx.globalAlpha = 1;
-  return acc.toDataURL('image/png');
+  mask.blob.visible = mp.z < -6.5;
+  mask.pose(camera, mp, size, flip, spin, 0);
+}
+
+export default {
+  name: 'room', scene, camera,
+  async prepare(t) { await mask.load(maskName(t), t); },
+  set: setState,
+  speed: t => R0.speed(t),
 };
-window.READY = true;

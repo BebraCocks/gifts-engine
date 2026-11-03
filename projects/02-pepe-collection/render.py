@@ -776,9 +776,10 @@ def glow(radius, color, core=0.6):
         y, x = np.mgrid[-r:r + 1, -r:r + 1]
         d = np.sqrt(x * x + y * y) / r
         g = np.clip(1 - d, 0, 1) ** 2.2 * (1 - core) + np.exp(-(d / 0.18) ** 2) * core
-        _cache[key] = (g[..., None] * (np.asarray(color, np.float32) / 255.0)).astype(np.float32)
+        val = (g[..., None] * (np.asarray(color, np.float32) / 255.0)).astype(np.float32)
         if len(_cache) > 600:
             _cache.clear()
+        _cache[key] = val
     return _cache[key]
 
 

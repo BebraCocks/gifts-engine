@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import config
-from script import DUR, AD_STOP, BLOCKS, SEGMENTS, VOICE
+from script import DUR, AD_STOP, BLOCKS, SEGMENTS, VOICE, VOICE_WIN
 
 HERE = Path(__file__).resolve().parent
 VOICE_FILES = [HERE / 'voice' / f'V{k:02d}.wav' for k in range(1, len(SEGMENTS) + 1)]
@@ -38,11 +38,13 @@ for k, (a, b, text, style) in enumerate(SEGMENTS):
     if HAS_VOICE:
         path = VOICE_FILES[k]
         on, end = voice.onset_end(path)
-        offset = a - on                               # начало речи = начало окна
-        VOICE_AT.append((path, offset, a + end - on))
+        va = VOICE_WIN[k][0]
+        nva = VOICE_WIN[k + 1][0] if k + 1 < len(VOICE_WIN) else DUR
+        offset = va - on                              # начало речи = начало окна речи
+        VOICE_AT.append((path, offset, va + end - on))
         spoken = captions.estimate_word_times(str(path), VOICE[k], offset=offset, speech_start=on, speech_end=end)
         tokens = merge_short(captions.align(spoken, ' '.join(text.split())))
-        last_end = min(a + end - on + 0.35, nxt - 0.02)
+        last_end = min(va + end - on + 0.35, nva - 0.02)
     else:
         raw = merge_short([(w, 0.0) for w in text.split()])
         weights = [len(w.strip(STRIP)) + 4 for w, _ in raw]

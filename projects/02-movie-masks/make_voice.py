@@ -10,7 +10,8 @@ import paths
 HERE = paths.enter(__file__)
 import fish_tts
 import voice
-from script import SEGMENTS, VOICE
+import hashlib
+from script import SEGMENTS, VOICE, VOICE_WIN
 
 ROLE_SLACK = 0.06          # слово-роль может чуть заходить за смену маски
 
@@ -26,13 +27,14 @@ def main():
         raise SystemExit('Нужны FISH_API_KEY и FISH_VOICE в окружении процесса')
     folder = HERE / 'voice'; folder.mkdir(exist_ok=True)
     only = {int(x) for x in sys.argv[1:]} if len(sys.argv) > 1 else None
-    for k, ((a, b, _, style), text) in enumerate(zip(SEGMENTS, VOICE), 1):
+    for k, (text, (a, b)) in enumerate(zip(VOICE, VOICE_WIN), 1):
         if only and k not in only:
             continue
-        window = (b - a) + (ROLE_SLACK if style == 'role' else -0.05)
+        window = b - a
+        tag = hashlib.sha1((vid + text).encode()).hexdigest()[:6]
         speed, chosen = 1.0, None
-        for attempt in range(4):
-            take = folder / f'V{k:02d}_s{int(round(speed * 100))}.wav'
+        for attempt in range(3):
+            take = folder / f'V{k:02d}_{tag}_s{int(round(speed * 100))}.wav'
             if not take.exists():
                 fish_tts.tts(text, take, vid, speed=speed)
             d = speech_len(take)
@@ -40,7 +42,7 @@ def main():
             chosen = take
             if d <= window:
                 break
-            speed = min(1.45, round(speed * d / window * 1.02, 2))
+            speed = min(1.35, round(speed * d / window * 1.03, 2))
         shutil.copyfile(chosen, folder / f'V{k:02d}.wav')
 
 

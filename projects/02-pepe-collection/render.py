@@ -769,18 +769,24 @@ BG = [bg_swamp, bg_street, bg_sewer, bg_space, bg_kitchen]
 _cache = {}
 
 
+GLOW_MAX_R = 520          # px; bigger glows are clipped (they fill the frame anyway)
+GLOW_CACHE_R = 120        # only small glows are cached: big ones would eat gigabytes per worker
+
+
 def glow(radius, color, core=0.6):
-    key = ('g', int(radius), tuple(int(c) for c in color), core)
-    if key not in _cache:
-        r = max(2, int(radius))
+    r = int(min(GLOW_MAX_R, max(2, radius)))
+    key = ('g', r, tuple(int(c) for c in color), core)
+    val = _cache.get(key)
+    if val is None:
         y, x = np.mgrid[-r:r + 1, -r:r + 1]
         d = np.sqrt(x * x + y * y) / r
         g = np.clip(1 - d, 0, 1) ** 2.2 * (1 - core) + np.exp(-(d / 0.18) ** 2) * core
         val = (g[..., None] * (np.asarray(color, np.float32) / 255.0)).astype(np.float32)
-        if len(_cache) > 600:
-            _cache.clear()
-        _cache[key] = val
-    return _cache[key]
+        if r <= GLOW_CACHE_R:
+            if len(_cache) > 400:
+                _cache.clear()
+            _cache[key] = val
+    return val
 
 
 def add(canvas, spr, cx, cy, gain=1.0):

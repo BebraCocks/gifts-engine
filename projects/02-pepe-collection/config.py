@@ -1,5 +1,5 @@
 """Neutral scaffold. Replace these choices with the new author's visual brief."""
-STYLE_READY = False
+STYLE_READY = True
 BACKGROUND = (32, 32, 32)
 TEXT_COLOR = (245, 245, 245)
 FONT_WEIGHT = 'Semibold'

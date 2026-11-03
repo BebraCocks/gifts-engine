@@ -78,3 +78,42 @@ Pepelatz (Stellar Rocket), Pepe Pryanik, Dogel Mogel, Brick 3310 (Artisan Brick)
 ## 7. Мультфильмы
 
 Pickle Rick (×2), Homer (×3), Simpsonic, Shrek (×2), Spiderman, Mario Cake/Mario Pipe.
+
+## 8. Маски: коллекция Myth Mask (выбрано автором для изучения 2026-11-03)
+
+Данные API на 2026-11-03: выпуск 2025-10-31 (Хэллоуин), улучшение с 2026-10-31
+15:09 UTC (`upgradableAt`, источник «telegram»; вторым источником не подтверждено).
+134 модели, 80 фонов, 262 символа. 33 модели помечены `crafted` с редкостью 0%
+и уровнями legendary/epic/rare/uncommon — как их получают, **не проверено**.
+Тираж, цены и число владельцев **не проверены**.
+
+Самые редкие обычные модели: Dark Knight и Night Howler (0,1%), затем 20 моделей
+по 0,2%. Crafted legendary: Bitcoinicle, Fatality.
+
+Отсылки, опознанные по превью (уверенно):
+
+| Тема | Модели |
+|---|---|
+| Кино-хоррор | Ghostface (Крик, 1,1%), Billy Puppet (Пила, 0,2%), Hannibal (0,2%), Neon Purge (Судная ночь, 1%), Pumpkin Jack |
+| Кино и сериалы | Anonymous (V — значит вендетта, 1%), Bella Ciao (Бумажный дом, 0,6%), Frontman (Игра в кальмара, crafted), Arthur Fool (Джокер 2019, 0,9%), Backbreaker (Бэйн, 0,9%), Dark Knight (Бэтмен, 0,1%), Cuban Pete (Маска 1994, 1,4%), Witch King (Властелин колец, 1,4%), Baldwin (Царство небесное, 0,2%), No Face (Унесённые призраками, 1,4%), Zorro (1%), The Donald (0,2%) |
+| Игры | Enderman (Minecraft), Little Ghost и Horny (Hollow Knight), Death Blossom (Жнец, Overwatch), Wasteland (Borderlands), Deadly Hug (Poppy Playtime) |
+| Музыка | ALL CAPS (MF DOOM, 1%) |
+| Традиции | Plague Doctor, Dark Masquerade, Royal/Twisted Jester (Венеция); Kitsune, Red Oni (Япония); La Muerte (Мексика); Tiki Mana; Pharaoh, Anubis, Golden Ra (Египет); Apollo, Venus, Medusa, Marble David (античность); Tragic Muse, Tragic Face (театр); Dragon Dance (Китай); Mayan Mask, Tribal Warrior |
+
+Предположительно (проверить): Predator, Doomsday (Доктор Дум), Wrong Number и
+Wild Stallion (Hotline Miami), Monkey Heist (Payday), Night Howler (Зверополис),
+Liquid Metal (Терминатор 2), Fatality (Mortal Kombat).
+
+Маски в других коллекциях: Scream (Mini Oscar, 1,5%), Gas Mask (Mini Oscar, 1%),
+Jason (Jolly Chimp, 1,5%), The Mask (Mad Pumpkin, 1%), Anonymous (Resistance Dog, 0,9%),
+Mystery Mask (Jester Hat, 0,5%), Twin Faces (Lucky Locket, 3%).
+
+Факты для подачи (получены 2026-11-03):
+- Латинское persona сначала означало театральную маску; затем «роль», «лицо»,
+  «человек» ([Etymonline](https://www.etymonline.com/word/persona)).
+- Маску Гая Фокса нарисовал Дэвид Ллойд для комикса V for Vendetta (1982, журнал
+  Warrior); после фильма её массово выпускала Warner Bros.; в 2008 году Anonymous
+  надели её на протестах против Церкви саентологии (Project Chanology), 10 февраля
+  2008 — более 7000 человек в 100+ городах ([Wikipedia](https://en.wikipedia.org/wiki/Guy_Fawkes_mask),
+  [CNBC](https://www.cnbc.com/2015/12/29/the-man-behind-the-anonymous-mask-v-for-vendettas-david-lloyd.html)).
+- История чумного доктора и прочих традиций — **не проверено**, искать отдельно.

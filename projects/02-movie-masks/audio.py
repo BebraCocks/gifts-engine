@@ -83,7 +83,7 @@ def impact(t, g=0.8, f_hi=85, f_lo=42, tail=0.9):
     thump = np.sin(2 * np.pi * np.cumsum(f_lo + (f_hi - f_lo) * np.exp(-tt * 9)) / SR) * np.exp(-tt * 3.0)
     click = lp(rng.standard_normal(len(tt)), 2600) * np.exp(-tt * 40)
     ir = rng.standard_normal(int(tail * SR)) * np.exp(-np.arange(int(tail * SR)) / SR * 5)
-    rev = np.convolve(click, ir)[:len(tt)]
+    rev = signal.fftconvolve(click, ir)[:len(tt)]
     put(thump * 0.85 + click * 0.45 + norm(rev) * 0.12, t, g)
 
 

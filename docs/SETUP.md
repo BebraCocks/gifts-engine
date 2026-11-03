@@ -61,3 +61,21 @@ python -B engine/tools/with_fish_key.py engine/tools/tts_takes.py projects/01-to
 Навык автоматически обнаруживается поддерживающими `.agents/skills` агентами.
 Для Claude есть вход в `.claude/skills`; другой нейросети достаточно прочитать
 `AGENTS.md` и указанный в нём `SKILL.md`. Дополнительных плагинов проект не требует.
+
+## Fish Audio через MCP (вход в аккаунт, без API-ключа)
+
+Добавлено 2026-11-03. Официальный MCP-сервер Fish Audio — `https://api.fish.audio/mcp`
+(streamable HTTP, вход через OAuth в браузере). По описанию Fish Audio он тратит
+кредиты **подписки**, как сайт, а не API-кредит. Ключ не нужен и не хранится.
+
+- **Claude Code на своём компьютере:** `.mcp.json` в корне уже содержит сервер
+  `fish-audio`, `.claude/settings.json` разрешает его. Откройте проект, введите `/mcp`,
+  выберите `fish-audio` и войдите в аккаунт Fish Audio. Альтернатива вручную:
+  `claude mcp add --transport http fish-audio https://api.fish.audio/mcp`.
+- **Облачные сессии claude.ai / телефон:** добавьте пользовательский коннектор
+  `https://api.fish.audio/mcp` на https://claude.ai/customize/connectors, войдите в
+  Fish Audio и начните **новую** сессию — коннекторы читаются при старте сессии.
+- Сгенерированный звук сервер отдаёт ссылкой; если домен ссылки закрыт сетевыми
+  правилами окружения, его нужно разрешить, чтобы скачать файл в `voice/`.
+- Голос автора: `7312c38557eb4fb384e3874e8e9cea67`. Выбранные дубли кладутся в
+  `voice/L01.wav…`, как и при работе через API.

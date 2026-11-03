@@ -31,7 +31,8 @@ def main():
         if only and k not in only:
             continue
         window = b - a
-        tag = hashlib.sha1((vid + text).encode()).hexdigest()[:6]
+        model = os.environ.get('FISH_TTS_MODEL', 's2.1-pro')
+        tag = model.replace('.', '') + '_' + hashlib.sha1((model + vid + text).encode()).hexdigest()[:6]
         speed, chosen = 1.0, None
         for attempt in range(3):
             take = folder / f'V{k:02d}_{tag}_s{int(round(speed * 100))}.wav'

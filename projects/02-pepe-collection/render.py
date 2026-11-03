@@ -927,6 +927,14 @@ def objects_swamp(canvas, cam, t):
         img = car_img('zhiguli', t, dog=in_car)
         items.append((cam.project(car_base)[2], lambda img=img, b=car_base, sq=sq:
                       draw_vehicle(canvas, cam, img, b, CAR_LEN, sxy=(1 + 0.08 * sq, 1 - 0.1 * sq), reflect_y=0.0)))
+    if 18.35 <= t < 19.25:                           # splash when the car lands on its pad
+        age = (t - 18.35) / 0.9
+        for i in range(34):
+            a = i / 34 * 6.283
+            p = CAR_PAD + v3(math.cos(a) * (1.4 + 1.6 * age), 0.15 + 2.2 * age - 3.2 * age * age, math.sin(a) * 0.6 * (0.5 + age))
+            x, y, z = cam.project(p)
+            if z > 0.3:
+                add(canvas, glow(cam.F * 0.07 / z, (200, 235, 255), 0.6), x, y, 0.9 * (1 - age))
     if t < 19.72:
         base, rot, sxy = DOG0.copy(), 0.0, (1.0, 1.0)
         if 11.45 <= t < 12.45:                       # «Что на них купишь?» — a puzzled tilt
@@ -1102,6 +1110,14 @@ def objects_kitchen(canvas, cam, t):
         items.append((cam.project(base)[2], lambda: billboard(canvas, cam, img, base, DOG_H * 0.8, 0.98)))
     for _, fn in sorted(items, key=lambda it: -it[0]):
         fn()
+    if 46.05 <= t < 46.9:                            # flour-like puff when the small car lands
+        age = (t - 46.05) / 0.85
+        for i in range(24):
+            a = i / 24 * 6.283
+            p = v3(-1.3, 0.1, 2.2) + v3(math.cos(a) * (1.0 + 1.4 * age), 0.4 * age + 0.2 * abs(math.sin(i)), math.sin(a) * 0.5)
+            x, y, z = cam.project(p)
+            if z > 0.3:
+                add(canvas, glow(cam.F * (0.18 + 0.3 * age) / z, (255, 240, 215), 0.0), x, y, 0.45 * (1 - age))
     mx, my, mz = cam.project(v3(3.75, 3.65, WALL_Z - 0.02))      # the moon seen through the window
     if mz > 0.3:
         add(canvas, glow(cam.F * 0.55 / mz, (190, 220, 200), 0.0), mx, my, 0.35)
@@ -1243,6 +1259,22 @@ QUESTION = card_parts('Что на них купишь?', None, '', '', None)[0]
 FINAL_BALLOON = balloon('Feels good, man', 70)
 
 
+def sparkle_sprite(size, rot):
+    key = ('sp', size, int(rot * 10) % 63)
+    if key not in _cache:
+        s = size * 4
+        im = Image.new('L', (s, s), 0)
+        pts = []
+        for k in range(8):
+            rr = s * (0.48 if k % 2 == 0 else 0.13)
+            a = rot + k * math.pi / 4
+            pts.append((s / 2 + rr * math.cos(a), s / 2 + rr * math.sin(a)))
+        ImageDraw.Draw(im).polygon(pts, fill=255)
+        g = np.asarray(im.resize((size, size), Image.LANCZOS), np.float32)[..., None] / 255.0
+        _cache[key] = g * (np.asarray(GOLD, np.float32) / 255.0)
+    return _cache[key]
+
+
 def overlay(canvas, t):
     for (top, bottom), t0, t1, tv in CARDS:
         a = ease((t - t0) / 0.35) * (1 - ease((t - t1) / 0.3))
@@ -1253,6 +1285,14 @@ def overlay(canvas, t):
                 sc = 1 + 0.25 * (1 - ease((t - tv) / 0.25))
                 blend(canvas, bottom, 0, CARD_Y + 200 + 20 * (1 - b), b) if sc < 1.01 else \
                     place(canvas, Image.fromarray(bottom.astype(np.uint8), 'RGBA'), W / 2, CARD_Y + 310, sc, 0.0, b)
+    for _, t0, t1, tv in CARDS:
+        age = (t - tv) / 0.8
+        if 0 <= age < 1:
+            for i in range(18):
+                ang = i / 18 * 6.283 + 0.3
+                r = 120 + 360 * fx.ease_out(age) * (0.7 + 0.3 * math.sin(i * 3.7))
+                x, y = W / 2 + math.cos(ang) * r, CARD_Y + 290 + math.sin(ang) * r * 0.45
+                add(canvas, sparkle_sprite(int(26 * (1 - age) + 6), ang + t * 4), x, y, 1.0 - age)
     a = ease((t - 11.40) / 0.25) * (1 - ease((t - 12.45) / 0.25))
     if a > 0:
         blend(canvas, QUESTION, 0, CARD_Y + 20, a)

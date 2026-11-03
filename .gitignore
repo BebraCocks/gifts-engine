@@ -25,3 +25,4 @@ renders/
 old-drafts/
 .DS_Store
 Thumbs.db
+node_modules/

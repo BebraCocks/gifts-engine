@@ -15,6 +15,7 @@ def main():
     parser.add_argument('project')
     parser.add_argument('--voice', default=os.environ.get('FISH_VOICE'))
     parser.add_argument('--takes', type=int, default=1)
+    parser.add_argument('--speed', type=float, default=1.0)
     args = parser.parse_args()
     if args.takes < 1:
         parser.error('--takes must be positive')
@@ -36,8 +37,9 @@ def main():
             if out.exists():
                 print(name, 'уже есть — сохранён')
                 continue
-            fish_tts.tts(data[0], out, args.voice)
-            log[name] = {'engine': 'fish', 'voice': args.voice, 'text': data[0]}
+            fish_tts.tts(data[0], out, args.voice, speed=args.speed)
+            log[name] = {'engine': 'fish', 'model': os.environ.get('FISH_TTS_MODEL', 's2.1-pro'),
+                         'voice': args.voice, 'speed': args.speed, 'text': data[0]}
             manifest.write_text(json.dumps(log, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
             print(name, 'готов; прослушайте и выберите дубль')
     print('Выбранные дубли скопируйте в voice/L01.wav, L02.wav… без удаления остальных.')

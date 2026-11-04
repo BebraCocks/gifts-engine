@@ -55,3 +55,17 @@
 Осталось: автору посмотреть в движении и послушать; правки — новой версией (`--name kal_lekciya_v2`).
 
 `02-gift-counts` (графы) — черновик по неверно понятой теме, остановлен; не собирать.
+
+## 2026-11-04 · 02-resistance-dog (v1 собран, v2 рендерится)
+
+Ролик ~119,9 с про Resistance Dog: история пса + модели подарка, две вставки RubUp (~28 и ~89 с).
+- Готово: сценарий с датированными источниками, озвучка Fish Audio `drama-3` (теги интонаций,
+  ASR-проверка Fish Audio), таймлайн по словам, 14 3D-локаций (Blender 5.2 EEVEE, CPU),
+  компоновщик (Lottie-подарки по якорям, рисунок рукой, трафаретные субтитры), SFX, временная
+  синтезированная музыка `music_gen.py`.
+- Идёт: рендер 3D-подложек `build/render_all.sh` (проход 1 — каждый второй кадр, проход 2 — остальные).
+- Дальше: треки автора в `input/music/` → `audio.py` MUSIC; сборка
+  `engine/tools/build.py projects/02-resistance-dog --approved --name resistance_dog_v1`; просмотр и прослушивание.
+- Окружение: bpy в `/root/venv-bpy` (pip `bpy==5.2.3`), для EEVEE без GPU нужны `libegl1 libegl-mesa0`.
+- v1: `renders/02-resistance-dog/resistance_dog_v1.mp4` (3D 30 к/с внутри 60 fps). Для v2 после второго
+  прохода: `build/compose_range.py` по сегментам → concat → mux с `build/mix.wav` под новым именем.

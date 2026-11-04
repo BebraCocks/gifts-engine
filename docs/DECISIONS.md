@@ -67,3 +67,10 @@ EEVEE через llvmpipe: 540×960, 2 сэмпла (на глаз не отли
 Озвучка: Fish Audio `drama-3` (неверное имя модели API молча заменяет на s2.1-pro — проверять на слух).
 Тайминг слов — ASR Fish Audio (`engine/tools/fish_asr.py`), т.к. Hugging Face закрыт сетью сессии.
 `banner.Breaks.audio` векторизован (`content_t_array`), результат идентичен поэлементному.
+
+## 2026-11-03 · Fish Audio через MCP
+
+API-ключ автора работает только с бесплатной моделью (`s2.1-pro-free`): API-кредит 0,
+а подписка Pro на API не распространяется (ответ сервиса: «API credit is separate from
+your subscription credits»). Добавлен официальный MCP-сервер `https://api.fish.audio/mcp`
+(`.mcp.json`), который входит в аккаунт и расходует кредиты подписки. Ключ не нужен.

@@ -12,7 +12,7 @@ from urllib.parse import unquote
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'engine'))
-EXCLUDED = {'.git', '.venv', 'venv', '__pycache__', '.cache', 'build', 'review', 'voice', 'renders', 'old-drafts'}
+EXCLUDED = {'.git', '.venv', 'venv', '__pycache__', '.cache', 'build', 'review', 'voice', 'renders', 'old-drafts', 'node_modules'}
 MEDIA = {'input/video/RubUP Gifts banner.mov'} | {
     f'input/fonts/SF-Pro-Text/SF-Pro-Text-{weight}.otf'
     for weight in ('Regular', 'Medium', 'Semibold', 'Bold', 'Heavy')}

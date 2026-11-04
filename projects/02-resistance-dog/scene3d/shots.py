@@ -535,7 +535,7 @@ def S05_court(sh, t0, t1):
         box((0.08, 0.06, h), (dx, 0, -h / 2), m=key_m, parent=kr, bevel=0.01)
     sh.track(kr, 'rotation_euler', 'location')
     cyl(0.45, 1.0, (2.4, 1.2, 0.5), m=mat((0.25, 0.14, 0.08), rough=0.4), bevel=0.04)
-    kspot = spot((2.4, 0.4, 4.2), (2.4, 1.2, 1.5), 1200, (0.6, 0.85, 1.0), 30, 0.4)
+    kspot = spot((2.4, 0.4, 4.2), (2.4, 1.2, 1.5), 600, (0.6, 0.85, 1.0), 30, 0.4)
     sh.track(kspot.data, 'energy')
     warm = area((-4, -3, 6), (0, 3, 1), 700, 3, (1.0, 0.75, 0.5))
     sh.track(warm.data, 'energy')
@@ -555,11 +555,11 @@ def S05_court(sh, t0, t1):
         piv.rotation_euler = (0, ang, 0)
         kr.rotation_euler = (0.3 * math.sin(t * 0.8), 0, t * 0.9)
         kr.location = (2.4, 1.2, 1.75 + 0.06 * math.sin(t * 1.7))
-        emit_socket(key_m).default_value = 4.0 * smooth(seg(t, keys_t - 0.2, keys_t + 0.3)) * (1 - smooth(seg(t, blk, blk + 0.3)))
+        emit_socket(key_m).default_value = 0.9 * smooth(seg(t, keys_t - 0.2, keys_t + 0.3)) * (1 - smooth(seg(t, blk, blk + 0.3)))
         hit = smooth(seg(t, blk, blk + 0.08))
         red.data.energy = 1500 * hit * (0.6 + 0.4 * math.sin((t - blk) * 9))
         warm.data.energy = 700 * (1 - 0.65 * hit)
-        kspot.data.energy = 1200 * (1 - 0.8 * hit)
+        kspot.data.energy = 600 * (1 - 0.8 * hit)
         keys = [(t0, (-2.75, 3.6, 3.3)), (ap + 0.9, (-2.5, 3.2, 3.15)), (ap + 2.2, (-0.6, -2.8, 2.4)),
                 (keys_t, (1.4, -0.4, 1.95)), (blk - 0.5, (1.3, 1.6, 1.5)), (t1, (1.15, 1.95, 1.25))]
         p = path(t, keys)

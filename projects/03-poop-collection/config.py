@@ -1,5 +1,5 @@
 """03-poop-collection: «Музей кал-лекции» — own visual concept (STORYBOARD.md, section 2)."""
-STYLE_READY = False            # set True only after the author says «собирай»
+STYLE_READY = True             # «собирай» получено 2026-11-04
 WITHOUT_NARRATION = False      # Fish Audio takes voice/L01..L09.wav (take02, speed 1.1)
 VOICE_GAIN = 0.85
 

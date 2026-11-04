@@ -183,6 +183,32 @@ class Breaks:
             return at
         return at + RAMP * float(_ease_int((u - RAMP - self.hold) / RAMP))
 
+    def content_t_array(self, t):
+        """Vectorised content_t for a numpy array of output times."""
+        t = np.asarray(t, np.float64)
+        ct = np.empty_like(t)
+        done = np.zeros(t.shape, bool)
+        shift = 0.0
+        for k, at in enumerate(self.stops):
+            o0 = at - RAMP / 2 + shift
+            before = (~done) & (t < o0)
+            ct[before] = t[before] - shift
+            done |= before
+            inb = (~done) & (t < o0 + self.extra + RAMP)
+            u = t - o0
+            r1 = inb & (u < RAMP)
+            x = u[r1] / RAMP
+            ct[r1] = at - RAMP / 2 + RAMP * (x - _ease_int(x))
+            hold = inb & (u >= RAMP) & (u < RAMP + self.hold)
+            ct[hold] = at
+            r2 = inb & (u >= RAMP + self.hold)
+            ct[r2] = at + RAMP * _ease_int((u[r2] - RAMP - self.hold) / RAMP)
+            done |= inb
+            shift += self.extra
+        rest = ~done
+        ct[rest] = t[rest] - shift
+        return ct
+
     def phase(self, t):
         """None outside a break, else dict(dim 0..1, bt = banner time (s, may be <0 or >B), speed 0..1)."""
         k, u = self._local(t)
@@ -226,9 +252,7 @@ class Breaks:
         t = np.arange(n_out) / sr
         ct = np.empty(n_out)
         gain = np.ones(n_out)
-        for a in range(0, n_out, sr):                   # per-sample map, in 1 s blocks
-            tt = t[a:a + sr]
-            ct[a:a + sr] = [self.content_t(x) for x in tt]
+        ct[:] = self.content_t_array(t)                 # vectorised, identical to content_t per sample
         for k in range(len(self.stops)):                # fade the content out with the speed (soft tape stop)
             o0 = self.stops[k] - RAMP / 2 + k * self.extra
             u = t - o0

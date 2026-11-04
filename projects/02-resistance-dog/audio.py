@@ -26,7 +26,7 @@ MUSIC_DIR = paths.INPUT / 'music'
 # (file, out_start, out_end, gain_db, file_offset) — filled in when the author's tracks arrive
 MUSIC = []
 VOICE_DB = -17.0          # target RMS of speech
-SFX_GAIN = 0.8
+SFX_GAIN = 0.6
 
 
 def _rms_db(x):
@@ -71,9 +71,15 @@ def envelope(x, win=0.25):
 
 def music_layer(n, voice_out):
     mus = np.zeros((n, 2))
+    fallback = HERE / 'build' / 'music_fallback.wav'
     if not MUSIC:
-        print('Музыка не подключена: ждём треки автора в input/music/.')
-        return mus
+        if not fallback.exists():
+            print('Музыка не подключена: ждём треки автора в input/music/.')
+            return mus
+        print('Музыка: временная синтезированная партитура (music_gen.py), пока нет треков автора.')
+        x = sound.load_stereo(fallback, SR)
+        m = min(n, len(x))
+        mus[:m] = x[:m] * 10 ** (-17 / 20)
     for name, a, b, gdb, off in MUSIC:
         x = sound.load_stereo(MUSIC_DIR / name, SR, start=off, dur=b - a + 2.0)
         i0, i1 = int(a * SR), min(n, int(b * SR))
@@ -95,11 +101,12 @@ def make_mix():
     n = int(round(DUR * SR))
     voice = voice_layer(n)
     fx = sfx_layer(n)
+    ve = envelope(voice, 0.15)
+    fx *= (1 - 0.6 * np.clip(ve / (np.percentile(ve, 95) * 0.5 + 1e-9), 0, 1))[:, None]   # SFX step back under speech
     content = voice + fx
     out = BR.audio(content, SR)                       # content pauses + full banner sound
-    vo = BR.audio(np.concatenate([voice, np.zeros((0, 2))]), SR) if MUSIC else None
-    if MUSIC:
-        out = out + music_layer(len(out), vo)
+    vo = BR.audio(voice, SR)
+    out = out + music_layer(len(out), vo)
     peak = np.abs(out).max()
     if peak > 0.95:
         out = np.tanh(out / peak * 1.1) * 0.95 / np.tanh(1.1)

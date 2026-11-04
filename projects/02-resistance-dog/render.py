@@ -53,6 +53,13 @@ def spring(x, f=1.8, z=0.45):
 
 
 # ------------------------------------------------------------------ plates
+def _existing(n):
+    for d in (0, -1, 1, -2, 2):
+        if (PLATES / f'f{n + d:05d}.png').exists():
+            return n + d
+    return None
+
+
 @functools.lru_cache(maxsize=8)
 def plate(n):
     p = PLATES / f'f{n:05d}.png'
@@ -391,6 +398,8 @@ def render_at(t):
     shot = shot_at(t)
     name, a, b = shot
     n = plate_index(t, shot)
+    m = _existing(n)
+    n = m if m is not None and (math.ceil(a * FPS) <= m <= math.ceil(b * FPS) - 1) else n
     base = plate(n)
     if base is None:
         c = np.full((H, W, 3), 30, np.float32)

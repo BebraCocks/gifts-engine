@@ -45,7 +45,7 @@ def main():
     ap.add_argument('shot')
     ap.add_argument('--frames', default=None, help='comma list of content frames, or a:b range')
     ap.add_argument('--step', type=int, default=1)
-    ap.add_argument('--samples', type=int, default=6)
+    ap.add_argument('--samples', type=int, default=2)
     ap.add_argument('--scale', type=int, default=50)
     ap.add_argument('--out', default=str(OUT))
     args = ap.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:])

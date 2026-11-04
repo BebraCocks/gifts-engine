@@ -38,7 +38,7 @@ def reset(scale=50, samples=6, world=(0.05, 0.06, 0.09), strength=1.0):
         sc.view_settings.look = 'AgX - Punchy'
     except TypeError:
         pass
-    sc.render.use_motion_blur = True
+    sc.render.use_motion_blur = __import__('os').environ.get('RD_MB', '1') == '1'
     sc.render.motion_blur_shutter = 0.5
     w = bpy.data.worlds.new('World')
     sc.world = w

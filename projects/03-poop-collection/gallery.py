@@ -320,22 +320,21 @@ def backdrop(w, h, c0, c1):
 
 @functools.lru_cache(None)
 def stamp_img(text, rgb, size):
+    """Price-tag stamp: paper plate, coloured frame and text, slightly worn, rotated."""
     import fx
     f = fx.font('Heavy', size)
     tw = int(f.getlength(text))
     pad = int(size * 0.45)
     Wd, Hd = tw + 2 * pad, int(size * 1.25) + 2 * pad
-    im = Image.new('L', (Wd, Hd), 0)
-    d = ImageDraw.Draw(im)
     lw = max(4, size // 9)
-    d.rounded_rectangle([lw, lw, Wd - lw, Hd - lw], radius=size // 5, outline=255, width=lw)
-    d.text((Wd / 2, Hd / 2), text, font=f, fill=255, anchor='mm')
-    a = np.asarray(im, np.float32) / 255
+    im = Image.new('RGBA', (Wd, Hd), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([lw, lw, Wd - lw, Hd - lw], radius=size // 5, fill=(246, 242, 232, 235),
+                        outline=tuple(rgb) + (255,), width=lw)
+    d.text((Wd / 2, Hd / 2), text, font=f, fill=tuple(rgb) + (255,), anchor='mm')
+    a = np.asarray(im, np.float32)
     rng = np.random.default_rng(len(text) * 31 + size)
     grit = np.asarray(Image.fromarray((rng.random((Hd // 3 + 1, Wd // 3 + 1)) * 255).astype(np.uint8))
                       .resize((Wd, Hd), Image.BILINEAR), np.float32) / 255
-    a = a * np.clip(0.55 + 0.7 * grit, 0, 1) * 0.92
-    rgba = np.zeros((Hd, Wd, 4), np.uint8)
-    rgba[..., :3] = rgb
-    rgba[..., 3] = (a * 255).astype(np.uint8)
-    return Image.fromarray(rgba, 'RGBA').rotate(-11, expand=True, resample=Image.BICUBIC)
+    a[..., 3] *= np.clip(0.75 + 0.5 * grit, 0, 1)
+    return Image.fromarray(a.astype(np.uint8), 'RGBA').rotate(-9, expand=True, resample=Image.BICUBIC)

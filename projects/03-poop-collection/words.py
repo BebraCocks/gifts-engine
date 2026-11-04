@@ -18,5 +18,5 @@ for k, (spoken, screen, style, pause) in enumerate(LINES):
 
 def wt(line, word, occurrence=0):
     """line is zero-based; occurrence disambiguates repeated words."""
-    matches = [t for text, t in WORDS[line] if text.strip('.,!?—:;').casefold() == word.casefold()]
+    matches = [t for text, t in WORDS[line] if text.strip('.,!?—:;«»"').casefold() == word.casefold()]
     return matches[occurrence]

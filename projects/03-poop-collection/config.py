@@ -12,23 +12,19 @@ ALERT = (214, 64, 52)
 DATA_DATE = '04.11.2026'
 DATA_SOURCE = 'api.changes.tg'
 
-# model=None -> the original (non-upgraded) gift. Rarity from api.changes.tg, fetched 2026-11-04.
-# Backdrop colours are Telegram backdrops picked for composition, not a specific owned gift.
+# Rarity from api.changes.tg, fetched 2026-11-04. Backdrop colours are Telegram backdrops picked for
+# composition (not a specific owned gift); 'stars' = a night sky with the Milky Way (drawn in render.py).
 HEROES = [
-    dict(gift='Happy Brownie', model=None, swap='Kinky Stinky', title='Happy Brownie', rarity='50 моделей',
-         wall='L', z=-48.0, backdrop=('#d19a3a', '#7d3600'), stamp='ОФИЦИАЛЬНО', stamp_rgb=ALERT),
+    dict(gift='Happy Brownie', model='Dung Beetle', title='Dung Beetle', rarity='Happy Brownie · 1,5%',
+         wall='L', z=-48.0, backdrop='stars', stamp='ПО ЗВЁЗДАМ', stamp_rgb=GOLD),
+    dict(gift='Happy Brownie', model='Shitty Coffee', title='Shitty Coffee', rarity='Happy Brownie · 2,5%',
+         wall='R', z=-58.0, backdrop=('#b1907e', '#4a3226'), stamp='$1300 / КГ', stamp_rgb=ALERT),
     dict(gift='Money Pot', model='Skibidi Toilet', title='Skibidi Toilet', rarity='Money Pot · 0,1%',
-         wall='R', z=-58.0, backdrop=('#5db1cb', '#025074'), stamp='МЕМ', stamp_rgb=ALERT),
-    dict(gift='Ice Cream', model='Poopsicle', title='Poopsicle', rarity='Ice Cream · 0,2%',
-         wall='L', z=-68.0, backdrop=('#e28ab6', '#8e054e'), stamp='НЕ ЛИЗАТЬ', stamp_rgb=ALERT),
-    dict(gift='Tama Gadget', model='Poo Byte', title='Poo Byte', rarity='Tama Gadget · 0,3%',
-         wall='R', z=-78.0, backdrop=('#95b457', '#046b06'), stamp='УБЕРИ!', stamp_rgb=ALERT),
-    dict(gift='Happy Brownie', model='Gold Nugget', title='Gold Nugget', rarity='Happy Brownie · 0,5%',
-         wall='E', z=-92.0, backdrop=('#ccab41', '#5d3b00'), stamp='ЗОЛОТО', stamp_rgb=GOLD),
+         wall='L', z=-68.0, backdrop=('#5db1cb', '#025074'), stamp='0,1%', stamp_rgb=ALERT),
+    dict(gift='Happy Brownie', model='Modern Art', title='Modern Art', rarity='Happy Brownie · 0,2%',
+         wall='R', z=-78.0, backdrop=('#e9e7e2', '#88847e'), stamp='$6,2 МЛН', stamp_rgb=ALERT),
+    dict(gift='Happy Brownie', model='Art Supplies', title='Art Supplies', rarity='Happy Brownie · 2%',
+         wall='E', z=-92.0, backdrop=('#ccab41', '#5d3b00'), stamp='€275 000', stamp_rgb=ALERT),
 ]
 # Hook corridor: other Happy Brownie models (all 50 are poop-shaped).
-CORRIDOR = ['Golgothan', 'Holy Shit', 'Poocano', 'Unicorn', 'Alien', 'Cat Scat', 'Snowman']
-# «50 моделей» fan around the first portrait
-FAN = ['Kawaii', 'Raphael', 'Homer', 'Mud King', 'Poopy Dragon', 'Octopoo', 'Hot Shit', 'Sponge Boi']
-SIDE_POOPSICLE = ('Pet Snake', 'Poopsicle', '1,5%')
-PATTERNS = ['Toilet', 'Toilet Paper']    # symbols: 48 + 48 gifts, 72 distinct of 124 (fetched 2026-11-04)
+CORRIDOR = ['Golgothan', 'Holy Shit', 'Poocano', 'Kinky Stinky', 'Gold Nugget', 'Cat Scat', 'Unicorn']

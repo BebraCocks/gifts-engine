@@ -38,15 +38,35 @@ def anim(gift, model):
     return str(G.original_file(gift, 'json') if model is None else G.model_file(gift, model, 'json'))
 
 
+@functools.lru_cache(None)
+def stars(w, h):
+    """Night sky with a diagonal Milky Way band (seeded) — the Dung Beetle's compass."""
+    rng = np.random.default_rng(2013)
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    base = GL.backdrop(w, h, '#2b3566', '#03060f')
+    d = ((xx / w - 0.5) * 0.8 + (yy / h - 0.5) * 0.6) / 0.17
+    band = np.exp(-d ** 2)[..., None]
+    nz = GL._noise(256, 21)[(yy * 256 / h).astype(int) % 256, (xx * 256 / w).astype(int) % 256][..., None]
+    sky = base + band * (60 + 70 * nz) * np.array([0.8, 0.85, 1.0], np.float32)
+    n = int(w * h / 900)
+    px, py = rng.integers(0, w, n), rng.integers(0, h, n)
+    br = rng.random(n) ** 3 * 255
+    keep = rng.random(n) < 0.35 + 0.65 * np.exp(-(((px / w - 0.5) * 0.8 + (py / h - 0.5) * 0.6) / 0.2) ** 2)
+    sky[py[keep], px[keep]] = np.maximum(sky[py[keep], px[keep]], br[keep, None])
+    return np.clip(sky, 0, 255)
+
+
 class Portrait:
     def __init__(self, gift, model, wall, z, w, h, yc, backdrop, hero=None, stamp=None, stamp_rgb=None, swap=None):
         self.gift, self.model, self.wall, self.z = gift, model, wall, z
         self.w, self.h, self.yc = w, h, yc
-        self.c0, self.c1 = backdrop
+        self.c0, self.c1 = (backdrop, None) if backdrop == 'stars' else backdrop
         self.hero, self.stamp, self.stamp_rgb = hero, stamp, stamp_rgb
         self.path = anim(gift, model)
         self.swap = anim(gift, swap) if swap else None
         self.phase = (sum((i + 1) * ord(c) for i, c in enumerate(gift + (model or ''))) % 997) / 997 * 3.0
+        if model == 'Skibidi Toilet':
+            self.phase = 0.5            # the face is on screen when the 0,1% stamp lands
         self.border, self.margin = 0.13, 0.12
 
     def corners(self):
@@ -85,7 +105,7 @@ class Portrait:
         w, h = int(self.w * ppm), int(self.h * ppm)
         b, m = int(self.border * ppm), int(self.margin * ppm)
         cw, ch = w - 2 * b, h - 2 * b
-        can = GL.backdrop(cw, ch, self.c0, self.c1).copy()
+        can = (stars(cw, ch) if self.c0 == 'stars' else GL.backdrop(cw, ch, self.c0, self.c1)).copy()
         size = int(min(cw, ch) * 0.86)
         if self.swap is not None:
             ts = HEROES_T[self.hero]['swap']
@@ -210,9 +230,11 @@ def lamps(t):
 
 # ------------------------------------------------------------------ text
 def wrap(s, size, weight, maxw):
+    if '\n' in s:
+        return tuple(s.split('\n'))
     f = fx.font(weight, size)
     lines, cur = [], ''
-    for w_ in s.split():
+    for w_ in s.split(' '):
         nxt = (cur + ' ' + w_).strip()
         if f.getlength(nxt) <= maxw or not cur:
             cur = nxt
@@ -341,24 +363,22 @@ def flies(c, cam, t):
 
 def hook_text(c, t):
     k = spring(t - HOOK['title'], f=1.5, z=0.5)
-    al, _ = env_in_out(t, HOOK['title'], HOOK_MOVE[1] - 0.65, din=0.15)
+    al, _ = env_in_out(t, HOOK['title'], HOOK_MOVE[1] - 0.6, din=0.15)
     if al > 0:
-        put(c, title_spr('Кал-лекция', 150), W / 2, 540, al, scale=0.85 + 0.15 * k)
-        a2, dy2 = env_in_out(t, HOOK['title'] + 0.3, HOOK_MOVE[1] - 0.65)
-        put(c, card('в подарках Telegram', 58, 'Semibold', GOLD, panel=False, maxw=1000, pad=(20, 10)),
-            W / 2, 660, a2, 'hook-sub', dy=dy2)
-    a3, dy3 = env_in_out(t, HOOK['real'], HOOK_MOVE[1] - 0.35)
-    put(c, card('Какашку можно подарить. Официально', 50, 'Semibold', P), W / 2, 1440, a3, 'hook-real', dy=dy3)
+        put(c, title_spr('Дерьмо', 150), W / 2, 470, al, scale=0.85 + 0.15 * k)
+        a2, dy2 = env_in_out(t, HOOK['title'] + 0.25, HOOK_MOVE[1] - 0.6)
+        put(c, title_spr('по цене золота', 92, GOLD), W / 2, 610, a2, 'hook-gold', dy=dy2)
+    a3, dy3 = env_in_out(t, HOOK['real'], HOOK_MOVE[1] - 0.45)
+    put(c, card('И эта банка — в подарках Telegram', 48, 'Semibold', P, maxw=920), W / 2, 1440, a3, 'hook-real', dy=dy3)
 
 
 SCREEN = [
-    dict(f1='Вышла в ночь на 1 апреля 2025', f2='Все 50 моделей — какашки',
-         f3='Редчайшая — Kinky Stinky · 0,1%'),
-    dict(f1='Та же редкость — 0,1%', f2='Мем из YouTube-сериала 2023 года'),
-    dict(f1='Popsicle + poop = Poopsicle', f2='Такая же — у Pet Snake, 1,5%',
-         teaser='Дальше — какашка, за которой нужно убирать'),
-    dict(f1='Тамагочи — Bandai, 1996', f2='Питомец какал. Не убрал — заболел'),
-    dict(f1='Если дарить — то золотую', f2='В золоте и самоцветах — 0,5%'),
+    dict(f1='Первое животное, которое\nориентируется по Млечному Пути', f2='Доказали в 2013 году — в планетарии'),
+    dict(f1='Отсылка к копи лювак', f2='Кофе из помёта циветты —\nдо $1300 за кг'),
+    dict(f1='Одна из редчайших — 0,1%', f2='Мем вырос из 11-секундного\nролика 2023 года',
+         teaser='Дальше — два настоящих шедевра'),
+    dict(f1='Отсылка к «Комику» Каттелана —\nбанан на скотче', f2='2024: куплен за $6,2 млн — и съеден'),
+    dict(f1='«Дерьмо художника»\nПьеро Мандзони, 1961', f2='30 г по цене золота · 2016: €275 000'),
 ]
 
 
@@ -376,96 +396,31 @@ def hero_text(c, t, k):
     if t < h['title'] - 0.1 or t > h['out'] + 0.5:
         return
     al, dy = env_in_out(t, h['title'], h['out'])
-    name = hd['title'] if k != 0 or t < h['swap'] else 'Kinky Stinky'
-    if k == 0:
-        a_sw = smooth((t - h['swap']) / 0.25)
-        put(c, title_spr(hd['title']), W / 2, 214, al * (1 - a_sw), 'title', dy=dy)
-        put(c, title_spr('Kinky Stinky'), W / 2, 214, al * a_sw, 'title2', dy=dy)
-        sub = card('Happy Brownie · 0,1%' if t >= h['swap'] else 'подарок-какашка · 50 моделей', 40, 'Medium', GOLD,
-                   panel=False, maxw=1000, pad=(20, 8))
-    else:
-        put(c, title_spr(name), W / 2, 214, al, 'title', dy=dy)
-        sub = card(hd['rarity'], 40, 'Medium', GOLD, panel=False, maxw=1000, pad=(20, 8))
+    put(c, title_spr(hd['title']), W / 2, 214, al, 'title', dy=dy)
+    sub = card(hd['rarity'], 40, 'Medium', GOLD, panel=False, maxw=1000, pad=(20, 8))
     put(c, sub, W / 2, 300, al * smooth((t - h['title'] - 0.15) / 0.3), 'subtitle', dy=dy)
-    s1, s2 = card(sc['f1'], 46, 'Semibold', P), card(sc['f2'], 46, 'Semibold', P)
+    s1, s2 = card(sc['f1'], 44, 'Semibold', P, maxw=920), card(sc['f2'], 44, 'Semibold', P, maxw=920)
     facts_out = h.get('facts_out', h['out'])
     stack(c, t, [(s1, h['f1'], facts_out), (s2, h['f2'], facts_out)], 'fact')
     if 'f3' in sc:
         stack(c, t, [(card(sc['f3'], 50, 'Semibold', P, edge=config.ALERT), h['f3'], h['out'])], 'verdict')
     if 'teaser' in sc:
-        stack(c, t, [(card(sc['teaser'], 50, 'Semibold', GOLD, edge=GOLD), h['teaser'], h['out'])], 'teaser')
+        stack(c, t, [(card(sc['teaser'], 50, 'Semibold', GOLD, edge=GOLD, maxw=940), h['teaser'], h['out'])], 'teaser')
     fa, _ = env_in_out(t, h['f1'], h['out'])
     put(c, card(f'редкость: {config.DATA_SOURCE} · {config.DATA_DATE}', 26, 'Regular', (150, 160, 150),
                 panel=False, pad=(10, 6)), W / 2, 1752, 0.85 * fa, 'source')
 
 
-FAN_PATHS = [anim('Happy Brownie', m) for m in config.FAN]
-SIDE = anim(*config.SIDE_POOPSICLE[:2])
-SYM = [Image.open(G.symbol_png('Plush Pepe', s, 256)).convert('RGBA') for s in config.PATTERNS]
-
-
-def fan(c, t):
-    """«Все 50 моделей»: eight more Happy Brownie models pop around the portrait, then leave."""
-    h = HEROES_T[0]
-    u = t - h['fan']
-    if u <= 0 or t > h['swap'] + 0.6:
-        return
-    out = smooth((t - h['swap'] + 0.1) / 0.4)
-    for j, path in enumerate(FAN_PATHS):
-        uj = u - 0.07 * j
-        if uj <= 0:
-            continue
-        ang = -math.pi / 2 + (j + 0.5) / len(FAN_PATHS) * 2 * math.pi
-        r = 470 + 30 * math.sin(j * 1.7)
-        cx, cy = W / 2 + math.cos(ang) * r * 0.95, 840 + math.sin(ang) * r * 1.05
-        sp = spring(uj, f=1.9, z=0.5) * (1 - out)
-        if sp <= 0.02:
-            continue
-        im = lottie.frame(path, t + 0.3 * j, size=190)
-        fx.over(c, fx.warp(im, cx, cy, sp), min(1.0, uj / 0.15) * (1 - out))
-
-
-def side_poopsicle(c, t):
-    """Pet Snake's Poopsicle pops in beside the second fact card (same name, other gift)."""
-    h = HEROES_T[2]
-    u = t - h['side']
-    if u <= 0 or t > h['facts_out'] + 0.4:
-        return
-    s1 = card(SCREEN[2]['f1'], 46, 'Semibold', P)
-    s2 = card(SCREEN[2]['f2'], 46, 'Semibold', P)
-    cy = 1372 + s1[0].height + 20 + s2[0].height / 2
-    cx = W / 2 + s2[0].width / 2 + 78
-    a = 1 - smooth((t - h['facts_out']) / 0.3)
-    sp = spring(u, f=1.8, z=0.5)
-    glow(c, cx, cy, 300 * sp, (255, 170, 210), 0.3 * a)
-    fx.over(c, fx.warp(lottie.frame(SIDE, t, size=150), cx, cy + 30 * (1 - sp), max(0.02, sp)), a)
-
-
 def final(c, t):
     f = FINAL
-    a, dy = env_in_out(t, f['big'], DUR + 1)
-    put(c, title_spr('72 из 124', 120, GOLD), W / 2, 250, a, 'final-big', dy=dy)
-    a2, dy2 = env_in_out(t, f['big'] + 0.35, DUR + 1)
-    put(c, card('подарков прячут в узоре унитаз или рулон бумаги', 44, 'Semibold', P, panel=False, maxw=640,
-                pad=(20, 10)), W / 2, 395, a2, 'final-sub', dy=dy2)
-    # the two pattern symbols: tile rain at the bottom
-    for j, (key, im) in enumerate(zip(('toilet', 'paper'), SYM)):
-        u = t - f[key]
-        if u <= 0:
-            continue
-        for q in range(5):
-            uq = u - 0.06 * q
-            if uq <= 0:
-                continue
-            cx = 150 + q * 195 + (j * 97)
-            cy = 1300 + j * 175 + 14 * math.sin(t * 2 + q)
-            sp = spring(uq, f=1.8, z=0.55)
-            tint = np.asarray(im, np.float32).copy()
-            tint[..., :3] = np.array(P, np.float32)
-            fx.over(c, fx.warp(Image.fromarray(tint.astype(np.uint8), 'RGBA'), cx, cy, 0.55 * sp), 0.85)
+    a, dy = env_in_out(t, f['line'], DUR + 1)
+    put(c, card('Подаренная какашка —\nне оскорбление,', 64, 'Heavy', P, panel=False, maxw=1000, pad=(20, 10)),
+        W / 2, 230, a, 'final1', dy=dy)
+    a2, dy2 = env_in_out(t, f['art'] - 0.15, DUR + 1)
+    k = spring(t - f['art'] + 0.15, f=1.6, z=0.5)
+    put(c, title_spr('а искусство', 120, GOLD), W / 2, 400, a2, scale=0.8 + 0.2 * k)
     a3, dy3 = env_in_out(t, f['cta'], DUR + 1)
-    put(c, card('Перешли тому, кому давно пора подарить какашку', 44, 'Semibold', P, edge=GOLD), W / 2, 1660,
-        a3, 'cta', dy=dy3)
+    put(c, card('Перешли тому, кто не понимает', 46, 'Semibold', P, edge=GOLD), W / 2, 1600, a3, 'cta', dy=dy3)
 
 
 # ------------------------------------------------------------------ frame
@@ -485,13 +440,9 @@ def render_at(t):
     flies(c, cam, t)
     grade(c)
     hook_text(c, t)
-    fan(c, t)
     for j in range(5):
         hero_text(c, t, j)
-    side_poopsicle(c, t)
-    a, dy = env_in_out(t, PULLBACK[0] + 0.1, FINAL['big'] - 0.3, dout=0.25)
-    put(c, title_spr('Проверь свои подарки', 76), W / 2, 250, a, 'check', dy=dy)
-    if t > FINAL['big'] - 0.2:
+    if t > FINAL['line'] - 0.2:
         final(c, t)
     e = smooth((t - FINAL['fade']) / (DUR - FINAL['fade']))
     if e > 0:

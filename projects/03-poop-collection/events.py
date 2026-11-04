@@ -2,16 +2,15 @@
 from timeline import DUR, ON, END
 from words import wt
 
-# hero k speaks in line HERO_LINE[k]; hero 3 (Poopsicle) also holds the teaser line 4
+# hero k speaks line HERO_LINE[k]; hero 2 (Skibidi) also holds the teaser line 4
 HERO_LINE = [1, 2, 3, 5, 6]
 HOOK_MOVE = (0.0, ON[1] - 0.05)
-TRANSITS = [(END[1] - 0.2, ON[2] + 0.8), (END[2] - 0.15, ON[3] + 0.75),
-            None, (END[5] + 0.3, ON[6] + 0.75)]
-AD_STOP = END[4] + 0.25                   # after the teaser «…за которой нужно убирать», before «Пу Байт»
-TRANSITS[2] = (AD_STOP + 0.07, ON[5] + 1.0)
+AD_STOP = END[4] + 0.22                   # after «А дальше — два настоящих шедевра», before «Модерн Арт»
+TRANSITS = [(END[1] - 0.25, ON[2] + 0.75), (END[2] - 0.25, ON[3] + 0.75),
+            (AD_STOP + 0.07, ON[5] + 0.95), (END[5] - 0.15, ON[6] + 0.75)]
 PULLBACK = (ON[7] - 0.1, DUR)
 
-HOOK = dict(title=0.12, real=wt(0, 'официально'))
+HOOK = dict(title=0.12, real=wt(0, 'банка'))
 
 HEROES_T = []
 for k in range(5):
@@ -20,14 +19,13 @@ for k in range(5):
     HEROES_T.append(dict(arrive=arrive, leave=leave, title=arrive - 0.45, out=leave - 0.1))
 
 H = HEROES_T
-H[0].update(f1=wt(1, 'вышла'), f2=wt(1, 'пятьдесят'), stamp=wt(1, 'какашки'), swap=wt(1, 'Редчайшая'),
-            facts_out=wt(1, 'Редчайшая') - 0.15, f3=wt(1, 'Редчайшая'), fan=wt(1, 'пятьдесят'))
-H[1].update(f1=wt(2, 'Столько'), f2=wt(2, 'Мем'), stamp=wt(2, 'Мем'))
-H[2].update(f1=wt(3, 'эскимо'), f2=wt(3, 'Такая'), stamp=wt(3, 'Лизать'), side=wt(3, 'Такая'),
-            facts_out=ON[4] - 0.2, teaser=ON[4])
-H[3].update(f1=wt(5, 'тамагочи'), f2=wt(5, 'настоящем'), stamp=wt(5, 'убрать'))
-H[4].update(f1=wt(6, 'дарить'), f2=wt(6, 'Голд'), stamp=wt(6, 'золотую'))
+H[0].update(f1=wt(1, 'первое'), f2=wt(1, 'доказали'), stamp=wt(1, 'ориентируется'))
+H[1].update(f1=wt(2, 'копи'), f2=wt(2, 'кишечник'), stamp=wt(2, 'тысячи'))
+H[2].update(f1=wt(3, 'редчайших'), f2=wt(3, 'мем'), stamp=wt(3, 'десятая'), facts_out=ON[4] - 0.2,
+            teaser=ON[4])
 H[2]['out'] = AD_STOP + 0.35                       # title/teaser stay through the ad pause
+H[3].update(f1=max(wt(5, 'банан'), TRANSITS[2][1] - 0.2), f2=wt(5, 'двадцать'), stamp=wt(5, 'съели'))
+H[4].update(f1=wt(6, 'Дерьмо'), f2=wt(6, 'Тридцать'), stamp=wt(6, 'двести'))
 
-FINAL = dict(big=wt(7, 'подарки') - 0.1, toilet=wt(7, 'унитаз'), paper=wt(7, 'рулон'), cta=ON[8], fade=DUR - 0.3)
+FINAL = dict(line=ON[7] + 0.1, art=wt(7, 'искусство'), cta=wt(7, 'Перешли'), fade=DUR - 0.3)
 LIGHT_ON = [h['arrive'] - 0.35 for h in HEROES_T]

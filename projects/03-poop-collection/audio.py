@@ -132,13 +132,11 @@ def make_mix():
     for k, h in enumerate(HEROES_T):
         add(sfx, plop(), h['stamp'] - 0.01, 0.55)
         add(sfx, click(), LIGHT_ON[k], 0.3)
-    add(sfx, chime(), HEROES_T[0]['swap'], 0.18)
-    add(sfx, chime(), HEROES_T[4]['stamp'] + 0.05, 0.3)
+    for k in (1, 3, 4):                                   # price-tag stamps: a small «ka-ching»
+        add(sfx, chime(), HEROES_T[k]['stamp'] + 0.04, 0.16)
     add(sfx, whoosh(2.5, 250, 1200), PULLBACK[0], 0.14)
-    for j, key in enumerate(('toilet', 'paper')):
-        for q in range(5):
-            add(sfx, plop() * 0.6, FINAL[key] + 0.06 * q, 0.22, pan=-0.8 + 0.4 * q)
-    add(sfx, chime(), FINAL['cta'], 0.15)
+    add(sfx, chime(), FINAL['art'] - 0.1, 0.3)
+    add(sfx, plop(), FINAL['cta'], 0.3)
     bed = hum(n) * 0.012
     sfx[:, 0] += bed
     sfx[:, 1] += bed

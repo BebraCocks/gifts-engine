@@ -44,6 +44,8 @@ python -B engine/tools/with_fish_key.py engine/tools/tts_takes.py projects/01-to
 `WITHOUT_NARRATION = True` в конфигурации ролика.
 
 `FISH_API_KEY`, `FISH_VOICE`, `FISH_TTS_MODEL` можно задавать в окружении процесса.
+Без них используются голос `7312c38557eb4fb384e3874e8e9cea67` и модель `drama-3`
+(`DEFAULT_VOICE`, `DEFAULT_MODEL` в `engine/tools/fish_tts.py`).
 `.env.example` — только справочник; автоматического чтения `.env` нет.
 Никаких ключей из соседних каталогов или настроек другого аккаунта код не ищет.
 Проверка нового ключа: `with_fish_key.py engine/tools/doctor.py --online`.

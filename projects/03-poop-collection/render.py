@@ -449,7 +449,7 @@ def cutaway(c, t):
         mix = k_in * (1 - k_out)
         g = zoom(c, 0.6 * k_in * (1 - k_out) if t < a else 0.0) if t < a else c
         u = min(max(t - a, 0.0), dur)
-        s3 = fn(u)
+        s3 = fn(t, u)
         if t > b:                                     # leave: the 3D shot pulls away into the portrait
             s3 = zoom(s3, 0.4 * k_out)
         if fn is scenes3d.frame_b:

@@ -19,13 +19,13 @@ for k in range(5):
     HEROES_T.append(dict(arrive=arrive, leave=leave, title=arrive - 0.45, out=leave - 0.1))
 
 H = HEROES_T
-H[0].update(f1=wt(1, 'первое'), f2=wt(1, 'доказали'), stamp=wt(1, 'находит'))
-H[1].update(f1=wt(2, 'Отсылка'), f2=wt(2, 'прошедший'), stamp=wt(2, 'тысячи'))
+H[0].update(f1=wt(1, 'первое'), f2=wt(1, 'находит'), stamp=wt(1, 'Млечному'))
+H[1].update(f1=wt(2, 'Копи'), f2=wt(2, 'прошедший'), stamp=wt(2, 'тысячи'))
 H[2].update(f1=wt(3, 'редкость'), f2=wt(3, 'мем'), stamp=wt(3, 'десятая'), facts_out=ON[4] - 0.2,
             teaser=ON[4])
 H[2]['out'] = AD_STOP + 0.35                       # title/teaser stay through the ad pause
-H[3].update(f1=max(wt(5, 'банан'), TRANSITS[2][1] - 0.2), f2=wt(5, 'двадцать'), stamp=wt(5, 'съели'))
-H[4].update(f1=wt(6, 'банка'), f2=wt(6, 'Тридцать'), stamp=wt(6, 'двести'))
+H[3].update(f1=max(wt(5, 'банан'), TRANSITS[2][1] - 0.2), f2=wt(5, 'купили'), stamp=wt(5, 'съели'))
+H[4].update(f1=wt(6, 'банка'), f2=wt(6, 'тридцать'), stamp=wt(6, 'двести'))
 
 FINAL = dict(line=ON[7] + 0.1, art=wt(7, 'искусство'), cta=wt(7, 'Перешли'), fade=DUR - 0.3)
 LIGHT_ON = [h['arrive'] - 0.35 for h in HEROES_T]

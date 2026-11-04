@@ -10,18 +10,18 @@ def _stop(k):
     return max(END[k], min(END[k] + 0.1 + RAMP / 2, ON[k + 1] - RAMP / 2 - 0.02))
 
 
-AD_STOPS = [_stop(3), _stop(10)]          # after the VPN tease (~28 s) and after the gift drop (~89 s output)
+AD_STOPS = [_stop(4), _stop(12)]          # after the gift tease (~30 s) and after "there are rarer models" (~92 s out)
 
 
 def _mid(k):
     return (END[k - 1] + ON[k]) / 2
 
 
-# shot boundaries in content time: (name, start, end)
-CUTS = [0.0, _mid(1), ON[2] - 0.15, _mid(3), AD_STOPS[0], _mid(5), _mid(6), _mid(7), _mid(8), _mid(9),
-        _mid(10), AD_STOPS[1], _mid(12), _mid(13), DUR]
-NAMES = ['S01_desk', 'S02_office', 'S03_past', 'S04_vault', 'S05_court', 'S06_roof', 'S07_ipcity',
-         'S08_planes', 'S09_legend', 'S10_ton', 'S11_giftrain', 'S12_gallery', 'S13_laser', 'S14_final']
+SOLD_SPLIT = wt(9, 'многие') - 0.12
+CUTS = [0.0, _mid(1), _mid(2), _mid(3), _mid(4), AD_STOPS[0], _mid(6), _mid(7), _mid(8), SOLD_SPLIT, _mid(9),
+        _mid(10), _mid(11), AD_STOPS[1], _mid(14), _mid(15), DUR]
+NAMES = ['S01_desk', 'S02_office', 'S05_court', 'S06_roof', 'S04_vault', 'S07_ipcity', 'S09_legend', 'S15_phone',
+         'S11_giftrain', 'S10_ton', 'S16_hacker', 'S17_havana', 'S18_arena', 'S19_crypto', 'S13_laser', 'S14_final']
 SHOTS = [(n, CUTS[i], CUTS[i + 1]) for i, n in enumerate(NAMES)]
 
 
@@ -31,27 +31,28 @@ def shot_at(t):
             return n, a, b
 
 
-# key word moments (content seconds)
 E = dict(
-    war=wt(1, 'стал'), spotty=wt(2, 'Спотти'), said=wt(2, 'Говорят'), durov1=wt(2, 'Дуров'),
-    left=wt(3, 'ушёл'), telegram1=wt(3, 'Телеграм'), past=wt(3, 'прошлом'),
-    today=wt(4, 'сегодня'), gift1=wt(4, 'подарок'), vpn=wt(4, 'VPN'), coinc=wt(4, 'Совпадение'), notat=wt(4, 'Вовсе'),
-    april=wt(5, 'Апрель'), y2018=wt(5, '2018'), keys=wt(5, 'ключи'), court=wt(5, 'суд'), blocks=wt(5, 'блокирует'),
-    pub=wt(6, 'публикует'), hood=wt(6, 'капюшоне'), sign=wt(6, 'Подпись'), resist=wt(6, 'сопротивление'),
-    rkn=wt(7, 'Роскомнадзор'), millions=wt(7, 'миллионы'), fall=wt(7, 'падают'), tg=wt(7, 'телега'), proxy=wt(7, 'прокси'),
-    planes=wt(8, 'самолётики'), models8=wt(8, 'моделей'), proxyserver=wt(8, 'Proxy'), anon=wt(8, 'Anonymous'),
-    lift=wt(9, 'снимают'), legend=wt(9, 'легендой'),
-    token=wt(10, 'токен'), arrest=wt(10, 'задержания'), france=wt(10, 'Франции'), avatars=wt(10, 'аватарки'),
-    gifts24=wt(11, 'подарки'), year=wt(11, 'год'), him=wt(11, 'он'), next=wt(11, 'интересное'),
-    upgrade=wt(12, 'улучшать'), dozens=wt(12, 'десятки'), che=wt(12, 'Че'), sparta=wt(12, 'Спартак'),
-    rambo=wt(12, 'Рэмбо'), satoshi=wt(12, 'Сатоши'),
-    rare=wt(13, 'редкая'), imposter=wt(13, 'Imposter'), thousand=wt(13, 'тысячу'),
-    drawing=wt(14, 'Рисунок'), survived=wt(14, 'пережил'), collect=wt(14, 'коллекционным'),
-    resist2=wt(14, 'Сопротивление'), cont=wt(14, 'продолжается'),
+    war=wt(1, 'стал'), spotty=wt(2, 'Спотти'), said=wt(2, 'говорят'), durov1=wt(2, 'Дуров'),
+    april=wt(3, 'В'), y2018=wt(3, 'восемнадцатом'), keys=wt(3, 'ключи'), court=wt(3, 'шифрования'),
+    blocks=wt(3, 'заблокировали'),
+    pub=wt(4, 'А Дуров'), hood=wt(4, 'капюшон'), sign=wt(4, 'Цифровое'), resist=wt(4, 'сопротивление'),
+    today=wt(5, 'Сегодня'), gift1=wt(5, 'подарок'), models5=wt(5, 'моделей'), story=wt(5, 'история'),
+    vpn=wt(6, 'VPN'), hello=wt(6, 'привет'), fall=wt(6, 'блокировке'), tg=wt(6, 'Телега'), proxy=wt(6, 'прокси'),
+    lift=wt(7, 'сняли'), legend=wt(7, 'легендой'), token=wt(7, 'токен'),
+    aug=wt(8, 'Четырнадцатого'), wrote=wt(8, 'написал'), hour=wt(8, 'час'), among=wt(8, 'Среди'), hooddog=wt(8, 'капюшоне'),
+    sold=wt(9, 'раскупили'), seconds=wt(9, 'секунды'), many=wt(9, 'многие'), first=wt(9, 'впервые'), gifts9=wt(9, 'подарки'),
+    anon=wt(10, 'Anonymous'), hacker=wt(10, 'хакер'), mask=wt(10, 'маске'), days=wt(10, 'дней'),
+    che=wt(11, 'Че'), flag=wt(11, 'флагом'), cigar=wt(11, 'сигарой'), rev=wt(11, 'революционер'),
+    sparta=wt(12, 'Спартак'), glad=wt(12, 'гладиатор'), leader=wt(12, 'вождь'), rebellion=wt(12, 'восстания'),
+    rarer=wt(13, 'реже'),
+    satoshi=wt(14, 'Сатоши'), craft=wt(14, 'крафтовая'), goldw=wt(14, 'золотом'), btc=wt(14, 'биткоином'),
+    rare=wt(15, 'редкая'), imposter=wt(15, 'Imposter'), thousand=wt(15, 'тысячу'),
+    drawing=wt(16, 'Рисунок'), survived=wt(16, 'пережил'), legend2=wt(16, 'легендой'), resist2=wt(16, 'Сопротивление'),
+    cont=wt(16, 'продолжается'),
 )
+E = {k: float(v) for k, v in E.items()}
 
 if __name__ == '__main__':
-    print('ads', [round(a, 2) for a in AD_STOPS])
+    print('ads', [round(a, 2) for a in AD_STOPS], 'out ~', round(AD_STOPS[0], 1), round(AD_STOPS[1] + 6.115, 1))
     for n, a, b in SHOTS:
         print(f'{n:13s} {a:7.2f} {b:7.2f} {b-a:5.2f}')
-    print({k: round(v, 2) for k, v in E.items()})

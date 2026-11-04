@@ -148,7 +148,15 @@ def S09_legend(sh, t0, t1):
     cam = camera(26, dof=8.0)
     sh.track(cam, 'location', 'rotation_euler')
     sh.track(cam.data.dof, 'focus_distance')
-    lift, leg = E['lift'], E['legend']
+    coin = empty('coin', (0, 10.5, 6.5))
+    crys = mat((0.25, 0.6, 1.0), metal=0.6, rough=0.12, emit=(0.2, 0.55, 1.0), emit_strength=0.8, coat=1.0)
+    cyl(1.0, 0.2, (0, 0, 0), (PI / 2, 0, 0), m=crys, parent=coin, verts=64, bevel=0.06)
+    torus(1.0, 0.05, (0, 0, 0), (PI / 2, 0, 0), m=emissive((0.6, 0.85, 1.0), 5.0), parent=coin)
+    for side in (-1, 1):
+        card(A / 'hooded_plain.png', 1.2, (0, side * 0.11, -0.6), (PI / 2, 0, 0 if side < 0 else PI), emit=0.4, parent=coin)
+    text('REDO', 0.32, (0, -0.12, -0.78), UP, m=emissive((1, 1, 1), 2.0), extrude=0.01, parent=coin)
+    sh.track(coin, 'location', 'rotation_euler', 'scale')
+    lift, leg, tok = E['lift'], E['legend'], E['token']
 
     def update(t):
         u = smooth(seg(t, lift - 0.1, lift + 0.8))
@@ -156,10 +164,15 @@ def S09_legend(sh, t0, t1):
         lr.node_tree.nodes['Emission'].inputs[1].default_value = 6.0 * (1 - u)
         lg.node_tree.nodes['Emission'].inputs[1].default_value = 7.0 * u
         rim.data.energy = 2500 + 2500 * smooth(seg(t, leg - 0.3, leg + 0.4))
+        cu = spring(seg(t, tok - 0.4, tok + 0.6), 1.4, 0.5)
+        coin.scale = (max(cu, 1e-3),) * 3
+        coin.location = (0.9, 7.4, 6.9 + 0.15 * math.sin(t * 2))
+        coin.rotation_euler = (0, 0, (t - tok) * 2.2)
         keys = [(t0, (0.2, -4.5, 1.2)), (lift + 0.6, (0.1, -1.0, 1.4)), (leg - 0.6, (1.6, 2.4, 1.3)),
-                (t1, (1.1, 3.4, 1.1))]
+                (tok, (1.2, 2.0, 2.2)), (t1, (0.6, 1.0, 2.8))]
         p = path(t, keys)
-        tgt = path(t, [(t0, (0, 2, 1.3)), (lift + 0.4, (0, 8, 3.0)), (leg, (0, 8, 4.3)), (t1, (0, 8, 4.5))])
+        tgt = path(t, [(t0, (0, 2, 1.3)), (lift + 0.4, (0, 8, 3.0)), (leg, (0, 8, 4.3)), (tok + 0.3, (0.9, 8.5, 5.3)),
+                       (t1, (0.8, 8.5, 5.2))])
         look(cam, p, tgt, -0.06 * smooth(seg(t, leg - 1, t1)))
         cam.data.dof.focus_distance = (Vector(tgt) - p).length
     sh.update = update
@@ -239,7 +252,7 @@ def S10_ton(sh, t0, t1):
             R = 14
             x, y = math.sin(ang) * R, math.cos(ang) * R - 4
             z = 0.6 + row * 1.25 + (0.6 if col % 2 else 0)
-            c = card(A / f'avatar_{r.randint(0, 3)}.png', 1.05, (x, y, z), (PI / 2, 0, -ang), emit=0.0)
+            c = card(A / f'avatar_{r.randint(0, 3)}.png', 1.05, (x, y, z), (PI / 2, 0, -ang), emit=0.01)
             m = c.data.materials[0]
             sock = m.node_tree.nodes['Principled BSDF'].inputs['Emission Strength']
             avs.append((sock, math.hypot(col, row - 4) + r.random() * 0.6))
@@ -249,25 +262,17 @@ def S10_ton(sh, t0, t1):
     cam = camera(28, dof=5.0)
     sh.track(cam, 'location', 'rotation_euler')
     sh.track(cam.data.dof, 'focus_distance')
-    tok, arr, fr, ava = E['token'], E['arrest'], E['france'], E['avatars']
+    ava = E['many']
 
     def update(t):
-        coin.rotation_euler = (0.15 * math.sin(t), 0, (t - t0) * 2.4 + 6 * ease_out(seg(t, tok - 0.3, tok + 0.6)))
-        k = 0.2 + 0.8 * spring(seg(t, t0, t0 + 1.0), 1.5, 0.5)
-        coin.scale = (k, k, k)
-        coin.location = (0, 0, 2.2 + 0.12 * math.sin(t * 1.6))
-        u_in = ease_out(seg(t, arr - 0.7, arr + 0.1))
-        u_out = ease_in(seg(t, fr + 0.7, fr + 1.3))
-        news.location = (lerp(3.2, 0.25, u_in) - 4.5 * u_out, -2.5, 0.75 + 0.05 * math.sin(t * 2))
-        news.rotation_euler = (PI / 2 + 0.06 * math.sin(t * 1.7), 0.08 * (1 - u_in) - 0.3 * u_out, -0.25 * (1 - u_in) + 0.05 * math.sin(t * 1.3))
-        wave = (t - ava + 0.6) * 9
+        coin.scale = (1e-3,) * 3
+        news.location = (0, -40, -20)
+        wave = (t - ava + 0.9) * 7
         for sock, dist in avs:
             sock.default_value = 1.6 * smooth(clamp(wave - dist))
-        keys = [(t0, (0.8, -4.2, 2.6)), (tok + 0.5, (-0.6, -3.3, 2.3)), (arr - 0.3, (0.2, -5.0, 2.0)),
-                (fr + 0.6, (0.1, -5.3, 2.1)), (t1, (0.0, -12.5, 4.2))]
+        keys = [(t0, (0.3, 5.5, 4.2)), (E['first'], (0.1, 2.0, 5.0)), (t1, (0.0, -6.5, 6.0))]
         p = path(t, keys)
-        tgt = path(t, [(t0, (0, 0, 2.2)), (tok + 0.5, (0, 0, 2.1)), (arr, (0.2, -2.5, 1.95)), (fr + 0.6, (0.2, -2.5, 2.0)),
-                       (ava - 0.2, (0, 2, 3.5)), (t1, (0, 6, 5.0))])
+        tgt = path(t, [(t0, (0, 10, 5.0)), (t1, (0, 9, 5.2))])
         look(cam, p, tgt, 0.05 * math.sin(t * 0.6))
         cam.data.dof.focus_distance = (Vector(tgt) - p).length
     sh.update = update
@@ -306,7 +311,7 @@ def S11_giftrain(sh, t0, t1):
     cam = camera(28, dof=5.0)
     sh.track(cam, 'location', 'rotation_euler')
     sh.track(cam.data.dof, 'focus_distance')
-    g24, yr, him, nxt = E['gifts24'], E['year'], E['him'], E['next']
+    g24, yr, him, nxt = t0 - 0.9, t0 - 1.0, E['sold'] - 0.1, t1 + 5
 
     def drop(t, start, h0=9.0):
         """Fall with gravity, then two damped bounces. Returns height above floor."""
@@ -343,10 +348,9 @@ def S11_giftrain(sh, t0, t1):
         W.default_value = dim
         key.data.energy = 1200 * dim
         sp.data.energy = 2500 * opn
-        keys = [(t0, (0, -12, 6.5)), (g24, (2.2, -8.5, 3.6)), (yr, (0.8, -5.5, 2.5)), (him + 0.3, (0.2, -4.0, 2.1)),
-                (t1, (0.0, -2.9, 2.0))]
+        keys = [(t0, (2.0, -8.0, 3.8)), (him + 0.4, (0.6, -5.0, 2.4)), (t1, (0.0, -3.4, 2.0))]
         p = path(t, keys)
-        tgt = path(t, [(t0, (0, 2, 1.0)), (yr, (0, 0, 1.2)), (t1, (0, 0, 1.9))])
+        tgt = path(t, [(t0, (0, 1, 1.2)), (t1, (0, 0, 1.9))])
         look(cam, p, tgt, 0.04 * math.sin(t))
         cam.data.dof.focus_distance = (Vector(tgt) - p).length
     sh.update = update

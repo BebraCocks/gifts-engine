@@ -11,7 +11,7 @@ TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
 HAS_NARRATION = not config.WITHOUT_NARRATION and all(p.is_file() for p in TAKES)
 TARGET_DUR = 107.7          # content seconds; + 2 x 6.115 s of RubUp = 119.93 s output
 LEAD = 0.7                  # the hand starts drawing before the first word
-EXTRA = {0: 0.8, 1: 0.3, 2: 0.5, 3: 0.2, 10: 0.2}   # extra breath after these lines (zero-based)
+EXTRA = {0: 0.5, 4: 0.2, 7: 0.2, 8: 0.25, 9: 0.25, 10: 0.25, 11: 0.3, 13: 0.25, 14: 0.25}
 
 
 def _speech_span(path):

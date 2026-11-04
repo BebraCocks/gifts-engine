@@ -226,9 +226,10 @@ def cue_drive(T, t0, t1):
 def build():
     T = Track(OUT_DUR + 2)
     names = {n: (a, b) for n, a, b in SHOTS}
-    cue_playful(T, 0.0, out_time(AD_STOPS[0]) - 0.05)
-    cue_tension(T, out_time(AD_STOPS[0] + 0.01) - 0.2, out_time(names['S09_legend'][0]))
-    cue_rise(T, out_time(names['S09_legend'][0]), out_time(AD_STOPS[1]))
+    cue_playful(T, 0.0, out_time(names['S05_court'][0]) + 0.1)
+    cue_tension(T, out_time(names['S05_court'][0]) - 0.1, out_time(AD_STOPS[0]) - 0.05)
+    cue_rise(T, out_time(AD_STOPS[0] + 0.01) - 0.2, out_time(names['S16_hacker'][0]) + 0.1)
+    cue_drive(T, out_time(names['S16_hacker'][0]) - 0.1, out_time(AD_STOPS[1]) - 0.05)
     cue_drive(T, out_time(AD_STOPS[1] + 0.01) - 0.2, OUT_DUR)
     x = reverb(T.x[:int(OUT_DUR * SR)], 1.8, 0.25)
     x /= np.abs(x).max() + 1e-9

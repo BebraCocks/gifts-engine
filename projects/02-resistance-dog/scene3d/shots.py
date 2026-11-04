@@ -329,11 +329,11 @@ def S02_office(sh, t0, t1):
         dog.scale = (dog_scale[0] * k, dog_scale[1] * k, 1)
         kf = spring(seg(t, said - 0.1, said + 0.9), 1.6, 0.45)
         fig.scale = (fig_scale[0] * max(kf, 1e-3), fig_scale[1] * max(kf, 1e-3), 1)
-        keys = [(t0, (0.15, -10.5, 1.6)), (t0 + 1.0, (0.1, -6.0, 1.45)), (sp, (-0.7, -1.9, 1.3)),
-                (said, (0.0, -1.9, 1.4)), (t1 - 0.35, (1.3, -2.6, 1.55)), (t1, (2.0, -2.5, 1.6))]
+        keys = [(t0, (0.1, -7.5, 1.5)), (sp + 0.3, (-0.7, -1.9, 1.3)), (said + 0.4, (0.0, -1.9, 1.4)),
+                (t1 - 0.3, (1.3, -2.6, 1.55)), (t1, (2.0, -2.5, 1.6))]
         p = path(t, keys)
-        tgt = path(t, [(t0, (-0.6, 2.0, 1.1)), (sp, (-1.85, 0.0, 1.35)), (said + 0.6, (-0.6, 0.6, 1.15)),
-                       (t1 - 0.35, (-0.2, 1.0, 1.2)), (t1, (3.5, 1.0, 1.2))])
+        tgt = path(t, [(t0, (-1.2, 1.0, 1.2)), (sp, (-1.85, 0.0, 1.35)), (said + 0.6, (-0.6, 0.6, 1.15)),
+                       (t1 - 0.3, (-0.2, 1.0, 1.2)), (t1, (3.5, 1.0, 1.2))])
         look(cam, p, tgt, 0.05 * math.sin(t * 0.8))
     sh.update = update
 
@@ -458,7 +458,7 @@ def S04_vault(sh, t0, t1):
     cam = camera(28, dof=4.0)
     sh.track(cam, 'location', 'rotation_euler')
     sh.track(cam.data.dof, 'focus_distance')
-    g1, vpn, co, nt = E['gift1'], E['vpn'], E['coinc'], E['notat']
+    g1, vpn, co, nt = E['gift1'], E['models5'], E['story'] - 0.3, E['story']
 
     def update(t):
         dim = 1 - 0.7 * smooth(seg(t, nt - 0.2, nt + 0.6))
@@ -468,7 +468,7 @@ def S04_vault(sh, t0, t1):
         spB.data.energy = 2200 * smooth(seg(t, vpn - 0.3, vpn + 0.2))
         for s, p0, i in bubbles:
             s.location = (p0.x + 0.2 * math.sin(t * 0.4 + i), p0.y, p0.z + 0.35 * math.sin(t * 0.6 + i * 0.9))
-        keys = [(t0, (-3.5, -10.5, 7.5)), (t0 + 1.0, (-0.9, -4.6, 2.2)), (g1 + 1.0, (0.5, -3.9, 1.75)),
+        keys = [(t0, (-3.5, -10.5, 7.5)), (t0 + 0.9, (-0.9, -4.6, 2.2)), (g1 + 0.7, (0.5, -3.9, 1.75)),
                 (vpn - 0.4, (2.3, -1.4, 1.75)), (co, (2.7, -0.4, 1.6)), (t1, (3.05, 0.75, 1.5))]
         p = path(t, keys)
         tgt = path(t, [(t0, (0, 0, 0.6)), (g1 + 0.9, (0.1, 0, 1.3)), (vpn - 0.2, (3.4, 2.4, 1.35)),
@@ -549,7 +549,7 @@ def S05_court(sh, t0, t1):
     ap, keys_t, court, blk = E['april'], E['keys'], E['court'], E['blocks']
 
     def update(t):
-        a = smooth(seg(t, court - 0.5, blk - 0.15))
+        a = smooth(seg(t, blk - 1.1, blk - 0.35))
         fall = ease_in(seg(t, blk - 0.32, blk))
         ang = -1.2 * a * (1 - fall) + 0.08 * math.sin(clamp(t - blk, 0, 1) * 18) * math.exp(-6 * max(0, t - blk)) * (t > blk)
         piv.rotation_euler = (0, ang, 0)
@@ -560,14 +560,13 @@ def S05_court(sh, t0, t1):
         red.data.energy = 1500 * hit * (0.6 + 0.4 * math.sin((t - blk) * 9))
         warm.data.energy = 700 * (1 - 0.65 * hit)
         kspot.data.energy = 1200 * (1 - 0.8 * hit)
-        keys = [(t0, (-2.75, 3.6, 3.3)), (ap + 0.9, (-2.5, 3.2, 3.15)), (ap + 2.6, (-1.0, -3.6, 2.6)),
-                (keys_t - 0.4, (1.0, -1.6, 2.1)), (keys_t + 0.8, (1.6, -0.2, 1.95)),
-                (court, (1.3, 1.6, 1.5)), (t1, (1.15, 1.95, 1.25))]
+        keys = [(t0, (-2.75, 3.6, 3.3)), (ap + 0.9, (-2.5, 3.2, 3.15)), (ap + 2.2, (-0.6, -2.8, 2.4)),
+                (keys_t, (1.4, -0.4, 1.95)), (blk - 0.5, (1.3, 1.6, 1.5)), (t1, (1.15, 1.95, 1.25))]
         p = path(t, keys)
-        tgt = path(t, [(t0, (-2.6, 6.0, 3.15)), (ap + 1.0, (-2.6, 6.0, 3.0)), (ap + 2.6, (0.5, 3.5, 1.7)),
-                       (keys_t, (2.4, 1.2, 1.75)), (court - 0.2, (0.8, 4.0, 2.0)), (t1, (0.7, 4.0, 2.0))])
+        tgt = path(t, [(t0, (-2.6, 6.0, 3.15)), (ap + 1.0, (-2.6, 6.0, 3.0)), (ap + 2.2, (1.5, 2.5, 1.7)),
+                       (keys_t, (2.4, 1.2, 1.75)), (blk - 0.6, (0.8, 4.0, 2.0)), (t1, (0.7, 4.0, 2.0))])
         p += shake(t, 0.06 * math.exp(-5 * max(0, t - blk)) * (t >= blk), 31)
-        look(cam, p, tgt, 0.0, lens=lerp(30, 22, smooth(seg(t, court - 0.6, court + 0.3))))
+        look(cam, p, tgt, 0.0, lens=lerp(30, 22, smooth(seg(t, blk - 1.0, blk - 0.3))))
         cam.data.dof.focus_distance = (Vector(tgt) - p).length
     sh.update = update
 
@@ -708,16 +707,20 @@ def S07_ipcity(sh, t0, t1):
         torus(1.9, 0.05, (0, 30 + k * 1.8, 1.9), (PI / 2, 0, 0), m=ring_m)
     torus(2.15, 0.25, (0, 29.0, 1.9), (PI / 2, 0, 0), m=mat((0.2, 0.25, 0.35), metal=0.6, rough=0.3))
     end_glow = plane((5, 5), (0, 50.9, 1.9), UP, m=emissive((0.8, 0.92, 1.0), 8.0))
+    cyl(1.0, 0.25, (0, 28.6, 4.55), m=mat((0.15, 0.2, 0.3), metal=0.7, rough=0.3), bevel=0.05)
+    torus(1.0, 0.04, (0, 28.6, 4.68), m=emissive((0.3, 0.75, 1.0), 6.0))
+    blob((0, 28.6, 4.69), 0.7, 0.5)
+    sh.anchor('m_vpn', (0, 28.6, 4.69 + 0.75), 0.75)
     sun((0.9, 0.0, 0.6), 0.5, (0.5, 0.6, 1.0))
     red = area((0, 10, 14), (0, 10, 0), 0.0, 30, (1.0, 0.1, 0.1))
     sh.track(red.data, 'energy')
     cam = camera(26)
     sh.track(cam, 'location', 'rotation_euler')
     sh.track(cam.data, 'lens')
-    rkn, mil, fall_t, tg, px = E['rkn'], E['millions'], E['fall'], E['tg'], E['proxy']
+    rkn, mil, fall_t, tg, px = t0 + 0.2, E['hello'], E['fall'], E['tg'], E['proxy']
 
     def plane_pos(t):
-        u = seg(t, tg - 0.9, t1)
+        u = seg(t, tg - 0.9, t1 + 0.4)
         y = lerp(-8, 48, u ** 1.6)
         return Vector((0.35 * math.sin(u * 7), y, 1.4 + 0.35 * math.sin(u * 5) + 0.5 * smooth(seg(y, 20, 30))))
 
@@ -734,11 +737,12 @@ def S07_ipcity(sh, t0, t1):
         pp.location = plane_pos(t)
         u = seg(t, tg - 0.9, t1)
         pp.rotation_euler = (0.1 * math.sin(u * 9), 0.35 * math.sin(u * 7 + 0.5), -0.2 * math.cos(u * 7))
-        chase = smooth(seg(t, tg - 0.8, tg + 0.1))
-        keys = [(t0, (-15, -22, 17)), (mil, (-10, -14, 10)), (fall_t + 0.8, (-4.5, -7.5, 3.4)),
-                (tg - 0.8, (-1.4, -9.0, 2.2))]
-        p1 = path(min(t, tg - 0.8), keys)
-        tg1 = path(min(t, tg - 0.8), [(t0, (0, 6, 0)), (fall_t, (1, 4, 1.5)), (tg - 0.8, (0, -2, 1.3))])
+        chase = smooth(seg(t, tg - 0.5, tg + 0.3))
+        keys = [(t0, (2.2, 23.6, 5.4)), (E['vpn'] + 0.6, (1.4, 24.6, 5.2)), (mil + 0.5, (-4.0, 12.0, 8.0)),
+                (fall_t + 0.6, (-9.0, -6.0, 9.0)), (tg - 0.5, (-2.5, -9.5, 3.0))]
+        p1 = path(min(t, tg - 0.5), keys)
+        tg1 = path(min(t, tg - 0.5), [(t0, (0, 28.6, 5.4)), (mil, (0, 28.6, 5.0)), (fall_t + 0.4, (0, 12, 1.5)),
+                                       (tg - 0.5, (0, -3, 1.3))])
         pp_ = plane_pos(t)
         p2 = pp_ + Vector((0.12, -1.15, 0.32))
         tg2 = pp_ + Vector((0, 4.0, -0.25))
@@ -749,3 +753,6 @@ def S07_ipcity(sh, t0, t1):
 
 
 from shots_b import S08_planes, S09_legend, S10_ton, S11_giftrain, S12_gallery, S13_laser  # noqa: E402,F401
+
+
+from shots_c import S15_phone, S16_hacker, S17_havana, S18_arena, S19_crypto  # noqa: E402,F401

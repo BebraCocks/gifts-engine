@@ -85,18 +85,18 @@ def plate_index(t, shot):
 
 
 # ------------------------------------------------------------------ gifts (Lottie, full forward loop)
-MODELS = {'gift_main': None, 'gift_drop': None, 'gift_vpn': 'VPN', 'm_proxy': 'Proxy Server', 'm_anon': 'Anonymous',
-          'm_che': 'Che Guevara', 'm_sparta': 'Spartacus', 'm_rambo': 'Rambo', 'm_satoshi': 'Satoshi',
-          'm_imposter': 'Imposter', 'fin0': 'VPN', 'fin1': 'Proxy Server', 'fin2': 'Anonymous', 'fin3': 'Che Guevara',
-          'fin4': 'Imposter', 'statue': None}
-APPEAR = {'gift_main': E['gift1'] - 0.15, 'gift_vpn': E['vpn'] - 0.1, 'm_proxy': E['proxyserver'] - 0.1,
-          'm_anon': E['anon'] - 0.1, 'gift_drop': E['him'] - 0.05, 'm_che': E['che'] - 0.15, 'm_sparta': E['sparta'] - 0.15,
-          'm_rambo': E['rambo'] - 0.15, 'm_satoshi': E['satoshi'] - 0.15, 'm_imposter': E['imposter'] - 0.2,
-          'fin0': E['drawing'] + 0.2, 'fin1': E['survived'] + 0.1, 'fin2': E['survived'] + 0.8,
-          'fin3': E['collect'] - 0.4, 'fin4': E['collect'] + 0.3, 'statue': -10.0}
-LABEL = {'gift_vpn': 'VPN', 'm_proxy': 'Proxy Server', 'm_anon': 'Anonymous', 'm_che': 'Che Guevara',
-         'm_sparta': 'Spartacus', 'm_rambo': 'Rambo', 'm_satoshi': 'Satoshi', 'm_imposter': 'Imposter · 0,1%',
-         'gift_main': 'Resistance Dog', 'gift_drop': 'Resistance Dog'}
+MODELS = {'gift_main': None, 'gift_drop': None, 'statue': None, 'gift_vpn': 'VPN', 'm_vpn': 'VPN',
+          'm_anon': 'Anonymous', 'm_che': 'Che Guevara', 'm_sparta': 'Spartacus', 'm_satoshi': 'Satoshi',
+          'm_imposter': 'Imposter', 'fin0': 'VPN', 'fin1': 'Anonymous', 'fin2': 'Che Guevara', 'fin3': 'Spartacus',
+          'fin4': 'Satoshi'}
+APPEAR = {'gift_main': E['gift1'] - 0.15, 'gift_vpn': E['models5'] - 0.1, 'm_vpn': AD_STOPS[0] - 1.0, 'statue': -10.0,
+          'gift_drop': E['sold'] - 0.05, 'm_anon': E['anon'] - 0.2, 'm_che': E['che'] - 0.2, 'm_sparta': E['sparta'] - 0.2,
+          'm_satoshi': E['satoshi'] - 0.2, 'm_imposter': E['imposter'] - 0.2,
+          'fin0': E['drawing'] + 0.2, 'fin1': E['survived'] + 0.1, 'fin2': E['survived'] + 0.7,
+          'fin3': E['legend2'] - 0.2, 'fin4': E['legend2'] + 0.4}
+LABEL = {'gift_vpn': 'VPN', 'm_vpn': 'VPN', 'm_anon': 'Anonymous', 'm_che': 'Che Guevara', 'm_sparta': 'Spartacus',
+         'm_satoshi': 'Satoshi · крафт', 'm_imposter': 'Imposter · 0,1%', 'gift_main': 'Resistance Dog',
+         'gift_drop': 'Resistance Dog'}
 
 
 @functools.lru_cache(maxsize=None)
@@ -167,6 +167,9 @@ def gold(im):
     return Image.fromarray(np.dstack([rgb, a[..., 3]]).astype(np.uint8), 'RGBA')
 
 
+PENDING_LABELS = []
+
+
 def draw_gifts(c, t, an):
     for key in MODELS:
         if key not in an:
@@ -189,11 +192,10 @@ def draw_gifts(c, t, an):
             spr = gold(spr)
         paste(c, spr, x, y - 0.12 * px)
         lab = LABEL.get(key)
-        if lab and key not in ('fin0', 'fin1', 'fin2', 'fin3', 'fin4'):
+        if lab and not key.startswith('fin'):
             la = smooth(seg(u, 0.25, 0.55))
             if la > 0:
-                li = label_img(lab, 38 if r > 120 else 30)
-                paste(c, li, x, y + 1.02 * r + 30 - 14 * (1 - la), la)
+                PENDING_LABELS.append((label_img(lab, 38 if r > 120 else 30), x, y - 1.5 * r * k - 34 + 14 * (1 - la), la))
 
 
 # ------------------------------------------------------------------ hook drawing (projected onto the paper)
@@ -245,6 +247,95 @@ def draw_paper(c, t, an, final=False):
         paste(c, hand, sx + hs * (0.5 - 0.06), sy + hs * (0.5 - 0.94), 1.0)
 
 
+# ------------------------------------------------------------------ Durov's post on the phone screen (illustration)
+def _font(w, size):
+    return ImageFont.truetype(str(FONT_DIR / f'SF-Pro-Text-{w}.otf'), size)
+
+
+@functools.lru_cache(maxsize=4)
+def _gift_icon(name, size):
+    p = gifts_api.original_png(name, 256)
+    return Image.open(p).convert('RGBA').resize((size, size), Image.LANCZOS)
+
+
+def post_screen(t):
+    """Phone screen 600x1300: a channel post (paraphrase, not a verbatim quote) + countdown."""
+    Wd, Hd = 600, 1300
+    im = Image.new('RGBA', (Wd, Hd), (18, 25, 34, 255))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, Wd, 150), fill=(26, 36, 48, 255))
+    d.ellipse((30, 45, 110, 125), fill=(64, 120, 190, 255))
+    d.text((70, 85), 'Д', font=_font('Heavy', 44), fill=(255, 255, 255, 255), anchor='mm')
+    d.text((130, 62), 'Канал Дурова', font=_font('Bold', 34), fill=(240, 244, 248, 255))
+    d.text((130, 104), '14 августа 2025', font=_font('Regular', 24), fill=(140, 160, 180, 255))
+    wr, hr, am = E['wrote'], E['hour'], E['among']
+    u = smooth(seg(t, wr - 0.1, wr + 0.45))
+    if u > 0:
+        y0 = int(330 + 260 * (1 - u))
+        bub = Image.new('RGBA', (Wd, Hd), (0, 0, 0, 0))
+        bd = ImageDraw.Draw(bub)
+        bd.rounded_rectangle((30, y0, 570, y0 + 760), radius=34, fill=(33, 46, 62, 255))
+        bd.text((60, y0 + 30), 'иллюстрация поста', font=_font('Regular', 20), fill=(120, 140, 160, 255))
+        bd.text((60, y0 + 70), 'Через час —', font=_font('Heavy', 46), fill=(255, 255, 255, 255))
+        bd.text((60, y0 + 128), 'новые подарки', font=_font('Heavy', 46), fill=(255, 255, 255, 255))
+        cd = max(0.0, 3600 - max(0.0, t - hr) * 1.0) if t > hr - 0.2 else 3600
+        if t > hr - 0.2:
+            mm, ss = int(cd // 60) % 60, int(cd % 60)
+            bd.rounded_rectangle((60, y0 + 205, 330, y0 + 265), radius=30, fill=(64, 140, 230, 255))
+            bd.text((195, y0 + 235), f'00:{mm:02d}:{ss:02d}', font=_font('Bold', 32), fill=(255, 255, 255, 255), anchor='mm')
+        g = smooth(seg(t, am - 0.2, am + 0.3))
+        for k, name in enumerate(('Resistance Dog', "Durov's Glasses")):
+            x = 70 + k * 250
+            box = (x, y0 + 300, x + 210, y0 + 510)
+            bd.rounded_rectangle(box, radius=26, fill=(44, 60, 80, 255))
+            if k == 0 and g > 0:
+                bd.rounded_rectangle((box[0] - 6, box[1] - 6, box[2] + 6, box[3] + 6), radius=30,
+                                     outline=(255, 200, 80, int(255 * g)), width=6)
+            ic = _gift_icon(name, 180)
+            bub.alpha_composite(ic, (x + 15, y0 + 315))
+            bd.text((x + 105, y0 + 540), name, font=_font('Semibold', 22), fill=(200, 210, 222, 255), anchor='mm')
+        bd.text((60, y0 + 600), '+ ещё подарки', font=_font('Regular', 28), fill=(150, 170, 190, 255))
+        a = np.asarray(bub, np.float32)
+        a[..., 3] *= u
+        im.alpha_composite(Image.fromarray(a.astype(np.uint8), 'RGBA'))
+    return im
+
+
+def draw_phone(c, t, an):
+    if 'screen0' not in an or min(an[f'screen{i}'][3] for i in range(4)) <= 0:
+        return
+    quad = [an[f'screen{i}'][:2] for i in range(4)]
+    src = [(0, 0), (600, 0), (600, 1300), (0, 1300)]
+    Hm = homography(quad, src)
+    img = post_screen(t)
+    warped = img.transform((W, H), Image.PERSPECTIVE, tuple((Hm / Hm[2, 2]).flatten()[:8]), Image.BILINEAR)
+    a = np.asarray(warped, np.float32)
+    al = a[..., 3:4] / 255
+    c[:] = c * (1 - al) + a[..., :3] * 1.08 * al
+
+
+@functools.lru_cache(maxsize=2)
+def stamp_img():
+    f = _font('Heavy', 120)
+    txt = 'РАСКУПЛЕНО'
+    tw = int(f.getlength(txt)) + 80
+    im = Image.new('RGBA', (tw, 230), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((8, 8, tw - 8, 222), radius=26, outline=(235, 40, 50, 255), width=14)
+    d.text((tw / 2, 115), txt, font=f, fill=(235, 40, 50, 255), anchor='mm')
+    return im.rotate(-12, resample=Image.BICUBIC, expand=True)
+
+
+def draw_stamp(c, t):
+    u = t - E['seconds'] + 0.1
+    if u < 0:
+        return
+    k = 1 + 1.6 * math.exp(-11 * u)
+    im = stamp_img()
+    im = im.resize((int(im.width * k * 0.85), int(im.height * k * 0.85)), Image.BILINEAR)
+    paste(c, im, W / 2, 760, smooth(seg(u, 0, 0.08)))
+
+
 @functools.lru_cache(maxsize=8)
 def hand_img(size):
     size = int(size // 8 * 8)
@@ -256,12 +347,17 @@ def hand_img(size):
 ACCENT = {'S01_desk': (255, 72, 72), 'S02_office': (90, 170, 255), 'S03_past': (255, 196, 110), 'S04_vault': (110, 220, 255),
           'S05_court': (255, 80, 70), 'S06_roof': (120, 200, 255), 'S07_ipcity': (255, 80, 80), 'S08_planes': (255, 190, 90),
           'S09_legend': (255, 200, 90), 'S10_ton': (110, 200, 255), 'S11_giftrain': (255, 210, 100),
-          'S12_gallery': (255, 200, 100), 'S13_laser': (255, 70, 70), 'S14_final': (255, 210, 120)}
+          'S12_gallery': (255, 200, 100), 'S13_laser': (255, 70, 70), 'S14_final': (255, 210, 120),
+          'S15_phone': (110, 190, 255), 'S16_hacker': (80, 255, 140), 'S17_havana': (255, 120, 90),
+          'S18_arena': (255, 90, 70), 'S19_crypto': (255, 200, 80)}
 KEY = {'войны', 'спотти', 'вконтакте', 'дуров', 'телеграм', 'телеге', 'телега', 'resistance', 'dog', 'vpn', 'совпадение',
        '2018', 'фсб', 'блокирует', 'капюшоне', 'сопротивление', 'роскомнадзор', 'ip', 'прокси', 'proxy server',
        'anonymous', 'самолётики', 'легендой', 'токен на ton', 'франции', 'аватарки', 'подарки', 'он', 'интересное',
        'улучшать', 'че гевара', 'спартак', 'рэмбо', 'сатоши', 'imposter', 'тысячу', 'коллекционным', 'продолжается',
-       'рисунок', 'символом', 'шифрования', 'подарком', 'миллионы', 'десятки', 'редкая', 'дурова'}
+       'рисунок', 'символом', 'шифрования', 'подарком', 'миллионы', 'десятки', 'редкая', 'дурова', 'вождь',
+       'гладиатор', 'хакер', 'маске', 'революционер', 'биткоином', 'золотом', 'крафтовая', 'реже', 'написал', 'час',
+       'секунды', 'впервые', 'токен', 'моделей', 'модели', 'восстания', 'легенда', 'кубинским', 'чёрный', 'заблокировали',
+       'капюшон', 'восемнадцатом', 'четырнадцатого', 'история', 'легендой', 'телеги'}
 CAP_Y = 1330
 
 
@@ -342,7 +438,10 @@ GRADE = {  # (lift rgb, gain rgb, saturation)
     'S07_ipcity': ((2, 3, 8), (1.0, 1.0, 1.05), 1.2), 'S08_planes': ((8, 6, 8), (1.05, 1.0, 0.98), 1.15),
     'S09_legend': ((8, 5, 3), (1.08, 1.0, 0.9), 1.15), 'S10_ton': ((2, 4, 10), (0.96, 1.0, 1.08), 1.2),
     'S11_giftrain': ((3, 5, 10), (1.0, 1.0, 1.04), 1.2), 'S12_gallery': ((6, 4, 3), (1.05, 1.0, 0.95), 1.1),
-    'S13_laser': ((6, 2, 2), (1.05, 0.95, 0.95), 1.1), 'S14_final': ((6, 5, 8), (1.05, 0.98, 0.92), 1.05)}
+    'S13_laser': ((6, 2, 2), (1.05, 0.95, 0.95), 1.1), 'S14_final': ((6, 5, 8), (1.05, 0.98, 0.92), 1.05),
+    'S15_phone': ((3, 3, 10), (1.0, 1.0, 1.06), 1.15), 'S16_hacker': ((2, 4, 4), (0.98, 1.04, 1.0), 1.15),
+    'S17_havana': ((8, 6, 4), (1.06, 1.0, 0.94), 1.2), 'S18_arena': ((8, 5, 3), (1.07, 0.98, 0.9), 1.12),
+    'S19_crypto': ((6, 4, 1), (1.08, 1.0, 0.85), 1.15)}
 
 _vy, _vx = np.mgrid[0:H, 0:W]
 VIGNETTE = (1 - 0.32 * np.clip(((_vx - W / 2) / (W * 0.62)) ** 2 + ((_vy - H / 2) / (H * 0.6)) ** 2, 0, 1.4) ** 1.4)[..., None].astype(np.float32)
@@ -411,8 +510,16 @@ def render_at(t):
         draw_paper(c, t, an)
     elif name == 'S14_final':
         draw_paper(c, t, an, final=True)
+    if name == 'S15_phone':
+        draw_phone(c, t, an)
     draw_gifts(c, t, an)
+    if name == 'S11_giftrain':
+        draw_stamp(c, t)
     grade(c, name, t)
+    for li, lx, ly, la in PENDING_LABELS:
+        lx = min(max(lx, li.width / 2 + 24), W - li.width / 2 - 24)
+        paste(c, li, lx, ly, la)
+    PENDING_LABELS.clear()
     # whip transitions around every cut (not at the ad stops: those cut under the banner)
     for k, (nm, sa, sb) in enumerate(SHOTS[1:], 1):
         if any(abs(sa - s) < 1e-6 for s in AD_STOPS):

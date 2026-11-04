@@ -7,6 +7,13 @@ import urllib.request
 from pathlib import Path
 
 API = 'https://api.fish.audio'
+# Author's default narration voice and model (2026-11-04); env vars override them.
+DEFAULT_VOICE = '7312c38557eb4fb384e3874e8e9cea67'
+DEFAULT_MODEL = 'drama-3'
+
+
+def default_voice():
+    return os.environ.get('FISH_VOICE') or DEFAULT_VOICE
 
 
 def available():
@@ -18,7 +25,7 @@ def _request(method, endpoint, body=None):
     if not key:
         raise RuntimeError('Fish Audio key is absent; continue without narration')
     headers = {'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json',
-               'model': os.environ.get('FISH_TTS_MODEL', 's2.1-pro')}
+               'model': os.environ.get('FISH_TTS_MODEL') or DEFAULT_MODEL}
     request = urllib.request.Request(API + endpoint, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(request, timeout=120) as response:
@@ -74,7 +81,7 @@ def main():
     say = sub.add_parser('say')
     say.add_argument('out')
     say.add_argument('text')
-    say.add_argument('--voice', default=os.environ.get('FISH_VOICE'))
+    say.add_argument('--voice', default=default_voice())
     args = parser.parse_args()
     if not available():
         print('Нет нового ключа Fish Audio. Добавите свой ключ? Пока продолжаем без дикторской озвучки.')

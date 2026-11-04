@@ -2,7 +2,6 @@
 import argparse
 import importlib.util
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -13,7 +12,7 @@ import fish_tts
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('project')
-    parser.add_argument('--voice', default=os.environ.get('FISH_VOICE'))
+    parser.add_argument('--voice', default=fish_tts.default_voice())
     parser.add_argument('--takes', type=int, default=1)
     args = parser.parse_args()
     if args.takes < 1:

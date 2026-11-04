@@ -10,7 +10,7 @@ def _stop(k):
     return max(END[k], min(END[k] + 0.1 + RAMP / 2, ON[k + 1] - RAMP / 2 - 0.02))
 
 
-AD_STOPS = [_stop(4), _stop(12)]          # after the gift tease (~30 s) and after "there are rarer models" (~92 s out)
+AD_STOPS = [float(_stop(4)), float(_stop(12))]          # after the gift tease (~30 s) and after "there are rarer models" (~92 s out)
 
 
 def _mid(k):

@@ -33,3 +33,8 @@ LIGHT_ON = [h['arrive'] - 0.35 for h in HEROES_T]
 for h in HEROES_T:                                  # a fact never appears before its hero's title
     h['f1'] = max(h['f1'], h['title'] + 0.35)
     h['f2'] = max(h['f2'], h['f1'] + 0.6)
+
+# Fully 3D cutaways (scenes3d.py): (start, duration) in content time
+SCENE_A = (wt(1, 'которое') - 0.1, 2.35)          # «…которое находит дорогу по Млечному Пути»
+SCENE_B = (wt(6, 'тридцать') - 0.15, 2.5)          # «тридцать грамм по цене золота»
+H[0]['stamp'] = max(H[0]['stamp'], SCENE_A[0] + SCENE_A[1] + 0.08)

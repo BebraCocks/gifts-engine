@@ -22,7 +22,8 @@ import config
 import gallery as GL
 from gallery import Cam, HALF, Z_END, EYE, W, H
 from timeline import DUR
-from events import HOOK_MOVE, TRANSITS, PULLBACK, AD_STOP, HOOK, HEROES_T, FINAL, LIGHT_ON
+from events import HOOK_MOVE, TRANSITS, PULLBACK, AD_STOP, HOOK, HEROES_T, FINAL, LIGHT_ON, SCENE_A, SCENE_B
+import scenes3d
 
 FPS = 60
 BR = banner.Breaks([AD_STOP], cy=H / 2)
@@ -423,6 +424,91 @@ def final(c, t):
     put(c, card('Перешли тому, кто не понял', 46, 'Semibold', P, edge=GOLD), W / 2, 1600, a3, 'cta', dy=dy3)
 
 
+# ------------------------------------------------------------------ 3D cutaways + video effects
+XF = 0.32                                       # cross-zoom transition length
+
+
+def zoom(c, k):
+    """Push into the frame centre (scale 1 + k)."""
+    if k < 0.01:
+        return c
+    im = Image.fromarray(np.clip(c, 0, 255).astype(np.uint8))
+    s = 1 + k
+    w, h = int(W / s), int(H / s)
+    x0, y0 = (W - w) // 2, int((H - h) * 0.44)
+    return np.asarray(im.crop((x0, y0, x0 + w, y0 + h)).resize((W, H), Image.BILINEAR), np.float32)
+
+
+def cutaway(c, t):
+    for (a, dur), fn, tint in ((SCENE_A, scenes3d.frame_a, (190, 200, 255)), (SCENE_B, scenes3d.frame_b, (255, 214, 140))):
+        b = a + dur
+        if not (a - XF <= t <= b + XF):
+            continue
+        k_in = smooth((t - (a - XF)) / XF)
+        k_out = smooth((t - b) / XF)
+        mix = k_in * (1 - k_out)
+        g = zoom(c, 0.6 * k_in * (1 - k_out) if t < a else 0.0) if t < a else c
+        u = min(max(t - a, 0.0), dur)
+        s3 = fn(u)
+        if t > b:                                     # leave: the 3D shot pulls away into the portrait
+            s3 = zoom(s3, 0.4 * k_out)
+        if fn is scenes3d.frame_b:
+            gold_rain(s3, u)
+        c = g * (1 - mix) + s3 * mix
+        flash = math.exp(-((t - a) / 0.07) ** 2) + math.exp(-((t - b) / 0.07) ** 2)
+        if flash > 0.01:
+            c = c + flash * 0.55 * np.array(tint, np.float32)
+    return c
+
+
+def gold_rain(c, u):
+    rng = np.random.default_rng(1961)
+    for j in range(34):
+        x = rng.uniform(60, W - 60)
+        y0, v = rng.uniform(-900, 0), rng.uniform(380, 620)
+        y = y0 + v * (u + rng.uniform(0, 1.0))
+        if not -40 < y < 1250:
+            continue
+        r = rng.uniform(14, 34) * (0.8 + 0.2 * math.sin(u * 9 + j))
+        glow(c, x, y, r * 3.2, (255, 196, 90), 0.5)
+        glow(c, x, y, r, (255, 240, 190), 0.9)
+
+
+def motion_blur(c, t):
+    for a, b in TRANSITS:
+        if a < t < b:
+            s = (t - a) / (b - a)
+            n = int(70 * math.sin(math.pi * s) ** 2)
+            if n > 2:
+                cs = np.cumsum(np.pad(c, ((0, 0), (n, 0), (0, 0)), mode='edge'), axis=1)
+                c = (cs[:, n:] - cs[:, :-n]) / n
+    return c
+
+
+def aberration(c, t):
+    k = 0.0
+    for h in HEROES_T:
+        u = t - h['stamp']
+        if 0 < u < 0.35:
+            k = max(k, 9 * math.exp(-u / 0.08))
+    if k >= 1:
+        n = int(k)
+        c[:, n:, 0] = c[:, :-n, 0].copy()
+        c[:, :-n, 2] = c[:, n:, 2].copy()
+    return c
+
+
+@functools.lru_cache(None)
+def _grain(k):
+    rng = np.random.default_rng(100 + k)
+    g = rng.normal(0, 1, (H // 2, W // 2)).astype(np.float32)
+    return np.asarray(Image.fromarray(g).resize((W, H), Image.BILINEAR))[..., None]
+
+
+def grain(c, t):
+    c += _grain(int(t * 24) % 6) * 3.2
+
+
 # ------------------------------------------------------------------ frame
 def render_at(t):
     pos, yaw, pitch = camera(t)
@@ -438,12 +524,16 @@ def render_at(t):
         if z[0] > 0.4:
             glow(c, pts[0, 0], pts[0, 1], 2.9 * GL.F / z[0], (255, 200, 90), 0.3 * k)
     flies(c, cam, t)
+    c = motion_blur(c, t)
+    c = cutaway(c, t)
     grade(c)
     hook_text(c, t)
     for j in range(5):
         hero_text(c, t, j)
     if t > FINAL['line'] - 0.2:
         final(c, t)
+    c = aberration(c, t)
+    grain(c, t)
     e = smooth((t - FINAL['fade']) / (DUR - FINAL['fade']))
     if e > 0:
         c *= 1 - e

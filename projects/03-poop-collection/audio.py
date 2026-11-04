@@ -13,7 +13,7 @@ import banner
 import sound
 import config
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES
-from events import AD_STOP, HOOK_MOVE, TRANSITS, PULLBACK, HEROES_T, FINAL, LIGHT_ON
+from events import AD_STOP, HOOK_MOVE, TRANSITS, PULLBACK, HEROES_T, FINAL, LIGHT_ON, SCENE_A, SCENE_B
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
@@ -109,6 +109,23 @@ def add(mix, x, at, gain, pan=0.0):
     mix[i:i + n, 1] += x[:n] * gain * r * 1.414
 
 
+def rumble(dur):
+    """Ball rolling on sand: low-passed noise with a slow roll rhythm."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = sosfilt(butter(3, 380, 'low', fs=SR, output='sos'), RNG.standard_normal(n))
+    x *= 0.7 + 0.3 * np.sin(2 * np.pi * 2.2 * t) ** 2
+    x *= np.minimum(1, np.minimum(t, dur - t) / 0.25)
+    return x / (np.abs(x).max() + 1e-9)
+
+
+def shimmer(dur=0.6):
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    x = bp(RNG.standard_normal(n), 3000, 9000) * np.sin(np.pi * t / dur) ** 2
+    return x / (np.abs(x).max() + 1e-9)
+
+
 def make_mix():
     n = int(round(DUR * SR))
     mix = np.zeros((n, 2))
@@ -135,6 +152,14 @@ def make_mix():
     for k in (1, 3, 4):                                   # price-tag stamps: a small «ka-ching»
         add(sfx, chime(), HEROES_T[k]['stamp'] + 0.04, 0.16)
     add(sfx, whoosh(2.5, 250, 1200), PULLBACK[0], 0.14)
+    for a, dur in (SCENE_A, SCENE_B):                    # 3D cutaways: in/out swish + shimmer
+        add(sfx, whoosh(0.6, 400, 3000), a - 0.35, 0.18)
+        add(sfx, shimmer(), a - 0.1, 0.08)
+        add(sfx, whoosh(0.6, 400, 3000), a + dur - 0.25, 0.14)
+    add(sfx, rumble(SCENE_A[1]), SCENE_A[0], 0.12)
+    rng = np.random.default_rng(30)
+    for j in range(9):                                   # gold glints: tiny coin clinks
+        add(sfx, chime(), SCENE_B[0] + 0.15 + j * 0.25 + rng.uniform(0, 0.12), 0.05, pan=rng.uniform(-0.7, 0.7))
     add(sfx, chime(), FINAL['art'] - 0.1, 0.3)
     add(sfx, plop(), FINAL['cta'], 0.3)
     bed = hum(n) * 0.012

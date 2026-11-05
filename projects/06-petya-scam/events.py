@@ -43,22 +43,23 @@ T['block1'] = end('threat') + 0.12
 T['dima_cry'] = end('threat') + 0.35
 T['simple'] = end('threat') + 0.85
 T['sleep'] = on('sleep') - 0.1
+T['thought'] = end('sleep') + 0.05             # «Жизнь-то… не такая уж и плохая» as a thought
 # months → Katya → the search → the dating site → the AI
 T['tunnel'] = on('months') - 0.05
 T['katya'] = wt('katya', 'Катя') - 0.15
-T['search'] = on('search') - 0.05
+T['search'] = end('katya') + 0.1
 T['found'] = on('found') - 0.08
 T['profile'] = on('profile_p') - 0.15
 T['wishes'] = [wt('profile_p', 'Брюнет'), wt('profile_p', 'щетина'), wt('profile_p', 'дело')]
 T['ai'] = on('alex') - 0.08
 T['alex_name'] = wt('alex', 'биография')
-T['chat_k'] = on('xday') - 0.05
+T['chat_k'] = AD2 + 0.4                          # «ДЕНЬ X»: Petya writes to Katya
 T['days'] = on('days')
 T['date_msg'] = on('date')
 T['katya_love'] = end('invite') + 0.1
 T['lead2'] = end('date') + 0.15                   # Petya smirks: he is not going to go
 # after RubUp 2: the cancelled date
-T['cancel'] = AD2 + 0.02
+T['cancel'] = end('knew') + 0.1
 T['fly_cancel'] = on('cancel') + 1.0
 T['cancel_sent'] = end('cancel') - 0.02
 T['why_msg'] = on('why')
@@ -82,7 +83,7 @@ T['uneasy'] = on('uneasy') - 0.1
 T['block2_shot'] = wt('uneasy', 'Совсем') - 0.15
 T['block2'] = T['block2_shot'] + 0.5
 # the party → RubUp 3 → the last message
-T['party'] = on('friends') - 0.1
+T['party'] = AD3 + 0.02
 T['party_all'] = wt('party', 'Всё')
 T['buzz2'] = wt('incoming', 'пришло')
 T['fly_final'] = end('incoming') - 0.25

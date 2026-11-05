@@ -493,20 +493,20 @@ def _transfer_overlay(im, t):
 
 
 CHAT_K = dict(theme='night', name='Катя', status='в сети', avatar=AV_KATYA, back='Чаты',
-              clock=[(-99, '21:03'), (T['days'] + 1.3, '08:12'), (T['days'] + 2.4, '19:40'), (T['date_msg'] - 0.5, '23:12'), (T['cancel'], '23:40'), (T['lie'], '23:44'),
+              clock=[(-99, '21:03'), (T['chat_k'] + 2.35, '08:12'), (T['chat_k'] + 3.15, '19:40'), (T['date_msg'] - 0.5, '23:12'), (T['cancel'], '23:40'), (T['lie'], '23:44'),
                      (T['help'], '23:45'), (T['all_msg'], '23:47'), (T['transfer'], '23:50'), (T['five'], '23:55'),
                      (T['ten'], '00:00')],
               overlays=[_transfer_overlay], events=[
-    draft(T['chat_k'] + 0.05, END[KEY['xday']] + 0.1, 'Привет! Кажется, мы любим одни и те же места 🙂'),
-    msg(END[KEY['xday']] + 0.15, 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
-    msg(T['days'] + 0.2, 'in', 'Ого 😊 Какие?', '21:05'),
-    msg(T['days'] + 0.8, 'out', 'Море, кофе по утрам и честные разговоры ☕️', '21:06'),
-    msg(T['days'] + 1.4, 'in', 'Доброе утро ☀️', '08:12'),
-    msg(T['days'] + 1.9, 'out', 'Доброе! Уже скучаю 🙂', '08:13'),
-    msg(T['days'] + 2.5, 'in', 'Как прошёл день?', '19:40'),
-    msg(T['days'] + 3.0, 'out', 'Думал о тебе. Ты улыбаешься, даже когда пишешь — я это чувствую', '19:42'),
-    typing(T['days'] + 3.0, T['days'] + 3.4),
-    msg(T['days'] + 3.4, 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '19:43'),
+    draft(T['chat_k'] + 0.05, T['chat_k'] + 1.0, 'Привет! Кажется, мы любим одни и те же места 🙂'),
+    msg(T['chat_k'] + 1.05, 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
+    msg(T['chat_k'] + 1.5, 'in', 'Ого 😊 Какие?', '21:05'),
+    msg(T['chat_k'] + 1.95, 'out', 'Море, кофе по утрам и честные разговоры ☕️', '21:06'),
+    msg(T['chat_k'] + 2.4, 'in', 'Доброе утро ☀️', '08:12'),
+    msg(T['chat_k'] + 2.8, 'out', 'Доброе! Уже скучаю 🙂', '08:13'),
+    msg(T['chat_k'] + 3.2, 'in', 'Как прошёл день?', '19:40'),
+    msg(T['chat_k'] + 3.6, 'out', 'Думал о тебе. Ты улыбаешься, даже когда пишешь — я это чувствую', '19:42'),
+    typing(T['chat_k'] + 3.7, T['chat_k'] + 4.0),
+    msg(T['chat_k'] + 4.0, 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '19:43'),
     draft(ON[KEY['invite']] - 0.1, END[KEY['invite']] - 0.05, 'Может, встретимся в субботу? 🙂'),
     msg(END[KEY['invite']], 'out', 'Может, встретимся в субботу? 🙂', '22:58'),
     typing(END[KEY['invite']] + 0.1, T['date_msg']),
@@ -707,7 +707,7 @@ def shot_dima(t):
     fig(im, 'dima', 'walk_phone', 540, 870, 1.18, t, phase=(t / 1.1) % 1, glow_=0.5, smile=0.75, look=(0.3, 0.4))
     floating_gift(im, t, 'Desk Calendar', 'Sunshine', 840, 560, 300, label='NFT-календарь', t0=T['dima'] + 0.15)
     put(im, chip('Дима, 13'), 300, 300, a=ramp(t, T['dima'] + 0.05, T['dima'] + 0.3))
-    return whip(im, ramp(t, T['to_dima_chat'] - 0.2, T['to_dima_chat']))
+    return im                                           # the RubUp break is the transition here
 
 
 @functools.lru_cache(maxsize=1)
@@ -748,8 +748,7 @@ def shot_simple(t):
 
 def shot_sleep(t):
     im = S.bedroom().copy()
-    o = talk(t, ('life',))
-    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2, open_=0.15 + 0.5 * o if o else 0.0)
+    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2)
     hd = hd.rotate(78, resample=Image.BICUBIC, expand=True)
     put(im, hd, 300, 1110, scale=0.95)
     im.alpha_composite(S.blanket())
@@ -758,8 +757,26 @@ def shot_sleep(t):
         ph = (t * 0.6 + j / 3) % 1.0
         put(im, text_spr('z', 60 + 20 * j, rgb=(220, 230, 255), stroke=5), 430 + 60 * ph + 30 * j, 950 - 260 * ph,
             a=math.sin(math.pi * ph) * 0.9)
+    if t >= T['thought']:                                          # his thought, as a cloud
+        a = ramp(t, T['thought'], T['thought'] + 0.3) * (1 - ramp(t, T['tunnel'] - 0.3, T['tunnel']))
+        for j, (bx, by, br) in enumerate(((380, 980, 14), (430, 920, 22))):
+            put(im, _glow_spr(br, (255, 255, 255)), bx, by, a=a)
+        put(im, _thought('Жизнь-то… не такая уж и плохая 😌'), 640, 780, a=a, scale=0.9 + 0.1 * a)
     k = 1.0 + 0.1 * ramp(t, T['sleep'], T['tunnel'])
     return zoom_view(im, 520, 1050, k)
+
+
+@functools.lru_cache(maxsize=4)
+def _thought(text):
+    f = fx.font('Semibold', 46)
+    lines = tg.wrap(text, f, 560)
+    w = int(max(tg.text_width(l, f) for l in lines)) + 90
+    h = len(lines) * 62 + 60
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(im).rounded_rectangle([0, 0, w - 1, h - 1], 50, fill=(255, 255, 255, 240))
+    for i, l in enumerate(lines):
+        tg.draw_text(im, (45, 26 + i * 62), l, f, (40, 36, 60))
+    return im
 
 
 # 3D loot tunnel ------------------------------------------------------------
@@ -828,12 +845,13 @@ def shot_search(t):
     def ex(im):
         px, py = phone_point(540, 1010, 1.25)
         glow(im, px, py, 360, (150, 210, 255), 0.55)
-        put(im, chip(f'День {day}', bg=(40, 30, 60)), 540, 300)
+        put(im, chip(f'День {day}', bg=(40, 30, 60)), 540, 400)
+        put(im, text_spr('3 НЕДЕЛИ ПОИСКОВ', 74, rgb=(255, 214, 90)), 540, 280, a=ramp(t, T['search'], T['search'] + 0.3))
         for j in range(3):                                         # tabs flying past
             ph = (t * 1.4 + j / 3) % 1
             put(im, chip(['поиск: Катя ...', 'ничего не найдено', 'ещё 1 вкладка'][j], bg=(20, 24, 40)),
                 lerp(1300, -250, ph), 520 + j * 110, a=0.8)
-    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, hood=True, sad=0.3, smile=-0.1, talk_keys=('search2',),
+    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, hood=True, sad=0.3, smile=-0.1, 
                                      blink=0.5 + 0.4 * (math.sin(t * 3) > 0.6), look=(0, 0.6)), extra=ex,
                     cam=(540, 1000, 1.0 + 0.1 * k))
     return im
@@ -960,7 +978,11 @@ def shot_ai(t):
 
 
 def shot_chat_k(t, t0=None, fly=True):
-    return pov_shot(t, CHAT_K, t0 if t0 is not None else T['chat_k'], environment('night'), fly=fly)
+    im = pov_shot(t, CHAT_K, t0 if t0 is not None else T['chat_k'], environment('night'), fly=fly)
+    if t0 is None and T['chat_k'] <= t < T['chat_k'] + 2.0:
+        k = pop(t, T['chat_k'] + 0.25, 0.35) * (1 - ramp(t, T['chat_k'] + 1.6, T['chat_k'] + 2.0))
+        put(im, text_spr('ДЕНЬ X', 120, rgb=(255, 80, 90)), 540, 300, a=k, scale=0.8 + 0.2 * k)
+    return im
 
 
 def shot_katya_love(t):

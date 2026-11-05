@@ -1,5 +1,16 @@
 {
   "_note": "Fish Audio drama-3 task ids (audio https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take.",
+  "_dropped": {
+    "legend_line": "7b6c3f28c464460cb287923618ae6e37",
+    "clean_v2": {
+      "L04": "f960e9f4e2fe484890cdedf25d8c9ea3",
+      "L06": "9349f317f3534b8084f68ef08ab5a03a",
+      "L07": "a8894da906864bc3ac3268db247a2618",
+      "L10": "c60e0a8110da41679515d8b4f54d74be",
+      "L12_narrator": "497f20c51e354382a52e284ba76f05d4",
+      "L13": "72dcce0e8a6541d995cbcb5d3419c30f"
+    }
+  },
   "L01": [
     "6a97d48de5304e12ac15f69d3ca73231"
   ],
@@ -12,18 +23,22 @@
     "7124e3263a62464c86005088f8304207"
   ],
   "L04": [
-    "f960e9f4e2fe484890cdedf25d8c9ea3",
-    "1335e6960bce49b5910960bf6d87db60"
+    "f036d0177c454126a49b85bc00f6bdbc",
+    "7c294fcf59cd4f108bfe48d07cd3ec40"
   ],
   "L05": [
+    "e52804e8947046fdad48a80f80282a6f",
     "866f1a0bc4c64398b6ec0a7a0e02a7b5"
   ],
   "L06": [
-    "9349f317f3534b8084f68ef08ab5a03a"
+    "fc18cd31fc524c5490bfa5f431c56391",
+    "a01cc970b32245118786f6d092a4ac29",
+    "ee828a8f57fa4d31b111cf19b84b1366",
+    "5331e7ccb1f24305a94fec3d711016fd"
   ],
   "L07": [
-    "a8894da906864bc3ac3268db247a2618",
-    "a0735543d6584ac89d15d54bba3bd48d"
+    "031bfb0894464a268173f6e403eee82c",
+    "58a14779ccd64b49ab3c5e0ea3a98b1c"
   ],
   "L08": [
     "d80ec19415db45ea903944872a90bb3d"
@@ -32,27 +47,33 @@
     "2ce114019b3b418f819aaf58e08f4aa9"
   ],
   "L10": [
-    "c60e0a8110da41679515d8b4f54d74be"
+    "c4c0b8a8595144b7abee829ca5cd1777",
+    "1cf44a04a0fe4676b025005b6dc55fc1",
+    "409ab95e76594c9db137399db1df477e",
+    "dcb3f17a01504d92be47ce3aff534504"
   ],
   "L11": [
     "ee8cf185b0454e92bc6615fae0b826fd"
   ],
   "L12": [
-    "497f20c51e354382a52e284ba76f05d4"
+    "a5a33e736e9c44979616faf6e00fd3a5",
+    "ef8ee8b3b766435ab070f7874c4c3eee"
   ],
   "L13": [
-    "72dcce0e8a6541d995cbcb5d3419c30f"
+    "694ce81d9164466e9d8055d98ba89dbb",
+    "4aacfa78d4a94b9598980bb67fa3ab36"
   ],
   "L14": [
     "9675f3ff743c478b96ac3e46e927e268"
   ],
   "L15": [
-    "1b59abfea74b4fe19203000470f1813a"
+    "078ed1fb779b4ee6b2a3c5945330a754",
+    "69f84aa987454dd28a7c21765b6e7630"
   ],
   "L16": [
-    "11391f04854a4403984647fa3ced9edb"
+    "1b59abfea74b4fe19203000470f1813a"
   ],
-  "_dropped": {
-    "legend_line": "7b6c3f28c464460cb287923618ae6e37"
-  }
+  "L17": [
+    "11391f04854a4403984647fa3ced9edb"
+  ]
 }

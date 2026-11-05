@@ -33,6 +33,8 @@ def wt(line, word, occurrence=0, end=False):
     """line: index or screen key; returns the start (or end) of the word in content seconds."""
     k = KEY[line] if isinstance(line, str) else line
     m = [(a, b) for w, a, b in WORDS[k] if _norm(w) == _norm(word)]
+    if not m:                                   # ASR spelling differs (название/названия): match the stem
+        m = [(a, b) for w, a, b in WORDS[k] if len(_norm(word)) >= 5 and _norm(w)[:6] == _norm(word)[:6]]
     if not m:
         raise KeyError(f'{word!r} not in line {k + 1}: {[w for w, _, _ in WORDS[k]]}')
     return m[occurrence][1 if end else 0]

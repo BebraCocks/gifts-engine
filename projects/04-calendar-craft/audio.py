@@ -17,7 +17,7 @@ import events as E
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, SPEAKER
 
 SR = 48000
-WHISPER = {4, 11}                 # L05 «…с богом», L12 «Один календарь…» are whispered
+WHISPER = {4}                     # L05 «Ну… с богом» is whispered
 BR = banner.Breaks([E.AD_STOP], cy=960)
 
 
@@ -95,13 +95,27 @@ def sfx_layer(n, kit):
     A(fx, 'coin', E.ACCEPT + 0.05, gain_db=-16, label='sold')
     A(fx, 'cartoon', E.LEAVE, gain_db=-20, file='tiptoe', label='Михаил leaves')
     A(fx, 'cartoon-hit', E.SHOCK, align='peak', gain_db=-12, file='bonk', label='shock zoom')
-    A(fx, 'cartoon', E.SHOCK + 0.1, gain_db=-18, file='eye-whistle', fit=0.9, label='eye twitch')
+    A(fx, 'cartoon', E.SHOCK + 0.05, gain_db=-19, file='eye-whistle', fit=0.35, label='eye twitch')
+    A(fx, 'stretch', E.WTF - 0.15, gain_db=-19, label='Алексей boils over')
     A(fx, 'whoosh', E.MORAL, align='peak', gain_db=-15, label='moral')
     A(fx, 'pop', E.MORAL + 0.25, gain_db=-17, label='89% plate')
     A(fx, 'pop', E.MORAL + 0.5, gain_db=-17, label='22% plate')
     A(fx, 'whoosh-short', E.CTA, align='peak', gain_db=-15, label='CTA')
     A(fx, 'boing', E.LIKE, gain_db=-14, label='like button')
     A(fx, 'popup', E.wt('cta', 'друг') - 0.2, gain_db=-16, label='comment question')
+    # vocal reactions from the Botanica «human» folder (intonations under the action, not words)
+    V = dict(role='voice', vary=False)
+    A(fx, t=E.COINS[3] + 0.1, gain_db=-17, file='human/tired', label='tired sigh (Алексей худеет)', **V)
+    A(fx, t=E.SLOT_T[3] + 0.35, gain_db=-16, file='human/excited', label='«Oh!» all four slots filled', **V)
+    A(fx, t=E.THUMB_IN - 0.3, gain_db=-17, file='human/nervous', label='nervous «mm» before the press', **V)
+    A(fx, t=E.FAIL + 0.05, gain_db=-14, file='human/oppss', label='«uh-oh» the craft burned', **V)
+    A(fx, t=E.SMILE_GONE, gain_db=-17, file='human/upset', label='upset «mm» smile slides off', **V)
+    A(fx, t=E.REALISE + 0.1, gain_db=-15, file='human/scared.', label='«ah» realisation', **V)
+    A(fx, t=E.THINK + 0.15, gain_db=-14, file='human/interesting', label='Михаил thinks «hmm»', **V)
+    A(fx, t=E.LEGEND + 0.25, gain_db=-17, file='human/public', label='crowd «ooh» at LEGENDARY', **V)
+    A(fx, t=E.OFFER - 0.35, gain_db=-17, file='human/bored', label='«oh» an offer pops up', **V)
+    A(fx, t=E.ACCEPT + 0.02, gain_db=-16, file='human/okay', label='«okay» accept 100 ₽', **V)
+    A(fx, t=E.SHOCK + 0.02, gain_db=-15, file='human/scared-2', label='Алексей gasps', **V)
     # synthesised fire under the burn (no fire sound in the pack)
     f = fire_crackle(E.FACE - E.BURN0 + 0.4)
     i0 = int(E.BURN0 * SR)

@@ -153,8 +153,8 @@ def eye(pen, cx, cy, r, open_, look, brow, side, angry=0.0, sad=0.0, pupil=0.42,
     """side: -1 left eye, +1 right eye (screen). brow: (dy, tilt)."""
     ry = r * 1.18 * max(0.06, open_)
     if bags > 0:
-        pen.line(curve(cx - r * 0.9, cy + r * 1.15, cx + r * 0.9, cy + r * 1.15, r * 0.55), 5 + bags * 4,
-                 tint((150, 110, 170), (120, 80, 140), bags))
+        pen.line(curve(cx - r * 0.9, cy + r * 1.15, cx + r * 0.9, cy + r * 1.15, r * 0.55), 4 + bags * 3,
+                 tint((205, 180, 215), (180, 150, 200), bags))
     if open_ < 0.12:
         pen.line(curve(cx - r, cy, cx + r, cy, r * 0.35), 7)
     else:
@@ -227,8 +227,8 @@ def draw_alex(pen, p):
     sx = p['x'] + (math.sin(t * 61) * 6 + math.sin(t * 43) * 4) * p['shake']
     sy = p['y'] + p['bob']
     th = p['thin']
-    skin = tint((246, 206, 170), (226, 214, 176), p['pale'])
-    skin = tint(skin, (236, 92, 70), p['red'])
+    skin = tint((255, 226, 204), (246, 232, 220), p['pale'])          # fair skin; pale = whiter, not yellow
+    skin = tint(skin, (255, 128, 118), min(1.0, p['red']) * 0.8)
     hood = (92, 110, 148)
     jeans = (58, 72, 110)
     lean = p['lean']
@@ -317,7 +317,7 @@ def draw_alex_head(pen, cx, cy, p, skin):
     if th > 0.2:
         for side in (-1, 1):
             pen.line(curve(cx + side * rx * 0.62, cy + 26, cx + side * rx * 0.5, cy + ry * 0.62, side * -10),
-                     4, tint(skin, (120, 110, 100), 0.45 * th))
+                     4, tint(skin, (190, 160, 160), 0.5 * th))
     # fringe
     pen.poly([(cx - rx * 1.02, cy - 18), (cx - rx * 0.7, cy - ry * 0.95), (cx, cy - ry * 1.08),
               (cx + rx * 0.75, cy - ry * 0.95), (cx + rx * 1.02, cy - 12), (cx + rx * 0.62, cy - 52),
@@ -362,7 +362,7 @@ MISHA = dict(
 def draw_misha(pen, p):
     t = p['t']
     sx, sy = p['x'], p['y'] + p['bob']
-    skin = (250, 200, 160)
+    skin = (255, 222, 200)
     suit = (214, 52, 58)
     stripe = (250, 250, 250)
     lean = p['lean']
@@ -434,7 +434,7 @@ def draw_misha_head(pen, cx, cy, p, skin):
               (cx + rx * 0.75, cy - 6)], (170, 110, 60))
     # cheeks
     for side in (-1, 1):
-        pen.ellipse(cx + side * rx * 0.6, cy + 44, 26, 16, (246, 150, 140), outline=False)
+        pen.ellipse(cx + side * rx * 0.6, cy + 44, 26, 16, (252, 170, 160), outline=False)
     ey = cy + 4
     look = p['look']
     eo = p['eye_open'] * (1 - 0.55 * p['disgust'])

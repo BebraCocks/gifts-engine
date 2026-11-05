@@ -139,6 +139,16 @@ def headline(im, t, t0, text, y, size=96, rgb=(255, 255, 255), t1=None):
     put(im, text_sprite(text, size, rgb, 'Heavy', 10), W / 2, y, a, pop(t, t0))
 
 
+CENSOR = {'сука': 'с*ка', 'блядь': 'бл*дь', 'охуели': 'оху*ли', 'нахуй': 'нах*й', 'хуйня': 'х*йня',
+          'похуй': 'пох*й', 'ебанутый': 'еб*нутый', 'долбаёб': 'долба*б'}
+
+
+def censor(text):
+    for a, b in CENSOR.items():
+        text = text.replace(a, b)
+    return text
+
+
 def subtitles(im, t):
     k = line_at(t)
     if k is None or LINES[k][2] in ('hook', 'vault3d', 'moral', 'cta'):
@@ -146,7 +156,7 @@ def subtitles(im, t):
     who = SPEAKER[k]
     name = {'N': None, 'A': ('АЛЕКСЕЙ', (120, 180, 255)), 'M': ('МИХАИЛ', (255, 120, 110))}[who]
     import re
-    words = re.findall(r'\S+?-(?=\S)|\S+', LINES[k][1])
+    words = re.findall(r'\S+?-(?=\S)|\S+', censor(LINES[k][1]))
     asr = [a for w, a, b in WORDS[k]]
     n, m = len(words), len(asr)
     times = [asr[min(m - 1, round(j * (m - 1) / max(1, n - 1)))] if n != m else asr[j] for j in range(n)]
@@ -320,7 +330,7 @@ def shot_hook_phone(t):
     st = craft_state(t, 'hook')
     tx = 540 + 6 * math.sin(t * 40)                        # trembling thumb above the button
     im = phone_frame(t, st, 0.74, 1080, thumb=(tx, 1700 + 40 * math.sin(t * 3), 0.0,
-                                                (226, 214, 176)), shake_amp=1.5)
+                                                (246, 232, 220)), shake_amp=1.5)
     put(im, text_sprite('РАДИ ОДНОЙ\nКНОПКИ', 104, (255, 255, 255), 'Heavy', 11), W / 2, 330, 1, pop(t, E.HOOK_CUT + 0.05))
     return im
 
@@ -413,7 +423,7 @@ def shot_phone1(t):
         k_out = fx.ease_in(min(1, max(0, (t - E.PRESS - 0.15) / 0.4)))
         y = 1900 + (1610 - 1900) * k_in + 500 * k_out
         thumb = (540 + 4 * math.sin(t * 37), y, min(1, max(0, (t - E.PRESS + 0.12) / 0.15)) * (1 - k_out),
-                 (226, 214, 176))
+                 (246, 232, 220))
     burn = st['burn']
     sh = 10 * burn * (1 - st['ash']) + 3 * st['vortex']
     z = 0.8 + 0.06 * st['vortex']
@@ -430,7 +440,7 @@ def shot_face(t):
              brow=(keys(t, [(E.FACE, -12), (E.SMILE_GONE, 0), (E.REALISE, -16)]), 0))
     z = 2.5 + 0.35 * fx.smooth(u / (E.RAGE - E.FACE))
     im = stage(S.hallway(), ALEX_X, 700, z, [(C.draw_alex, ALEX_X, 1.05, p)])
-    put(im, fx.radial(1100, (255, 130, 50), power=1.5, peak=0.35 * (1 - ramp(t, E.FACE, E.FACE + 2))), W / 2, 1700)
+    put(im, fx.radial(1100, (255, 150, 70), power=1.5, peak=0.16 * (1 - ramp(t, E.FACE, E.FACE + 2))), W / 2, 1750)
     for k, (name, rus, tw) in enumerate((('Burning Time', 'Горящее время', E.wt('burned', 'горящее')),
                                          ('Heartbreak', 'Разбитое сердце', E.wt('burned', 'разбитое')))):
         if t >= tw - 0.05:
@@ -530,9 +540,8 @@ def shot_freeze(t):
     if z > 1.001:
         w, h = W / z, H / z
         base = base.transform((W, H), Image.EXTENT, ((W - w) / 2, (H - h) / 2, (W + w) / 2, (H + h) / 2), Image.BILINEAR)
-    g = base.convert('L').convert('RGB')
-    sep = Image.blend(g, Image.new('RGB', (W, H), (250, 200, 140)), 0.18)
-    im = Image.blend(base, sep, min(1, u / 0.15) * 0.75).convert('RGBA')
+    g = Image.blend(base.convert('L').convert('RGB'), Image.new('RGB', (W, H), (255, 255, 255)), 0.12)
+    im = Image.blend(base, g, min(1, u / 0.15) * 0.3).convert('RGBA')      # light «paused» look, colours kept
     put(im, text_sprite('СТОП-КАДР', 120, (255, 255, 255), 'Heavy', 12), W / 2, 330, 1, pop(t, E.FREEZE), -4)
     fl = max(0.0, 1 - u / 0.12)
     if fl > 0:
@@ -571,7 +580,7 @@ def shot_phone2(t):
     if E.PRESS2 - 0.6 <= t < E.FLASH2:
         k_in = fx.ease_out(min(1, (t - E.PRESS2 + 0.6) / 0.35))
         y = 1900 + (1610 - 1900) * k_in
-        thumb = (600, y, min(1, max(0, (t - E.PRESS2 + 0.1) / 0.15)), (250, 200, 160))
+        thumb = (600, y, min(1, max(0, (t - E.PRESS2 + 0.1) / 0.15)), (255, 222, 200))
     return phone_frame(t, st, 0.76, 880, thumb, 2 * st['vortex'])
 
 
@@ -645,11 +654,14 @@ def shot_pizza(t):
 
 def shot_shock(t):
     u = t - E.SHOCK
-    a = alex(t, thin=1.0, pale=1.0, jaw=1.0, wide=1.0, eye_open=1.0, smile=-0.7, mouth=0.45, look=(0, 0),
-             twitch=float(int(t * 10) % 2 == 0), brow=(-18, 0), la=(14.0, -150.0), phone_hand='l', cracked=True,
-             phone_glow=False)
-    z = 2.7 + 0.6 * fx.ease_out(min(1, u / 0.25))
-    return stage(S.hallway(), ALEX_X, 700, z, [(C.draw_alex, ALEX_X, 1.05, a)])
+    yell = ramp(t, E.WTF - 0.1, E.WTF + 0.25)
+    a = alex(t, thin=1.0, pale=1.0, jaw=1.0 - 0.7 * yell, wide=1.0 - 0.5 * yell, eye_open=1.0, smile=-0.7,
+             mouth=0.45 if yell < 0.5 else max(0.2, talk(t, 'A')), look=(0, 0),
+             twitch=float(int(t * 10) % 2 == 0 and yell < 0.5), brow=(-18 + 26 * yell, 0), angry=yell,
+             red=0.7 * yell, steam=yell, shake=0.8 * yell * float(t < E.END[E.L['wtf']]),
+             la=(14.0, -150.0), phone_hand='l', cracked=True, phone_glow=False)
+    z = 2.7 + 0.6 * fx.ease_out(min(1, u / 0.25)) - 0.5 * yell
+    return stage(S.hallway(), ALEX_X, 700 + 60 * yell, z, [(C.draw_alex, ALEX_X, 1.05, a)])
 
 
 def shot_moral(t):
@@ -710,7 +722,7 @@ def render_at(t):
     im = fn(t)
     # quick zoom punch on every cut (keeps 2D cuts lively)
     for c in CUTS:
-        if c <= t < c + 0.18 and fn not in (shot_vault, shot_legend, shot_freeze):
+        if c <= t < c + 0.18 and fn not in (shot_vault, shot_legend, shot_freeze, shot_ugly):
             k = 1 + 0.04 * (1 - (t - c) / 0.18)
             w, h = W / k, H / k
             im = im.transform((W, H), Image.EXTENT, ((W - w) / 2, (H - h) / 2, (W + w) / 2, (H + h) / 2), Image.BILINEAR)

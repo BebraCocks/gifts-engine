@@ -43,7 +43,7 @@ T['block1'] = end('threat') + 0.12
 T['dima_cry'] = end('threat') + 0.35
 T['simple'] = end('threat') + 0.85
 T['sleep'] = on('sleep') - 0.1
-T['thought'] = end('sleep') + 0.05             # «Жизнь-то… не такая уж и плохая» as a thought
+T['thought'] = 1e9                              # the thought is voiced again (line 'life')
 # months → Katya → the search → the dating site → the AI
 T['tunnel'] = on('months') - 0.05
 T['katya'] = wt('katya', 'Катя') - 0.15

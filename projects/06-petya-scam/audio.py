@@ -1,4 +1,4 @@
-"""Four voices (Fish Audio drama-3) + SFX from Botanica V4 via sfxkit + the complete RubUp sound (two breaks).
+"""Four voices (Fish Audio drama-3) + SFX from Botanica V4 via sfxkit + the complete RubUp sound (three breaks, no spoken lead).
 Writes build/mix.wav and build/review/{sfx_only,mix}.mp3 + sfx_cues.txt.
 
 Synthesised (not in the pack): the party music behind the scene (a plain 120 bpm kick/hat/bass loop) — the pack

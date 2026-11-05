@@ -748,7 +748,8 @@ def shot_simple(t):
 
 def shot_sleep(t):
     im = S.bedroom().copy()
-    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2)
+    o = talk(t, ('life',))
+    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2, open_=0.15 + 0.5 * o if o else 0.0)
     hd = hd.rotate(78, resample=Image.BICUBIC, expand=True)
     put(im, hd, 300, 1110, scale=0.95)
     im.alpha_composite(S.blanket())
@@ -981,7 +982,7 @@ def shot_chat_k(t, t0=None, fly=True):
     im = pov_shot(t, CHAT_K, t0 if t0 is not None else T['chat_k'], environment('night'), fly=fly)
     if t0 is None and T['chat_k'] <= t < T['chat_k'] + 2.0:
         k = pop(t, T['chat_k'] + 0.25, 0.35) * (1 - ramp(t, T['chat_k'] + 1.6, T['chat_k'] + 2.0))
-        put(im, text_spr('ДЕНЬ X', 120, rgb=(255, 80, 90)), 540, 300, a=k, scale=0.8 + 0.2 * k)
+        put(im, text_spr('ДЕНЬ X', 120, rgb=(255, 80, 90)), 540, 360, a=k, scale=0.8 + 0.2 * k)
     return im
 
 

@@ -97,11 +97,36 @@ def tighten(x, max_gap):
     return y
 
 
+# lines whose take is cut after the first sentence (the RubUp lead is not spoken — author, 2026-11-05)
+FIRST_SENTENCE = {'lead1', 'lead2', 'lead3'}
+
+
+def first_sentence(x, min_speech=0.8, min_gap=0.2):
+    """Keep the take up to the first pause of min_gap seconds after min_speech seconds of speech."""
+    hop = SR // 100
+    e = np.array([np.sqrt((x[k:k + hop] ** 2).mean()) for k in range(0, len(x) - hop, hop)])
+    db = 20 * np.log10(e / 32768 + 1e-6)
+    loud = db > db.max() - 36
+    on = np.nonzero(loud)[0]
+    k = on[0] + int(min_speech * 100)
+    gap = int(min_gap * 100)
+    while k < len(loud) - gap:
+        if not loud[k:k + gap].any():
+            return x[:(k + 4) * hop]
+        k += 1
+    return x
+
+
 if __name__ == '__main__':
+    import script
+    keys = {f'L{k + 1:02d}': L[2] for k, L in enumerate(script.LINES)}
     takes = {k: v for k, v in json.loads((HERE / 'takes.json').read_text()).items() if k.startswith('L')}
     total = 0
     for line, ids in sorted(takes.items()):
-        y = stretch(tighten(fetch(ids[0]), MAX_GAP.get(line, DEFAULT_GAP)))
+        raw = fetch(ids[0])
+        if keys.get(line) in FIRST_SENTENCE:
+            raw = first_sentence(raw)
+        y = stretch(tighten(raw, MAX_GAP.get(line, DEFAULT_GAP)))
         with wave.open(str(HERE / 'voice' / f'{line}.wav'), 'wb') as w:
             w.setnchannels(1)
             w.setsampwidth(2)

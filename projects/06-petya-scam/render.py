@@ -267,7 +267,7 @@ def thumbs(t, typing_on, kb):
             return (x, _ky(r)), rest_r
         x, r = TAPS_R[(k * 7 + 1) % 5]
         return rest_l, (x, _ky(r))
-    return (X0 + 120, Y1 - 120 - 60 * kb), (X1 - 120, Y1 - 120 - 60 * kb)
+    return (X0 + 110, Y1 - 45 - 120 * kb), (X1 - 110, Y1 - 45 - 120 * kb)
 
 
 @functools.lru_cache(maxsize=8)
@@ -333,13 +333,11 @@ AV_UNKNOWN = tg.circle(C.avatar('unknown', 240), 240)
 CHAT_BOSS = dict(theme='day', name='Друг', status='в сети', avatar=AV_BOSS, clock='18:40', events=[
     msg(T['buzz'], 'in', 'Есть тема 💸', '18:40'),
     msg(T['fly1'] + 0.25, 'in', 'Пишешь людям, втираешься в доверие и уговариваешь отдать NFT-подарки', '18:40'),
-    msg(T['fly1'] + 1.0, 'in', 'Всё просто 😎', '18:41'),
-    draft(ON[KEY['try']] + 0.05, ON[KEY['try']] + 1.5, 'Звучит как развод 🤨'),
-    msg(ON[KEY['try']] + 1.55, 'out', 'Звучит как развод 🤨', '18:41'),
-    typing(ON[KEY['try']] + 1.7, ON[KEY['try']] + 2.3),
-    msg(ON[KEY['try']] + 2.3, 'in', 'Кто не рискует — тот без подарков 🎁', '18:42'),
-    draft(ON[KEY['try']] + 2.5, END[KEY['try']] - 0.05, 'Ладно, попробую'),
-    msg(END[KEY['try']], 'out', 'Ладно, попробую', '18:42'),
+    msg(T['fly1'] + 0.95, 'in', 'Всё просто 😎', '18:41'),
+    draft(END[KEY['boss']] - 0.2, END[KEY['boss']] + 0.75, 'Звучит как развод 🤨'),
+    msg(END[KEY['boss']] + 0.8, 'out', 'Звучит как развод 🤨', '18:41'),
+    typing(END[KEY['boss']] + 0.9, ON[KEY['dima']] + 0.25),
+    msg(ON[KEY['dima']] + 0.25, 'in', 'Кто не рискует — тот без подарков 🎁', '18:42'),
 ])
 
 CHAT_DIMA = dict(theme='day', name='Дима', status='в сети', avatar=AV_DIMA, clock='16:05', events=[

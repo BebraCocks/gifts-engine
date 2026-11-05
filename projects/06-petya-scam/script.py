@@ -1,7 +1,7 @@
 """06-petya-scam «Петя и NFT», часть 1. Four Fish Audio voices, model drama-3 (author's choice, 2026-11-05).
 
 LINES: (speaker, spoken text, screen key, pause after, s). Speakers: N — narrator, P — Petya, K — Katya, D — Dima,
-X — the sender of the last message. L31 reuses the L01 take (the same message, heard twice).
+X — the sender of the last message. L30 reuses the L01 take (the same message, heard twice).
 TTS_TEXT: the text sent to drama-3 — free-text directions in [brackets], NFT / RubUp spelled for Russian speech.
 """
 
@@ -18,9 +18,8 @@ LINES = [
     ('X', 'Зря ты это сделал, Петя.', 'hook_msg', 0.35),
     ('N', 'Петя был уверен, что его никогда не вычислят. Но обо всём по порядку.', 'hook', 0.25),
     ('N', 'Петя — обычный школьник, который мечтал о больших деньгах.', 'room', 0.12),
-    ('N', 'Однажды интернет-друг скинул ему схему.', 'boss', 0.6),
-    ('P', 'Звучит как развод… Ладно, попробую.', 'try', 0.25),
-    ('N', 'И почти сразу — удача.', 'dima', 0.4),
+    ('N', 'Однажды интернет-друг скинул ему схему.', 'boss', 1.0),
+    ('N', 'И почти сразу — удача.', 'dima', 0.5),
     ('P', 'Слушай, скинь календарь на пять минут? Только скрин сделаю — и сразу верну.', 'ask', 0.3),
     ('D', 'Ну ладно… только правда верни.', 'dima_ok', 0.85),
     ('P', 'Спасибо, лошара.', 'loser', 0.15),
@@ -54,7 +53,6 @@ TTS_TEXT = [
     '[intriguing, fast, hooking storyteller] Петя был уверен, что его никогда не вычислят. [knowing, slightly ominous] Но обо всём по порядку.',
     '[brisk, fast pace, light irony] Петя — обычный школьник, который мечтал о больших деньгах.',
     '[fast, mysterious] Однажды интернет-друг скинул ему схему.',
-    '[doubtful teenager, mumbling] Звучит как развод… [sighing, then deciding] Ладно, попробую.',
     '[fast, tense excitement] И почти сразу — удача.',
     '[friendly, sweet, persuasive, casual teen] Слушай, скинь календарь на пять минут? Только скрин сделаю — и сразу верну.',
     '[shy, hesitant, a little unsure kid] Ну ладно… только правда верни.',
@@ -84,4 +82,4 @@ TTS_TEXT = [
     '[intriguing, dramatic, cliffhanger] Как Петю могли вычислить? [teasing] Продолжение — во второй части.',
 ]
 assert len(TTS_TEXT) == len(LINES)
-REUSE = {31: 1}                                       # the last message reuses the take of line 1 (1-based)
+REUSE = {30: 1}                                       # the last message reuses the take of line 1 (1-based)

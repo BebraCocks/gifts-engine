@@ -5,7 +5,7 @@ room(phase)       a small room with a window; phase 0..1 = day → night → day
 street()          a warm city sidewalk: brick wall, shop window, kerb
 sofa_room()       living room: sofa, lamp, plant, rug
 card(rank)        the place card «N МЕСТО» (bronze / silver / gold, gold gets a crown)
-sign()            cardboard «НА ЛЕКАРСТВА» with a little bear doodle
+sign()            cardboard «НА ЛЕКАРСТВА», text only (author, 2026-11-05)
 legs(phase, col)  a passer-by from the knees down, walking cycle
 """
 import functools
@@ -254,18 +254,9 @@ def sign():
     L.stroke([(420, 380), (580, 372)], 3, (170, 124, 80), alpha=0.6)
     im = L.image()
     d = ImageDraw.Draw(im)
-    f = tg.font('Heavy', 82)
-    for k, (line, y) in enumerate((('НА', 120), ('ЛЕКАРСТВА', 220))):
+    f = tg.font('Heavy', 84)
+    for k, (line, y) in enumerate((('НА', 160), ('ЛЕКАРСТВА', 280))):      # text only (author, 2026-11-05)
         d.text((w / 2 + (k - 0.5) * 6, y), line, font=f, fill=(46, 40, 50), anchor='mm')
-    # little bear doodle + «15 ⭐» in the corner
-    L2 = Layer(w, h, ss=2)
-    bx, by = 140, 340
-    for s in (-1, 1):
-        L2.ell(bx + s * 30, by - 34, 14, 14, (46, 40, 50))
-    L2.ell(bx, by, 44, 40, (46, 40, 50))
-    L2.ell(bx, by + 8, 20, 14, (212, 168, 114))
-    im.alpha_composite(L2.image())
-    tg.draw_text(im, (230, 300), '15 ⭐ ?', tg.font('Heavy', 60), (46, 40, 50))
     return im
 
 

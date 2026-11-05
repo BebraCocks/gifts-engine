@@ -161,7 +161,6 @@ def sfx_layer(n, kit):
       label='waiting: tension bed')
     A(fx, 'pop', T['five'], gain_db=-17, label='«+5 минут»')
     A(fx, 'pop', T['ten'], gain_db=-16, label='«+10 минут»')
-    A(fx, 'voice', T['uneasy'] + 0.4, gain_db=-17, file='nervous.flac', label='Petya: nervous «hm»')
     A(fx, 'whoosh-short', T['uneasy'], align='peak', gain_db=-18, label='cut to uneasy Petya')
     # ---- party
     A(fx, 'whoosh', T['party'], align='peak', gain_db=-14, label='cut to the party')

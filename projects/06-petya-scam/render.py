@@ -495,9 +495,11 @@ CHAT_K = dict(theme='night', name='Катя', status='в сети', avatar=AV_KA
                      (T['ten'], '00:00')],
               overlays=[_transfer_overlay], events=[
     msg(T['chat_k'], 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
-    msg(T['chat_k'] + 0.22, 'in', 'Ого, правда? 😊', '21:05'),
-    msg(T['chat_k'] + 0.44, 'out', 'Правда) Может, встретимся в субботу?', '22:58'),
-    typing(T['chat_k'] + 0.6, T['date_msg']),
+    typing(T['chat_k'] + 0.15, ON[KEY['wow']]),
+    msg(ON[KEY['wow']], 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '21:05'),
+    draft(ON[KEY['invite']] - 0.1, END[KEY['invite']] - 0.05, 'Может, встретимся в субботу? 🙂'),
+    msg(END[KEY['invite']], 'out', 'Может, встретимся в субботу? 🙂', '22:58'),
+    typing(END[KEY['invite']] + 0.1, T['date_msg']),
     msg(T['date_msg'], 'in', 'С радостью! Жду не дождусь субботы 🥰', '23:12'),
     draft(T['fly_cancel'] + 0.05, T['cancel_sent'] - 0.05,
           'Кать, прости пожалуйста, но я не смогу приехать на свидание 😔'),
@@ -843,7 +845,7 @@ def shot_found(t):
 
 def shot_profile(t):
     t0 = T['profile']
-    hl = [t0 + 1.2 + 0.55 * k for k in range(4)]
+    hl = list(T['wishes']) + [T['wishes'][-1] + 0.4]
     scr = SC.dating_screen(t, t0 + 0.3, hl)
     z, b, fl = fly_in(t, t0)
     zz = z * (1 + 0.1 * sm(ramp(t, t0 + 1.0, t0 + 2.2)))
@@ -1099,7 +1101,7 @@ def shot_party(t):
     if lp > 0:
         glow(im, px, py, 300, (150, 210, 255), 0.7 * lp)
     put(im, text_spr('ВСЁ ЗА МОЙ СЧЁТ!', 80, rgb=(255, 220, 80)), 540, 300,
-        a=pop(t, ON[KEY['party']], 0.3) * (1 - ramp(t, END[KEY['party']] + 0.4, END[KEY['party']] + 0.7)))
+        a=pop(t, T['party_all'], 0.3) * (1 - ramp(t, END[KEY['party']] + 0.4, END[KEY['party']] + 0.7)))
     k = 1.0 + 0.25 * sm(lp)
     cy = 960 + (py - 960) * sm(lp) * 0.6
     im = zoom_view(im, 540, cy, k)

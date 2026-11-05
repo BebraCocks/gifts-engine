@@ -7,7 +7,7 @@ from script import LINES
 HERE = Path(__file__).resolve().parent
 TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
 HAS_NARRATION = not config.WITHOUT_NARRATION and all(p.is_file() for p in TAKES)
-START, TAIL = 0.15, 0.45
+START, TAIL = 0.15, 0.2
 ON, END, SPEAKER = [], [], []
 cursor = START
 for k, (who, spoken, key, pause) in enumerate(LINES):

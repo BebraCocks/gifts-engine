@@ -18,11 +18,11 @@ import sound
 import sfxkit
 from script import LINES
 from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES
-from events import AD1, AD2, T
+from events import AD1, AD2, AD3, ADS, T
 import render as R
 
 SR = 48000
-BR = banner.Breaks([AD1, AD2], cy=960, speed=1.1)
+BR = banner.Breaks(ADS, cy=960, speed=1.1)
 
 
 def party_beat(t0, t1, muffle_at, gain_db=-17.0):
@@ -111,7 +111,7 @@ def sfx_layer(n, kit):
     A(fx, 'whoosh-short', T['simple'], align='peak', gain_db=-18, label='back to Petya')
     # ---- sleep → RubUp 1
     A(fx, 'whoosh-organic', T['sleep'], align='peak', gain_db=-18, label='to the bedroom')
-    A(fx, 'ambience', T['sleep'], gain_db=-28, fit=AD1 - T['sleep'] + 0.3, fade_out=0.5,
+    A(fx, 'ambience', T['sleep'], gain_db=-28, fit=T['tunnel'] - T['sleep'] + 0.3, fade_out=0.5,
       file='ambience-nature-night', label='night outside')
     A(fx, 'whoosh-deep', AD1, align='peak', gain_db=-16, label='slow-down to RubUp 1')
     # ---- months: loot tunnel
@@ -151,8 +151,10 @@ def sfx_layer(n, kit):
     for k, g in enumerate(T['gifts']):
         A(fx, 'impact', g + 0.05, gain_db=-17 - k, label=f'gift {k + 1} bursts out of the phone')
     A(fx, 'whoosh-short', T['katya_sad'], align='peak', gain_db=-18, label='cut to Katya')
-    A(fx, 'riser', AD2, align='end', gain_db=-17, fit=2.5, label='his smile spreads')
+    A(fx, 'riser', T['transfer'], align='end', gain_db=-17, fit=2.5, label='his smile spreads')
     A(fx, 'whoosh-deep', AD2, align='peak', gain_db=-16, label='slow-down to RubUp 2')
+    A(fx, 'whoosh-deep', AD3, align='peak', gain_db=-16, label='slow-down to RubUp 3')
+    A(fx, 'whoosh-short', T['lead2'], align='peak', gain_db=-17, label='cut to Petya smirking')
     # ---- after RubUp 2: transfer, mockery, waiting
     A(fx, 'popup', T['transfer'] + 0.05, gain_db=-16, label='sheet «Передать подарки»')
     A(fx, 'select', T['transfer_done'] - 0.35, gain_db=-15, label='press «Передать»')

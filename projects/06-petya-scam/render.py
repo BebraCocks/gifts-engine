@@ -34,11 +34,11 @@ from art import Layer, shade
 from tg import blocked, draft, gift, msg, note, typing
 from timeline import DUR, ON, END, KEY, TAKES, HAS_NARRATION
 from words import WORDS
-from events import AD1, AD2, T
+from events import AD1, AD2, AD3, ADS, T
 from script import LINES
 
 W, H, FPS = 1080, 1920, 60
-BR = banner.Breaks([AD1, AD2], cy=H / 2, speed=1.1)
+BR = banner.Breaks(ADS, cy=H / 2, speed=1.1)
 
 
 # ------------------------------------------------------------------ helpers
@@ -356,7 +356,7 @@ def petya_chat_expr(t):
     if w(T['help'], T['katya_sad']):
         g = ramp(t, T['gifts'][0], T['gifts'][0] + 0.4)
         return dict(look=(0.7, 0.5), smile=0.3 + 0.7 * g, open_=0.6 * g, teeth=g, brow=0.7 * g)
-    if w(AD2, T['mock_sent'] + 0.4):
+    if w(T['transfer'], T['mock_sent'] + 0.4):
         return dict(look=(0.7, 0.5), smile=1.0, open_=0.5, teeth=1.0, anger=0.3)          # mocking laugh
     if w(T['mock_sent'] + 0.4, T['uneasy']):
         k = ramp(t, T['five'], T['ten'] + 0.8)
@@ -374,7 +374,7 @@ def layout_at(t):
         return 'desk'
     if T['lie'] <= t < T['katya_sad']:
         return 'desk'
-    if AD2 <= t < T['uneasy']:
+    if T['transfer'] <= t < T['uneasy']:
         return 'pace'
     if T['block2_shot'] <= t < T['party']:
         return 'stand'
@@ -454,18 +454,19 @@ AV_UNKNOWN = tg.circle(C.avatar('unknown', 240), 240)
 
 CHAT_BOSS = dict(theme='day', name='Друг', status='в сети', avatar=AV_BOSS, clock='18:40', events=[
     msg(T['buzz'], 'in', 'Есть тема 💸', '18:40'),
-    msg(T['fly1'] + 0.2, 'in', 'Пишешь людям, втираешься в доверие и уговариваешь отдать NFT-подарки', '18:40'),
-    msg(T['fly1'] + 0.8, 'in', 'Всё просто 😎', '18:41'),
-    draft(T['fly1'] + 1.0, END[KEY['boss']] + 0.2, 'Звучит как развод 🤨'),
-    msg(END[KEY['boss']] + 0.25, 'out', 'Звучит как развод 🤨', '18:41'),
-    typing(END[KEY['boss']] + 0.35, END[KEY['boss']] + 0.65),
-    msg(END[KEY['boss']] + 0.65, 'in', 'Кто не рискует — тот без подарков 🎁', '18:42'),
+    msg(T['fly1'] + 0.3, 'in', 'Пишешь людям, втираешься в доверие и уговариваешь отдать NFT-подарки', '18:40'),
+    msg(T['fly1'] + 2.2, 'in', 'Всё просто 😎', '18:41'),
+    draft(T['try_doubt'], T['try_ok'] - 0.6, 'Звучит как развод 🤨'),
+    msg(T['try_ok'] - 0.55, 'out', 'Звучит как развод 🤨', '18:41'),
+    msg(T['try_ok'] - 0.1, 'in', 'Кто не рискует — тот без подарков 🎁', '18:42'),
+    draft(T['try_ok'] + 0.1, END[KEY['try']] - 0.05, 'Ладно, попробую'),
+    msg(END[KEY['try']], 'out', 'Ладно, попробую', '18:42'),
 ])
 
 CHAT_DIMA = dict(theme='day', name='Дима', status='в сети', avatar=AV_DIMA, clock='16:05', events=[
     msg(-9, 'out', 'Привет! Видел у тебя календарь в профиле 🔥', '16:02'),
     msg(-8, 'in', 'Привет) да, мама подарила 😊', '16:03'),
-    draft(T['to_dima_chat'] + 0.05, T['ask_sent'] - 0.05, 'Слушай, скинь на 5 минут? Скрин для канала сделаю и сразу верну 🙏'),
+    draft(ON[KEY['ask']] - 0.1, T['ask_sent'] - 0.05, 'Слушай, скинь на 5 минут? Скрин для канала сделаю и сразу верну 🙏'),
     msg(T['ask_sent'], 'out', 'Слушай, скинь на 5 минут? Скрин для канала сделаю и сразу верну 🙏', '16:03'),
     typing(T['ask_sent'] + 0.1, T['dima_reply']),
     msg(T['dima_reply'], 'in', 'Ну ладно… только правда верни 🥺', '16:04'),
@@ -490,13 +491,19 @@ def _transfer_overlay(im, t):
 
 
 CHAT_K = dict(theme='night', name='Катя', status='в сети', avatar=AV_KATYA, back='Чаты',
-              clock=[(-99, '21:03'), (T['date_msg'] - 0.5, '23:12'), (T['cancel'], '23:40'), (T['lie'], '23:44'),
-                     (T['help'], '23:45'), (T['all_msg'], '23:47'), (AD2, '23:50'), (T['five'], '23:55'),
+              clock=[(-99, '21:03'), (T['days'] + 1.3, '08:12'), (T['days'] + 2.4, '19:40'), (T['date_msg'] - 0.5, '23:12'), (T['cancel'], '23:40'), (T['lie'], '23:44'),
+                     (T['help'], '23:45'), (T['all_msg'], '23:47'), (T['transfer'], '23:50'), (T['five'], '23:55'),
                      (T['ten'], '00:00')],
               overlays=[_transfer_overlay], events=[
     msg(T['chat_k'], 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
-    typing(T['chat_k'] + 0.15, ON[KEY['wow']]),
-    msg(ON[KEY['wow']], 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '21:05'),
+    msg(T['days'] + 0.2, 'in', 'Ого 😊 Какие?', '21:05'),
+    msg(T['days'] + 0.8, 'out', 'Море, кофе по утрам и честные разговоры ☕️', '21:06'),
+    msg(T['days'] + 1.4, 'in', 'Доброе утро ☀️', '08:12'),
+    msg(T['days'] + 1.9, 'out', 'Доброе! Уже скучаю 🙂', '08:13'),
+    msg(T['days'] + 2.5, 'in', 'Как прошёл день?', '19:40'),
+    msg(T['days'] + 3.0, 'out', 'Думал о тебе. Ты улыбаешься, даже когда пишешь — я это чувствую', '19:42'),
+    typing(T['days'] + 3.2, ON[KEY['wow']]),
+    msg(ON[KEY['wow']], 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '19:43'),
     draft(ON[KEY['invite']] - 0.1, END[KEY['invite']] - 0.05, 'Может, встретимся в субботу? 🙂'),
     msg(END[KEY['invite']], 'out', 'Может, встретимся в субботу? 🙂', '22:58'),
     typing(END[KEY['invite']] + 0.1, T['date_msg']),
@@ -747,7 +754,7 @@ def shot_sleep(t):
         ph = (t * 0.6 + j / 3) % 1.0
         put(im, text_spr('z', 60 + 20 * j, rgb=(220, 230, 255), stroke=5), 430 + 60 * ph + 30 * j, 950 - 260 * ph,
             a=math.sin(math.pi * ph) * 0.9)
-    k = 1.0 + 0.1 * ramp(t, T['sleep'], AD1)
+    k = 1.0 + 0.1 * ramp(t, T['sleep'], T['tunnel'])
     return zoom_view(im, 520, 1050, k)
 
 
@@ -822,7 +829,7 @@ def shot_search(t):
             ph = (t * 1.4 + j / 3) % 1
             put(im, chip(['поиск: Катя ...', 'ничего не найдено', 'ещё 1 вкладка'][j], bg=(20, 24, 40)),
                 lerp(1300, -250, ph), 520 + j * 110, a=0.8)
-    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, hood=True, sad=0.3, smile=-0.1,
+    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, hood=True, sad=0.3, smile=-0.1, talk_keys=('search2',),
                                      blink=0.5 + 0.4 * (math.sin(t * 3) > 0.6), look=(0, 0.6)), extra=ex,
                     cam=(540, 1000, 1.0 + 0.1 * k))
     return im
@@ -962,8 +969,17 @@ def shot_katya_love(t):
         ph = (t * 0.5 + j / 5) % 1
         put(im, tg._emoji('❤', 64), 260 + j * 140 + 30 * math.sin(t + j), 1100 - 700 * ph,
             a=math.sin(math.pi * ph) * 0.9)
-    return zoom_view(im, 540, 1000, 1.05 + 0.06 * ramp(t, T['katya_love'], T['cancel']))
+    return zoom_view(im, 540, 1000, 1.05 + 0.06 * ramp(t, T['katya_love'], T['lead2']))
 
+
+
+def shot_lead2(t):
+    def ex(im):
+        px, py = phone_point(540, 1010, 1.3)
+        glow(im, px, py, 360, (150, 210, 255), 0.6)
+    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, smirk=0.9, smile=0.5, look=(0.4, 0.5), anger=0.2),
+                    scale=1.3, extra=ex, cam=(540, 900, 1.15 + 0.1 * ramp(t, T['lead2'], AD2)))
+    return whip(im, 1 - ramp(t, T['lead2'], T['lead2'] + 0.15))
 
 
 def shot_cancel(t):
@@ -1044,7 +1060,7 @@ def shot_katya_sad(t):
 
 
 def shot_smile(t):
-    k = ramp(t, T['smile'], AD1 if False else AD2)
+    k = ramp(t, T['smile'], T['transfer'])
     sm_ = sm(ramp(t, T['smile'] + 0.2, T['smile'] + 2.5))
 
     def ex(im):
@@ -1059,7 +1075,7 @@ def shot_smile(t):
 
 
 def shot_mock(t):
-    im = pov_shot(t, CHAT_K, AD2, environment('night'), fly=False)
+    im = pov_shot(t, CHAT_K, T['transfer'], environment('night'), fly=False)
     for key, txt in (('five', '+5 минут'), ('ten', '+10 минут')):
         if T[key] <= t < T[key] + 1.2:
             put(im, text_spr(txt, 86, rgb=(255, 214, 90)), 540, 1600, a=pop(t, T[key], 0.3) *
@@ -1174,6 +1190,7 @@ SHOTS = [
     (T['ai'], shot_ai, 'scene'),
     (T['chat_k'], shot_chat_k, 'pov'),
     (T['katya_love'], shot_katya_love, 'scene'),
+    (T['lead2'], shot_lead2, 'scene'),
     (T['cancel'], shot_cancel, 'scene'),
     (T['fly_cancel'], lambda t: shot_chat_k(t, T['fly_cancel']), 'pov'),
     (T['katya_worried'], shot_katya_worried, 'scene'),
@@ -1182,7 +1199,7 @@ SHOTS = [
     (T['help'], shot_help, 'pov'),
     (T['katya_sad'], shot_katya_sad, 'scene'),
     (T['smile'], shot_smile, 'scene'),
-    (AD2, shot_mock, 'pov'),
+    (T['transfer'], shot_mock, 'pov'),
     (T['uneasy'], shot_uneasy, 'scene'),
     (T['block2_shot'], shot_block2, 'pov'),
     (T['party'], shot_party, 'scene'),

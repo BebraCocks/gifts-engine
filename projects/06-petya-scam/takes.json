@@ -1,5 +1,5 @@
 {
-  "_note": "Fish Audio drama-3 task ids (https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take. L41 reuses L01. v4: full story, no speed-up, three RubUp leads (author 2026-11-05).",
+  "_note": "Fish Audio drama-3 task ids (https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take. L41 reuses L01. v4: full story, no speed-up, three RubUp leads (author 2026-11-05). v5: chronology per the brief, ~3 min.",
   "L01": [
     "cf09fcad8a36439b88ba3469d3e63f3f"
   ],
@@ -19,55 +19,55 @@
     "d3e42734d4cd4ce0a906ad003494d724"
   ],
   "L07": [
-    "ed1201f371504ff4bd752a0e65dd0e12"
+    "07ba0557b02047119bc47f5759b58f4b"
   ],
   "L08": [
-    "6b440d23ceed41eba8d57637d60d4b36"
+    "47a38f0d5af148809f6f6f49b764ed25"
   ],
   "L09": [
-    "dcdb57f564184632bf5927dbe6783b05"
+    "6b440d23ceed41eba8d57637d60d4b36"
   ],
   "L10": [
-    "0531b21333f9461e95a6e97ecd15265b"
+    "dcdb57f564184632bf5927dbe6783b05"
   ],
   "L11": [
-    "7c649827775c4f4d8cd791d1fbc61780"
+    "0531b21333f9461e95a6e97ecd15265b"
   ],
   "L12": [
-    "b717fed635e946cd91ddeaceb3ebc09d"
+    "7c649827775c4f4d8cd791d1fbc61780"
   ],
   "L13": [
-    "5c97d83734a54a7b96ab1d40972facca"
+    "b717fed635e946cd91ddeaceb3ebc09d"
   ],
   "L14": [
-    "db9f92cc2a004f6abbe80cda8d2c5f35"
+    "5c97d83734a54a7b96ab1d40972facca"
   ],
   "L15": [
-    "0ae546b132884a98b841c1e834a38040"
+    "05605ecbb3b14aaf8bcf352266a5ca14"
   ],
   "L16": [
-    "30ac0b1eaa984c72b3ec9230f369ac0d"
+    "db9f92cc2a004f6abbe80cda8d2c5f35"
   ],
   "L17": [
-    "7d26a71d8a184f2fb0dd2fc944bb22cf"
+    "0ae546b132884a98b841c1e834a38040"
   ],
   "L18": [
-    "12394de5e8fd44c19a72d83ed6deff16"
+    "30ac0b1eaa984c72b3ec9230f369ac0d"
   ],
   "L19": [
-    "c09935a0bfab49da834b92c9a75770fd"
+    "12394de5e8fd44c19a72d83ed6deff16"
   ],
   "L20": [
     "3fad141f64114237abd5e27a0a64f048"
   ],
   "L21": [
-    "2a8b625c08cd4e3abc9f84d81a1ddbda"
+    "fe279b12cf2149c18cedfa44350f2456"
   ],
   "L22": [
-    "dd213fb16e7c4e0fbb8790fb13d8a856"
+    "0183ad44cea14c30afea379c7514e46e"
   ],
   "L23": [
-    "737df7c7b9be48aab0a63415f4efa7fe"
+    "dd213fb16e7c4e0fbb8790fb13d8a856"
   ],
   "L24": [
     "ee0c785aed854eca8f35499fed3bd339"
@@ -76,7 +76,7 @@
     "2f8d756f61234314ad350d86d7b6814e"
   ],
   "L26": [
-    "8787d26f452644f7bfefe4d5d79f404f"
+    "a507e3b7cc914062bbc84bbe034c6786"
   ],
   "L27": [
     "e90f48250f654f77adc0821aa7e740fd"
@@ -103,13 +103,13 @@
     "a613a802b88245008965ca4f2490ebec"
   ],
   "L35": [
-    "4a6a9a8c4f094d3ca6b8fe4d3ef2086a"
-  ],
-  "L36": [
     "6c8c9e45096c4fd897f7dfada86d110a"
   ],
-  "L37": [
+  "L36": [
     "31bb024d668243d4957949fde7461cd3"
+  ],
+  "L37": [
+    "2039cad6cc0949a483a5940df7e7bb1c"
   ],
   "L38": [
     "c8d63fd634e24ae39666ad293b433ef9"
@@ -118,7 +118,7 @@
     "b8b578dcfdbd4167bc78394e6839e898"
   ],
   "L40": [
-    "657788b7db474db2be09c7aa4e2698e4"
+    "a17a5ed5e6874122a10f55c75acb485d"
   ],
   "L41": [
     "cf09fcad8a36439b88ba3469d3e63f3f"
@@ -133,24 +133,31 @@
     "27ccdaea87d94db082f38bf12ef59172",
     "2a0f09b9570842978af19f27f499517c",
     "2a84707563b749a482d68c5a3a1399d4",
+    "2a8b625c08cd4e3abc9f84d81a1ddbda",
     "3fb2e38773b04224acf471dbaad23767",
     "46afa76e5a1b4eada274ffeb4325a1f0",
     "4718dd778dc6458da615a41668e7fe1a",
+    "4a6a9a8c4f094d3ca6b8fe4d3ef2086a",
     "53289b7ddbe948dfa7da81ee102f6600",
     "5384393855824e55ac0e71feac25e74f",
+    "657788b7db474db2be09c7aa4e2698e4",
+    "737df7c7b9be48aab0a63415f4efa7fe",
+    "7d26a71d8a184f2fb0dd2fc944bb22cf",
     "84633bcf736d46f48db52151e13834f9",
     "868d1bc1623b4c3c8fb5385b5fa785ca",
+    "8787d26f452644f7bfefe4d5d79f404f",
     "8c916d2504f54608bb4b52093d9b775c",
+    "8d2af7dc92ca412f8dba69dcdde6037f",
     "961c9cfcf2c9479cadafeb89a143d1a1",
     "9b25995d8bd940feb22d464293efab79",
     "9d5911e8303b46e39d145fb51e028916",
     "a045f1921cd740b1956ec4eb5dd0e3d7",
-    "a17a5ed5e6874122a10f55c75acb485d",
     "a57ead58cc6f4e3185c08cc68497bd1c",
     "a73357c57da9471f854dd3d60b3f3bfe",
     "b5681146a9fe45df805ee53e3de86584",
     "ba58cd8e87fd428c8fcc0b96824b0d1a",
     "ba867cc66852437e958c9d21eb47649c",
+    "c09935a0bfab49da834b92c9a75770fd",
     "c9a3ad7f16bc4fc1b9aadf7d3e2215ac",
     "c9d9a2925a6c4d0ab3d6ac0161d58ad0",
     "d00da0b2a3474a8db36e4f96350bb046",
@@ -159,6 +166,7 @@
     "e7b839d73e85424480044a7a8d6e5134",
     "e8ac3fcb80964765b3463dc2c2660e1b",
     "e994cb70c29f470082f3f6ec935b0e2a",
+    "ed1201f371504ff4bd752a0e65dd0e12",
     "fbe7f02fcf614e15844f80910c6751d3"
   ]
 }

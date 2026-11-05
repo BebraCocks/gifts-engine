@@ -25,7 +25,7 @@ SR = 48000
 BR = banner.Breaks(ADS, cy=960, speed=1.1)
 
 
-def party_beat(t0, t1, muffle_at, gain_db=-17.0):
+def party_beat(t0, t1, muffle_at, gain_db=-17.0):  # 120 bpm: the dancers bounce on these beats
     n = int((t1 - t0) * SR)
     out = np.zeros(n)
     rng = np.random.default_rng(3)

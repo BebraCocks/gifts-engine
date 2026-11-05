@@ -54,54 +54,99 @@ def _limb(L, p0, a1, l1, a2, l2, w1, w2, col, col2=None, shade_col=None):
 
 
 # ------------------------------------------------------------------ poses
+def _sstep(x):
+    x = min(1.0, max(0.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def _walk_front(phase, phone):
+    """Walking towards the camera: the passing leg lifts and shortens (foreshortening), the support leg stays
+    straight and planted; the body is highest when one leg passes the other and lowest at the double support;
+    the hips sway over the support foot. One cycle = two steps."""
+    w = 2 * math.pi * phase
+    lift_l = max(0.0, math.sin(w))                  # left leg in the air on the first half
+    lift_r = max(0.0, -math.sin(w))
+    legs = dict(l=(-3 - 3 * lift_l, -3 + 10 * lift_l, 1 - 0.2 * lift_l),
+                r=(3 + 3 * lift_r, 3 - 10 * lift_r, 1 - 0.2 * lift_r))
+    bob = -9 * abs(math.sin(w)) + 4                  # up while passing, down at contact
+    sway = -7 * math.sin(w)                          # weight over the support leg
+    if phone:
+        arms = dict(l=(-14, 100), r=(14, -100))
+    else:                                            # arms swing opposite to the legs (foreshortened)
+        arms = dict(l=(-9 + 5 * math.sin(w), -4 + 18 * math.sin(w)), r=(9 + 5 * math.sin(w), 4 + 18 * math.sin(w)))
+    return dict(arms=arms, legs=legs, lift=bob, sway=sway, phone=phone)
+
+
 def pose(name, phase=0.0):
-    """Returns dict: arms {'l': (a1, a2), 'r': ...}, legs {'l': (a1, a2, thigh_len_k), ...}, lift (body y)."""
+    """Returns dict: arms {'l': (a1, a2), 'r': ...}, legs {'l': (a1, a2, thigh_len_k), ...}, lift (body y),
+    optional sway (body x), phone, seat."""
     s = math.sin(2 * math.pi * phase)
-    c = math.cos(2 * math.pi * phase)
     if name == 'stand':
         return dict(arms=dict(l=(-10, -4), r=(10, 4)), legs=dict(l=(-4, 0, 1), r=(4, 0, 1)), lift=0)
     if name == 'stand_phone':
         return dict(arms=dict(l=(-14, 100), r=(14, -100)), legs=dict(l=(-4, 0, 1), r=(4, 0, 1)), lift=0,
                     phone=True)
-    if name == 'walk_phone':
-        return dict(arms=dict(l=(-14, 100), r=(14, -100)),
-                    legs=dict(l=(-4 + 14 * s, -4 + 6 * s + 14 * max(0, -s), 1),
-                              r=(4 - 14 * s, 4 - 6 * s - 14 * max(0, s), 1)),
-                    lift=-10 * abs(c), phone=True)
+    if name in ('walk_phone', 'pace'):
+        return _walk_front(phase, True)
     if name == 'walk':
-        return dict(arms=dict(l=(-8 - 22 * s, -4 - 30 * s), r=(8 + 22 * s, 4 + 30 * s)),
-                    legs=dict(l=(-4 + 14 * s, -4 + 6 * s + 14 * max(0, -s), 1),
-                              r=(4 - 14 * s, 4 - 6 * s - 14 * max(0, s), 1)), lift=-10 * abs(c))
-    if name == 'pace':                                  # walking while laughing at the phone
-        return pose('walk_phone', phase)
+        return _walk_front(phase, False)
+    if name == 'impatient':                         # waiting: weight shifts from leg to leg, a foot taps
+        w = 2 * math.pi * phase
+        shift = math.sin(w)
+        tap = max(0.0, math.sin(8 * w)) * (0.5 + 0.5 * abs(shift))
+        relaxed_l = max(0.0, shift)                  # left knee relaxes while the weight is on the right
+        relaxed_r = max(0.0, -shift)
+        return dict(arms=dict(l=(-14, 100), r=(14, -100)),
+                    legs=dict(l=(-5 + 4 * relaxed_l, -5 + 12 * relaxed_l + 6 * tap * relaxed_l, 1 - 0.06 * relaxed_l),
+                              r=(5 - 4 * relaxed_r, 5 - 12 * relaxed_r - 6 * tap * relaxed_r, 1 - 0.06 * relaxed_r)),
+                    lift=3 * abs(shift), sway=-9 * shift, phone=True)
     if name == 'sit':
         return dict(arms=dict(l=(-14, 100), r=(14, -100)), legs=dict(l=(-14, -4, 0.42), r=(14, 4, 0.42)),
-                    lift=0, phone=True, seat=True)
-    if name == 'sit_cross':                             # one leg over the other, foot swinging with phase
+                    lift=2 * s, phone=True, seat=True)
+    if name == 'sit_cross':                         # one leg over the other, the foot swings like a pendulum
         return dict(arms=dict(l=(-14, 100), r=(14, -100)),
-                    legs=dict(l=(10, -6, 0.42), r=(-30, 40 + 12 * s, 0.55)), lift=0, phone=True, seat=True,
-                    front='r')
-    if name == 'sit_swing':                             # in love: both feet swinging
+                    legs=dict(l=(10, -6, 0.42), r=(-30, 40 + 10 * s, 0.55)), lift=2 * math.sin(math.pi * phase),
+                    phone=True, seat=True, front='r')
+    if name == 'sit_swing':                         # in love: both feet swinging, a little out of phase
         return dict(arms=dict(l=(-14, 100), r=(14, -100)),
-                    legs=dict(l=(-12, -10 + 22 * s, 0.42), r=(12, 10 - 22 * s, 0.42)), lift=0, phone=True,
-                    seat=True)
-    if name == 'sit_knees':                             # on the bed, knees up, phone on the knees
+                    legs=dict(l=(-12, -10 + 20 * s, 0.42), r=(12, 10 - 20 * math.sin(2 * math.pi * phase + 1.2), 0.42)),
+                    lift=2 * s, phone=True, seat=True)
+    if name == 'sit_knees':                         # on the bed, knees up, phone on the knees; breathing
         return dict(arms=dict(l=(-20, 110), r=(20, -110)), legs=dict(l=(-150, 25, 0.75), r=(150, -25, 0.75)),
-                    lift=0, phone=True, seat=True, knees=True)
+                    lift=2 * s, phone=True, seat=True, knees=True)
     if name == 'slump':
         return dict(arms=dict(l=(-6, 40), r=(6, -40)), legs=dict(l=(-12, -2, 0.42), r=(12, 2, 0.42)),
-                    lift=12, phone=True, seat=True)
+                    lift=12 + 2 * s, phone=True, seat=True)
     if name == 'jump':
-        k = math.sin(math.pi * min(1.0, phase))
-        return dict(arms=dict(l=(-150 - 15 * k, -165), r=(150 + 15 * k, 165)),
-                    legs=dict(l=(-20 * k - 4, 30 * k, 1), r=(20 * k + 4, -30 * k, 1)), lift=-120 * k)
-    if name == 'dance':
-        return dict(arms=dict(l=(-140 + 25 * s, -170 + 30 * s), r=(140 + 25 * s, 170 + 30 * s)),
-                    legs=dict(l=(-8 - 6 * s, 6 + 10 * abs(s), 1), r=(8 - 6 * s, -6 - 10 * abs(s), 1)),
-                    lift=-18 * abs(s))
+        # 0–.22 anticipation (crouch, arms back) · .22–.30 push-off · .30–.74 flight (parabola, arms up, tuck)
+        # · .74–.86 landing (squash) · .86–1 recover to standing
+        p = min(1.0, max(0.0, phase))
+        crouch = _sstep(p / 0.22) * (1 - _sstep((p - 0.22) / 0.08)) + \
+            _sstep((p - 0.74) / 0.05) * (1 - _sstep((p - 0.86) / 0.14)) * 0.9
+        fly = min(1.0, max(0.0, (p - 0.30) / 0.44)) if p > 0.30 else 0.0
+        air = 4 * fly * (1 - fly) if 0.30 < p < 0.74 else 0.0
+        up = _sstep((p - 0.2) / 0.12) * (1 - _sstep((p - 0.78) / 0.15))
+        tuck = math.sin(math.pi * fly) if 0.30 < p < 0.74 else 0.0
+        return dict(arms=dict(l=(-25 + 30 * crouch - 140 * up, -30 + 40 * crouch - 140 * up),
+                              r=(25 - 30 * crouch + 140 * up, 30 - 40 * crouch + 140 * up)),
+                    legs=dict(l=(-4 - 22 * crouch - 18 * tuck, 26 * crouch + 30 * tuck, 1 - 0.22 * crouch - 0.2 * tuck),
+                              r=(4 + 22 * crouch + 18 * tuck, -26 * crouch - 30 * tuck, 1 - 0.22 * crouch - 0.2 * tuck)),
+                    lift=60 * crouch - 190 * air)
+    if name == 'dance':                             # bounces on every beat (phase = beats), arms pump in turns
+        b = phase % 1.0
+        bounce = math.sin(math.pi * b) ** 2
+        side = 1 if int(phase) % 2 == 0 else -1
+        return dict(arms=dict(l=(-30 - 110 * (side > 0) * bounce - 20, -60 - 100 * (side > 0) * bounce),
+                              r=(30 + 110 * (side < 0) * bounce + 20, 60 + 100 * (side < 0) * bounce)),
+                    legs=dict(l=(-6 - 10 * bounce, 14 * bounce, 1 - 0.12 * bounce),
+                              r=(6 + 10 * bounce, -14 * bounce, 1 - 0.12 * bounce)),
+                    lift=22 * bounce, sway=8 * side * bounce)
     if name == 'cheer':
-        return dict(arms=dict(l=(-35, -150 + 20 * s), r=(35, 150 - 20 * s)),
-                    legs=dict(l=(-6, 0, 1), r=(6, 0, 1)), lift=-10 * abs(s))
+        b = phase % 1.0
+        bounce = math.sin(math.pi * b) ** 2
+        return dict(arms=dict(l=(-35, -150 + 25 * bounce), r=(35, 150 - 25 * bounce)),
+                    legs=dict(l=(-6 - 6 * bounce, 10 * bounce, 1 - 0.08 * bounce), r=(6 + 6 * bounce, -10 * bounce, 1 - 0.08 * bounce)),
+                    lift=16 * bounce)
     raise KeyError(name)
 
 
@@ -163,7 +208,7 @@ def figure_body(who, name, phase=0.0, glow=0.0):
     """RGBA body sprite (without the head); neck at NECK in the sprite."""
     P = CLOTH[who]
     pz = pose(name, phase)
-    L = Layer(*BOX, ss=2).at(NECK[0], NECK[1] + pz['lift'])
+    L = Layer(*BOX, ss=2).at(NECK[0] + pz.get('sway', 0.0), NECK[1] + pz['lift'])
     sk, sh = P['skin'], P['sh']
     pants = P['pants']
     seat = pz.get('seat')
@@ -227,13 +272,22 @@ def figure_body(who, name, phase=0.0, glow=0.0):
     return L.image()
 
 
+def _q_phase(name, phase):
+    if name == 'jump':
+        return round(min(1.0, max(0.0, phase)) * 40) / 40
+    if name in ('dance', 'cheer'):
+        return round(phase * 12) / 12 % 2.0
+    return round(phase * 24) / 24 % 1.0
+
+
 def place_figure(canvas, who, name, x, y, scale, head_img, phase=0.0, glow=0.0, tilt=0.0, bob=0.0):
     """Body + head; (x, y) is the neck position on the canvas."""
-    body = figure_body(who, name, round(phase * 16) / 16 % 1 if name not in ('jump',) else round(phase * 16) / 16,
-                       round(glow * 4) / 4)
-    lift = pose(name, phase)['lift']
+    ph = _q_phase(name, phase)
+    body = figure_body(who, name, ph, round(glow * 4) / 4)
+    pz = pose(name, ph)
     parts = [(body, x - NECK[0] * scale, y - NECK[1] * scale + bob, scale, 0.0, None)]
-    hx, hy = x, y + (lift - 8) * scale + bob
-    parts.append((head_img, hx - C.HC[0] * scale, hy - (C.HC[1] + 120) * scale, scale, tilt,
+    hx, hy = x + pz.get('sway', 0.0) * scale, y + (pz['lift'] - 8) * scale + bob
+    head_tilt = tilt - 0.15 * pz.get('sway', 0.0)
+    parts.append((head_img, hx - C.HC[0] * scale, hy - (C.HC[1] + 120) * scale, scale, head_tilt,
                   (C.HC[0], C.HC[1] + 120)))
     C.place(canvas, parts)

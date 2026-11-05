@@ -405,7 +405,7 @@ def pov(t, chat=None, screen=None, bg=None, zoom=1.0, focus=None, sleeve=None, s
             nx, ny, sc, pz, ph = 300, 930, 1.0, 'sit_knees', 0.0
         elif lay == 'pace':
             im = env_room(mode).copy()
-            nx, ny, sc, pz, ph = 300 + 70 * math.sin(t * 0.8), 880, 1.0, 'walk_phone', (t * 1.3) % 1
+            nx, ny, sc, pz, ph = 300, 880, 1.0, 'impatient', (t / 1.7) % 1
         else:                                            # 'stand' / 'party'
             if mode != 'party':
                 im = env_room(mode).copy()
@@ -464,8 +464,10 @@ CHAT_BOSS = dict(theme='day', name='Друг', status='в сети', avatar=AV_B
 ])
 
 CHAT_DIMA = dict(theme='day', name='Дима', status='в сети', avatar=AV_DIMA, clock='16:05', events=[
-    msg(-9, 'out', 'Привет! Видел у тебя календарь в профиле 🔥', '16:02'),
-    msg(-8, 'in', 'Привет) да, мама подарила 😊', '16:03'),
+    draft(ON[KEY['trust1']] - 0.1, T['trust_sent'] - 0.05, 'Привет! Видел твой календарь — огонь 🔥 Я тоже собираю подарки'),
+    msg(T['trust_sent'], 'out', 'Привет! Видел твой календарь — огонь 🔥 Я тоже собираю подарки', '16:02'),
+    typing(T['trust_sent'] + 0.1, T['trust_sent'] + 0.45),
+    msg(T['trust_sent'] + 0.45, 'in', 'Правда? Мне его мама подарила 😊', '16:03'),
     draft(ON[KEY['ask']] - 0.1, T['ask_sent'] - 0.05, 'Слушай, скинь на 5 минут? Скрин для канала сделаю и сразу верну 🙏'),
     msg(T['ask_sent'], 'out', 'Слушай, скинь на 5 минут? Скрин для канала сделаю и сразу верну 🙏', '16:03'),
     typing(T['ask_sent'] + 0.1, T['dima_reply']),
@@ -495,15 +497,16 @@ CHAT_K = dict(theme='night', name='Катя', status='в сети', avatar=AV_KA
                      (T['help'], '23:45'), (T['all_msg'], '23:47'), (T['transfer'], '23:50'), (T['five'], '23:55'),
                      (T['ten'], '00:00')],
               overlays=[_transfer_overlay], events=[
-    msg(T['chat_k'], 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
+    draft(T['chat_k'] + 0.05, END[KEY['xday']] + 0.1, 'Привет! Кажется, мы любим одни и те же места 🙂'),
+    msg(END[KEY['xday']] + 0.15, 'out', 'Привет! Кажется, мы любим одни и те же места 🙂', '21:03'),
     msg(T['days'] + 0.2, 'in', 'Ого 😊 Какие?', '21:05'),
     msg(T['days'] + 0.8, 'out', 'Море, кофе по утрам и честные разговоры ☕️', '21:06'),
     msg(T['days'] + 1.4, 'in', 'Доброе утро ☀️', '08:12'),
     msg(T['days'] + 1.9, 'out', 'Доброе! Уже скучаю 🙂', '08:13'),
     msg(T['days'] + 2.5, 'in', 'Как прошёл день?', '19:40'),
     msg(T['days'] + 3.0, 'out', 'Думал о тебе. Ты улыбаешься, даже когда пишешь — я это чувствую', '19:42'),
-    typing(T['days'] + 3.2, ON[KEY['wow']]),
-    msg(ON[KEY['wow']], 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '19:43'),
+    typing(T['days'] + 3.0, T['days'] + 3.4),
+    msg(T['days'] + 3.4, 'in', 'Ого… правда? Ты первый, кто это заметил 😊', '19:43'),
     draft(ON[KEY['invite']] - 0.1, END[KEY['invite']] - 0.05, 'Может, встретимся в субботу? 🙂'),
     msg(END[KEY['invite']], 'out', 'Может, встретимся в субботу? 🙂', '22:58'),
     typing(END[KEY['invite']] + 0.1, T['date_msg']),
@@ -701,7 +704,7 @@ def shot_boss(t):
 
 def shot_dima(t):
     im = _corridor_view(t)
-    fig(im, 'dima', 'walk_phone', 540, 870, 1.18, t, phase=(t * 1.6) % 1, glow_=0.5, smile=0.75, look=(0.3, 0.4))
+    fig(im, 'dima', 'walk_phone', 540, 870, 1.18, t, phase=(t / 1.1) % 1, glow_=0.5, smile=0.75, look=(0.3, 0.4))
     floating_gift(im, t, 'Desk Calendar', 'Sunshine', 840, 560, 300, label='NFT-календарь', t0=T['dima'] + 0.15)
     put(im, chip('Дима, 13'), 300, 300, a=ramp(t, T['dima'] + 0.05, T['dima'] + 0.3))
     return whip(im, ramp(t, T['to_dima_chat'] - 0.2, T['to_dima_chat']))
@@ -745,7 +748,8 @@ def shot_simple(t):
 
 def shot_sleep(t):
     im = S.bedroom().copy()
-    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2)
+    o = talk(t, ('life',))
+    hd = C.head('petya', blink=1.0, smile=0.8 + 0.1 * math.sin(t * 2), smirk=0.2, open_=0.15 + 0.5 * o if o else 0.0)
     hd = hd.rotate(78, resample=Image.BICUBIC, expand=True)
     put(im, hd, 300, 1110, scale=0.95)
     im.alpha_composite(S.blanket())
@@ -837,7 +841,7 @@ def shot_search(t):
 
 def shot_found(t):
     j = pop(t, T['found'], 0.3)
-    ph = ramp(t, T['found'], T['found'] + 0.55)
+    ph = ramp(t, T['found'] - 0.15, T['found'] + 0.75)
     im = S.room_floor('night').copy()
     pz = 'jump' if ph < 1 else 'stand_phone'
     fig(im, 'petya', pz, 540, 840, 1.25, t, phase=ph, glow_=1.0, hood=True, brow=1.0, smile=1.0, open_=0.9,
@@ -1053,7 +1057,7 @@ def shot_help(t):
 def shot_katya_sad(t):
     im = S.katya_flat().copy()
     im.alpha_composite(S.sofa())
-    fig(im, 'katya', 'slump', 540, 900, 1.25, t, glow_=0.6, talk_keys=('all',), sad=0.6, smile=0.35,
+    fig(im, 'katya', 'slump', 540, 900, 1.25, t, phase=(t / 3.5) % 1, glow_=0.6, talk_keys=('all',), sad=0.6, smile=0.35,
         look=(0, 0.5), seed=0.2, tilt=5)
     return zoom_view(im, 540, 980, 1.1 + 0.05 * ramp(t, T['katya_sad'], T['smile']))
 
@@ -1105,12 +1109,13 @@ def shot_party(t):
     im = S.room_floor('party').copy()
     _party_lights(im, t)
     lp = ramp(t, T['buzz2'] - 0.1, T['buzz2'])
-    fig(im, 'sery', 'dance', 200, 900, 0.95, t, phase=(t * 1.0) % 1, smile=0.9,
+    beat = (t - T['party']) * 2.0
+    fig(im, 'sery', 'dance', 200, 900, 0.95, t, phase=beat % 2.0, smile=0.9,
         open_=0.5 + 0.3 * math.sin(t * 7), teeth=1.0, tilt=4 * math.sin(t * 4), seed=0.5)
-    fig(im, 'vanya', 'cheer', 880, 890, 0.95, t, phase=(t * 1.2 + 0.3) % 1, smile=1.0, open_=0.6, teeth=1.0,
+    fig(im, 'vanya', 'cheer', 880, 890, 0.95, t, phase=(beat + 0.5) % 2.0, smile=1.0, open_=0.6, teeth=1.0,
         blink=1.0 if (t % 1.0) < 0.5 else 0, tilt=-4 * math.sin(t * 4 + 1), seed=1.2)
     pz = 'stand_phone' if lp > 0.5 else 'cheer'
-    fig(im, 'petya', pz, 540, 860, 1.1, t, phase=(t * 1.1) % 1, glow_=lp, talk_keys=('party',),
+    fig(im, 'petya', pz, 540, 860, 1.1, t, phase=beat % 2.0, glow_=lp, talk_keys=('party',),
         smile=1.0 - 0.8 * lp, open_=0.6 * (1 - lp), teeth=1.0 - lp, brow=0.3, look=(0, 0.6 * lp))
     confetti(im, t, T['party'])
     px, py = fig_phone(540, 860, 1.1)

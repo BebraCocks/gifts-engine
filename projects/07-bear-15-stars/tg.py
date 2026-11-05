@@ -681,13 +681,12 @@ def _bear_card_base(caption, theme):
 
 
 def bear_card(e, t, theme):
-    import chars as C
     base = _bear_card_base(e.get('caption', ''), theme).copy()
     lt = max(0.0, t - e['t'])
-    p = C.bear_q(wave=0.5 + 0.5 * math.sin(lt * 7) if lt < 2.5 else 0.0, blink=_blink(lt), size=300)
+    p = lottie.frame(str(G.original_file('5170233102089322756', 'json')), lt, size=320)   # the real 15 ⭐ bear
     oy = 66 if e.get('caption') else 0
     hop = int(-24 * abs(math.sin(min(lt, 0.9) * math.pi / 0.9)) * (1 - min(lt, 0.9)))
-    base.alpha_composite(p, ((base.width - p.width) // 2, oy + 10 + hop))
+    base.alpha_composite(p, ((base.width - p.width) // 2, oy + hop))
     return base
 
 

@@ -3,7 +3,7 @@
 LINES: (speaker, spoken text, screen key, pause after, s).
 TTS_TEXT: то, что уходит в Fish Audio drama-3; ремарки в [скобках], числа словами."""
 
-VOICE = '7312c38557eb4fb384e3874e8e9cea67'
+VOICE = '06cc6d2827db46658833a53cd24080ba'      # «Лиам», chosen by the author for this video (2026-11-05)
 MODEL = 'drama-3'
 
 LINES = [

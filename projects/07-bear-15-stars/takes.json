@@ -1,18 +1,63 @@
 {
-  "_note": "Fish Audio drama-3 task ids (audio https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take.",
-  "L01": ["21c6d4ec41d043ffba456da047714d9e"],
-  "L02": ["e15eff9b7466447c890120a3911eec3f"],
-  "L03": ["c15601ee59ca42948d4fda94bfff2377"],
-  "L04": ["9ddaf33a140a4e4dbe39be1d727f0e71"],
-  "L05": ["185fe7db559540f09e3e95bcff9783d7"],
-  "L06": ["a4ae35f44a1f4deba671dee59a173172"],
-  "L07": ["494e6e3d8c454c8c893784627df07d9a"],
-  "L08": ["1462fc56912442db84978faa33a25ff8"],
-  "L09": ["fa1c71a4dcfc4579ba2d9acc76c1d997"],
-  "L10": ["aaba42e2424a4b609b9e425405ccd43b"],
-  "L11": ["b4e0de2961e64fb983943ab15b3cc828"],
-  "L12": ["3d8c4c09103f49a29476b4e43baee62a"],
-  "L13": ["a0b8c9e3d302433980c5786f4a24cf95"],
-  "L14": ["a552241648244902aaef64a6144746d7"],
-  "L15": ["9003c341ec064912b6ba8d18a62084b6"]
+  "_note": "Fish Audio drama-3 task ids (audio https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take: voice «Лиам» 06cc6d28… (author, 2026-11-05). Second id = the first pass with the default voice 7312c385…",
+  "L01": [
+    "f0a8d0ff58b243d8a1d31c5be183c91f",
+    "21c6d4ec41d043ffba456da047714d9e"
+  ],
+  "L02": [
+    "cbaf5f8235e54c638ea6ed2eee207ef8",
+    "e15eff9b7466447c890120a3911eec3f"
+  ],
+  "L03": [
+    "c82c34c0217f4652a3ea4c34f46ab4c9",
+    "c15601ee59ca42948d4fda94bfff2377"
+  ],
+  "L04": [
+    "62f863f5d8c6496c85cfbc7cb5494139",
+    "9ddaf33a140a4e4dbe39be1d727f0e71"
+  ],
+  "L05": [
+    "0ee1899739db418e81052facd3b64c70",
+    "185fe7db559540f09e3e95bcff9783d7"
+  ],
+  "L06": [
+    "673cdd06a1894bff9a98a7a4ce5b8a6a",
+    "a4ae35f44a1f4deba671dee59a173172"
+  ],
+  "L07": [
+    "572e862b81944bfab783b9ffe896f279",
+    "494e6e3d8c454c8c893784627df07d9a"
+  ],
+  "L08": [
+    "88dfb03df9cd44a59f074f4b063badf7",
+    "1462fc56912442db84978faa33a25ff8"
+  ],
+  "L09": [
+    "a19f3ee834394d3da0491bd3117f627e",
+    "fa1c71a4dcfc4579ba2d9acc76c1d997"
+  ],
+  "L10": [
+    "bc9ff89c15f0459a835eba251a864182",
+    "aaba42e2424a4b609b9e425405ccd43b"
+  ],
+  "L11": [
+    "31fc8a76b2964b1b97b6dd6910d4e5d6",
+    "b4e0de2961e64fb983943ab15b3cc828"
+  ],
+  "L12": [
+    "c0f79b0605a94afebe4800ae19cd349a",
+    "3d8c4c09103f49a29476b4e43baee62a"
+  ],
+  "L13": [
+    "83e119567fa24222a21be3218b382622",
+    "a0b8c9e3d302433980c5786f4a24cf95"
+  ],
+  "L14": [
+    "e645c4b3141f4e02a710dd9595d940f7",
+    "a552241648244902aaef64a6144746d7"
+  ],
+  "L15": [
+    "2f0d3d99d1d14e7d924cf436db9e8e27",
+    "9003c341ec064912b6ba8d18a62084b6"
+  ]
 }

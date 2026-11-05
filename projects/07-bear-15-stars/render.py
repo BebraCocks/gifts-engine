@@ -21,6 +21,8 @@ import banner
 import config
 import frames
 import fx
+import gifts_api
+import lottie
 import chars as C
 import sets as S_
 import tg
@@ -162,16 +164,25 @@ def hero_at(canvas, x, y, scale, t, kind='hoodie', arms='down', glow_=0.0, tilt=
     C.place(canvas, C.bust(hd, bd, x, y, scale, tilt=tilt, bob=bob))
 
 
-def bear_at(canvas, x, y, size, t, wave=0.0, squash=0.0, rot=0.0, a=1.0):
-    b = C.bear_q(wave=wave, blink=blink(t, 0.7, 2.6), size=600)
-    s = size / 600
-    sp = b.resize((max(1, int(600 * s * (1 + 0.18 * squash))), max(1, int(600 * s * (1 - 0.22 * squash)))),
-                  Image.BICUBIC)
+BEAR_ID = '5170233102089322756'        # the plain 15 ⭐ bear: Telegram gift id, Lottie from api.changes.tg
+BEAR = str(gifts_api.original_file(BEAR_ID, 'json'))
+BEAR_BOTTOM = 0.91                      # feet line inside the Lottie box (alpha bottom 464/512)
+
+
+def bear_at(canvas, x, y, size, t, wave=0.0, squash=0.0, rot=0.0, a=1.0, t0=0.0):
+    """The real bear animation (full 3 s loop), feet at (x, y). size = Lottie box width in px."""
+    n = int(round(size / 8) * 8)
+    sp = lottie.frame(BEAR, max(0.0, t - t0), size=min(n, 1024))
+    if n > 1024:
+        sp = sp.resize((n, n), Image.BICUBIC)
+    if squash:
+        sp = sp.resize((max(1, int(n * (1 + 0.18 * squash))), max(1, int(n * (1 - 0.22 * squash)))), Image.BICUBIC)
     if rot:
-        sp = sp.rotate(rot, resample=Image.BICUBIC, expand=True)
+        sp = sp.rotate(rot, resample=Image.BICUBIC, expand=True, center=(sp.width / 2, sp.height * BEAR_BOTTOM))
     if a < 1:
+        sp = sp.copy()
         sp.putalpha(sp.getchannel('A').point(lambda v: int(v * a)))
-    paste_clip(canvas, sp, x - sp.width / 2, y - sp.height)          # (x, y) = the bear's feet
+    paste_clip(canvas, sp, x - sp.width / 2, y - sp.height * BEAR_BOTTOM)
 
 
 def shadow_ell(canvas, x, y, rx, a=0.3):
@@ -231,7 +242,7 @@ def shot_hook(t):
     sway = 2.5 * math.sin(t * 2.2)
     shadow_ell(im, 540, y - 10, size * 0.36, 0.3)
     glow(im, 540, y - size * 0.5, int(size * 0.75), (255, 220, 150), 0.35)
-    bear_at(im, 540, y, size, t, squash=squash, rot=sway, wave=0.0)
+    bear_at(im, 540, y, size * 1.05, t, squash=squash, rot=sway, t0=tl)
     # price tag
     if t >= E['price']:
         k = pop(t, E['price'], 0.45)
@@ -460,7 +471,7 @@ def shot_banlist(t):
     show_phone(im, scr, 540 + dx, 980 + dy, 0.86, rot=-1.5)
     # the bear sits on top of the phone, happy, unaware
     if t < E['ban'] + 2.2:
-        bear_at(im, 840, 300, 300, t, wave=0.5 + 0.5 * math.sin(t * 7))
+        bear_at(im, 840, 320, 320, t, t0=E['ban'] - 0.05)
     return im
 
 
@@ -693,7 +704,7 @@ def shot_like(t):
     glow(im, 540, y - 260, 460, (255, 220, 150), 0.4)
     shadow_ell(im, 540, y - 10, 180, 0.3)
     w = 0.5 + 0.5 * math.sin(t * 7.5)
-    bear_at(im, 540, y, 520, t, wave=w, rot=3 * math.sin(t * 3))
+    bear_at(im, 540, y, 600, t, rot=2 * math.sin(t * 3), t0=t0)
     if t >= E['like_btn'] - 0.15:
         kk = pop(t, E['like_btn'] - 0.15, 0.45)
         beat = 1 + 0.06 * max(0.0, math.sin((t - E['like_btn']) * 6))

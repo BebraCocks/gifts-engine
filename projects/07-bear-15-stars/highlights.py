@@ -3,7 +3,10 @@ from PIL import Image
 import render as R
 import sfxkit
 
-CONTENT = [1.6, 5.6, 8.6, 12.5, 17.5, 20.6, 23.4, 27.9, 32.0, 36.0, None, 40.6, 42.9, 47.6, 50.5, 56.5, 60.5, 66.5]
+from events import S, E
+CONTENT = [E['price'] + 0.2, E['best'] + 0.5, E['stamp1'] + 0.4, E['rich'] + 0.3, E['luck'] + 0.3, E['gift_in'] + 0.8,
+           E['ban'] + 1.9, E['effect'] + 0.5, E['sign_up'] + 0.5, E['coin'] + 0.3, None, E['spotted'] + 0.5,
+           E['dust'] + 0.5, E['full'] + 0.3, E['couch'], E['send'] - 0.3, E['ask'] + 0.3, E['bear_wave']]
 ims = []
 for k, ct in enumerate(CONTENT):
     ot = R.AD_STOP + 3.2 if ct is None else sfxkit.out_time(R.BR, ct)

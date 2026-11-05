@@ -199,3 +199,99 @@ def blurred(name, mode=None, r=22, dark=0.35):
     a = np.asarray(im, np.float32)
     a[..., :3] *= 1 - dark
     return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+# ------------------------------------------------------------------ places for full-body poses (2026-11-05)
+@functools.lru_cache(maxsize=4)
+def room_floor(mode='eve'):
+    """Petya's room with the floor visible (for standing / walking / jumping)."""
+    P = PAL[mode]
+    im = room(mode).copy()
+    L = Layer(W, H, ss=2)
+    wood = mixc(P['wood'], (255, 255, 255), 0.1)
+    L.poly([(0, 1460), (W, 1460), (W, H), (0, H)], wood)
+    for k in range(7):
+        y = 1500 + k * 64 + k * k * 4
+        L.stroke([(0, y), (W, y)], 3, shade(wood, 0.85), alpha=0.6)
+    L.poly([(0, 1440), (W, 1440), (W, 1466), (0, 1466)], shade(wood, 0.75))
+    L.ell(540, 1720, 420, 120, (200, 80, 90) if mode == 'eve' else (90, 70, 130), alpha=0.85)
+    L.ell(540, 1720, 360, 96, (230, 120, 110) if mode == 'eve' else (120, 96, 160), alpha=0.6)
+    im.alpha_composite(L.image())
+    return im
+
+
+@functools.lru_cache(maxsize=4)
+def bed_left(mode='night'):
+    """A bed on the left half (Petya sits on it while chatting): headboard, mattress top at y≈1260."""
+    L = Layer(W, H, ss=2)
+    night = mode != 'eve'
+    frame = (96, 74, 100) if night else (150, 104, 80)
+    L.poly([(-40, 920), (70, 920), (70, 1600), (-40, 1600)], frame)
+    L.poly([(-40, 1250), (700, 1250), (700, 1560), (-40, 1560)], (222, 226, 240) if not night else (150, 160, 200))
+    L.poly([(-40, 1236), (700, 1236), (700, 1262), (-40, 1262)], (240, 242, 250) if not night else (170, 180, 220))
+    bl = (92, 120, 200) if not night else (60, 80, 150)
+    L.shape([(300, 1250), (700, 1240), (700, 1580), (260, 1580), (240, 1420)], bl)
+    L.shape([(30, 1110), (200, 1100), (230, 1180), (210, 1250), (30, 1256)], (238, 240, 250) if not night
+            else (180, 190, 225))
+    L.poly([(-40, 1560), (700, 1560), (700, 1640), (-40, 1640)], shade(frame, 0.8))
+    return L.image()
+
+
+@functools.lru_cache(maxsize=1)
+def sofa():
+    """Katya's velvet sofa (behind her, she sits on the cushion at y≈1312)."""
+    L = Layer(W, H, ss=2)
+    v, v2 = (226, 170, 180), (196, 138, 152)
+    L.shape([(90, 1060), (990, 1060), (1000, 1330), (80, 1330)], v)
+    for k in range(3):
+        L.stroke([(240 + k * 300, 1090), (240 + k * 300, 1300)], 5, v2, alpha=0.7)
+    L.shape([(60, 1290), (1020, 1290), (1030, 1400), (50, 1400)], mixc(v, (255, 255, 255), 0.12))
+    L.poly([(50, 1390), (1030, 1390), (1030, 1500), (50, 1500)], v2)
+    for s in (-1, 1):
+        x = 540 + s * 470
+        L.shape([(x - 70, 1160), (x + 70, 1160), (x + 80, 1500), (x - 80, 1500)], v)
+        L.ell(x, 1170, 75, 40, mixc(v, (255, 255, 255), 0.15))
+    for x in (120, 960):
+        L.poly([(x - 12, 1500), (x + 12, 1500), (x + 8, 1560), (x - 8, 1560)], (200, 160, 80))
+    L.ell(800, 1250, 70, 60, (255, 236, 200), rot=0.3)            # a pillow
+    return L.image()
+
+
+@functools.lru_cache(maxsize=1)
+def corridor():
+    """School corridor in one-point perspective (Dima walks towards the camera). 1400×2490, zoom it in."""
+    w, h = 1400, 2490
+    L = Layer(w, h, ss=1)
+    L.im = _grad((236, 244, 236), (210, 226, 214), w, h).resize((w, h))
+    vx, vy = w / 2, h * 0.43
+    # floor
+    L.poly([(0, h), (w, h), (vx + 160, vy + 120), (vx - 160, vy + 120)], (196, 176, 150))
+    for k in range(1, 14):
+        f = (k / 14) ** 2
+        y = vy + 120 + (h - vy - 120) * f
+        L.stroke([(vx - 160 - (vx - 0 - 160) * f, y), (vx + 160 + (w - vx - 160) * f, y)], 3, (170, 150, 128),
+                 smooth=False)
+    # ceiling
+    L.poly([(0, 0), (w, 0), (vx + 160, vy - 260), (vx - 160, vy - 260)], (246, 248, 244))
+    for k in range(1, 6):
+        f = (k / 6) ** 2
+        y = vy - 260 - (vy - 260) * f
+        hw = 60 + 300 * f
+        L.poly([(vx - hw, y - 10 * (1 + f * 3)), (vx + hw, y - 10 * (1 + f * 3)), (vx + hw, y), (vx - hw, y)],
+               (255, 255, 236))
+    # back wall with a door and a window
+    L.poly([(vx - 160, vy - 260), (vx + 160, vy - 260), (vx + 160, vy + 120), (vx - 160, vy + 120)], (200, 222, 206))
+    L.poly([(vx - 60, vy - 120), (vx + 60, vy - 120), (vx + 60, vy + 120), (vx - 60, vy + 120)], (170, 120, 90))
+    # lockers on both side walls
+    for s in (-1, 1):
+        for k in range(8):
+            f0, f1 = ((k) / 8) ** 1.6, ((k + 0.9) / 8) ** 1.6
+            def P(f, yy):
+                x = vx + s * (160 + (vx - 160) * f) if s > 0 else vx - (160 + (vx - 160) * f)
+                top = vy - 120 - (vy - 120 - h * 0.22) * f
+                bot = vy + 120 + (h * 0.86 - vy - 120) * f
+                return (x, top + (bot - top) * yy)
+            col = (238, 140, 70) if k % 2 == 0 else (90, 150, 210)
+            L.poly([P(f0, 0), P(f1, 0), P(f1, 1), P(f0, 1)], col)
+            L.stroke([P((f0 + f1) / 2, 0.15), P((f0 + f1) / 2, 0.85)], 2 + 6 * f1, shade(col, 0.8), smooth=False)
+    return L.image()

@@ -25,6 +25,7 @@ import fx
 import gifts_api as G
 import lottie
 import chars as C
+import poses as PS
 import sets as S
 import screens as SC
 import stage
@@ -189,6 +190,21 @@ def person(canvas, who, x, y, scale, t, arms='down', glow_=0.0, talk_keys=(), ti
     C.place(canvas, C.bust(hd, bd, x, y, scale=scale, tilt=tilt, bob=bob))
 
 
+def fig(canvas, who, pose_name, x, y, scale, t, phase=0.0, glow_=0.0, talk_keys=(), tilt=0.0, bob=0.0, seed=0.0,
+        **expr):
+    """A full-body character (poses.py) with the same face controls as person()."""
+    o = talk(t, talk_keys) if talk_keys else 0.0
+    if o > 0:
+        expr['open_'] = max(expr.get('open_', 0.0), 0.15 + 0.6 * o)
+    expr.setdefault('blink', blink(t, seed))
+    hd = C.head(who, glow=glow_, **expr)
+    PS.place_figure(canvas, who, pose_name, x, y, scale, hd, phase=phase, glow=glow_, tilt=tilt, bob=bob)
+
+
+def fig_phone(x, y, scale):
+    return x, y + 202 * scale
+
+
 def phone_point(x, y, scale):
     """Screen position of the phone in a bust with arms='phone' (neck pivot at x, y)."""
     return x, y + 388 * scale
@@ -281,6 +297,14 @@ def environment(mode):
     return Image.fromarray(a.astype(np.uint8), 'RGBA')
 
 
+@functools.lru_cache(maxsize=8)
+def env_room(mode, floor=True):
+    im = (S.room_floor(mode) if floor else S.room(mode)).filter(ImageFilter.GaussianBlur(4))
+    a = np.asarray(im, np.float32)
+    a[..., :3] *= 0.85
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
 @functools.lru_cache(maxsize=1)
 def _phone_shadow():
     sh = Image.new('RGBA', (W, H), (0, 0, 0, 0))
@@ -342,21 +366,55 @@ def petya_chat_expr(t):
     return E
 
 
+def layout_at(t):
+    """Which pose Petya has while he chats (author: «разные позы… оживи картину»)."""
+    if t < T['shock']:
+        return 'stand'
+    if T['to_dima_chat'] <= t < T['dima_cry']:
+        return 'desk'
+    if T['lie'] <= t < T['katya_sad']:
+        return 'desk'
+    if AD2 <= t < T['uneasy']:
+        return 'pace'
+    if T['block2_shot'] <= t < T['party']:
+        return 'stand'
+    return 'bed'
+
+
 def pov(t, chat=None, screen=None, bg=None, zoom=1.0, focus=None, sleeve=None, shake=0.0, dark=0.0):
     base = bg if bg is not None else environment('night')
     mode = _mode_of(base)
     im = base.copy()
     if mode == 'party':
         _party_lights(im, t, 0.7)
-    # the character on the left, sharp, with his phone glowing in his hands
+    # the character on the left, in a pose that changes from chat to chat
     ex = petya_chat_expr(t)
     ex.setdefault('blink', blink(t, 0.3))
     talk_keys = tuple(L[2] for L in LINES if L[0] == 'P')
-    person(im, 'petya', NECK[0], NECK[1] + 4 * math.sin(t * 1.1), P_SCALE, t, arms='phone', glow_=1.0,
-           talk_keys=talk_keys, tilt=-5, **ex)
-    px, py = phone_point(*NECK, P_SCALE)
-    glow(im, px, py, 260, (150, 210, 255), 0.45)
-    im.alpha_composite(S.desk(mode))
+    lay = layout_at(t)
+    if lay == 'desk':
+        person(im, 'petya', NECK[0], NECK[1] + 4 * math.sin(t * 1.1), P_SCALE, t, arms='phone', glow_=1.0,
+               talk_keys=talk_keys, tilt=-5, **ex)
+        px, py = phone_point(*NECK, P_SCALE)
+        glow(im, px, py, 260, (150, 210, 255), 0.45)
+        im.alpha_composite(S.desk(mode))
+    else:
+        if lay == 'bed':
+            im = env_room(mode, floor=False).copy()
+            im.alpha_composite(S.bed_left(mode))
+            nx, ny, sc, pz, ph = 300, 930, 1.0, 'sit_knees', 0.0
+        elif lay == 'pace':
+            im = env_room(mode).copy()
+            nx, ny, sc, pz, ph = 300 + 70 * math.sin(t * 0.8), 880, 1.0, 'walk_phone', (t * 1.3) % 1
+        else:                                            # 'stand' / 'party'
+            if mode != 'party':
+                im = env_room(mode).copy()
+            nx, ny, sc, pz, ph = 280, 880, 1.0, 'stand_phone', 0.0
+        if mode == 'party' and lay != 'stand':
+            pass
+        fig(im, 'petya', pz, nx, ny, sc, t, phase=ph, glow_=1.0, talk_keys=talk_keys, tilt=-5, **ex)
+        px, py = fig_phone(nx, ny, sc)
+        glow(im, px, py, 220, (150, 210, 255), 0.4)
     # the phone with the chat on the right, floating a little
     if screen is None:
         screen = tg.chat_screen(t, chat)
@@ -633,12 +691,22 @@ def shot_boss(t):
 
 
 def shot_dima(t):
-    im = S.dima_room().copy()
-    person(im, 'dima', 420, 1080, 1.2, t, arms='phone', glow_=0.5, smile=0.75, look=(0.6, -0.3))
-    floating_gift(im, t, 'Desk Calendar', 'Sunshine', 830, 620, 330, label='NFT-календарь', t0=T['dima'] + 0.25)
-    put(im, chip('Дима, 13'), 420, 300, a=ramp(t, T['dima'] + 0.1, T['dima'] + 0.4))
-    im = zoom_view(im, 560, 960, 1.0 + 0.06 * ramp(t, T['dima'], T['to_dima_chat']))
+    im = _corridor_view(t)
+    fig(im, 'dima', 'walk_phone', 540, 870, 1.18, t, phase=(t * 1.6) % 1, glow_=0.5, smile=0.75, look=(0.3, 0.4))
+    floating_gift(im, t, 'Desk Calendar', 'Sunshine', 840, 560, 300, label='NFT-календарь', t0=T['dima'] + 0.15)
+    put(im, chip('Дима, 13'), 300, 300, a=ramp(t, T['dima'] + 0.05, T['dima'] + 0.3))
     return whip(im, ramp(t, T['to_dima_chat'] - 0.2, T['to_dima_chat']))
+
+
+@functools.lru_cache(maxsize=1)
+def _corridor_base():
+    return S.corridor().resize((W, H), Image.LANCZOS)
+
+
+def _corridor_view(t):
+    k = 1.0 + 0.12 * ramp(t, T['dima'], T['to_dima_chat'])        # we walk back as Dima walks to us
+    return zoom_view(_corridor_base(), 540, 960, k).copy()
+
 
 
 def shot_dima_chat(t):
@@ -658,10 +726,12 @@ def shot_dima_cry(t):
 
 
 def shot_simple(t):
-    k = 1.0 + 0.18 * sm(ramp(t, T['simple'], T['sleep']))
-    im = room_scene(t, 'eve', dict(arms='down', talk_keys=('simple',), brow=0.7, smile=0.45, look=(0.2, -0.6),
-                                   tilt=-3 * sm(ramp(t, T['simple'], T['simple'] + 1))), cam=(540, 860, k))
-    return im
+    im = S.room_floor('eve').copy()
+    fig(im, 'petya', 'stand', 540, 830, 1.25, t, talk_keys=('simple',), brow=0.7, smile=0.45, look=(0.2, -0.6),
+        tilt=-3 * sm(ramp(t, T['simple'], T['simple'] + 1)))
+    k = 1.0 + 0.15 * sm(ramp(t, T['simple'], T['sleep']))
+    return zoom_view(im, 540, 900, k)
+
 
 
 def shot_sleep(t):
@@ -724,16 +794,18 @@ def shot_tunnel(t):
 
 def shot_katya(t):
     im = S.katya_flat().copy()
+    im.alpha_composite(S.sofa())
     puzzled = ramp(t, END[KEY['katya']] - 1.8, END[KEY['katya']] - 1.5)
-    person(im, 'katya', 540, 1060, 1.3, t, arms='phone', glow_=0.4, smile=0.6 - 0.6 * puzzled, sad=0.5 * puzzled,
-           brow=0.6 * puzzled, look=(0, 0.2 + 0.4 * puzzled), seed=1.3)
+    fig(im, 'katya', 'sit_cross', 540, 900, 1.25, t, phase=(t * 0.7) % 1, glow_=0.4, smile=0.6 - 0.6 * puzzled,
+        sad=0.5 * puzzled, brow=0.6 * puzzled, look=(0, 0.2 + 0.4 * puzzled), seed=1.3)
     if puzzled > 0:
-        put(im, text_spr('NFT?', 64, rgb=(255, 255, 255)), 800, 560, a=pop(t, END[KEY['katya']] - 1.8, 0.35))
+        put(im, text_spr('NFT?', 64, rgb=(255, 255, 255)), 820, 520, a=pop(t, END[KEY['katya']] - 1.8, 0.35))
     put(im, chip('Катя, 23'), 540, 300, a=ramp(t, T['katya'] + 0.2, T['katya'] + 0.5))
     k = 1.0 + 0.07 * ramp(t, T['katya'], T['search'])
-    im = zoom_view(im, 540, 960, k)
+    im = zoom_view(im, 540, 1000, k)
     return Image.blend(im, Image.new('RGBA', (W, H), (255, 240, 230, 255)), 0.9 * (1 - ramp(t, T['katya'],
                                                                                         T['katya'] + 0.25)))
+
 
 
 def shot_search(t):
@@ -756,15 +828,17 @@ def shot_search(t):
 
 def shot_found(t):
     j = pop(t, T['found'], 0.3)
-    im = room_scene(t, 'night', dict(arms='phone', glow_=1.0, hood=True, brow=1.0, smile=1.0, open_=0.9,
-                                     teeth=1.0, look=(0, 0.4), bob=-40 * math.sin(math.pi * ramp(t, T['found'],
-                                                                                                 T['found'] + 0.4))),
-                    cam=(540, 900, 1.15 + 0.08 * j))
-    put(im, text_spr('ВОТ ОНО!', 110, rgb=(255, 220, 80)), 540, 330, a=j, scale=0.8 + 0.2 * j)
+    ph = ramp(t, T['found'], T['found'] + 0.55)
+    im = S.room_floor('night').copy()
+    pz = 'jump' if ph < 1 else 'stand_phone'
+    fig(im, 'petya', pz, 540, 840, 1.25, t, phase=ph, glow_=1.0, hood=True, brow=1.0, smile=1.0, open_=0.9,
+        teeth=1.0, look=(0, 0.2))
+    put(im, text_spr('ВОТ ОНО!', 110, rgb=(255, 220, 80)), 540, 300, a=j, scale=0.8 + 0.2 * j)
     im = Image.blend(im, Image.new('RGBA', (W, H), (255, 255, 255, 255)), 0.6 * (1 - ramp(t, T['found'],
                                                                                          T['found'] + 0.2)))
-    px, py = phone_point(540, 1010, 1.25)
-    return fly_out(im, t, T['profile'], px, (py - 900) * 1.23 + 960)
+    px, py = fig_phone(540, 840, 1.25)
+    return fly_out(im, t, T['profile'], px, py)
+
 
 
 def shot_profile(t):
@@ -878,13 +952,16 @@ def shot_chat_k(t, t0=None, fly=True):
 
 def shot_katya_love(t):
     im = S.katya_flat().copy()
-    person(im, 'katya', 540, 1020, 1.6, t, arms='phone', glow_=0.7, talk_keys=('date',), smile=0.9,
-           blink=0.875 if (t % 2.2) < 1.4 else blink(t), look=(0, 0.5), tilt=4 * math.sin(t * 1.5), seed=0.6)
+    im.alpha_composite(S.sofa())
+    fig(im, 'katya', 'sit_swing', 540, 900, 1.25, t, phase=(t * 1.4) % 1, glow_=0.7, talk_keys=('date',),
+        smile=0.9, blink=0.875 if (t % 2.2) < 1.4 else blink(t), look=(0, 0.5), tilt=4 * math.sin(t * 1.5),
+        seed=0.6)
     for j in range(5):                                             # little hearts float up
         ph = (t * 0.5 + j / 5) % 1
-        put(im, tg._emoji('❤', 64), 260 + j * 140 + 30 * math.sin(t + j), 1200 - 700 * ph,
+        put(im, tg._emoji('❤', 64), 260 + j * 140 + 30 * math.sin(t + j), 1100 - 700 * ph,
             a=math.sin(math.pi * ph) * 0.9)
-    return zoom_view(im, 540, 900, 1.05 + 0.06 * ramp(t, T['katya_love'], T['cancel']))
+    return zoom_view(im, 540, 1000, 1.05 + 0.06 * ramp(t, T['katya_love'], T['cancel']))
+
 
 
 def shot_cancel(t):
@@ -900,10 +977,12 @@ def shot_cancel(t):
 
 def shot_katya_worried(t):
     im = S.katya_flat().copy()
-    person(im, 'katya', 540, 1020, 1.6, t, arms='phone', glow_=0.7, talk_keys=('why',), sad=0.9, brow=0.4,
-           smile=-0.3, look=(0, 0.4), seed=2.1)
-    im = zoom_view(im, 540, 880, 1.1 + 0.05 * ramp(t, T['katya_worried'], T['lie']))
+    im.alpha_composite(S.sofa())
+    fig(im, 'katya', 'stand_phone', 540, 820, 1.25, t, glow_=0.7, talk_keys=('why',), sad=0.9, brow=0.4,
+        smile=-0.3, look=(0, 0.4), seed=2.1, bob=-4 * math.sin(t * 3))
+    im = zoom_view(im, 540, 900, 1.08 + 0.05 * ramp(t, T['katya_worried'], T['lie']))
     return whip(im, 1 - ramp(t, T['katya_worried'], T['katya_worried'] + 0.15))
+
 
 
 def shot_lie(t):
@@ -955,9 +1034,11 @@ def shot_help(t):
 
 def shot_katya_sad(t):
     im = S.katya_flat().copy()
-    person(im, 'katya', 540, 1020, 1.6, t, arms='phone', glow_=0.6, talk_keys=('all',), sad=0.6, smile=0.35,
-           look=(0, 0.5), seed=0.2)
-    return zoom_view(im, 540, 880, 1.1 + 0.05 * ramp(t, T['katya_sad'], T['smile']))
+    im.alpha_composite(S.sofa())
+    fig(im, 'katya', 'slump', 540, 900, 1.25, t, glow_=0.6, talk_keys=('all',), sad=0.6, smile=0.35,
+        look=(0, 0.5), seed=0.2, tilt=5)
+    return zoom_view(im, 540, 980, 1.1 + 0.05 * ramp(t, T['katya_sad'], T['smile']))
+
 
 
 def shot_smile(t):
@@ -1003,26 +1084,27 @@ def shot_block2(t):
 
 
 def shot_party(t):
-    im = S.room('party').copy()
+    im = S.room_floor('party').copy()
     _party_lights(im, t)
     lp = ramp(t, T['buzz2'] - 0.1, T['buzz2'])
-    person(im, 'sery', 190, 1110, 1.0, t, smile=0.9, open_=0.5 + 0.3 * math.sin(t * 7), teeth=1.0,
-           bob=12 * math.sin(t * 8), tilt=4 * math.sin(t * 4), seed=0.5)
-    person(im, 'vanya', 890, 1100, 1.0, t, smile=1.0, open_=0.6, teeth=1.0, blink=1.0 if (t % 1.0) < 0.5 else 0,
-           bob=12 * math.sin(t * 8 + 2), tilt=-4 * math.sin(t * 4 + 1), seed=1.2)
-    person(im, 'petya', 540, 1060, 1.25, t, arms='phone' if lp > 0.5 else 'down', glow_=lp,
-           talk_keys=('party',), smile=1.0 - 0.8 * lp, open_=0.6 * (1 - lp), teeth=1.0 - lp, brow=0.3,
-           look=(0, 0.6 * lp), bob=10 * math.sin(t * 8) * (1 - lp))
+    fig(im, 'sery', 'dance', 200, 900, 0.95, t, phase=(t * 1.0) % 1, smile=0.9,
+        open_=0.5 + 0.3 * math.sin(t * 7), teeth=1.0, tilt=4 * math.sin(t * 4), seed=0.5)
+    fig(im, 'vanya', 'cheer', 880, 890, 0.95, t, phase=(t * 1.2 + 0.3) % 1, smile=1.0, open_=0.6, teeth=1.0,
+        blink=1.0 if (t % 1.0) < 0.5 else 0, tilt=-4 * math.sin(t * 4 + 1), seed=1.2)
+    pz = 'stand_phone' if lp > 0.5 else 'cheer'
+    fig(im, 'petya', pz, 540, 860, 1.1, t, phase=(t * 1.1) % 1, glow_=lp, talk_keys=('party',),
+        smile=1.0 - 0.8 * lp, open_=0.6 * (1 - lp), teeth=1.0 - lp, brow=0.3, look=(0, 0.6 * lp))
     confetti(im, t, T['party'])
+    px, py = fig_phone(540, 860, 1.1)
     if lp > 0:
-        px, py = phone_point(540, 1060, 1.25)
         glow(im, px, py, 300, (150, 210, 255), 0.7 * lp)
-    put(im, text_spr('ВСЁ ЗА МОЙ СЧЁТ!', 80, rgb=(255, 220, 80)), 540, 330,
+    put(im, text_spr('ВСЁ ЗА МОЙ СЧЁТ!', 80, rgb=(255, 220, 80)), 540, 300,
         a=pop(t, ON[KEY['party']], 0.3) * (1 - ramp(t, END[KEY['party']] + 0.4, END[KEY['party']] + 0.7)))
-    k = 1.0 + 0.15 * sm(lp)
-    im = zoom_view(im, 540, 1000 + 200 * lp, k)
-    px, py = phone_point(540, 1060, 1.25)
-    return fly_out(im, t, T['fly_final'], px, (py - (1000 + 200 * lp)) * k + 960)
+    k = 1.0 + 0.25 * sm(lp)
+    cy = 960 + (py - 960) * sm(lp) * 0.6
+    im = zoom_view(im, 540, cy, k)
+    return fly_out(im, t, T['fly_final'], 540, (py - cy) * k + 960)
+
 
 
 def shot_final(t):

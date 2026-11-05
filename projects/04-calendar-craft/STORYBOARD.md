@@ -129,4 +129,7 @@
   `build/review/preview_draft.mp4`) — для оценки движения, это не финал.
 - Разрешение на сборку: получено 2026-11-05 («Жду сборку видео»), `STYLE_READY = True`;
   `python -B engine/tools/build.py projects/04-calendar-craft --approved --name calendar_craft_v1`.
+- 2026-11-05: собран `renders/04-calendar-craft/calendar_craft_v1.mp4` — 79,78 с, 1080×1920, 60 к/с, H.264 yuv420p
+  + AAC 48 кГц; build.py полностью декодировал файл; −15,1 LUFS, true peak −2,6 dBTP. Агент проверил
+  стопкадры из готового файла (хук, сгорание, стоп-кадр, RubUp, 22%, финал).
 - Звук на слух и движение в реальном времени: автором не проверены.

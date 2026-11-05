@@ -1,0 +1,63 @@
+{
+  "_note": "Fish Audio drama-3 task ids (audio https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take; later ids = the slower first-pass takes (74 s of speech, too long).",
+  "L01": [
+    "f0b0c391d85d4fd0ba698d6cfb292a0a",
+    "68b7a9ac85294b86b116cc6423e169ce"
+  ],
+  "L02": [
+    "747b6b9c796048d590d65f5e97f1be78"
+  ],
+  "L03": [
+    "813faa109d614540bc5cc5d290ec0693",
+    "4eb0d837157c4288959a465c6dcdbc80",
+    "969658e1f5fe409e806234a2d1e2db9d"
+  ],
+  "L04": [
+    "23b9194979bb402ab6ab91d7055e20dc",
+    "1273530075464cddbb000cba53c33de4",
+    "2ba2632b3c3f469bbaaf57fd91c1ac38"
+  ],
+  "L05": [
+    "76d49d787e994179b584020f4e2b583c",
+    "f44c40c643e946b995b814d9f7a9892b"
+  ],
+  "L06": [
+    "f4dc283708c546ea9b4b31b005ba4bc0",
+    "2aede54eb3884352a20b1b38c37d211d",
+    "cf0c2c9a77454c1eb982a4d724f2bd18"
+  ],
+  "L07": [
+    "538fa60c08d04bcabe911618a9681249",
+    "ca627970bfd846aaa66e7df06ba018b9"
+  ],
+  "L08": [
+    "1fb7e0aa1e42466599ca4759910a2af4",
+    "327e457952ca4c0288d46831e8a73ee5"
+  ],
+  "L09": [
+    "5392323f4b3348808d640fb674249a0e"
+  ],
+  "L10": [
+    "936c0629c84d425bb7f70e2fcf21c9b1"
+  ],
+  "L11": [
+    "735900a7788743bda13373d0a52789d0"
+  ],
+  "L12": [
+    "53b2f22d196d423d847b23733decaf75",
+    "ba0ad1d67e8f44d18726842cf888c3d7",
+    "93a973950e3e4680962ded1d541751a1"
+  ],
+  "L13": [
+    "b03e223d7aea4580bb9eec7f685a6b21",
+    "0910c8ab9d9148a8a98ef590f98527f9",
+    "39a6e3947f06445d809c9864c60ab073"
+  ],
+  "L14": [
+    "259470f7271b4e89b225ccf4cddec4de",
+    "26e426753be44a4ab69422bdd5e65385"
+  ],
+  "_dropped": {
+    "L05_deal": "4f2a1874d88246aa826931f5e72f2dc4"
+  }
+}

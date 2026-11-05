@@ -4,3 +4,6 @@
 *.json text eol=lf
 *.otf binary
 *.mov binary
+*.flac binary
+*.wav binary
+*.mp3 binary

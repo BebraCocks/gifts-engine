@@ -15,6 +15,7 @@
 | `gifts_api` | данные, PNG, JSON/TGS и паттерны подарков по сети |
 | `lottie` | метаданные и RGBA-кадр полного цикла; ограниченный кэш памяти |
 | `sound`, `voice` | декодирование, нормализация, огибающие, границы речи |
+| `sfxkit` | SFX из `input/sfx/` по ролям, без повторов внутри ролика и между роликами, файлы для прослушивания |
 | `banner` | прозрачный баннер, временная карта, пауза, звук, duck |
 | `frames` | стопкадры, воркеры, экспорт изображения, прогресс |
 
@@ -33,11 +34,14 @@ python -B engine/gifts_api.py "Gift Name" --models 3 --anim
 python -B engine/tools/lottie_strip.py cycle.png "Gift Name/Model Name" --n 12
 python -B projects/01-topic/render.py --frames 0,180,360
 python -B engine/layout.py projects/01-topic
+python -B projects/01-topic/audio.py          # mix.wav + review/sfx_only.mp3, mix.mp3, sfx_cues.txt
+python -B engine/tools/sfx_catalog.py --audition whoosh
 python -B engine/tools/verify_project.py
 ```
 
 Имена Gift Name и Model Name заменяются фактическими именами из API.
-Хайлайты из `projects/01-topic/build/review/` показываются автору картинками.
+Хайлайты из `projects/01-topic/build/review/` показываются автору картинками,
+а `sfx_only.mp3`, `mix.mp3` и `sfx_cues.txt` оттуда же отправляются файлами для прослушивания.
 Только после **«собирай»**, с собственной визуальной концепцией и `STYLE_READY=True`:
 
 ```sh
@@ -50,7 +54,8 @@ python -B engine/tools/build.py projects/01-topic --approved --name topic_v1
 с фактическим доступом к воспроизведению.
 
 Кэш скачанных подарков/декодированного баннера — `.cache/`; его нет в поставке.
-Новые SFX/референсы/модели/музыка добавляются отдельно в `input/` и исключены из Git.
+SFX по умолчанию — пак Botanica V4 в `input/sfx/` (в Git, см. [SFX.md](SFX.md)).
+Новые референсы, модели и музыка добавляются отдельно в `input/` и исключены из Git.
 Входные WAV и оплаченные дубли сохраняются локально, резервируются отдельно.
 
 ## Принципы более сложной анимации

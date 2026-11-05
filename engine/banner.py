@@ -245,8 +245,9 @@ class Breaks:
         return np.clip(c, 0, 255).astype(np.uint8)
 
     # -------------------------------------------------------------- sound
-    def audio(self, mix, sr=48000):
-        """mix: (N, 2) float in content time -> output-time mix with the pauses and the banner sound."""
+    def audio(self, mix, sr=48000, banner=True):
+        """mix: (N, 2) float in content time -> output-time mix with the pauses and the banner sound.
+        banner=False gives the same time map without the banner (an SFX-only stem for review)."""
         import sound as S
         n_out = int(round(self.out_dur(len(mix) / sr) * sr))
         t = np.arange(n_out) / sr
@@ -263,6 +264,8 @@ class Breaks:
             gain[r2] = _sm((u[r2] - RAMP - self.hold) / RAMP) ** 0.7
         pos = np.clip(ct * sr, 0, len(mix) - 1)
         out = np.stack([np.interp(pos, np.arange(len(mix)), mix[:, ch]) for ch in range(2)], 1) * gain[:, None]
+        if not banner:
+            return np.clip(out, -0.98, 0.98)
         ban = sound(sr, self.speed) * 0.82                           # banner peak ~ -3 dBFS, like our mix
         for k, at in enumerate(self.stops):
             b0 = at + RAMP / 2 + PRE + k * self.extra

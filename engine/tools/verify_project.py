@@ -69,7 +69,18 @@ def main():
                 destination = (path.parent / unquote(link.split('#')[0])).resolve()
                 if not destination.is_relative_to(ROOT) or not destination.exists():
                     issues.append('Broken or external local link: ' + rel)
-    for module in ('paths', 'fx', 'captions', 'layout', 'raster', 'frames', 'gifts_api', 'lottie', 'sound', 'voice', 'banner'):
+    catalog = ROOT / 'input' / 'sfx' / 'catalog.json'
+    if catalog.is_file():
+        sounds = json.loads(catalog.read_text(encoding='utf-8'))['sounds']
+        missing = [it['file'] for it in sounds if not (ROOT / 'input' / 'sfx' / it['file']).is_file()]
+        on_disk = {p.relative_to(ROOT / 'input' / 'sfx').as_posix() for p in (ROOT / 'input' / 'sfx').rglob('*.flac')}
+        new = on_disk - {it['file'] for it in sounds}
+        if missing:
+            issues.append(f'SFX catalog lists {len(missing)} missing files, e.g. ' + missing[0])
+        if new:
+            issues.append(f'{len(new)} SFX files are not in the catalog: run engine/tools/sfx_catalog.py')
+        print(f'SFX: {len(sounds)} sounds in catalog')
+    for module in ('paths', 'fx', 'captions', 'layout', 'raster', 'frames', 'gifts_api', 'lottie', 'sound', 'voice', 'banner', 'sfxkit'):
         try:
             importlib.import_module(module)
         except Exception as error:
@@ -88,7 +99,7 @@ def main():
                 if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                     issues.append('Distribution checksum differs: ' + name)
             actual_media = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'input').rglob('*')
-                            if p.is_file() and p.name != 'README.md'}
+                            if p.is_file() and p.name != 'README.md' and 'sfx' not in p.relative_to(ROOT / 'input').parts[:1]}
             if actual_media != MEDIA:
                 issues.append('Media set must be the current banner and five SF Pro Text files only')
             for path in ROOT.rglob('*'):

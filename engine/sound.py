@@ -11,7 +11,9 @@ PACK = paths.INPUT / "sfx"
 
 
 def _decode(path, sr, ch, start=0.0, dur=None):
-    cmd = [paths.ffmpeg(), "-v", "error", "-ss", str(start)]
+    cmd = [paths.ffmpeg(), "-v", "error"]
+    if start:                                   # "-ss 0" before -i returns nothing for very short FLACs
+        cmd += ["-ss", str(start)]
     if dur:
         cmd += ["-t", str(dur)]
     cmd += ["-i", str(path), "-f", "f32le", "-acodec", "pcm_f32le", "-ac", str(ch), "-ar", str(sr), "-"]

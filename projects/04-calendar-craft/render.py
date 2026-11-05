@@ -700,7 +700,7 @@ def shot_cta(t):
     a = alex(t, thin=1.0, pale=0.8, red=0.55, angry=0.8, smile=-0.5, brow=(6, 0), look=(0.8, 0), la=(14.0, -10.0))
     m = misha(t, pizza=1, ra=(150 + 20 * math.sin(t * 7), 20), smile=1.0, look=(-0.2, 0), chew=0.5)
     im = stage(S.hallway(), 560, 1000, 1.15, [(C.draw_alex, ALEX_X, 1.05, a), (C.draw_misha, MISHA_X, 1.0, m)])
-    put(im, text_sprite('ЛАЙК, ЕСЛИ У ТЕБЯ\nТОЖЕ ЕСТЬ ТАКОЙ ДРУГ', 70, (255, 255, 255), 'Heavy', 9), W / 2, 330, 1,
+    put(im, text_sprite('ЛАЙК, ЕСЛИ У ТЕБЯ ТОЖЕ\nЕСТЬ ' + censor('ДРУГ-ДОЛБАЁБ'.lower()).upper(), 64, (255, 255, 255), 'Heavy', 9), W / 2, 330, 1,
         pop(t, E.CTA))
     put(im, like_icon(), W / 2, 1560, 1, pop(t, E.LIKE - 0.05, 0.45) * (1 + 0.06 * math.sin(max(0, t - E.LIKE) * 8)))
     bub = fx.solid_pill('А ты продал бы за 100 ₽?', (42, 171, 238), 44, (255, 255, 255), 'Heavy')

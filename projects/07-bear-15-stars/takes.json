@@ -1,6 +1,6 @@
 {
   "_note": "Fish Audio drama-3 task ids (audio https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take: voice «Лиам» 06cc6d28… (author, 2026-11-05). Second id = the first pass with the default voice 7312c385…",
-  "_v2": "2026-11-05, author's edits: L01 «крутые идеи», L02 «просьба о благосклонности», L13 «мишеу» read syllable by syllable. Older ids follow.",
+  "_v2": "2026-11-05, author's edits: L01 «крутые идеи», L02 «просьба о благосклонности», L13 «мишеу» read syllable by syllable. Older ids follow. L13 then changed to «дай мишку» (author).",
   "L01": [
     "6f09abe943bb4894995750c309338b03",
     "f0a8d0ff58b243d8a1d31c5be183c91f",
@@ -52,6 +52,7 @@
     "3d8c4c09103f49a29476b4e43baee62a"
   ],
   "L13": [
+    "f6fdfde7cfea4dacbdf7fbb6bbe97622",
     "bedebec287b74476b12abd1a97cde9ce",
     "83e119567fa24222a21be3218b382622",
     "a0b8c9e3d302433980c5786f4a24cf95"

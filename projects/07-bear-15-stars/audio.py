@@ -78,7 +78,7 @@ def sfx_layer(n, kit):
     A(fx, 'whoosh', S['sofa'], align='peak', gain_db=-16, label='whip to the sofa')
     A(fx, 'cartoon-move', E['couch'] - 0.4, gain_db=-19, label='«0 шагов»')
     A(fx, 'whoosh-short', S['dm'] + 0.2, align='peak', gain_db=-16, label='phone flies in')
-    A(fx, 'typing', E['type0'] - 0.5, gain_db=-17, fit=E['send'] - E['type0'] + 0.4, label='typing «дай мишеу»')
+    A(fx, 'typing', E['type0'] - 0.5, gain_db=-17, fit=E['send'] - E['type0'] + 0.4, label='typing «дай мишку»')
     A(fx, 'key-enter', E['send'] + 0.02, gain_db=-15, label='send')
     A(fx, 'select-soft', E['send'] + 0.08, gain_db=-17, label='message sent (one tick)')
     A(fx, 'downlifter', S['auto'] + 0.8, gain_db=-17, label='pull back to the sofa')

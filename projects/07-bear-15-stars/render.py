@@ -3,7 +3,7 @@
 Shots (events.py): hook (bear drops, «15 ⭐», three closed cards) → card «1 МЕСТО» → chats list «дайте мишку»
 → room, days fly, «10 ч/день» → the bear arrives → BAN stamps in every chat → card «2 МЕСТО» (chart up)
 → street: old clothes + sign «НА ЛЕКАРСТВА» → passers-by, a coin → RubUp → friends spot him → they crumble
-to dust, tumbleweed → card «3 МЕСТО» (crown, 100%) → sofa → DM «Павел Дуров»: «дай мишеу» → one grey tick,
+to dust, tumbleweed → card «3 МЕСТО» (crown, 100%) → sofa → DM «Павел Дуров»: «дай мишку» → one grey tick,
 months pass, beard and cobweb → like button + waving bear.
 """
 import functools
@@ -645,8 +645,8 @@ def dm_chat():
     # Easter egg for attentive viewers (author's request, 2026-11-05): an instant rude reply flashes on the
     # screen while the phone shrinks into the hero's hands. Not voiced.
     t_reply = S['auto'] + 0.15
-    ev = [tg.draft(E['type0'] - 0.5, E['send'] + 0.05, 'дай мишеу'),
-          tg.msg(E['send'] + 0.05, 'out', 'дай мишеу', '12:00', read=t_reply - 0.1 - (E['send'] + 0.05)),
+    ev = [tg.draft(E['type0'] - 0.5, E['send'] + 0.05, 'дай мишку'),
+          tg.msg(E['send'] + 0.05, 'out', 'дай мишку', '12:00', read=t_reply - 0.1 - (E['send'] + 0.05)),
           tg.status(t_reply - 0.15, 'в сети'),
           tg.msg(t_reply, 'in', 'Иди нахуй, еблан', '12:00'),
           tg.status(t_reply + 1.2, 'был(а) давно')]
@@ -694,7 +694,7 @@ def months_text(n):
 
 @functools.lru_cache(None)
 def bubble_one_tick():
-    b = tg.bubble('дай мишеу', 'out', '12:00', 'day', True)      # read (✓✓): he did see it
+    b = tg.bubble('дай мишку', 'out', '12:00', 'day', True)      # read (✓✓): he did see it
     return b.resize((int(b.width * 1.25), int(b.height * 1.25)), Image.LANCZOS)
 
 

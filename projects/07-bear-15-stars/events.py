@@ -55,7 +55,7 @@ E = {
     'full': wt('p3', '100'),
     'couch': wt('sofa', 'дивана'),
     'type0': wt('dm', 'фразу'),
-    'send': wt('dm', 'У', end=True),                # «дай ми-ше-у» read by syllables (v2)
+    'send': wt('dm', 'мишку', end=True),            # «дай мишку» (author, v2)
     'autow': wt('auto', 'автоматически'),
     'ask': wt('auto', 'просите'),
     'like_btn': wt('like', 'лайк'),

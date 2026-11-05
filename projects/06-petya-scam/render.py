@@ -191,59 +191,62 @@ def person(canvas, who, x, y, scale, t, arms='down', glow_=0.0, talk_keys=(), ti
 
 def phone_point(x, y, scale):
     """Screen position of the phone in a bust with arms='phone' (neck pivot at x, y)."""
-    return x, y + 385 * scale
+    return x, y + 388 * scale
 
 
 # ------------------------------------------------------------------ the phone in hands (POV)
-PH_S = 0.6
-PH_C = (540, 900)
+PH_S = 0.52
+PH_C = (540, 860)
 PW, PHH = int(980 * PH_S), int(1880 * PH_S)
 X0, Y0, X1, Y1 = PH_C[0] - PW // 2, PH_C[1] - PHH // 2, PH_C[0] + PW // 2, PH_C[1] + PHH // 2
 
 
 @functools.lru_cache(maxsize=64)
 def _hands(tl, tr, sleeve, back=False):
-    """Petya's hands holding the phone (frame coordinates). back=True: sleeves + palms behind the phone;
-    back=False: palm heels over the lower corners and the thumbs over the screen."""
+    """Petya's hands holding the phone, in real proportion to it (a thumb ≈ a quarter of the phone width).
+    back=True: forearms in sleeves + palms behind the phone; back=False: thumb bases + thumbs over the screen."""
     P = C.PETYA
     L = Layer(W, H, ss=2)
     sk, sh = P['skin'], P['sh']
     cuff = shade(sleeve, 0.85)
     for s, (tx, ty) in ((-1, tl), (1, tr)):
-        f = (lambda x: x) if s < 0 else (lambda x: 2 * 540 - x)  # mirror left-hand geometry for the right hand
+        f = (lambda x: x) if s < 0 else (lambda x: 2 * 540 - x)  # left-hand geometry, mirrored for the right
         if back:
-            # forearm in the sleeve, diagonally from the bottom corner to the wrist
-            L.shape([(f(-120), H + 80), (f(-60), 1800), (f(60), 1690), (f(200), 1660), (f(300), 1740),
-                     (f(330), H + 80)], sleeve)
-            L.stroke([(f(10), 1760), (f(250), 1700)], 30, cuff)
-            # palm along the lower half of the phone side (most of it is hidden behind the phone)
-            pm = L.shape([(f(120), 1730), (f(140), 1560), (f(178), 1400), (f(210), 1270), (f(236), 1175),
-                          (f(262), 1160), (f(330), 1420), (f(320), 1720)], sk)
-            L.shape([(f(120), 1730), (f(140), 1560), (f(178), 1400), (f(205), 1300), (f(205), 1560),
-                     (f(180), 1740)], sh, clip=pm, alpha=0.5)
-            L.ell(f(238), 1168, 20, 26, sk)                      # index knuckle at the phone edge
+            L.shape([(f(X0 - 312), H + 80), (f(X0 - 246), Y1 + 246), (f(X0 - 123), Y1 + 205),
+                     (f(X0 + 25), Y1 + 238), (f(X0 + 107), H + 80)], sleeve)
+            L.stroke([(f(X0 - 238), Y1 + 271), (f(X0 + 16), Y1 + 262)], 40, cuff)
+            pm = L.shape([(f(X0 - 172), Y1 + 271), (f(X0 - 156), Y1 + 66), (f(X0 - 107), Y1 - 139),
+                          (f(X0 - 49), Y1 - 271), (f(X0 + 8), Y1 - 295), (f(X0 + 66), Y1 - 164),
+                          (f(X0 + 74), Y1 + 271)], sk)
+            L.shape([(f(X0 - 172), Y1 + 271), (f(X0 - 156), Y1 + 66), (f(X0 - 107), Y1 - 139),
+                     (f(X0 - 90), Y1 + 82), (f(X0 - 115), Y1 + 271)], sh, clip=pm, alpha=0.45)
+            for k in range(2):                                    # curled fingers at the side edge
+                L.ell(f(X0 - 18), Y1 - 271 - k * 74, 36, 40, sk)
+                L.stroke([(f(X0 - 39), Y1 - 262 - k * 74), (f(X0 - 25), Y1 - 246 - k * 74)], 4, sh, alpha=0.6)
             continue
-        # base of the thumb over the lower corner of the phone
-        hm = L.shape([(f(190), 1600), (f(205), 1470), (f(250), 1405), (f(318), 1395), (f(366), 1440),
-                      (f(352), 1530), (f(290), 1600)], sk)
-        L.shape([(f(190), 1600), (f(205), 1470), (f(235), 1430), (f(250), 1600)], sh, clip=hm, alpha=0.45)
-        # the thumb: tapering, slightly bent towards the tip
-        bx, by = f(318), 1425
+        hm = L.shape([(f(X0 - 123), Y1 + 213), (f(X0 - 115), Y1 + 49), (f(X0 - 49), Y1 - 57),
+                      (f(X0 + 57), Y1 - 74), (f(X0 + 139), Y1 - 16), (f(X0 + 123), Y1 + 98),
+                      (f(X0 + 33), Y1 + 213)], sk)
+        L.shape([(f(X0 - 123), Y1 + 213), (f(X0 - 115), Y1 + 49), (f(X0 - 74), Y1 - 16),
+                 (f(X0 - 57), Y1 + 213)], sh, clip=hm, alpha=0.45)
+        bx, by = f(X0 + 66), Y1 - 33
         dx, dy = tx - bx, ty - by
         ln = max(1.0, math.hypot(dx, dy))
-        nx, ny = -dy / ln, dx / ln
-        mx_, my_ = bx + dx * 0.55 + nx * 10 * s, by + dy * 0.55 + ny * 10 * s
-        pts = [(bx + nx * 27, by + ny * 27), (mx_ + nx * 23, my_ + ny * 23), (tx + nx * 19, ty + ny * 19),
-               (tx + dx / ln * 18, ty + dy / ln * 18),
-               (tx - nx * 19, ty - ny * 19), (mx_ - nx * 23, my_ - ny * 23), (bx - nx * 27, by - ny * 27)]
+        ux, uy = dx / ln, dy / ln
+        nx, ny = -uy, ux
+        mx_, my_ = bx + dx * 0.55 + nx * 14 * s, by + dy * 0.55 + ny * 14 * s
+        w0, w1, w2 = 42, 36, 30
+        pts = [(bx + nx * w0, by + ny * w0), (mx_ + nx * w1, my_ + ny * w1), (tx + nx * w2, ty + ny * w2),
+               (tx + ux * 30, ty + uy * 30),
+               (tx - nx * w2, ty - ny * w2), (mx_ - nx * w1, my_ - ny * w1), (bx - nx * w0, by - ny * w0)]
         tm = L.shape(pts, sk)
-        L.shape([(bx - nx * 27, by - ny * 27), (mx_ - nx * 23, my_ - ny * 23), (mx_ - nx * 8, my_ - ny * 8),
-                 (bx - nx * 6, by - ny * 6)], sh, clip=tm, alpha=0.45)
-        L.shape([(tx + nx * 12 - dx / ln * 2, ty + ny * 12 - dy / ln * 2), (tx + dx / ln * 12, ty + dy / ln * 12),
-                 (tx - nx * 12 - dx / ln * 2, ty - ny * 12 - dy / ln * 2), (tx - dx / ln * 14, ty - dy / ln * 14)],
-                (252, 236, 228), alpha=0.9)
-        L.stroke([(mx_ - dx / ln * 20 + nx * 14, my_ - dy / ln * 20 + ny * 14),
-                  (mx_ - dx / ln * 20 - nx * 6, my_ - dy / ln * 20 - ny * 6)], 3, sh, alpha=0.6)   # knuckle crease
+        L.shape([(bx - nx * w0, by - ny * w0), (mx_ - nx * w1, my_ - ny * w1), (mx_ - nx * 14, my_ - ny * 14),
+                 (bx - nx * 12, by - ny * 12)], sh, clip=tm, alpha=0.4)
+        L.shape([(tx + nx * 18 - ux * 5, ty + ny * 22 - uy * 6), (tx + ux * 22, ty + uy * 22),
+                 (tx - nx * 18 - ux * 5, ty - ny * 22 - uy * 6), (tx - ux * 26, ty - uy * 26)],
+                (252, 236, 228), alpha=0.9)                                          # nail
+        kx, ky = mx_ - ux * 30, my_ - uy * 30
+        L.stroke([(kx + nx * 26, ky + ny * 26), (kx - nx * 8, ky - ny * 8)], 4, sh, alpha=0.55)
     return L.image()
 
 
@@ -251,20 +254,20 @@ def _ky(row):
     return Y0 + (20 + tg.SCREEN[1] - tg.KB_H + 18 + row * 118 + 48) * PH_S
 
 
-TAPS_L = [(320, 0), (400, 1), (350, 2), (450, 0), (300, 1)]
-TAPS_R = [(760, 0), (680, 1), (720, 2), (620, 0), (780, 1)]
+TAPS_L = [(X0 + 60, 0), (X0 + 150, 1), (X0 + 110, 2), (X0 + 200, 0), (X0 + 40, 1)]
+TAPS_R = [(X1 - 60, 0), (X1 - 150, 1), (X1 - 110, 2), (X1 - 210, 0), (X1 - 40, 1)]
 
 
 def thumbs(t, typing_on, kb):
+    rest_l, rest_r = (X0 + 130, Y1 - 150), (X1 - 130, Y1 - 150)
     if typing_on:
         k = int(t * 11)
         if k % 2 == 0:
             x, r = TAPS_L[(k * 3) % 5]
-            return (x, _ky(r)), (740, 1330)
+            return (x, _ky(r)), rest_r
         x, r = TAPS_R[(k * 7 + 1) % 5]
-        return (340, 1330), (x, _ky(r))
-    y = 1360 - 60 * kb
-    return (360, y), (720, y)
+        return rest_l, (x, _ky(r))
+    return (X0 + 120, Y1 - 120 - 60 * kb), (X1 - 120, Y1 - 120 - 60 * kb)
 
 
 @functools.lru_cache(maxsize=8)
@@ -281,7 +284,7 @@ def environment(mode):
 @functools.lru_cache(maxsize=1)
 def _phone_shadow():
     sh = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(sh).rounded_rectangle([X0 + 20, Y0 + 40, X1 + 30, Y1 + 50], 80, fill=(0, 0, 0, 120))
+    ImageDraw.Draw(sh).rounded_rectangle([X0 + 20, Y0 + 40, X1 + 30, Y1 + 50], 70, fill=(0, 0, 0, 120))
     return sh.filter(ImageFilter.GaussianBlur(30))
 
 

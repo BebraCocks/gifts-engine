@@ -154,9 +154,9 @@ def wrap(text, f, width):
 
 
 # ------------------------------------------------------------------ bubbles
-FS = 52
-LINE = 64
-MAXW = 700
+FS = 56
+LINE = 68
+MAXW = 720
 
 
 def _rounded(w, h, r, fill):

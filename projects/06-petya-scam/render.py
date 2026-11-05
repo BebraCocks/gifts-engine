@@ -195,80 +195,118 @@ def phone_point(x, y, scale):
 
 
 # ------------------------------------------------------------------ the phone in hands (POV)
-PH_S = 0.86
-PH_C = (540, 1010)
+PH_S = 0.6
+PH_C = (540, 900)
+PW, PHH = int(980 * PH_S), int(1880 * PH_S)
+X0, Y0, X1, Y1 = PH_C[0] - PW // 2, PH_C[1] - PHH // 2, PH_C[0] + PW // 2, PH_C[1] + PHH // 2
 
 
-@functools.lru_cache(maxsize=48)
+@functools.lru_cache(maxsize=64)
 def _hands(tl, tr, sleeve, back=False):
-    """Hands holding the phone: palms behind (back=True) or the thumbs over the screen (back=False)."""
+    """Petya's hands holding the phone (frame coordinates). back=True: sleeves + palms behind the phone;
+    back=False: palm heels over the lower corners and the thumbs over the screen."""
     P = C.PETYA
     L = Layer(W, H, ss=2)
     sk, sh = P['skin'], P['sh']
-    if back:
-        for s in (-1, 1):
-            cx = 540 + s * 392
-            L.shape([(cx + s * 160, H + 40), (cx + s * 60, 1700), (cx - s * 10, 1560), (cx - s * 40, 1500),
-                     (cx - s * 60, 1650), (cx - s * 20, H + 40)], sleeve)
-            L.shape([(cx + s * 70, 1760), (cx + s * 30, 1560), (cx - s * 30, 1470), (cx - s * 60, 1520),
-                     (cx - s * 70, 1700), (cx - s * 10, 1800)], sk)
-            for k in range(3):                                  # finger tips peeking on the side
-                yy = 1180 + k * 90
-                L.ell(cx + s * 14, yy, 26, 36, sk)
-                L.ell(cx + s * 20, yy + 6, 12, 22, sh, alpha=0.6)
-        return L.image()
+    cuff = shade(sleeve, 0.85)
     for s, (tx, ty) in ((-1, tl), (1, tr)):
-        bx, by = 540 + s * 430, 1830
-        # palm heel over the lower corner of the phone, the thumb comes out of it
-        pm = L.shape([(bx - s * 150, H + 60), (bx - s * 170, 1840), (bx - s * 120, 1740), (bx - s * 20, 1700),
-                      (bx + s * 90, 1730), (bx + s * 160, H + 60)], sk)
-        L.shape([(bx + s * 20, 1720), (bx + s * 90, 1730), (bx + s * 160, H + 60), (bx + s * 40, H + 60)], sh,
-                clip=pm, alpha=0.55)
-        mx, my = lerp(bx - s * 90, tx, 0.45), lerp(1760, ty, 0.45) + 25
-        L.stroke([(bx - s * 90, 1770), (mx, my), (tx, ty)], 58, sk)
-        L.stroke([(bx - s * 70, 1790), (mx + s * 6, my + 14)], 16, sh, alpha=0.45)
-        L.ell(tx, ty, 31, 28, sk)
-        L.ell(tx - s * 4, ty - 6, 16, 12, (252, 238, 230), alpha=0.9)          # nail
-        L.shape([(bx - s * 160, H + 60), (bx - s * 150, 1890), (bx + s * 170, 1880), (bx + s * 200, H + 60)],
-                sleeve)                                                         # cuff of the sleeve
+        f = (lambda x: x) if s < 0 else (lambda x: 2 * 540 - x)  # mirror left-hand geometry for the right hand
+        if back:
+            # forearm in the sleeve, diagonally from the bottom corner to the wrist
+            L.shape([(f(-120), H + 80), (f(-60), 1800), (f(60), 1690), (f(200), 1660), (f(300), 1740),
+                     (f(330), H + 80)], sleeve)
+            L.stroke([(f(10), 1760), (f(250), 1700)], 30, cuff)
+            # palm along the lower half of the phone side (most of it is hidden behind the phone)
+            pm = L.shape([(f(120), 1730), (f(140), 1560), (f(178), 1400), (f(210), 1270), (f(236), 1175),
+                          (f(262), 1160), (f(330), 1420), (f(320), 1720)], sk)
+            L.shape([(f(120), 1730), (f(140), 1560), (f(178), 1400), (f(205), 1300), (f(205), 1560),
+                     (f(180), 1740)], sh, clip=pm, alpha=0.5)
+            L.ell(f(238), 1168, 20, 26, sk)                      # index knuckle at the phone edge
+            continue
+        # base of the thumb over the lower corner of the phone
+        hm = L.shape([(f(190), 1600), (f(205), 1470), (f(250), 1405), (f(318), 1395), (f(366), 1440),
+                      (f(352), 1530), (f(290), 1600)], sk)
+        L.shape([(f(190), 1600), (f(205), 1470), (f(235), 1430), (f(250), 1600)], sh, clip=hm, alpha=0.45)
+        # the thumb: tapering, slightly bent towards the tip
+        bx, by = f(318), 1425
+        dx, dy = tx - bx, ty - by
+        ln = max(1.0, math.hypot(dx, dy))
+        nx, ny = -dy / ln, dx / ln
+        mx_, my_ = bx + dx * 0.55 + nx * 10 * s, by + dy * 0.55 + ny * 10 * s
+        pts = [(bx + nx * 27, by + ny * 27), (mx_ + nx * 23, my_ + ny * 23), (tx + nx * 19, ty + ny * 19),
+               (tx + dx / ln * 18, ty + dy / ln * 18),
+               (tx - nx * 19, ty - ny * 19), (mx_ - nx * 23, my_ - ny * 23), (bx - nx * 27, by - ny * 27)]
+        tm = L.shape(pts, sk)
+        L.shape([(bx - nx * 27, by - ny * 27), (mx_ - nx * 23, my_ - ny * 23), (mx_ - nx * 8, my_ - ny * 8),
+                 (bx - nx * 6, by - ny * 6)], sh, clip=tm, alpha=0.45)
+        L.shape([(tx + nx * 12 - dx / ln * 2, ty + ny * 12 - dy / ln * 2), (tx + dx / ln * 12, ty + dy / ln * 12),
+                 (tx - nx * 12 - dx / ln * 2, ty - ny * 12 - dy / ln * 2), (tx - dx / ln * 14, ty - dy / ln * 14)],
+                (252, 236, 228), alpha=0.9)
+        L.stroke([(mx_ - dx / ln * 20 + nx * 14, my_ - dy / ln * 20 + ny * 14),
+                  (mx_ - dx / ln * 20 - nx * 6, my_ - dy / ln * 20 - ny * 6)], 3, sh, alpha=0.6)   # knuckle crease
     return L.image()
 
 
-TAPS = [(330, 1450), (430, 1520), (290, 1580), (380, 1400), (470, 1460)]
+def _ky(row):
+    return Y0 + (20 + tg.SCREEN[1] - tg.KB_H + 18 + row * 118 + 48) * PH_S
+
+
+TAPS_L = [(320, 0), (400, 1), (350, 2), (450, 0), (300, 1)]
+TAPS_R = [(760, 0), (680, 1), (720, 2), (620, 0), (780, 1)]
 
 
 def thumbs(t, typing_on, kb):
     if typing_on:
         k = int(t * 11)
-        lt = TAPS[(k * 3) % len(TAPS)] if k % 2 == 0 else (290, 1620)
-        rt = (W - TAPS[(k * 7 + 1) % len(TAPS)][0], TAPS[(k * 7 + 1) % len(TAPS)][1]) if k % 2 else (790, 1620)
-        return lt, rt
-    y = 1790 - 150 * kb
-    return (190, y), (890, y)
+        if k % 2 == 0:
+            x, r = TAPS_L[(k * 3) % 5]
+            return (x, _ky(r)), (740, 1330)
+        x, r = TAPS_R[(k * 7 + 1) % 5]
+        return (340, 1330), (x, _ky(r))
+    y = 1360 - 60 * kb
+    return (360, y), (720, y)
+
+
+@functools.lru_cache(maxsize=8)
+def environment(mode):
+    """Petya's surroundings behind the phone: his room + desk, slightly out of focus."""
+    im = S.room(mode).copy()
+    im.alpha_composite(S.desk(mode))
+    im = im.filter(ImageFilter.GaussianBlur(5))
+    a = np.asarray(im, np.float32)
+    a[..., :3] *= 0.82
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
+@functools.lru_cache(maxsize=1)
+def _phone_shadow():
+    sh = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle([X0 + 20, Y0 + 40, X1 + 30, Y1 + 50], 80, fill=(0, 0, 0, 120))
+    return sh.filter(ImageFilter.GaussianBlur(30))
 
 
 def pov(t, chat=None, screen=None, bg=None, zoom=1.0, focus=None, sleeve=None, shake=0.0, dark=0.0):
     sleeve = sleeve or C.PETYA['cloth']
-    im = (bg if bg is not None else S.blurred('room', 'night')).copy()
+    base = bg if bg is not None else environment('night')
+    bobx = 5 * math.sin(t * 1.3) + shake * math.sin(t * 61)
+    boby = 7 * math.sin(t * 0.9 + 1) + shake * math.cos(t * 53)
+    im = base.copy()
     if screen is None:
         screen = tg.chat_screen(t, chat)
     typing_on, kb = False, 0.0
     if chat is not None:
         typing_on = any(e['k'] == 'draft' and e['t'] <= t < e['t1'] for e in chat['events'])
         kb = tg.kb_open(t, chat['events'])
-    dev = tg.phone(screen)
-    dw, dh = int(dev.width * PH_S), int(dev.height * PH_S)
-    dev = dev.resize((dw, dh), Image.BILINEAR)
-    bobx = 6 * math.sin(t * 1.3) + shake * math.sin(t * 61)
-    boby = 8 * math.sin(t * 0.9 + 1) + shake * math.cos(t * 53)
-    im.alpha_composite(_hands(None, None, sleeve, back=True))
-    # phone glow on the scene
-    glow(im, PH_C[0], PH_C[1], 760, (120, 170, 255), 0.18)
-    stage._paste_clip(im, dev, PH_C[0] - dw / 2 + bobx, PH_C[1] - dh / 2 + boby)
+    dev = tg.phone(screen).resize((PW, PHH), Image.BILINEAR)
+    rig = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    rig.alpha_composite(_phone_shadow())
+    rig.alpha_composite(_hands((0, 0), (0, 0), sleeve, back=True))
+    glow(rig, PH_C[0], PH_C[1], 560, (140, 180, 255), 0.12)
+    rig.alpha_composite(dev, (X0, Y0))
     lt, rt = thumbs(t, typing_on, kb)
     q = lambda p: (round(p[0] / 10) * 10, round(p[1] / 10) * 10)
-    hands = _hands(q(lt), q(rt), sleeve)
-    im.alpha_composite(hands, (int(bobx), int(boby)))
+    rig.alpha_composite(_hands(q(lt), q(rt), sleeve))
+    stage._paste_clip(im, rig, bobx, boby)
     if dark > 0:
         im = Image.blend(im, Image.new('RGBA', (W, H), (0, 0, 0, 255)), dark)
     if zoom != 1.0 or focus:
@@ -279,7 +317,7 @@ def pov(t, chat=None, screen=None, bg=None, zoom=1.0, focus=None, sleeve=None, s
 
 def screen_y(sy):
     """Screen-space y (0..1840) → frame y in POV."""
-    return PH_C[1] - tg.DEVICE[1] * PH_S / 2 + (20 + sy) * PH_S
+    return Y0 + (20 + sy) * PH_S
 
 
 # ------------------------------------------------------------------ avatars & chats
@@ -289,7 +327,7 @@ AV_PETYA = tg.head_avatar(C.head('petya', smile=0.5), bg=(120, 170, 230))
 AV_BOSS = tg.circle(C.avatar('boss', 240), 240)
 AV_UNKNOWN = tg.circle(C.avatar('unknown', 240), 240)
 
-CHAT_BOSS = dict(theme='day', name='Шеф', status='в сети', avatar=AV_BOSS, clock='18:40', events=[
+CHAT_BOSS = dict(theme='day', name='Друг', status='в сети', avatar=AV_BOSS, clock='18:40', events=[
     msg(T['buzz'], 'in', 'Есть тема 💸', '18:40'),
     msg(T['fly1'] + 0.25, 'in', 'Пишешь людям, втираешься в доверие и уговариваешь отдать NFT-подарки', '18:40'),
     msg(T['fly1'] + 1.0, 'in', 'Всё просто 😎', '18:41'),
@@ -449,12 +487,12 @@ PARTY_BG = None
 
 
 def party_bg_blur():
-    return S.blurred('room', 'party', r=26, dark=0.5)
+    return environment('party')
 
 
 def shot_hook(t):
-    z = 1.45 + 0.25 * sm(ramp(t, 0.2, T['shock']))
-    im = pov(t, chat_x(T['hook_msg']), bg=party_bg_blur(), zoom=z, focus=(470, screen_y(1600)), shake=2)
+    z = 1.12 + 0.2 * sm(ramp(t, 0.2, T['shock']))
+    im = pov(t, chat_x(T['hook_msg']), bg=party_bg_blur(), zoom=z, focus=(520, screen_y(1500)), shake=2)
     im = Image.blend(im, Image.new('RGBA', (W, H), (255, 255, 255, 255)), 0.7 * (1 - ramp(t, 0, 0.25)))
     return im
 
@@ -510,7 +548,7 @@ def shot_room(t):
         px, py = phone_point(540, 1010, 1.25)
         glow(im, px, py, 300, (150, 210, 255), 0.6 * buzz)
         if t >= T['buzz']:
-            put(im, chip('Шеф: Есть тема 💸', bg=(30, 40, 60)), px, py - 230, a=pop(t, T['buzz'], 0.35))
+            put(im, chip('Друг: Есть тема 💸', bg=(30, 40, 60)), px, py - 230, a=pop(t, T['buzz'], 0.35))
     k = 1.0 + 0.08 * ramp(t, T['room'], T['buzz'])
     im = room_scene(t, 'eve', dict(arms='phone', glow_=buzz, sad=sad, smile=0.0 if t < T['buzz'] else 0.25,
                                    brow=0.6 * buzz, look=look, bob=sh), extra=ex, cam=(540, 1000, k))
@@ -522,7 +560,7 @@ def shot_room(t):
 
 
 def shot_boss(t):
-    return pov_shot(t, CHAT_BOSS, T['fly1'], S.blurred('room', 'eve'))
+    return pov_shot(t, CHAT_BOSS, T['fly1'], environment('eve'))
 
 
 def shot_dima(t):
@@ -535,7 +573,7 @@ def shot_dima(t):
 
 
 def shot_dima_chat(t):
-    im = pov_shot(t, CHAT_DIMA, T['to_dima_chat'], S.blurred('room', 'eve'))
+    im = pov_shot(t, CHAT_DIMA, T['to_dima_chat'], environment('eve'))
     im = whip(im, 1 - ramp(t, T['to_dima_chat'], T['to_dima_chat'] + 0.2))
     if T['calendar'] <= t < T['calendar'] + 0.8:          # the gift arrives: a flash of light
         glow(im, 540, 1150, 500, (255, 230, 150), 0.6 * (1 - ramp(t, T['calendar'], T['calendar'] + 0.8)))
@@ -665,8 +703,8 @@ def shot_profile(t):
     hl = [t0 + 1.2 + 0.55 * k for k in range(4)]
     scr = SC.dating_screen(t, t0 + 0.3, hl)
     z, b, fl = fly_in(t, t0)
-    zz = z * (1 + 0.2 * sm(ramp(t, t0 + 1.0, t0 + 2.2)))
-    im = pov(t, screen=scr, bg=S.blurred('room', 'night'), zoom=zz, focus=(540, screen_y(1350)))
+    zz = z * (1 + 0.1 * sm(ramp(t, t0 + 1.0, t0 + 2.2)))
+    im = pov(t, screen=scr, bg=environment('night'), zoom=zz, focus=(540, screen_y(1350)))
     if b:
         im = radial_blur(im, W / 2, H / 2, b)
     return Image.blend(im, Image.new('RGBA', (W, H), (235, 245, 255, 255)), fl)
@@ -766,7 +804,7 @@ def shot_ai(t):
 
 
 def shot_chat_k(t, t0=None, fly=True):
-    return pov_shot(t, CHAT_K, t0 if t0 is not None else T['chat_k'], S.blurred('room', 'night'), fly=fly)
+    return pov_shot(t, CHAT_K, t0 if t0 is not None else T['chat_k'], environment('night'), fly=fly)
 
 
 def shot_katya_love(t):
@@ -800,7 +838,7 @@ def shot_katya_worried(t):
 
 
 def shot_lie(t):
-    im = pov_shot(t, CHAT_K, T['lie'], S.blurred('room', 'night'), fly=False)
+    im = pov_shot(t, CHAT_K, T['lie'], environment('night'), fly=False)
     return whip(im, 1 - ramp(t, T['lie'], T['lie'] + 0.15))
 
 
@@ -827,7 +865,7 @@ def _gift_burst(im, t):
     for tt, (n, m, b) in zip(T['gifts'], GIFTS_K):
         if tt <= t < tt + 0.9:
             k = ramp(t, tt, tt + 0.9)
-            y = lerp(1200, 620, eo(k))
+            y = lerp(1000, 520, eo(k))
             s = 0.5 + 0.9 * math.sin(math.pi * min(1, k * 1.2)) if k < 0.8 else 1.4 * (1 - (k - 0.8) / 0.2) + 0.01
             a = 1 - ramp(k, 0.75, 1.0)
             glow(im, 540, y, 420 * s, (255, 220, 140), 0.6 * a)
@@ -839,7 +877,7 @@ def _gift_burst(im, t):
 
 
 def shot_help(t):
-    im = pov_shot(t, CHAT_K, T['help'], S.blurred('room', 'night'), fly=False,
+    im = pov_shot(t, CHAT_K, T['help'], environment('night'), fly=False,
                   shake=8 * sum(1 - ramp(t, g, g + 0.3) for g in T['gifts'] if t >= g))
     _gift_burst(im, t)
     return whip(im, 1 - ramp(t, T['help'], T['help'] + 0.15))
@@ -868,10 +906,10 @@ def shot_smile(t):
 
 
 def shot_mock(t):
-    im = pov_shot(t, CHAT_K, AD2, S.blurred('room', 'night'), fly=False)
+    im = pov_shot(t, CHAT_K, AD2, environment('night'), fly=False)
     for key, txt in (('five', '+5 минут'), ('ten', '+10 минут')):
         if T[key] <= t < T[key] + 1.2:
-            put(im, text_spr(txt, 86, rgb=(255, 214, 90)), 540, 330, a=pop(t, T[key], 0.3) *
+            put(im, text_spr(txt, 86, rgb=(255, 214, 90)), 540, 1600, a=pop(t, T[key], 0.3) *
                 (1 - ramp(t, T[key] + 0.9, T[key] + 1.2)))
     if t >= T['mock_sent'] + 0.5:                                   # waiting: slow push on the message
         k = sm(ramp(t, T['mock_sent'] + 0.5, T['uneasy']))
@@ -891,7 +929,7 @@ def shot_uneasy(t):
 
 
 def shot_block2(t):
-    return pov_shot(t, CHAT_K, T['block2_shot'], S.blurred('room', 'night'), fly=True)
+    return pov_shot(t, CHAT_K, T['block2_shot'], environment('night'), fly=True)
 
 
 def shot_party(t):
@@ -926,7 +964,7 @@ def shot_final(t):
     im = bg.copy()
     # 3D: the phone is a plane that turns towards us while the camera pushes in
     k = sm(ramp(t, t0, T['shock2']))
-    cam = stage.Cam((0, 0, -2.6 + 0.9 * k), (0, 0, 0), fov=50)
+    cam = stage.Cam((0, 0, -2.7 + 0.55 * k), (0, 0, 0), fov=50)
     yaw = 0.55 * (1 - eo(ramp(t, t0, t0 + 1.6)))
     hw, hh = 0.52, 1.0
     c, s = math.cos(yaw), math.sin(yaw)
@@ -1064,7 +1102,7 @@ def subtitles(im, t, kind):
             who = LINES[k][0]
             if kind == 'pov' and who in 'PKX':
                 return                                            # the chat already shows these words
-            y = 112 if kind == 'pov' else 1600
+            y = 196 if kind == 'pov' else 1600
             if LINES[k][2] in ('outro',) and t >= T['endcard']:
                 y = 1500
             chs = _chunks(k)

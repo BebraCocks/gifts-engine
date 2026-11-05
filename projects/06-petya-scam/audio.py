@@ -98,7 +98,7 @@ def sfx_layer(n, kit):
     # ---- room → boss chat
     A(fx, 'pop', T['room'] + 0.25, gain_db=-21, label='chip «Петя, 16»')
     A(fx, 'voice', T['room'] + 0.4, gain_db=-18, file='tired.flac', label='Petya sighs')
-    A(fx, 'popup', T['buzz'], gain_db=-13, label='notification from «Шеф»')
+    A(fx, 'popup', T['buzz'], gain_db=-13, label='notification from «Друг»')
     A(fx, 'whoosh-deep', T['fly1'], align='end', gain_db=-14, fit=1.1, label='camera flies into the phone')
     chat_sfx(fx, kit, R.CHAT_BOSS, T['fly1'], T['dima'], 'boss')
     # ---- Dima

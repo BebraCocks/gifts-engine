@@ -476,15 +476,12 @@ BODIES = dict(petya=petya_body, katya=katya_body, alex=alex_body, dima=dima_body
 def avatar(kind, size=240):
     """'boss' — the internet friend (hooded figure, white grin); 'unknown' — the sender of the last message."""
     L = Layer(size, size).at(size / 2, size / 2, size / 240)
-    if kind == 'boss':
-        cm = L.ell(0, 0, 120, 120, (34, 36, 52))
-        L.shape([(-110, 140), (-96, 10), (-60, -70), (0, -96), (60, -70), (96, 10), (110, 140)], (18, 18, 26),
-                clip=cm)
-        L.ell(0, 10, 50, 58, (8, 8, 12), clip=cm)
-        L.stroke([(-26, 22), (-12, 34), (0, 36), (12, 34), (26, 22)], 6, WHITE)
-        for s in (-1, 1):
-            L.stroke([(s * 12, -6), (s * 28, -12)], 6, WHITE)
-        L.ell(70, -70, 14, 14, (255, 196, 60), clip=cm)              # gold coin glint
+    if kind == 'boss':        # «Друг»: a dark silhouette with a question mark
+        cm = L.ell(0, 0, 120, 120, (58, 62, 78))
+        L.ell(0, -30, 44, 48, (22, 22, 30), clip=cm)
+        L.ell(0, 104, 90, 74, (22, 22, 30), clip=cm)
+        L.stroke([(-16, -48), (-12, -62), (0, -68), (13, -62), (15, -48), (2, -36), (0, -24)], 9, WHITE)
+        L.ell(0, -8, 6, 6, WHITE)
     elif kind == 'unknown':
         cm = L.ell(0, 0, 120, 120, (16, 16, 20))
         L.ell(0, -28, 40, 44, (60, 60, 70), clip=cm)

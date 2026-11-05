@@ -53,8 +53,9 @@ def msg(t, side, text, clock='', read=0.8):
     return dict(k='msg', t=t, side=side, text=text, clock=clock, read=read)
 
 
-def gift(t, side, name, model, backdrop=None, caption=''):
-    return dict(k='gift', t=t, side=side, name=name, model=model, backdrop=backdrop, caption=caption)
+def gift(t, side, name, model, backdrop=None, caption='', symbol=None):
+    return dict(k='gift', t=t, side=side, name=name, model=model, backdrop=backdrop, caption=caption,
+                symbol=symbol)
 
 
 def typing(t0, t1):
@@ -153,9 +154,9 @@ def wrap(text, f, width):
 
 
 # ------------------------------------------------------------------ bubbles
-FS = 44
-LINE = 56
-MAXW = 660
+FS = 52
+LINE = 64
+MAXW = 700
 
 
 def _rounded(w, h, r, fill):
@@ -204,7 +205,7 @@ def bubble(text, side, clock, theme, read):
 
 
 @functools.lru_cache(maxsize=64)
-def _gift_card_base(name, model, backdrop, caption, theme):
+def _gift_card_base(name, model, backdrop, caption, theme, symbol=None):
     T = THEMES[theme]
     w, h = 480, 500
     centre, edge = (90, 140, 200), (40, 70, 120)
@@ -214,6 +215,7 @@ def _gift_card_base(name, model, backdrop, caption, theme):
                 hx = b['hex']
                 centre = tuple(int(hx['centerColor'][i:i + 2], 16) for i in (1, 3, 5))
                 edge = tuple(int(hx['edgeColor'][i:i + 2], 16) for i in (1, 3, 5))
+                patc = tuple(int(hx['patternColor'][i:i + 2], 16) for i in (1, 3, 5))
     im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
     # radial backdrop
     yy, xx = [v.astype('float32') for v in __import__('numpy').mgrid[0:h, 0:w]]
@@ -223,6 +225,25 @@ def _gift_card_base(name, model, backdrop, caption, theme):
     bg = Image.fromarray(np.dstack([rgb, np.full((h, w, 1), 255, np.float32)]).astype(np.uint8), 'RGBA')
     m = Image.new('L', (w, h), 0)
     ImageDraw.Draw(m).rounded_rectangle([0, 0, w - 1, h - 1], 34, fill=255)
+    # the backdrop pattern: the gift's symbol in two rings around the model, as on a real NFT card
+    sym = symbol or G.symbols(name, sorted_=False)[0]['name']
+    try:
+        sp = Image.open(G.symbol_png(name, sym, 128)).convert('RGBA')
+        pc = patc if backdrop else (255, 255, 255)
+        tint = Image.new('RGBA', sp.size, pc + (255,))
+        tint.putalpha(sp.getchannel('A').point(lambda v: int(v * 0.45)))
+        lay = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        for ring, (rr, nn, sz) in enumerate(((150, 8, 46), (215, 12, 38))):
+            for j in range(nn):
+                a = 2 * math.pi * (j + 0.5 * ring) / nn
+                cx, cy = w / 2 + rr * math.cos(a), 180 + rr * 0.92 * math.sin(a)
+                if cy > 300:
+                    continue
+                st = tint.resize((sz, sz), Image.LANCZOS)
+                lay.alpha_composite(st, (int(cx - sz / 2), int(cy - sz / 2)))
+        bg.alpha_composite(lay)
+    except Exception:
+        pass
     im.paste(bg, (0, 0), m)
     d = ImageDraw.Draw(im)
     ft, fs, fb = font('Bold', 38), font('Medium', 28), font('Semibold', 30)
@@ -249,11 +270,12 @@ def _gift_card_base(name, model, backdrop, caption, theme):
 
 
 def gift_card(e, t, theme):
-    base = _gift_card_base(e['name'], e['model'], e.get('backdrop'), e.get('caption', ''), theme).copy()
+    base = _gift_card_base(e['name'], e['model'], e.get('backdrop'), e.get('caption', ''), theme,
+                           e.get('symbol')).copy()
     p = G.model_file(e['name'], e['model'], 'json')
-    g = lottie.frame(str(p), max(0.0, t - e['t']), size=300)
+    g = lottie.frame(str(p), max(0.0, t - e['t']), size=310)
     oy = 66 if e.get('caption') else 0
-    base.alpha_composite(g, ((base.width - g.width) // 2, oy + 14))
+    base.alpha_composite(g, ((base.width - g.width) // 2, oy + 6))
     return base
 
 

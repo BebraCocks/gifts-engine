@@ -642,9 +642,14 @@ def shot_sofa(t):
 
 
 def dm_chat():
+    # Easter egg for attentive viewers (author's request, 2026-11-05): an instant rude reply flashes on the
+    # screen while the phone shrinks into the hero's hands. Not voiced.
+    t_reply = S['auto'] + 0.15
     ev = [tg.draft(E['type0'] - 0.5, E['send'] + 0.05, 'дай мишеу'),
-          tg.msg(E['send'] + 0.05, 'out', 'дай мишеу', '12:00', read=1e9),
-          tg.status(E['send'] + 1.6, 'был(а) давно')]
+          tg.msg(E['send'] + 0.05, 'out', 'дай мишеу', '12:00', read=t_reply - 0.1 - (E['send'] + 0.05)),
+          tg.status(t_reply - 0.15, 'в сети'),
+          tg.msg(t_reply, 'in', 'Иди нахуй, еблан', '12:00'),
+          tg.status(t_reply + 1.2, 'был(а) давно')]
     return dict(theme='day', name='Павел Дуров', status='был(а) недавно',
                 avatar=tg.avatar_letter('П', (80, 150, 220), 84), clock='12:00', events=ev)
 
@@ -689,7 +694,7 @@ def months_text(n):
 
 @functools.lru_cache(None)
 def bubble_one_tick():
-    b = tg.bubble('дай мишеу', 'out', '12:00', 'day', False)
+    b = tg.bubble('дай мишеу', 'out', '12:00', 'day', True)      # read (✓✓): he did see it
     return b.resize((int(b.width * 1.25), int(b.height * 1.25)), Image.LANCZOS)
 
 

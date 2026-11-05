@@ -153,9 +153,9 @@ def wrap(text, f, width):
 
 
 # ------------------------------------------------------------------ bubbles
-FS = 40
-LINE = 52
-MAXW = 640
+FS = 44
+LINE = 56
+MAXW = 660
 
 
 def _rounded(w, h, r, fill):
@@ -344,7 +344,7 @@ def _header(im, T, chat, st, typing_on, t):
     im.alpha_composite(hd)
     d = ImageDraw.Draw(im)
     d.line([(0, TOP - 1), (w, TOP - 1)], fill=T['head_line'], width=2)
-    _status_bar(im, T, chat.get('clock', '12:00'))
+    _status_bar(im, T, chat.get('_clock', '12:00'))
     # back
     d.line([(40, 150), (24, 168), (40, 186)], fill=T['accent'], width=5, joint='curve')
     fb = font('Regular', 34)
@@ -376,8 +376,9 @@ def bar_height(text):
     return BAR + 44 * max(0, len(_draft_lines(text)) - 1)
 
 
-def _input_bar(im, T, text, blocked_on, t):
+def _input_bar(im, T, text, blocked_on, t, lift=0):
     w, h = SCREEN
+    h = h - lift
     bh = BAR if blocked_on else bar_height(text)
     y0 = h - bh
     im.paste(im.crop((0, y0, w, h)).filter(ImageFilter.GaussianBlur(22)), (0, y0))
@@ -413,6 +414,82 @@ def _input_bar(im, T, text, blocked_on, t):
         d.rounded_rectangle([mx - 10, yb + 32, mx + 10, yb + 62], 10, outline=T['hint'], width=4)
         d.arc([mx - 18, yb + 44, mx + 18, yb + 74], 0, 180, fill=T['hint'], width=4)
         d.line([(mx, yb + 74), (mx, yb + 82)], fill=T['hint'], width=4)
+
+
+KB_H = 560
+KB_ROWS = ['йцукенгшщзх', 'фывапролджэ', 'ячсмитьбю']
+
+
+@functools.lru_cache(maxsize=4)
+def _keyboard(theme):
+    T = THEMES[theme]
+    w = SCREEN[0]
+    dark = theme == 'night'
+    bg = (32, 34, 40) if dark else (210, 213, 219)
+    key = (98, 100, 108) if dark else (255, 255, 255)
+    key2 = (64, 66, 74) if dark else (172, 177, 187)
+    txt = (240, 240, 244) if dark else (10, 10, 12)
+    im = Image.new('RGBA', (w, KB_H), bg + (255,))
+    d = ImageDraw.Draw(im)
+    f = font('Regular', 40)
+    rects = []
+    kw, kh, gap = (w - 24) / 11 - 8, 96, 8
+    for r, row in enumerate(KB_ROWS):
+        n = len(row)
+        x0 = (w - n * (kw + gap) + gap) / 2
+        y0 = 18 + r * (kh + 22)
+        for i, c in enumerate(row):
+            x = x0 + i * (kw + gap)
+            d.rounded_rectangle([x, y0 + 3, x + kw, y0 + kh + 3], 12, fill=key2)
+            d.rounded_rectangle([x, y0, x + kw, y0 + kh], 12, fill=key)
+            d.text((x + kw / 2, y0 + kh / 2), c, font=f, fill=txt, anchor='mm')
+            rects.append((x, y0, kw, kh))
+    y3 = 18 + 3 * (kh + 22)
+    d.rounded_rectangle([14, y3, 190, y3 + kh], 12, fill=key2)
+    d.text((102, y3 + kh / 2), '123', font=font('Regular', 34), fill=txt, anchor='mm')
+    d.rounded_rectangle([204, y3, w - 204, y3 + kh], 12, fill=key)
+    d.text((w / 2, y3 + kh / 2), 'Пробел', font=font('Regular', 34), fill=txt, anchor='mm')
+    d.rounded_rectangle([w - 190, y3, w - 14, y3 + kh], 12, fill=T['accent'])
+    d.text((w - 102, y3 + kh / 2), 'Ввод', font=font('Regular', 34), fill=(255, 255, 255), anchor='mm')
+    return im, tuple(rects)
+
+
+def keyboard(theme, t, typing_on):
+    base, rects = _keyboard(theme)
+    if not typing_on:
+        return base
+    im = base.copy()
+    k = int(t * 13)
+    x, y, kw, kh = rects[(k * 7 + 3) % len(rects)]
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([x - 6, y - 70, x + kw + 6, y + kh], 16,
+                        fill=(140, 142, 150) if theme == 'night' else (240, 242, 246))
+    c = ''.join(KB_ROWS)[(k * 7 + 3) % len(rects)]
+    d.text((x + kw / 2, y - 22), c, font=font('Regular', 54), fill=(240, 240, 244) if theme == 'night'
+           else (10, 10, 12), anchor='mm')
+    return im
+
+
+def kb_open(t, ev):
+    """0..1 keyboard height: slides up before a draft, down 0.45 s after it is sent."""
+    k = 0.0
+    for e in ev:
+        if e['k'] == 'draft':
+            a = _ease((t - (e['t'] - 0.3)) / 0.25)
+            b = 1 - _ease((t - (e['t1'] + 0.45)) / 0.3)
+            k = max(k, min(a, b))
+    return k
+
+
+def clock_at(chat, t):
+    c = chat.get('clock', '12:00')
+    if isinstance(c, str):
+        return c
+    out = c[0][1]
+    for t0, s_ in c:
+        if t >= t0:
+            out = s_
+    return out
 
 
 def _ease(x):
@@ -455,7 +532,9 @@ def chat_screen(t, chat):
             sprites.append(('c' if e['side'] == 'in' else 'out', gift_card(e, t, theme), t0))
         elif k == 'note':
             sprites.append(('c', _note_img(e['text'], theme), t0))
-    y = SCREEN[1] - (BAR if blocked_on else bar_height(draft_text)) - 24
+    kb = 0.0 if blocked_on else kb_open(t, ev)
+    lift = int(KB_H * kb)
+    y = SCREEN[1] - lift - (BAR if blocked_on else bar_height(draft_text)) - 24
     prev = None
     for side, spr, t0 in reversed(sprites):
         g = _ease((t - t0) / 0.28)
@@ -476,8 +555,13 @@ def chat_screen(t, chat):
         else:
             x = (SCREEN[0] - sp.width) // 2
         im.alpha_composite(sp, (int(x), int(y + spr.height - sp.height)))
+    chat = dict(chat, _clock=clock_at(chat, t))
     _header(im, T, chat, st, typing_on, t)
-    _input_bar(im, T, draft_text, blocked_on, t)
+    _input_bar(im, T, draft_text, blocked_on, t, lift)
+    if lift > 0:
+        im.alpha_composite(keyboard(theme, t, bool(draft_text)), (0, SCREEN[1] - lift))
+    for fn in chat.get('overlays', ()):
+        fn(im, t)
     return im
 
 

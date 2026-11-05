@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "fish-audio": {
-      "type": "http",
-      "url": "https://api.fish.audio/mcp"
-    }
-  }
-}

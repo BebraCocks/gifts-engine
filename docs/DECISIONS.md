@@ -110,3 +110,9 @@ your subscription credits»). Добавлен официальный MCP-сер
 из `requirements-optional.txt`, скрипт `whisper_asr.py` удалён. Текст дубля проверяется
 через MCP Fish Audio (`speech_to_text`, `flash`) по ссылке на результат генерации.
 Время слов даёт `fish_asr.py` (MCP возвращает текст без времени).
+
+## 2026-11-05 · Fish Audio только через коннектор claude.ai
+
+`.mcp.json` и `.claude/settings.json` удалены. Проектный MCP-сервер в облачной сессии
+не авторизуется и выглядел как «Fish Audio не подключён», хотя коннектор claude.ai
+работал. Теперь подключение одно — коннектор аккаунта.

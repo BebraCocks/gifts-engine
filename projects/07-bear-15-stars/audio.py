@@ -38,7 +38,7 @@ def sfx_layer(n, kit):
         A(fx, 'flip', flip - 0.05, gain_db=-14, label=f'card {rank} flips')
         A(fx, 'riser-hit' if rank == 3 else 'impact', flip + 0.15, align='peak', gain_db=-14,
           label=f'«{rank} МЕСТО» revealed')
-    A(fx, 'shutter', E['stamp1'] - 0.05, gain_db=-14, label='stamp «ПОПРОШАЙНИЧЕСТВО»')
+    A(fx, 'shutter', E['stamp1'] - 0.05, gain_db=-14, label='stamp «ПРОСЬБА О БЛАГОСКЛОННОСТИ»')
     A(fx, 'power-up', E['effect'] - 0.25, gain_db=-17, fit=0.8, label='chart goes up')
     A(fx, 'counter', E['meter'] - 0.1, gain_db=-19, fit=E['full'] - E['meter'], label='meter 0 → 100%')
     A(fx, 'confirm', E['full'], gain_db=-14, label='100%')
@@ -67,9 +67,6 @@ def sfx_layer(n, kit):
     A(fx, 'ambience', S['street'] + 0.1, gain_db=-30, fit=S['p3'] - S['street'] - 0.4, label='street ambience')
     A(fx, 'transform', E['change'] - 0.1, gain_db=-15, label='puff: old clothes')
     A(fx, 'paper', E['sign_up'] - 0.15, gain_db=-15, label='cardboard sign')
-    for j, (off, v, *_ ) in enumerate(R.PASSERS):
-        A(fx, 'foley', S['wait'] - 0.3 + off + 0.2, gain_db=-24, pan=-0.6 if v > 0 else 0.6, fit=1.1,
-          label=f'passer-by {j + 1} footsteps')
     A(fx, 'coin', E['coin'], gain_db=-13, label='a coin in the cup')
     A(fx, 'whoosh-deep', AD_STOP - 0.2, align='peak', gain_db=-16, label='slow-down into RubUp (waiting)')
     A(fx, 'cartoon', E['friend_in'] - 0.3, gain_db=-17, label='friends slide in')

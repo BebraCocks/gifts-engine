@@ -276,7 +276,7 @@ def shot_hook(t):
 
 
 # ------------------------------------------------------------------ place cards
-TITLES = {1: 'ПОПРОШАЙ-\nНИЧЕСТВО', 2: 'БОЛЕЕ\nЭФФЕКТИВНЫЙ', 3: 'РАБОТАЕТ\nНА 100%'}
+TITLES = {1: 'ПРОСЬБА О\nБЛАГОСКЛОННОСТИ', 2: 'БОЛЕЕ\nЭФФЕКТИВНЫЙ', 3: 'РАБОТАЕТ\nНА 100%'}
 
 
 def shot_place(t, rank, t0, flip):
@@ -307,7 +307,7 @@ def shot_place(t, rank, t0, flip):
         kk = ramp(t, ts, ts + 0.16)
         s = 1.6 - 0.6 * fx.ease_out(kk)
         col = {1: (255, 150, 90), 2: (220, 228, 245), 3: GOLD}[rank]
-        put(im, text_spr(TITLES[rank], 104, col), 540, 1390,
+        put(im, text_spr(TITLES[rank], 82 if rank == 1 else 104, col), 540, 1390,
             a=min(1, kk * 2), scale=s, rot=-3 if rank == 1 else 0)
     if rank == 2 and t >= E['effect'] - 0.2:
         chart(im, t, E['effect'] - 0.2)
@@ -542,7 +542,6 @@ def shot_wait(t):
             k = 1 - ramp(t, E['coin'], E['coin'] + 0.5)
             put(im, emoji('✨', 80), 860, 1580, a=k)
             put(im, pill('+1 ₽', 46, bg=GOLD, fg=(60, 30, 10)), 860, 1480 - 60 * (1 - k), a=k)
-    legs_layer(im, t, S['wait'] - 0.3, PASSERS)
     return im
 
 
@@ -561,7 +560,6 @@ def shot_friends(t):
         k = pop(t, E['spotted'], 0.3)
         put(im, text_spr('!', 150, (255, 80, 80)), 170, 560, scale=k)
         put(im, text_spr('!', 150, (255, 80, 80)), 910, 560, scale=k)
-    legs_layer(im, t, S['friends'] - 0.6, PASSERS[1:3])
     return im
 
 

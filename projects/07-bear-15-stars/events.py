@@ -35,7 +35,7 @@ E = {
     'cards': wt('hook', 'Три'),
     'best': wt('hook', 'конце'),
     'flip1': wt('p1', 'место'),
-    'stamp1': wt('p1', 'попрошайничество'),
+    'stamp1': wt('p1', 'о'),                       # «ПРОСЬБА О БЛАГОСКЛОННОСТИ» lands on «о»
     'rich': wt('chats', 'богатых'),
     'hours': wt('grind', '10'),
     'luck': wt('grind', 'удача'),
@@ -55,7 +55,7 @@ E = {
     'full': wt('p3', '100'),
     'couch': wt('sofa', 'дивана'),
     'type0': wt('dm', 'фразу'),
-    'send': wt('dm', 'мишеу', end=True),
+    'send': wt('dm', 'У', end=True),                # «дай ми-ше-у» read by syllables (v2)
     'autow': wt('auto', 'автоматически'),
     'ask': wt('auto', 'просите'),
     'like_btn': wt('like', 'лайк'),

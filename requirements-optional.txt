@@ -1,3 +1,3 @@
-# Optional audio plots and local speech transcription, installed only when needed.
+# Optional audio plots and SFX sheets, installed only when needed.
+# Local speech recognition (Whisper) is not used: voice is checked through Fish Audio (docs/SETUP.md).
 matplotlib>=3.8,<4
-faster-whisper>=1.2,<2

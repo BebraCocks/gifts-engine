@@ -277,7 +277,7 @@ def shot_hook_face(t):
     z = 2.55 + 0.25 * t / E.HOOK_CUT
     p = alex(t, A_PHONE, thin=1.0, pale=1.0, smile=0.1, look=(0.1, 0.75), sweat=0.6, brow=(4, -4))
     im = stage(S.hallway(), ALEX_X, 690, z, [(C.draw_alex, ALEX_X, 1.05, p)])
-    glow = fx.radial(900, (90, 150, 255), power=1.6, peak=0.35)
+    glow = fx.radial(900, (140, 190, 255), power=1.8, peak=0.16)
     put(im, glow, W / 2, 1500)
     put(im, text_sprite('3 ГОДА', 150, GOLD, 'Heavy', 12), W / 2, 330, 1, pop(t, 0.05))
     put(im, text_sprite('БЕЗ ОБЕДОВ', 110, (255, 255, 255), 'Heavy', 11), W / 2, 480, 1, pop(t, E.wt('hook', 'обедов') - 0.1))
@@ -628,7 +628,7 @@ def shot_pizza(t):
     mx = MISHA_X + (-700 - MISHA_X) * leave
     m = misha(t, smile=1.0, look=(-0.6 * (leave > 0), 0), walk=(t * 1.7) % 1 if 0 < leave < 1 else 0,
               pizza=0, ra=(120 * (1 - leave), 30), la=(14.0, -8.0))
-    a = alex(t, thin=1.0, pale=1.0, jaw=1.0, wide=1.0, eye_open=1.0, smile=-0.7, mouth=0.35,
+    a = alex(t, thin=1.0, pale=1.0, jaw=0.3, wide=1.0, eye_open=1.0, smile=-0.15, mouth=0.55,
              look=(0.9 - 1.6 * leave, 0.0), twitch=float(int(t * 8) % 3 == 0), la=(14.0, -150.0), phone_hand='l',
              cracked=True, phone_glow=False, brow=(-16, 0))
     z = 1.2
@@ -654,11 +654,12 @@ def shot_pizza(t):
 
 def shot_shock(t):
     u = t - E.SHOCK
-    yell = ramp(t, E.WTF - 0.1, E.WTF + 0.25)
-    a = alex(t, thin=1.0, pale=1.0, jaw=1.0 - 0.7 * yell, wide=1.0 - 0.5 * yell, eye_open=1.0, smile=-0.7,
-             mouth=0.45 if yell < 0.5 else max(0.2, talk(t, 'A')), look=(0, 0),
+    wtf = getattr(E, 'WTF', None)                    # optional «Ты чё…» line (not in the v1 voice-over)
+    yell = ramp(t, wtf - 0.1, wtf + 0.25) if wtf is not None else 0.0
+    a = alex(t, thin=1.0, pale=1.0, jaw=0.3 - 0.3 * yell, wide=1.0 - 0.5 * yell, eye_open=1.0, smile=-0.15,
+             mouth=0.6 if yell < 0.5 else max(0.2, talk(t, 'A')), look=(0, 0),
              twitch=float(int(t * 10) % 2 == 0 and yell < 0.5), brow=(-18 + 26 * yell, 0), angry=yell,
-             red=0.7 * yell, steam=yell, shake=0.8 * yell * float(t < E.END[E.L['wtf']]),
+             red=0.7 * yell, steam=yell, shake=0.8 * yell * float(wtf is not None and t < E.END[E.L['wtf']]),
              la=(14.0, -150.0), phone_hand='l', cracked=True, phone_glow=False)
     z = 2.7 + 0.6 * fx.ease_out(min(1, u / 0.25)) - 0.5 * yell
     return stage(S.hallway(), ALEX_X, 700 + 60 * yell, z, [(C.draw_alex, ALEX_X, 1.05, a)])

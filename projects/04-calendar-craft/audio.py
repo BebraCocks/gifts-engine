@@ -17,7 +17,8 @@ import events as E
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, SPEAKER
 
 SR = 48000
-WHISPER = {4}                     # L05 «Ну… с богом» is whispered
+from script import TTS_TEXT
+WHISPER = {k for k, x in enumerate(TTS_TEXT) if 'whisper' in x.split(']')[0]}   # whispered lines stay softer
 BR = banner.Breaks([E.AD_STOP], cy=960)
 
 
@@ -96,7 +97,8 @@ def sfx_layer(n, kit):
     A(fx, 'cartoon', E.LEAVE, gain_db=-20, file='tiptoe', label='Михаил leaves')
     A(fx, 'cartoon-hit', E.SHOCK, align='peak', gain_db=-12, file='bonk', label='shock zoom')
     A(fx, 'cartoon', E.SHOCK + 0.05, gain_db=-19, file='eye-whistle', fit=0.35, label='eye twitch')
-    A(fx, 'stretch', E.WTF - 0.15, gain_db=-19, label='Алексей boils over')
+    if hasattr(E, 'WTF'):
+        A(fx, 'stretch', E.WTF - 0.15, gain_db=-19, label='Алексей boils over')
     A(fx, 'whoosh', E.MORAL, align='peak', gain_db=-15, label='moral')
     A(fx, 'pop', E.MORAL + 0.25, gain_db=-17, label='89% plate')
     A(fx, 'pop', E.MORAL + 0.5, gain_db=-17, label='22% plate')

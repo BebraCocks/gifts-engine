@@ -13,8 +13,8 @@ RAW = HERE / 'voice' / 'raw'
 URL = 'https://platform.r2.fish.audio/tasks/2026-11-05/{}.mp3'
 SR = 48000
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
-MAX_GAP = {'L10': 0.34}          # Алексей's broken «Крафт… …… всё сгорело» keeps longer gaps
-DEFAULT_GAP = 0.2
+MAX_GAP = {'L10': 0.38}          # Алексей's broken «Крафт… …… всё сгорело» keeps longer gaps
+DEFAULT_GAP = 0.24
 
 
 def fetch(task):

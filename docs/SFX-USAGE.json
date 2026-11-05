@@ -19,7 +19,6 @@
    "botanica-v4/button/pop-up-05.flac#0",
    "botanica-v4/cartoon/cartoon-blink-point.flac#1",
    "botanica-v4/cartoon/cartoon-blink-point.flac#3",
-   "botanica-v4/cartoon/cartoon-boing-3.flac#0",
    "botanica-v4/cartoon/cartoon-bonk.flac#0",
    "botanica-v4/cartoon/cartoon-chomp.flac#0",
    "botanica-v4/cartoon/cartoon-coin.flac#0",
@@ -27,6 +26,7 @@
    "botanica-v4/cartoon/cartoon-eye-whistle.flac#0",
    "botanica-v4/cartoon/cartoon-pop.flac#0",
    "botanica-v4/cartoon/cartoon-smash.flac#0",
+   "botanica-v4/cartoon/cartoon-spring-boing-1.flac#0",
    "botanica-v4/cartoon/cartoon-taunt.flac#0",
    "botanica-v4/cartoon/cartoon-tiptoe.flac#0",
    "botanica-v4/cartoon/cartoon-whoosh-03.flac#0",
@@ -56,7 +56,6 @@
    "botanica-v4/impact-hit/impact-wobbler-sub-drop.flac#0",
    "botanica-v4/impact-hit/riser-bang-impact.flac#0",
    "botanica-v4/power-down-up/music-slow-down.flac#0",
-   "botanica-v4/transform/stretch-2.flac#0",
    "botanica-v4/transform/stretch.flac#1",
    "botanica-v4/transition/dj-spinner/spinback-04.flac#0",
    "botanica-v4/transition/risers/riser-granular-06.flac#0",
@@ -71,7 +70,7 @@
    "botanica-v4/transition/whoosh/deep-mini-whoosh-13.flac#0",
    "botanica-v4/transition/whoosh/deep-mini-whoosh-14.flac#0",
    "botanica-v4/transition/whoosh/deeper-fx-whoosh-04.flac#0",
-   "botanica-v4/transition/whoosh/whoosh-04.flac#0",
+   "botanica-v4/transition/whoosh/whoosh-06.flac#0",
    "synth:fire"
   ]
  }

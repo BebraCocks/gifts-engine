@@ -71,10 +71,10 @@ class Layer:
         return m
 
     def fill(self, m, rgb, alpha=1.0, clip=None, blur=0.0):
+        if blur:                                   # blur first, then clip: soft shading stays inside the shape
+            m = m.filter(ImageFilter.GaussianBlur(blur * self.ss * self.k))
         if clip is not None:
             m = ImageChops.multiply(m, clip)
-        if blur:
-            m = m.filter(ImageFilter.GaussianBlur(blur * self.ss * self.k))
         if alpha < 1.0:
             m = m.point(lambda v: int(v * alpha))
         col = Image.new('RGBA', self.im.size, tuple(int(c) for c in rgb) + (255,))

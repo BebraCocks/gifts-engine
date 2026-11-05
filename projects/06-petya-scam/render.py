@@ -841,13 +841,13 @@ def shot_katya(t):
 
 def shot_search(t):
     k = ramp(t, T['search'], T['found'])
-    day = 1 + int(20 * k)
+    day = 1 + int(6 * k)
 
     def ex(im):
         px, py = phone_point(540, 1010, 1.25)
         glow(im, px, py, 360, (150, 210, 255), 0.55)
         put(im, chip(f'День {day}', bg=(40, 30, 60)), 540, 400)
-        put(im, text_spr('3 НЕДЕЛИ ПОИСКОВ', 74, rgb=(255, 214, 90)), 540, 280, a=ramp(t, T['search'], T['search'] + 0.3))
+        put(im, text_spr('НЕДЕЛЯ ПОИСКОВ', 74, rgb=(255, 214, 90)), 540, 280, a=ramp(t, T['search'], T['search'] + 0.3))
         for j in range(3):                                         # tabs flying past
             ph = (t * 1.4 + j / 3) % 1
             put(im, chip(['поиск: Катя ...', 'ничего не найдено', 'ещё 1 вкладка'][j], bg=(20, 24, 40)),

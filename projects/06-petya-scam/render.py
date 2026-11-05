@@ -288,39 +288,103 @@ def _phone_shadow():
     return sh.filter(ImageFilter.GaussianBlur(30))
 
 
+# split layout for every chat (author, 2026-11-05): the character on the left, the phone with the chat on the right
+SP_S = 0.5
+SP_C = (780, 900)
+SPW, SPH = int(980 * SP_S), int(1880 * SP_S)
+SX0, SY0 = SP_C[0] - SPW // 2, SP_C[1] - SPH // 2
+NECK = (250, 1030)
+P_SCALE = 1.32
+
+
+def _mode_of(bg):
+    for m in ('eve', 'night', 'party'):
+        if bg is environment(m):
+            return m
+    return 'night'
+
+
+def petya_chat_expr(t):
+    """Petya's face while he chats (content time) — the reaction is part of the story."""
+    def w(a, b):
+        return a <= t < b
+    E = dict(look=(0.7, 0.5), smile=0.3)
+    if t < T['shock']:                                              # hook: party smile → the message lands
+        k = ramp(t, T['hook_msg'] + 0.4, T['hook_msg'] + 0.9)
+        return dict(look=(0.7, 0.5), smile=0.9 - 1.5 * k, open_=0.5 * k, shock=k, brow=0.6 * k, sweat=k)
+    if w(T['fly1'], T['dima']):
+        return dict(look=(0.7, 0.5), sad=0.4, brow=0.3, smile=-0.1 + 0.5 * ramp(t, END[KEY['boss']] + 0.6,
+                                                                                 END[KEY['boss']] + 0.9))
+    if w(T['to_dima_chat'], T['loser_sent'] - 1.4):
+        return dict(look=(0.7, 0.5), smirk=0.7, smile=0.5)
+    if w(T['loser_sent'] - 1.4, T['threat']):
+        return dict(look=(0.7, 0.5), smile=1.0, open_=0.6, teeth=1.0, blink=0.8)          # laughs
+    if w(T['threat'], T['dima_cry'] + 1):
+        return dict(look=(0.2, -0.3), smirk=0.8, smile=0.3, brow=0.4)                       # eye-roll
+    if w(T['profile'], T['ai']):
+        return dict(look=(0.7, 0.5), smile=0.9, brow=0.6, open_=0.3)
+    if w(T['chat_k'], T['katya_love']):
+        return dict(look=(0.7, 0.5), smirk=0.6, smile=0.5)
+    if w(T['fly_cancel'], T['katya_worried']):
+        return dict(look=(0.7, 0.5), sad=0.6, smirk=0.5 * ramp(t, T['cancel_sent'], T['cancel_sent'] + 0.3))
+    if w(T['lie'], T['genius']):
+        return dict(look=(0.7, 0.5), sad=0.7, smirk=0.6)
+    if w(T['help'], T['katya_sad']):
+        g = ramp(t, T['gifts'][0], T['gifts'][0] + 0.4)
+        return dict(look=(0.7, 0.5), smile=0.3 + 0.7 * g, open_=0.6 * g, teeth=g, brow=0.7 * g)
+    if w(AD2, T['mock_sent'] + 0.4):
+        return dict(look=(0.7, 0.5), smile=1.0, open_=0.5, teeth=1.0, anger=0.3)          # mocking laugh
+    if w(T['mock_sent'] + 0.4, T['uneasy']):
+        k = ramp(t, T['five'], T['ten'] + 0.8)
+        return dict(look=(0.7, 0.5), smile=0.6 - 0.8 * k, sad=0.3 * k, sweat=k)
+    if w(T['block2_shot'], T['party']):
+        return dict(look=(0.7, 0.5), smirk=0.6, smile=0.3, sweat=0.5)
+    return E
+
+
 def pov(t, chat=None, screen=None, bg=None, zoom=1.0, focus=None, sleeve=None, shake=0.0, dark=0.0):
-    sleeve = sleeve or C.PETYA['cloth']
     base = bg if bg is not None else environment('night')
-    bobx = 5 * math.sin(t * 1.3) + shake * math.sin(t * 61)
-    boby = 7 * math.sin(t * 0.9 + 1) + shake * math.cos(t * 53)
+    mode = _mode_of(base)
     im = base.copy()
+    if mode == 'party':
+        _party_lights(im, t, 0.7)
+    # the character on the left, sharp, with his phone glowing in his hands
+    ex = petya_chat_expr(t)
+    ex.setdefault('blink', blink(t, 0.3))
+    talk_keys = tuple(L[2] for L in LINES if L[0] == 'P')
+    person(im, 'petya', NECK[0], NECK[1] + 4 * math.sin(t * 1.1), P_SCALE, t, arms='phone', glow_=1.0,
+           talk_keys=talk_keys, tilt=-5, **ex)
+    px, py = phone_point(*NECK, P_SCALE)
+    glow(im, px, py, 260, (150, 210, 255), 0.45)
+    im.alpha_composite(S.desk(mode))
+    # the phone with the chat on the right, floating a little
     if screen is None:
         screen = tg.chat_screen(t, chat)
-    typing_on, kb = False, 0.0
-    if chat is not None:
-        typing_on = any(e['k'] == 'draft' and e['t'] <= t < e['t1'] for e in chat['events'])
-        kb = tg.kb_open(t, chat['events'])
-    dev = tg.phone(screen).resize((PW, PHH), Image.BILINEAR)
-    rig = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    rig.alpha_composite(_phone_shadow())
-    rig.alpha_composite(_hands((0, 0), (0, 0), sleeve, back=True))
-    glow(rig, PH_C[0], PH_C[1], 560, (140, 180, 255), 0.12)
-    rig.alpha_composite(dev, (X0, Y0))
-    lt, rt = thumbs(t, typing_on, kb)
-    q = lambda p: (round(p[0] / 10) * 10, round(p[1] / 10) * 10)
-    rig.alpha_composite(_hands(q(lt), q(rt), sleeve))
-    stage._paste_clip(im, rig, bobx, boby)
+    dev = tg.phone(screen).resize((SPW, SPH), Image.BILINEAR)
+    bx = 4 * math.sin(t * 1.3) + shake * math.sin(t * 61)
+    by = 6 * math.sin(t * 0.9 + 1) + shake * math.cos(t * 53)
+    sh = _split_shadow()
+    im.alpha_composite(sh)
+    glow(im, SP_C[0], SP_C[1], 520, (140, 180, 255), 0.14)
+    stage._paste_clip(im, dev, SX0 + bx, SY0 + by)
     if dark > 0:
         im = Image.blend(im, Image.new('RGBA', (W, H), (0, 0, 0, 255)), dark)
-    if zoom != 1.0 or focus:
-        fxp, fyp = focus or PH_C
-        im = zoom_view(im, fxp, fyp, zoom)
+    fxp, fyp = focus or (540, 900)
+    im = zoom_view(im, fxp, fyp, zoom * 1.12)
     return im
 
 
+@functools.lru_cache(maxsize=1)
+def _split_shadow():
+    sh = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle([SX0 + 14, SY0 + 30, SX0 + SPW + 24, SY0 + SPH + 40], 64,
+                                         fill=(0, 0, 0, 130))
+    return sh.filter(ImageFilter.GaussianBlur(28))
+
+
 def screen_y(sy):
-    """Screen-space y (0..1840) → frame y in POV."""
-    return Y0 + (20 + sy) * PH_S
+    """Screen-space y (0..1840) → frame y of the chat phone."""
+    return SY0 + (20 + sy) * SP_S
 
 
 # ------------------------------------------------------------------ avatars & chats
@@ -496,8 +560,8 @@ def party_bg_blur():
 
 
 def shot_hook(t):
-    z = 1.12 + 0.2 * sm(ramp(t, 0.2, T['shock']))
-    im = pov(t, chat_x(T['hook_msg']), bg=party_bg_blur(), zoom=z, focus=(520, screen_y(1500)), shake=2)
+    z = 0.93 + 0.08 * sm(ramp(t, 0.2, T['shock']))
+    im = pov(t, chat_x(T['hook_msg']), bg=party_bg_blur(), zoom=z, focus=(560, 900), shake=2)
     im = Image.blend(im, Image.new('RGBA', (W, H), (255, 255, 255, 255)), 0.7 * (1 - ramp(t, 0, 0.25)))
     return im
 
@@ -709,7 +773,7 @@ def shot_profile(t):
     scr = SC.dating_screen(t, t0 + 0.3, hl)
     z, b, fl = fly_in(t, t0)
     zz = z * (1 + 0.1 * sm(ramp(t, t0 + 1.0, t0 + 2.2)))
-    im = pov(t, screen=scr, bg=environment('night'), zoom=zz, focus=(540, screen_y(1350)))
+    im = pov(t, screen=scr, bg=environment('night'), zoom=zz, focus=(700, 1000))
     if b:
         im = radial_blur(im, W / 2, H / 2, b)
     return Image.blend(im, Image.new('RGBA', (W, H), (235, 245, 255, 255)), fl)
@@ -871,14 +935,15 @@ def _gift_burst(im, t):
         if tt <= t < tt + 0.9:
             k = ramp(t, tt, tt + 0.9)
             y = lerp(1000, 520, eo(k))
+            gx = SP_C[0]
             s = 0.5 + 0.9 * math.sin(math.pi * min(1, k * 1.2)) if k < 0.8 else 1.4 * (1 - (k - 0.8) / 0.2) + 0.01
             a = 1 - ramp(k, 0.75, 1.0)
-            glow(im, 540, y, 420 * s, (255, 220, 140), 0.6 * a)
+            glow(im, gx, y, 420 * s, (255, 220, 140), 0.6 * a)
             for r in range(10):                                   # sparkles
                 ang = r * 0.63 + tt
-                rr = 120 + 360 * eo(k)
-                put(im, _star(26), 540 + rr * math.cos(ang), y + rr * math.sin(ang), a=a)
-            put(im, gift_live(n, m, t - tt, 420), 540, y, a=a, scale=s)
+                rr = 120 + 300 * eo(k)
+                put(im, _star(26), gx + rr * math.cos(ang), y + rr * math.sin(ang), a=a)
+            put(im, gift_live(n, m, t - tt, 420), gx, y, a=a, scale=s * 0.85)
 
 
 def shot_help(t):
@@ -918,7 +983,7 @@ def shot_mock(t):
                 (1 - ramp(t, T[key] + 0.9, T[key] + 1.2)))
     if t >= T['mock_sent'] + 0.5:                                   # waiting: slow push on the message
         k = sm(ramp(t, T['mock_sent'] + 0.5, T['uneasy']))
-        im = zoom_view(im, 540, 1000, 1 + 0.12 * k)
+        im = zoom_view(im, 640, 1000, 1 + 0.08 * k)
     return im
 
 

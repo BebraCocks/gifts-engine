@@ -120,7 +120,7 @@ def _glow_spr(r, rgb):
 def add_light(canvas, x, y, r, rgb, k):
     """Additive light (screen-like) — for lamps, the safe, fireflies."""
     if k <= 0.01:
-        return
+        return canvas
     base = np.asarray(canvas, np.float32)
     g = np.asarray(_glow_spr(int(r), rgb), np.float32)
     x0, y0 = int(x - r), int(y - r)
@@ -508,7 +508,7 @@ def shot_room(t):
     if a1 > 0:
         c1 = ui.chat_card(t, 'grandma', [('gift', ('Homemade Cake', None), ramp(t, E['cake_msg'], E['cake_msg'] + 0.35),
                                            'для любимого внука'),
-                                          ('text', 'Приезжай в субботу, испеку пирог ❤', ramp(t, E['cake_text'] - 0.15,
+                                          ('text', 'Приезжай в субботу, испеку пирог', ramp(t, E['cake_text'] - 0.15,
                                                                                                E['cake_text'] + 0.2))])
         push = ramp(t, E['bot_msg'] - 0.3, E['bot_msg'] + 0.3)
         _card3d(im, cam, c1, (-0.02 - 0.08 * push, 0.5 + 0.18 * push, 3.0 + 1.0 * push), 1.0,
@@ -624,7 +624,7 @@ def shot_rich(t):
     a = ramp(t, E['tear3'] + 0.2, E['tear3'] + 0.6) * (1 - ramp(t, SH['safe'] - 0.5, SH['safe'] - 0.1))
     if a > 0:
         card = _friends_card(t)
-        put(im, desat(card, gray), 330, 600, a=a, scale=0.8, rot=4)
+        put(im, desat(card, gray), 330, 430, a=a, scale=0.74, rot=4)
     return im
 
 
@@ -745,7 +745,7 @@ def shot_sign(t):
         im = leva_close(t, look=(0.6 * sh - 0.2, -0.6 * sh + 0.3), smile=0.2 + 0.4 * sh, brow=0.5 * sh,
                         tilt=-7 * sh, open_=0.0)
         # grandma's message, small, on his phone
-        c = ui.chat_card(t, 'grandma', [('text', 'Приезжай в субботу, испеку пирог ❤', 1.0)], w=760)
+        c = ui.chat_card(t, 'grandma', [('text', 'Приезжай в субботу, испеку пирог', 1.0)], w=760)
         put(im, c, 300, 520, a=1 - ramp(t, E['shrug'], E['shrug'] + 0.4), scale=0.6, rot=-5)
         return im
     # insert: a contract on the counter, seen from above; the signature draws itself

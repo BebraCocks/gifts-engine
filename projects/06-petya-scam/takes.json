@@ -1,5 +1,5 @@
 {
-  "_note": "Fish Audio drama-3 task ids (https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take. L29 reuses L01. _dropped: first-pass long takes (140 s of speech, too long for 118-120 s).",
+  "_note": "Fish Audio drama-3 task ids (https://platform.r2.fish.audio/tasks/2026-11-05/<id>.mp3). First id = chosen take. L31 reuses L01. _dropped: first-pass long takes (140 s of speech, too long for 118-120 s). L08/L10: Dima (voice 63b716a8…, added by the author).",
   "L01": [
     "cf09fcad8a36439b88ba3469d3e63f3f"
   ],
@@ -22,72 +22,78 @@
     "11b562ee25874e95bd7395d54a47fa8d"
   ],
   "L08": [
-    "0531b21333f9461e95a6e97ecd15265b"
+    "dcdb57f564184632bf5927dbe6783b05"
   ],
   "L09": [
-    "b717fed635e946cd91ddeaceb3ebc09d"
+    "0531b21333f9461e95a6e97ecd15265b"
   ],
   "L10": [
-    "d00da0b2a3474a8db36e4f96350bb046"
+    "a73357c57da9471f854dd3d60b3f3bfe"
   ],
   "L11": [
-    "c9a3ad7f16bc4fc1b9aadf7d3e2215ac"
+    "b717fed635e946cd91ddeaceb3ebc09d"
   ],
   "L12": [
-    "30ac0b1eaa984c72b3ec9230f369ac0d"
+    "d00da0b2a3474a8db36e4f96350bb046"
   ],
   "L13": [
-    "12394de5e8fd44c19a72d83ed6deff16"
+    "c9a3ad7f16bc4fc1b9aadf7d3e2215ac"
   ],
   "L14": [
-    "fbe7f02fcf614e15844f80910c6751d3"
+    "30ac0b1eaa984c72b3ec9230f369ac0d"
   ],
   "L15": [
-    "9d5911e8303b46e39d145fb51e028916"
+    "12394de5e8fd44c19a72d83ed6deff16"
   ],
   "L16": [
-    "2f8d756f61234314ad350d86d7b6814e"
+    "fbe7f02fcf614e15844f80910c6751d3"
   ],
   "L17": [
-    "961c9cfcf2c9479cadafeb89a143d1a1"
+    "9d5911e8303b46e39d145fb51e028916"
   ],
   "L18": [
-    "46afa76e5a1b4eada274ffeb4325a1f0"
+    "2f8d756f61234314ad350d86d7b6814e"
   ],
   "L19": [
-    "b5681146a9fe45df805ee53e3de86584"
+    "961c9cfcf2c9479cadafeb89a143d1a1"
   ],
   "L20": [
-    "98d601140cff41b1b4d7d060dd1e6723"
+    "46afa76e5a1b4eada274ffeb4325a1f0"
   ],
   "L21": [
-    "ba867cc66852437e958c9d21eb47649c"
+    "b5681146a9fe45df805ee53e3de86584"
   ],
   "L22": [
-    "3cc6c6aba72443f2889fe753b2054a81"
+    "98d601140cff41b1b4d7d060dd1e6723"
   ],
   "L23": [
-    "c9d9a2925a6c4d0ab3d6ac0161d58ad0"
+    "ba867cc66852437e958c9d21eb47649c"
   ],
   "L24": [
-    "3fb2e38773b04224acf471dbaad23767"
+    "3cc6c6aba72443f2889fe753b2054a81"
   ],
   "L25": [
-    "de29d33651e24dc5be4c9d612a6469e9"
+    "c9d9a2925a6c4d0ab3d6ac0161d58ad0"
   ],
   "L26": [
-    "31bb024d668243d4957949fde7461cd3"
+    "3fb2e38773b04224acf471dbaad23767"
   ],
   "L27": [
-    "e8ac3fcb80964765b3463dc2c2660e1b"
+    "de29d33651e24dc5be4c9d612a6469e9"
   ],
   "L28": [
-    "2a84707563b749a482d68c5a3a1399d4"
+    "31bb024d668243d4957949fde7461cd3"
   ],
   "L29": [
-    "cf09fcad8a36439b88ba3469d3e63f3f"
+    "e8ac3fcb80964765b3463dc2c2660e1b"
   ],
   "L30": [
+    "2a84707563b749a482d68c5a3a1399d4"
+  ],
+  "L31": [
+    "cf09fcad8a36439b88ba3469d3e63f3f"
+  ],
+  "L32": [
     "596c997ba1cd4712b71357519fc526b8"
   ],
   "_dropped": [
@@ -101,6 +107,7 @@
     "a57ead58cc6f4e3185c08cc68497bd1c",
     "ba58cd8e87fd428c8fcc0b96824b0d1a",
     "db9f92cc2a004f6abbe80cda8d2c5f35",
-    "e994cb70c29f470082f3f6ec935b0e2a"
+    "e994cb70c29f470082f3f6ec935b0e2a",
+    "d28fa43ad1bb4df2b53afb07bfbf3d60"
   ]
 }

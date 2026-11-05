@@ -352,6 +352,10 @@ CHAT_DIMA = dict(theme='day', name='Дима', status='в сети', avatar=AV_D
     gift(T['calendar'], 'in', 'Desk Calendar', 'Sunshine', 'Sky Blue', 'Дима отправил вам подарок'),
     draft(ON[KEY['loser']] - 0.1, T['loser_sent'] - 0.05, 'Спасибо, лошара 😂'),
     msg(T['loser_sent'], 'out', 'Спасибо, лошара 😂', '16:05'),
+    typing(T['loser_sent'] + 0.15, T['threat']),
+    msg(T['threat'], 'in', 'Эй!!! 😡', '16:05'),
+    msg(T['threat2'], 'in', 'Верни мой календарь!', '16:05'),
+    msg(T['threat3'], 'in', 'Я тебя найду. Тебе конец 🤬', '16:05'),
     blocked(T['block1']), note(T['block1'], 'Вы заблокировали пользователя'),
 ])
 
@@ -585,8 +589,8 @@ def shot_dima_chat(t):
 
 def shot_dima_cry(t):
     im = S.dima_room().copy()
-    person(im, 'dima', 540, 1000, 1.7, t, arms='phone', glow_=0.6, shock=1.0, sad=0.9, open_=0.6, smile=-0.7,
-           sweat=1.0 * ramp(t, T['dima_cry'] + 0.2, T['dima_cry'] + 0.4))
+    person(im, 'dima', 540, 1000, 1.7, t, arms='phone', glow_=0.6, anger=1.0, sad=0.5, open_=0.5, smile=-0.8,
+           teeth=1.0, sweat=1.0, bob=6 * math.sin(t * 40))
     put(im, text_spr('ЗАБЛОКИРОВАН', 70, rgb=(255, 80, 80)), 540, 360, a=pop(t, T['dima_cry'], 0.25))
     return zoom_view(im, 540, 820, 1.05 + 0.1 * ramp(t, T['dima_cry'], T['simple']))
 
@@ -1096,14 +1100,14 @@ def _sub_spr(words, hi, accent):
     return out
 
 
-ACCENT = {'N': (255, 214, 90), 'P': (120, 200, 255), 'K': (255, 140, 180), 'X': (255, 80, 90)}
+ACCENT = {'N': (255, 214, 90), 'P': (120, 200, 255), 'K': (255, 140, 180), 'X': (255, 80, 90), 'D': (255, 150, 90)}
 
 
 def subtitles(im, t, kind):
     for k in range(len(ON)):
         if ON[k] - 0.05 <= t < END[k] + 0.25:
             who = LINES[k][0]
-            if kind == 'pov' and who in 'PKX':
+            if kind == 'pov' and who in 'PKXD':
                 return                                            # the chat already shows these words
             y = 196 if kind == 'pov' else 1600
             if LINES[k][2] in ('outro',) and t >= T['endcard']:

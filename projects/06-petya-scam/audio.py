@@ -107,7 +107,7 @@ def sfx_layer(n, kit):
     A(fx, 'whoosh-short', T['to_dima_chat'], align='peak', gain_db=-14, label='whip to the chat')
     chat_sfx(fx, kit, R.CHAT_DIMA, T['to_dima_chat'], T['dima_cry'], 'dima')
     A(fx, 'cartoon-hit', T['dima_cry'], gain_db=-14, label='«ЗАБЛОКИРОВАН»')
-    A(fx, 'voice', T['dima_cry'] + 0.05, gain_db=-13, file='upset.flac', label='Dima is upset')
+    A(fx, 'voice', T['dima_cry'] + 0.05, gain_db=-16, file='upset.flac', label='Dima is upset')
     A(fx, 'whoosh-short', T['simple'], align='peak', gain_db=-18, label='back to Petya')
     # ---- sleep → RubUp 1
     A(fx, 'whoosh-organic', T['sleep'], align='peak', gain_db=-18, label='to the bedroom')
@@ -205,7 +205,7 @@ def make_mix(kit):
             e = np.sqrt(np.convolve(data[:, 0] ** 2, np.ones(2400) / 2400, 'same'))
             rms = 20 * np.log10(np.sqrt((data[e > e.max() * 0.1, 0] ** 2).mean()) + 1e-9)
             who, key = LINES[k][0], LINES[k][2]
-            target = -16.0 if key in ('genius',) else -14.0
+            target = -16.0 if key in ('genius',) else -13.0 if key == 'threat' else -14.0
             data = data * 10 ** (np.clip(target - rms, -6, 12) / 20)
             if who == 'X':
                 data = np.concatenate([data, np.zeros((int(0.8 * SR), 2))])

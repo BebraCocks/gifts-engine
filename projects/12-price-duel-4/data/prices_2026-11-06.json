@@ -1,0 +1,19 @@
+{
+  "_note": "Цены для 12-price-duel-4. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене (нижний лот = модель в ролике), проверено 2026-11-06 07:44–07:45 UTC. Курс: tonapi.io 88,63 ₽ (07:45 UTC) → 89 ₽, как в 09–11. Вещи: страницы товаров, открытые 2026-11-06 07:45–07:50 UTC, цена к оплате на странице; Lada — цена без акций (по акции дилера «от 1 022 000 ₽»).",
+  "ton_rub": 89.0,
+  "gifts": [
+    {"gift": "Ginger Cookie", "model": "Hulking", "rarity": "1.7%", "ton": 6, "lot": "https://fragment.com/gift/gingercookie-142295"},
+    {"gift": "Toy Bear", "model": "Cuddle", "rarity": "1.3%", "ton": 39, "lot": "https://fragment.com/gift/toybear-23067"},
+    {"gift": "Low Rider", "model": "Toy Car", "rarity": "1.5%", "ton": 70, "lot": "https://fragment.com/gift/lowrider-15387"},
+    {"gift": "Berry Box", "model": "Glitchberry", "rarity": "1%", "ton": 10, "lot": "https://fragment.com/gift/berrybox-27739"},
+    {"gift": "Westside Sign", "model": "Green Slime", "rarity": "3%", "ton": 128, "lot": "https://fragment.com/gift/westsidesign-4703"}
+  ],
+  "things": [
+    {"name": "Печенье затяжное «Имбирное», 190 г", "rub": 144, "src": "https://vkusvill.ru/goods/pechene-zatyazhnoe-imbirnoe-63631/"},
+    {"name": "Мягкая игрушка Медведь, 33 см", "rub": 1690, "src": "https://www.chitai-gorod.ru/product/magkaa-igruska-medved-33sm-12-191025-i13-3132979", "note": "без скидки 2 028 ₽"},
+    {"name": "Lada Iskra «Комфорт» 1.6 МТ, новая", "rub": 1277000, "src": "https://www.avtogermes.ru/sale/new/lada/iskra/", "note": "цена без акций; по акции от 1 022 000 ₽"},
+    {"name": "Голубика, 125 г", "rub": 248, "src": "https://vkusvill.ru/goods/golubika-20082/"},
+    {"name": "Apple AirPods 4, белые", "rub": 12990, "src": "https://www.iport.ru/products/productID139223/", "note": "без скидки 18 990 ₽"}
+  ],
+  "skipped": "Berry Box против «Малины в шоколаде Фрамбини» (880 ₽): разница с подарком ~10 ₽, исход зависит от курса TON — не взято."
+}

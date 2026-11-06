@@ -194,3 +194,9 @@ Mousse Cake / муссовый торт, Precious Peach / 1 кг персико�
 Третий выпуск «Что дороже?»: Happy Brownie / брауни, Fine Pen / Parker, Star Notepad / блокнот, Ionic Dryer / Dyson
 Airwrap, Resistance Dog / iPad 11; счёт 2 : 3. Звук автора на 2,27 с в паузе хука с гэгом брауни. Сборка
 `renders/11-price-duel-3/price_duel_3_v1.mp4` (59,9 с). Дальше: автору посмотреть и послушать; правки — `--name price_duel_3_v2`.
+
+## 2026-11-06 · 12-price-duel-4 «Пять раундов по пять секунд»
+
+Четвёртый выпуск «Что дороже?»: Ginger Cookie / печенье, Toy Bear / плюшевый медведь, Low Rider / Lada Iskra,
+Berry Box / голубика, Westside Sign / AirPods 4; счёт 3 : 2. Звук автора на 2,94 с с гэгом. Сборка
+`renders/12-price-duel-4/price_duel_4_v1.mp4` (59,6 с). Дальше: автору посмотреть и послушать; правки — `--name price_duel_4_v2`.

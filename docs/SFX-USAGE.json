@@ -395,5 +395,45 @@
    "botanica-v4/transition/whoosh/whoosh-01.flac#0",
    "botanica-v4/typing/v3-space-plus-typing-plus-enter.flac#0"
   ]
+ },
+ "09-price-duel": {
+  "date": "2026-11-06",
+  "sounds": [
+   "botanica-v4/button/granular-button-select-03.flac#0",
+   "botanica-v4/button/granular-button-select-05.flac#0",
+   "botanica-v4/button/granular-button-select-12.flac#0",
+   "botanica-v4/button/granular-button-select-25.flac#0",
+   "botanica-v4/button/granular-button-select-30.flac#0",
+   "botanica-v4/button/magnetic-button-03.flac#0",
+   "botanica-v4/button/mechanical-click-02.flac#0",
+   "botanica-v4/button/pop-up-01.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#3",
+   "botanica-v4/cartoon/cartoon-bonk.flac#0",
+   "botanica-v4/cartoon/cartoon-coin.flac#0",
+   "botanica-v4/cartoon/cartoon-pop-3.flac#0",
+   "botanica-v4/cartoon/cartoon-pop.flac#0",
+   "botanica-v4/cartoon/cartoon-wink-twinkle-2.flac#0",
+   "botanica-v4/cartoon/cartoon-wink-twinkle.flac#0",
+   "botanica-v4/foley/coin-flip-spin-rotation-01.flac#0",
+   "botanica-v4/foley/coin-flip-spin-rotation-02.flac#0",
+   "botanica-v4/impact-hit/hit-impact-no-fx-04.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-02.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-06.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-07.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-09.flac#0",
+   "botanica-v4/transform/flip-2.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-01.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-03.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-04.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-06.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-07.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-whoosh-04.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-09.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-11.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-12.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-15.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-16.flac#1"
+  ]
  }
 }

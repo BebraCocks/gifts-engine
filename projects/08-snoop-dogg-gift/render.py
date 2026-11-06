@@ -53,10 +53,8 @@ def spr(t0, t, f=2.0, z=0.55):
 
 @functools.lru_cache(None)
 def _bg():
-    y, x = np.mgrid[0:H, 0:W].astype(np.float32)
-    r = np.sqrt(((x - W / 2) / (W * 0.75)) ** 2 + ((y - H * 0.45) / (H * 0.62)) ** 2)
-    v = 1 - 0.28 * np.clip(r, 0, 1.4) ** 2.2
-    return np.asarray(BG, np.float32)[None, None, :] * v[..., None]
+    # Flat graphite: a vignette at this darkness steps by 1 level in 8-bit video and shows rings (v1, 2026-11-06).
+    return np.broadcast_to(np.asarray(BG, np.float32), (H, W, 3)).copy()
 
 
 @functools.lru_cache(4096)
@@ -236,7 +234,7 @@ def gift_pose(t):
         cx, cy, s, a = 540.0, lerp(-300, 560, k), 0.66, 1.0
     k = sm(E['what'] - 0.1, E['what'] + 0.35, t)                         # makes room for the comment field
     cy, s = lerp(cy, 455, k), lerp(s, 0.48, k)
-    k = sm(E['bears_in'], E['bears_in'] + 0.35, t)
+    k = sm(E['bears_in'], E['bears_in'] + 0.25, t)
     cy, a = cy - 90 * k, a * (1 - k)
     if t > E['f_snoop'] - 0.1:                                            # the finale: back to the opening pose
         k = spr(E['f_snoop'] - 0.1, t, 1.5, 0.55)
@@ -272,7 +270,7 @@ def card(c, t):
 
 
 def sold(c, t):
-    k_in = sm(E['sold'], E['sold'] + 0.35, t)
+    k_in = sm(E['sold'] + 0.3, E['sold'] + 0.6, t)          # after the profile has left (no overlap)
     k_out = sm(E['want'] - 0.1, E['want'] + 0.25, t)
     a = k_in * (1 - k_out)
     if a <= 0.004:
@@ -313,8 +311,8 @@ def icon_fill(i, t):
 def row_pose(t):
     """(y, scale, label alpha, alpha) of the condition row."""
     y, s, la, a = ROW_Y, 1.0, 1.0, 1.0
-    k = sm(E['bears_in'] - 0.05, E['bears_in'] + 0.4, t)
-    y, s, la = lerp(y, 300, k), lerp(s, 0.6, k), 1 - k
+    k = sm(E['bears_in'] + 0.25, E['bears_in'] + 0.6, t)    # after the gift and the field have left
+    y, s, la = lerp(y, 300, k), lerp(s, 0.6, k), 1 - sm(E['bears_in'], E['bears_in'] + 0.25, t)
     k = sm(E['week'] - 0.1, E['week'] + 0.3, t)
     a *= 1 - k
     k = spr(ON[KEY['final']] - 0.45, t, 1.6, 0.6) if t > ON[KEY['final']] - 0.45 else 0
@@ -371,7 +369,7 @@ TYPED = 'поставлю его в профиль'
 
 def comment_field(c, t):
     k_in = sm(E['what'] - 0.05, E['what'] + 0.35, t)
-    k_out = sm(E['bears_in'], E['bears_in'] + 0.3, t)
+    k_out = sm(E['bears_in'], E['bears_in'] + 0.25, t)
     a = k_in * (1 - k_out)
     if a <= 0.004:
         return
@@ -451,9 +449,7 @@ def hook_title(c, t):
     ws = WORDS[0]
     lines = (('ЭТОТ СНУП ДОГГ', 0), ('УЕДЕТ К ОДНОМУ', 3), ('ИЗ ВАС', 6))
     for j, (s, wi) in enumerate(lines):
-        t0 = -0.2 + 0.1 * j                         # the promise is readable from the first frame
-        k = sm(t0, t0 + 0.2, t) if t0 > -0.15 else 1.0
-        k *= 1 + 0.06 * fx.bump(t - (ws[wi][1] if j else 0.0), 3, 8)
+        k = 1.0 + 0.06 * fx.bump(t - (ws[wi][1] if j else 0.0), 3, 8)   # the whole promise from the first frame
         col = ACC if j == 2 else WHITE
         text(c, s, 78 if j else 54, 'Heavy', GREY if j == 0 else col, 540, (215, 300, 395)[j] + 14 * (1 - min(k, 1)),
              a * min(k, 1), max(1.0, k))
@@ -469,9 +465,6 @@ def render_at(t):
     bears(c, t)
     cx, cy, s, a = gift_pose(t)
     if a > 0.004 and cy > -400:
-        sh = 0.35 * a * cl(1 - abs(cy - 760) / 900) if t < E['real'] else 0
-        if sh > 0.01:                                                                # soft floor shadow, hook only
-            fx.over(c, fx.warp(fx.soft_shadow(300, 40, 20, blur=24, alpha=0.9), 540, 1100, s), sh)
         put(c, lottie.frame(GIFT, t, size=GS), cx, cy, s, a)
     hook_title(c, t)
     fx.over(c, CAP.layer(t))

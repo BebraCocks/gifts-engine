@@ -22,7 +22,7 @@ from script import LINES, ROUNDS, TON_RUB, TIMER
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP
 from words import WORDS
 from events import AD_STOP, E, WIN
-import things
+import photos as things          # real photos as stickers (author, 2026-11-06); things.py = drawn v1
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -34,7 +34,7 @@ PAPER = BG
 GIFTS = [str(gifts_api.model_file(g, m, 'json')) for g, m, *_ in ROUNDS]
 GS = 512                       # Lottie raster size
 GIFT_SC = 0.66                 # -> ≈ 348 px on screen
-THING_SC = 1.12
+THING_SC = 1.0
 
 PIV = (540.0, 590.0)           # pivot of the scale = the timer
 L = 300.0                      # half beam
@@ -320,7 +320,7 @@ def draw_labels(c, t, plates):
         text(c, sub, 29, 'Semibold', MUTED, px, py + 266, pa * k)
         if win:                                                   # the stamp lands on the dearer one
             ks = spr(REVEAL[r] + 0.12, t, 2.2, 0.45)
-            put(c, stamp(), px + 4, py - 62, lerp(2.4, 1.18, cl(ks)), pa * cl(ks * 3),
+            put(c, stamp(), px + (16 if side else -16), py - ITEM_UP - 150, lerp(2.4, 1.18, cl(ks)), pa * cl(ks * 3),
                 -0.16 if side == 0 else 0.14)
 
 

@@ -1,0 +1,73 @@
+{
+ "_note": "Цены для 17-price-duel-9. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот с анимацией в api.changes.tg, проверено 2026-11-06 07:56–08:05 UTC. Курс 89 ₽ за TON (tonapi.io 88,63 ₽ в 07:45 UTC). Вещи: страницы товаров, открытые 2026-11-06 08:00–08:15 UTC, цена к оплате на странице; машины — цена без акций.",
+ "ton_rub": 89.0,
+ "gifts": [
+  {
+   "gift": "Sharp Tongue",
+   "model": "Pink Mamba",
+   "rarity": "2.5%",
+   "ton": 59,
+   "rub": 5251,
+   "lot": "https://fragment.com/gift/sharptongue-5819"
+  },
+  {
+   "gift": "Voodoo Doll",
+   "model": "Pain Train",
+   "rarity": "2.5%",
+   "ton": 43,
+   "rub": 3827,
+   "lot": "https://fragment.com/gift/voodoodoll-23603"
+  },
+  {
+   "gift": "Artisan Brick",
+   "model": "Sardines",
+   "rarity": "2%",
+   "ton": 83,
+   "rub": 7387,
+   "lot": "https://fragment.com/gift/artisanbrick-1093"
+  },
+  {
+   "gift": "Durov's Cap",
+   "model": "Duskwave",
+   "rarity": "2%",
+   "ton": 463,
+   "rub": 41207,
+   "lot": "https://fragment.com/gift/durovscap-4114"
+  },
+  {
+   "gift": "Intelligence Cup",
+   "model": "Silver",
+   "rarity": "33.3%",
+   "ton": 3099,
+   "rub": 275811,
+   "lot": "https://fragment.com/gift/intelligencecup-105"
+  }
+ ],
+ "things": [
+  {
+   "name": "Икра кеты из охлаждённого сырья солёная, ст/б, 100 г",
+   "rub": 3200,
+   "src": "https://vkusvill.ru/goods/ikra-kety-iz-okhlazhdennogo-syrya-solenaya-st-b-okhl-114858/"
+  },
+  {
+   "name": "LEGO Creator 3in1 «T. rex» 31151",
+   "rub": 8979,
+   "src": "https://www.chitai-gorod.ru/product/31151-konstruktor-detskij-lego-creator-3-in-1-ti-reks-3v1-626-detalej-vozrast-9-3139751"
+  },
+  {
+   "name": "LEGO Botanicals «Цветущий кактус в горшке» 11509",
+   "rub": 5499,
+   "src": "https://www.chitai-gorod.ru/product/11509-konstruktor-lego-botanicals-cvetusij-kaktus-v-gorske-482-detalej-vozrast-9-3165439"
+  },
+  {
+   "name": "Apple Mac mini M1, 8/256 ГБ",
+   "rub": 64990,
+   "src": "https://www.iport.ru/products/productID99127/"
+  },
+  {
+   "name": "Apple iPhone 17 Pro Max 256 ГБ",
+   "rub": 139990,
+   "src": "https://www.iport.ru/products/productID148799/"
+  }
+ ]
+}

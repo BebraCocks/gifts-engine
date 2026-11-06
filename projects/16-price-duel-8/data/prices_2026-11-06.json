@@ -1,0 +1,73 @@
+{
+ "_note": "Цены для 16-price-duel-8. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот с анимацией в api.changes.tg, проверено 2026-11-06 07:56–08:05 UTC. Курс 89 ₽ за TON (tonapi.io 88,63 ₽ в 07:45 UTC). Вещи: страницы товаров, открытые 2026-11-06 08:00–08:15 UTC, цена к оплате на странице; машины — цена без акций.",
+ "ton_rub": 89.0,
+ "gifts": [
+  {
+   "gift": "Bling Binky",
+   "model": "Cubic",
+   "rarity": "2%",
+   "ton": 29,
+   "rub": 2581,
+   "lot": "https://fragment.com/gift/blingbinky-8374"
+  },
+  {
+   "gift": "Gem Signet",
+   "model": "Malibu Pink",
+   "rarity": "4%",
+   "ton": 73,
+   "rub": 6497,
+   "lot": "https://fragment.com/gift/gemsignet-5651"
+  },
+  {
+   "gift": "Loot Bag",
+   "model": "Cargo Citron",
+   "rarity": "2%",
+   "ton": 150,
+   "rub": 13350,
+   "lot": "https://fragment.com/gift/lootbag-12736"
+  },
+  {
+   "gift": "Heart Locket",
+   "model": "Karaoke Bar",
+   "rarity": "2%",
+   "ton": 1700,
+   "rub": 151300,
+   "lot": "https://fragment.com/gift/heartlocket-1437"
+  },
+  {
+   "gift": "Plush Pepe",
+   "model": "Sunset",
+   "rarity": "2%",
+   "ton": 7400,
+   "rub": 658600,
+   "lot": "https://fragment.com/gift/plushpepe-1175"
+  }
+ ],
+ "things": [
+  {
+   "name": "Икра форели зернистая солёная, пласт/б, 150 г",
+   "rub": 3200,
+   "src": "https://vkusvill.ru/goods/ikra-foreli-zernistaya-solenaya-plast-b-okhl-16468/"
+  },
+  {
+   "name": "LEGO Botanical «Мини-орхидея» 10343",
+   "rub": 4690,
+   "src": "https://www.chitai-gorod.ru/product/konstruktor-lego-mini-orchid-3118441"
+  },
+  {
+   "name": "Выпрямитель Dyson Airstrait HT01",
+   "rub": 36990,
+   "src": "https://www.iport.ru/products/productID134587/"
+  },
+  {
+   "name": "Apple Watch Ultra 4 GPS + Cellular 49 мм",
+   "rub": 99490,
+   "src": "https://www.iport.ru/products/productID156820/"
+  },
+  {
+   "name": "Lada Niva Travel «Классик» 1.8 МТ 4WD, без акций (по акции от 1 019 000 ₽)",
+   "rub": 1419000,
+   "src": "https://www.avtogermes.ru/sale/new/lada/niva-travel/"
+  }
+ ]
+}

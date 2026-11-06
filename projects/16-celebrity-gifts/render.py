@@ -360,14 +360,14 @@ def khabib(c, t):
     dy = 40 * (1 - ki) - 90 * ko
     text(c, 'ХАБИБ', 130, 'Heavy', WHITE, 540, 250 + dy, a)
     text(c, 'НУРМАГОМЕДОВ', 40, 'Semibold', GREY, 540, 345 + dy, a)
-    conor = sm(E['accused'] - 0.1, E['accused'] + 0.3, t)
+    conor = sm(E['accused'] - 0.5, E['accused'] - 0.15, t)        # the counter block is gone before the quote card
     cx, cy = 540, lerp(680, 620, conor)
     ring_p = sm(E['auction'] - 0.1, E['day'] + 0.35, t)
     if ring_p > 0.003:
         stroke(c, circle_pts(cx, cy + dy, 232), DIM, 3, 1, a * (1 - conor))
         stroke(c, circle_pts(cx, cy + dy, 232), ACC, 4, ring_p, a * (1 - conor))
         text(c, '24 ч', 30, 'Semibold', mix(GREY, ACC, sm(E['day'], E['day'] + 0.3, t)), cx, cy - 262 + dy,
-             a * sm(E['auction'] - 0.1, E['auction'] + 0.2, t) * (1 - conor))
+             a * sm(E['auction'] - 0.1, E['auction'] + 0.2, t) * (1 - conor) ** 4)
     k = spr(E['khabib'], t, 1.6, 0.55)
     shake = 0.10 * math.sin((t - E['accused']) * 26) * math.exp(-(t - E['accused']) * 3.5) if t > E['accused'] else 0
     gift(c, PAPAKHA, t, cx, cy + dy + 40 * (1 - k), 420, lerp(0.6, 1.0, k) * (1 - 0.18 * conor), a * cl(k * 2), shake)

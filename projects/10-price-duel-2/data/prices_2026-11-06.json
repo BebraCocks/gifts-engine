@@ -1,0 +1,19 @@
+{
+  "_note": "Цены для 10-price-duel-2. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене (нижний лот = модель в ролике; у Ice Cream взят нижний лот с моделью, которая есть в api.changes.tg), проверено 2026-11-06 06:57–07:03 UTC. Курс TON: tonapi.io 89,11 ₽ (06:57 UTC) → 89 ₽, как в 09. Вещи: страницы магазинов, открытые 2026-11-06 06:59–07:04 UTC, цена к оплате на странице (у «Читай-города» — со скидкой сайта).",
+  "ton_rub": 89.0,
+  "gifts": [
+    {"gift": "Instant Ramen", "model": "Abduction", "rarity": "2.5%", "ton": 5, "lot": "https://fragment.com/gift/instantramen-154560"},
+    {"gift": "Timeless Book", "model": "Alphabet", "rarity": "3.5%", "ton": 5, "lot": "https://fragment.com/gift/timelessbook-57310"},
+    {"gift": "Ice Cream", "model": "Strawberry", "rarity": "3%", "ton": 5, "lot": "https://fragment.com/gift/icecream-219124"},
+    {"gift": "Mousse Cake", "model": "Sky Peacock", "rarity": "2%", "ton": 6, "lot": "https://fragment.com/gift/moussecake-63953"},
+    {"gift": "Precious Peach", "model": "Cozy Warmth", "rarity": "1.5%", "ton": 295, "lot": "https://fragment.com/gift/preciouspeach-1685"}
+  ],
+  "things": [
+    {"name": "Лапша Ottogi «Сырный рамен», 62 г", "rub": 206, "src": "https://vkusvill.ru/goods/lapsha-ottogi-syrnyy-ramen-62-g-93229.html"},
+    {"name": "Книга «Гарри Поттер и философский камень» (Махаон, твёрдая обложка)", "rub": 1249, "src": "https://www.chitai-gorod.ru/product/garri-potter-i-filosofskiy-kamen-2405917", "note": "без скидки сайта 1 524 ₽"},
+    {"name": "Пломбир в рожке «Клубника», 100 г", "rub": 145, "src": "https://vkusvill.ru/goods/plombir-v-rozhke-klubnika-27166/"},
+    {"name": "Торт муссовый «Малина-клубника», зам., 500 г", "rub": 735, "src": "https://vkusvill.ru/goods/tort-mussovyy-malina-klubnika-zam-500-g-124494/"},
+    {"name": "Персик плоский, 1 кг", "rub": 315, "src": "https://vkusvill.ru/goods/persik-ploskiy-18090/", "note": "«Конец сезона»"}
+  ],
+  "skipped": "Desk Calendar: нижние лоты (Persimmon, Carrot Juice, Electric Indigo, Raspberry, 7 TON) — новые модели, их анимаций нет в api.changes.tg (404), поэтому раунд заменён на Ice Cream."
+}

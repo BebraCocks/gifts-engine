@@ -1,0 +1,18 @@
+{
+  "_note": "Цены для 11-price-duel-3. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене (нижний лот = модель в ролике; у Resistance Dog взят второй лот 570 TON, модель Druid: у нижнего лота 569 TON модель Che Guevara — изображение реального политика, взята нейтральная модель), проверено 2026-11-06 07:26–07:30 UTC. Курс 89 ₽ за TON, как в 09–10 (tonapi.io 89,11 ₽ в 06:57 UTC). Вещи: страницы товаров, открытые 2026-11-06 07:27–07:33 UTC, цена к оплате на странице.",
+  "ton_rub": 89.0,
+  "gifts": [
+    {"gift": "Happy Brownie", "model": "Pebbles", "rarity": "2.5%", "ton": 5, "lot": "https://fragment.com/gift/happybrownie-25100"},
+    {"gift": "Fine Pen", "model": "Mesh Maker", "rarity": "2.5%", "ton": 9, "lot": "https://fragment.com/gift/finepen-20160"},
+    {"gift": "Star Notepad", "model": "Watermelon", "rarity": "1.3%", "ton": 6, "lot": "https://fragment.com/gift/starnotepad-31875"},
+    {"gift": "Ionic Dryer", "model": "Vortex", "rarity": "2%", "ton": 18, "lot": "https://fragment.com/gift/ionicdryer-10931"},
+    {"gift": "Resistance Dog", "model": "Druid", "rarity": "1.4%", "ton": 570, "lot": "https://fragment.com/gift/resistancedog-2404"}
+  ],
+  "things": [
+    {"name": "Брауни шоколадный (без пшеничной муки), 100 г", "rub": 292, "src": "https://vkusvill.ru/goods/brauni-shokoladnyy-bez-pshenichnoy-muki-75588/"},
+    {"name": "Ручка Parker Jotter Stainless Steel GT, подарочная", "rub": 3990, "src": "https://www.chitai-gorod.ru/product/ruchka-sharikovaya-parker-jotter-stainless-steel-gt-podarochnaya-sinyaya-242818", "note": "без скидки 4 788 ₽"},
+    {"name": "Блокнот в клетку А6 «Pastel», 80 листов, Yoi", "rub": 139, "src": "https://www.chitai-gorod.ru/product/bloknot-a6-80l-kl-pastel-assorti-plast-obl-spiral-yoi-3096621", "note": "без скидки 167 ₽"},
+    {"name": "Стайлер Dyson Airwrap Complete Long HS08", "rub": 42990, "src": "https://www.iport.ru/products/productID143566/"},
+    {"name": "Apple iPad 11″ (A16, 128 ГБ, Wi-Fi), 2025", "rub": 55990, "src": "https://www.iport.ru/products/productID144927/"}
+  ]
+}

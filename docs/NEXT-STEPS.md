@@ -188,3 +188,9 @@ Heart Locket/iPhone 18 Pro, Плюш Пепе/Гранта), счёт 2 : 3, т�
 Mousse Cake / муссовый торт, Precious Peach / 1 кг персиков; счёт 3 : 2 в пользу подарков. Голос автора с новой
 подачей, акцент кобальт, музыка в ре мажоре. Текущая сборка `renders/10-price-duel-2/price_duel_2_v2.mp4` (59,8 с; в v1 обрезалась подпись).
 Дальше: автору посмотреть и послушать; правки — `--name price_duel_2_v3`.
+
+## 2026-11-06 · 11-price-duel-3 «Спорим, на финале ошибёшься?»
+
+Третий выпуск «Что дороже?»: Happy Brownie / брауни, Fine Pen / Parker, Star Notepad / блокнот, Ionic Dryer / Dyson
+Airwrap, Resistance Dog / iPad 11; счёт 2 : 3. Звук автора на 2,27 с в паузе хука с гэгом брауни. Сборка
+`renders/11-price-duel-3/price_duel_3_v1.mp4` (59,9 с). Дальше: автору посмотреть и послушать; правки — `--name price_duel_3_v2`.

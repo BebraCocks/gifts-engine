@@ -1,0 +1,744 @@
+{
+ "checked_utc": "2026-11-06T05:06:17",
+ "floors": {
+  "Doggfather": [
+   [
+    "snoopdogg-14672",
+    "13"
+   ],
+   [
+    "snoopdogg-488474",
+    "13"
+   ],
+   [
+    "snoopdogg-185290",
+    "13"
+   ]
+  ],
+  "Goldizzle": [
+   [
+    "snoopdogg-49463",
+    "20"
+   ],
+   [
+    "snoopdogg-307047",
+    "26"
+   ],
+   [
+    "snoopdogg-551963",
+    "26"
+   ]
+  ],
+  "King Snoop": [
+   [
+    "snoopdogg-213782",
+    "23"
+   ],
+   [
+    "snoopdogg-267821",
+    "25"
+   ],
+   [
+    "snoopdogg-348256",
+    "25"
+   ]
+  ],
+  "AI Dogg": [
+   [
+    "snoopdogg-99789",
+    "9"
+   ],
+   [
+    "snoopdogg-15400",
+    "12"
+   ],
+   [
+    "snoopdogg-114581",
+    "13"
+   ]
+  ],
+  "Doberman": [
+   [
+    "snoopdogg-453203",
+    "10"
+   ],
+   [
+    "snoopdogg-413341",
+    "10"
+   ],
+   [
+    "snoopdogg-250008",
+    "13"
+   ]
+  ],
+  "Horseman": [
+   [
+    "snoopdogg-255603",
+    "7"
+   ],
+   [
+    "snoopdogg-280413",
+    "7"
+   ],
+   [
+    "snoopdogg-259559",
+    "7"
+   ]
+  ],
+  "Label Lord": [
+   [
+    "snoopdogg-122053",
+    "7"
+   ],
+   [
+    "snoopdogg-207265",
+    "7"
+   ],
+   [
+    "snoopdogg-354537",
+    "7"
+   ]
+  ],
+  "Plastic Beach": [
+   [
+    "snoopdogg-211371",
+    "7"
+   ],
+   [
+    "snoopdogg-353413",
+    "7"
+   ],
+   [
+    "snoopdogg-422910",
+    "7"
+   ]
+  ],
+  "Red Fur Coat": [
+   [
+    "snoopdogg-532567",
+    "7"
+   ],
+   [
+    "snoopdogg-118849",
+    "8"
+   ],
+   [
+    "snoopdogg-487506",
+    "8"
+   ]
+  ],
+  "Afro Disco": [
+   [
+    "snoopdogg-244003",
+    "7"
+   ],
+   [
+    "snoopdogg-460355",
+    "7"
+   ],
+   [
+    "snoopdogg-486339",
+    "7"
+   ]
+  ],
+  "Backspin": [
+   [
+    "snoopdogg-104986",
+    "7"
+   ],
+   [
+    "snoopdogg-229601",
+    "7"
+   ],
+   [
+    "snoopdogg-37868",
+    "7"
+   ]
+  ],
+  "Black Gold": [
+   [
+    "snoopdogg-402355",
+    "7"
+   ],
+   [
+    "snoopdogg-247443",
+    "7"
+   ],
+   [
+    "snoopdogg-301204",
+    "7"
+   ]
+  ],
+  "Captain Mack": [
+   [
+    "snoopdogg-520670",
+    "7"
+   ],
+   [
+    "snoopdogg-25479",
+    "8"
+   ],
+   [
+    "snoopdogg-70601",
+    "8"
+   ]
+  ],
+  "Dapper Doggo": [
+   [
+    "snoopdogg-242933",
+    "6"
+   ],
+   [
+    "snoopdogg-317907",
+    "7"
+   ],
+   [
+    "snoopdogg-264473",
+    "7"
+   ]
+  ],
+  "Retro Vibe": [
+   [
+    "snoopdogg-255520",
+    "7"
+   ],
+   [
+    "snoopdogg-308617",
+    "7"
+   ],
+   [
+    "snoopdogg-310702",
+    "7"
+   ]
+  ],
+  "Barks A Locks": [
+   [
+    "snoopdogg-226163",
+    "7"
+   ],
+   [
+    "snoopdogg-242434",
+    "7"
+   ],
+   [
+    "snoopdogg-164352",
+    "7"
+   ]
+  ],
+  "Blonde": [
+   [
+    "snoopdogg-84028",
+    "7"
+   ],
+   [
+    "snoopdogg-337305",
+    "7"
+   ],
+   [
+    "snoopdogg-517983",
+    "7"
+   ]
+  ],
+  "Bollywood": [
+   [
+    "snoopdogg-158159",
+    "7"
+   ],
+   [
+    "snoopdogg-168132",
+    "7"
+   ],
+   [
+    "snoopdogg-269908",
+    "7"
+   ]
+  ],
+  "Bow Wizzle": [
+   [
+    "snoopdogg-388567",
+    "6"
+   ],
+   [
+    "snoopdogg-265038",
+    "7"
+   ],
+   [
+    "snoopdogg-177473",
+    "7"
+   ]
+  ],
+  "Chow Wow": [
+   [
+    "snoopdogg-221541",
+    "7"
+   ],
+   [
+    "snoopdogg-295869",
+    "7"
+   ],
+   [
+    "snoopdogg-501436",
+    "7"
+   ]
+  ],
+  "Chrome": [
+   [
+    "snoopdogg-340215",
+    "15"
+   ],
+   [
+    "snoopdogg-512294",
+    "15"
+   ],
+   [
+    "snoopdogg-289507",
+    "15"
+   ]
+  ],
+  "Cold Topaz": [
+   [
+    "snoopdogg-295108",
+    "10"
+   ],
+   [
+    "snoopdogg-370087",
+    "11"
+   ],
+   [
+    "snoopdogg-90993",
+    "11"
+   ]
+  ],
+  "Emerald": [
+   [
+    "snoopdogg-539561",
+    "7"
+   ],
+   [
+    "snoopdogg-65996",
+    "7"
+   ],
+   [
+    "snoopdogg-42055",
+    "9"
+   ]
+  ],
+  "Green Light": [
+   [
+    "snoopdogg-159595",
+    "8"
+   ],
+   [
+    "snoopdogg-111662",
+    "9"
+   ],
+   [
+    "snoopdogg-220393",
+    "9"
+   ]
+  ],
+  "King Ruby": [
+   [
+    "snoopdogg-431553",
+    "8"
+   ],
+   [
+    "snoopdogg-123213",
+    "8"
+   ],
+   [
+    "snoopdogg-139901",
+    "8"
+   ]
+  ],
+  "Old School": [
+   [
+    "snoopdogg-559547",
+    "7"
+   ],
+   [
+    "snoopdogg-458812",
+    "7"
+   ],
+   [
+    "snoopdogg-171549",
+    "7"
+   ]
+  ],
+  "Sapphire": [
+   [
+    "snoopdogg-469842",
+    "11"
+   ],
+   [
+    "snoopdogg-446449",
+    "13"
+   ],
+   [
+    "snoopdogg-467757",
+    "13"
+   ]
+  ],
+  "Silver": [
+   [
+    "snoopdogg-28832",
+    "7"
+   ],
+   [
+    "snoopdogg-413986",
+    "9"
+   ],
+   [
+    "snoopdogg-26590",
+    "9"
+   ]
+  ],
+  "Streetwise": [
+   [
+    "snoopdogg-79120",
+    "7"
+   ],
+   [
+    "snoopdogg-399581",
+    "7"
+   ],
+   [
+    "snoopdogg-434262",
+    "7"
+   ]
+  ],
+  "Woofee": [
+   [
+    "snoopdogg-323645",
+    "7"
+   ],
+   [
+    "snoopdogg-343232",
+    "7"
+   ],
+   [
+    "snoopdogg-215818",
+    "7"
+   ]
+  ],
+  "Y2K Skin": [
+   [
+    "snoopdogg-308024",
+    "7"
+   ],
+   [
+    "snoopdogg-16351",
+    "7"
+   ],
+   [
+    "snoopdogg-502635",
+    "7"
+   ]
+  ],
+  "Yap Yap": [
+   [
+    "snoopdogg-412041",
+    "7"
+   ],
+   [
+    "snoopdogg-117859",
+    "7"
+   ],
+   [
+    "snoopdogg-187075",
+    "7"
+   ]
+  ],
+  "Barks Lightyear": [
+   [
+    "snoopdogg-313083",
+    "6"
+   ],
+   [
+    "snoopdogg-463640",
+    "6"
+   ],
+   [
+    "snoopdogg-50722",
+    "6"
+   ]
+  ],
+  "Beanie": [
+   [
+    "snoopdogg-357951",
+    "7"
+   ],
+   [
+    "snoopdogg-203799",
+    "7"
+   ],
+   [
+    "snoopdogg-63286",
+    "7"
+   ]
+  ],
+  "Black Diamond": [
+   [
+    "snoopdogg-114107",
+    "11"
+   ],
+   [
+    "snoopdogg-25253",
+    "11"
+   ],
+   [
+    "snoopdogg-315120",
+    "11"
+   ]
+  ],
+  "Funky Homie": [
+   [
+    "snoopdogg-324045",
+    "7"
+   ],
+   [
+    "snoopdogg-142254",
+    "7"
+   ],
+   [
+    "snoopdogg-222713",
+    "7"
+   ]
+  ],
+  "Long Beach": [
+   [
+    "snoopdogg-487650",
+    "7"
+   ],
+   [
+    "snoopdogg-249046",
+    "7"
+   ],
+   [
+    "snoopdogg-139924",
+    "7"
+   ]
+  ],
+  "Olympics": [
+   [
+    "snoopdogg-399767",
+    "7"
+   ],
+   [
+    "snoopdogg-116009",
+    "7"
+   ],
+   [
+    "snoopdogg-198287",
+    "7"
+   ]
+  ],
+  "Purple Hoodie": [
+   [
+    "snoopdogg-25337",
+    "7"
+   ],
+   [
+    "snoopdogg-350741",
+    "7"
+   ],
+   [
+    "snoopdogg-372960",
+    "7"
+   ]
+  ],
+  "Shower Cap": [
+   [
+    "snoopdogg-23899",
+    "7"
+   ],
+   [
+    "snoopdogg-277204",
+    "7"
+   ],
+   [
+    "snoopdogg-285369",
+    "7"
+   ]
+  ],
+  "Team USA": [],
+  "Chill Homie": [
+   [
+    "snoopdogg-511951",
+    "7"
+   ],
+   [
+    "snoopdogg-54317",
+    "7"
+   ],
+   [
+    "snoopdogg-107814",
+    "7"
+   ]
+  ],
+  "Club Dawg": [
+   [
+    "snoopdogg-361266",
+    "7"
+   ],
+   [
+    "snoopdogg-139157",
+    "7"
+   ],
+   [
+    "snoopdogg-149912",
+    "7"
+   ]
+  ],
+  "Double G": [
+   [
+    "snoopdogg-319560",
+    "7"
+   ],
+   [
+    "snoopdogg-371627",
+    "7"
+   ],
+   [
+    "snoopdogg-582100",
+    "7"
+   ]
+  ],
+  "Fish Hat": [
+   [
+    "snoopdogg-223080",
+    "7"
+   ],
+   [
+    "snoopdogg-333852",
+    "7"
+   ],
+   [
+    "snoopdogg-77264",
+    "7"
+   ]
+  ],
+  "Groove Pup": [
+   [
+    "snoopdogg-330523",
+    "7"
+   ],
+   [
+    "snoopdogg-502614",
+    "7"
+   ],
+   [
+    "snoopdogg-267893",
+    "7"
+   ]
+  ],
+  "Huggy Bear": [
+   [
+    "snoopdogg-420041",
+    "7"
+   ],
+   [
+    "snoopdogg-541255",
+    "7"
+   ],
+   [
+    "snoopdogg-1250",
+    "7"
+   ]
+  ],
+  "Iconic Dude": [
+   [
+    "snoopdogg-316281",
+    "7"
+   ],
+   [
+    "snoopdogg-425528",
+    "7"
+   ],
+   [
+    "snoopdogg-426197",
+    "7"
+   ]
+  ],
+  "Peach Mode": [
+   [
+    "snoopdogg-420349",
+    "9"
+   ],
+   [
+    "snoopdogg-225019",
+    "9"
+   ],
+   [
+    "snoopdogg-22511",
+    "9"
+   ]
+  ],
+  "Super Bowl": [
+   [
+    "snoopdogg-119586",
+    "6"
+   ],
+   [
+    "snoopdogg-366810",
+    "7"
+   ],
+   [
+    "snoopdogg-209863",
+    "7"
+   ]
+  ]
+ },
+ "rarity_permille": {
+  "Doggfather": 5,
+  "Goldizzle": 5,
+  "King Snoop": 5,
+  "AI Dogg": 10,
+  "Doberman": 10,
+  "Horseman": 10,
+  "Label Lord": 10,
+  "Plastic Beach": 10,
+  "Red Fur Coat": 10,
+  "Afro Disco": 15,
+  "Backspin": 15,
+  "Black Gold": 15,
+  "Captain Mack": 15,
+  "Dapper Doggo": 15,
+  "Retro Vibe": 15,
+  "Barks A Locks": 20,
+  "Blonde": 20,
+  "Bollywood": 20,
+  "Bow Wizzle": 20,
+  "Chow Wow": 20,
+  "Chrome": 20,
+  "Cold Topaz": 20,
+  "Emerald": 20,
+  "Green Light": 20,
+  "King Ruby": 20,
+  "Old School": 20,
+  "Sapphire": 20,
+  "Silver": 20,
+  "Streetwise": 20,
+  "Woofee": 20,
+  "Y2K Skin": 20,
+  "Yap Yap": 20,
+  "Barks Lightyear": 25,
+  "Beanie": 25,
+  "Black Diamond": 25,
+  "Funky Homie": 25,
+  "Long Beach": 25,
+  "Olympics": 25,
+  "Purple Hoodie": 25,
+  "Shower Cap": 25,
+  "Team USA": 25,
+  "Chill Homie": 30,
+  "Club Dawg": 30,
+  "Double G": 30,
+  "Fish Hat": 30,
+  "Groove Pup": 30,
+  "Huggy Bear": 30,
+  "Iconic Dude": 30,
+  "Peach Mode": 30,
+  "Super Bowl": 30
+ }
+}

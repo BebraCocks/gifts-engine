@@ -11,21 +11,50 @@ import wave
 import banner
 import sound
 import sfxkit
-from timeline import DUR, ON, END, HAS_NARRATION, TAKES
-from events import AD_STOP
+from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES
+from events import AD_STOP, E
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
 SFX_GAIN_DB = 0.0          # whole SFX layer; individual cues set their own gain_db
+CONTENT_GAIN_DB = 3.0      # voice + SFX up to ≈ −14 LUFS like the previous videos (the RubUp sound is not touched)
 
 
 def sfx_layer(n, kit):
-    """Placeholder cues: replace with the real events of this video (see the «Звук» storyboard section).
-    One cue = one action on screen. Pick the role by what happens, not by habit."""
+    """One cue = one action on screen (STORYBOARD.md, «Звук»). No own SFX during RubUp (docs/ADVERTISING.md)."""
     fx = np.zeros((n, 2))
-    for k, t in enumerate(ON):
-        kit.add(fx, 'select-soft', t, gain_db=-16, label=f'line {k + 1} appears')
-    kit.add(fx, 'whoosh*', AD_STOP, align='peak', gain_db=-14, label='slow-down to RubUp')
+    add = kit.add
+    add(fx, 'pop', 0.02, gain_db=-15, label='gift pops into the centre')
+    add(fx, 'sparkle-whoosh', E['real'] - 0.1, gain_db=-20, label='card outline is drawn')
+    add(fx, 'select-soft', E['model'], gain_db=-19, label='card rows: Snoop Dogg / Barks Lightyear')
+    add(fx, 'whoosh-short', E['profile'], gain_db=-19, label='gift flies into the profile')
+    add(fx, 'click', E['profile'] + 0.6, gain_db=-14, label='gift lands in the cell')
+    add(fx, 'counter', E['million'] - 0.05, gain_db=-21, fit=1.2, label='counter runs to 1 000 000')
+    add(fx, 'confirm', E['million'] + 1.15, gain_db=-16, label='1 000 000 reached')
+    add(fx, 'select', E['half'], gain_db=-19, label='«30 мин» lights up')
+    add(fx, 'whoosh-short', E['want'], gain_db=-18, label='gift comes back')
+    for i in range(3):
+        add(fx, 'pop', E['three'] - 0.3 + 0.12 * i, gain_db=-20, label=f'circle {i + 1} drawn')
+    add(fx, 'transform', E['like'], gain_db=-20, label='1 -> heart')
+    add(fx, 'confirm', E['done'] + 0.05, gain_db=-15, label='heart fills (after RubUp)')
+    add(fx, 'transform', E['repost'], gain_db=-20, label='2 -> share arrow')
+    add(fx, 'whoosh-short', E['friend'], gain_db=-16, label='repost flies to a friend')
+    add(fx, 'transform', E['comment'], gain_db=-20, label='3 -> bubble')
+    add(fx, 'typing', E['what'] + 0.45, gain_db=-22, fit=2.1, label='comment is typed')
+    add(fx, 'confirm', END[KEY['comment']] - 0.15, gain_db=-16, label='bubble fills')
+    for j in range(10):
+        add(fx, 'pop', E['ten'] - 0.25 + 0.075 * j + 0.28, gain_db=-22, pan=(j % 5 - 2) * 0.25,
+            label=f'bear {j + 1} lands')
+    add(fx, 'sparkle', E['ten'] + 0.9, gain_db=-19, label='× 10')
+    add(fx, 'flip', E['week'], gain_db=-18, label='«7 дней»')
+    add(fx, 'scan', E['random'] - 0.25, gain_db=-23, fit=max(0.3, E['pin'] - E['random'] + 0.25),
+        label='nickname bars shuffle')
+    add(fx, 'click', E['pin'], gain_db=-13, label='pin')
+    add(fx, 'whoosh-short', ON[KEY['final']] - 0.45, gain_db=-19, label='conditions come back')
+    for k in ('f_like', 'f_repost', 'f_comment'):
+        add(fx, 'confirm', E[k], gain_db=-17, label=f'{k} lights up')
+    add(fx, 'whoosh', E['f_snoop'] + 0.15, align='peak', gain_db=-18, label='Snoop drops back')
+    add(fx, 'sparkle', E['f_snoop'] + 1.5, gain_db=-19, label='final pose')
     return fx * 10 ** (SFX_GAIN_DB / 20)
 
 
@@ -45,7 +74,8 @@ def make_mix(kit):
         env = np.abs(voice).max(1)
         env = np.convolve(env, np.ones(2400) / 2400, 'same')
         fx *= (1 - 0.5 * np.clip(env / (np.percentile(env, 95) * 0.5 + 1e-9), 0, 1))[:, None]
-    return voice + fx, fx
+    g = 10 ** (CONTENT_GAIN_DB / 20)
+    return (voice + fx) * g, fx * g
 
 
 if __name__ == '__main__':

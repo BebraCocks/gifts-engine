@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parent
 RAW = HERE / 'voice' / 'raw'
 URL = 'https://platform.r2.fish.audio/tasks/2026-11-06/{}.mp3'
 SR = 48000
+SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.16
@@ -74,13 +75,19 @@ def tighten(x, max_gap):
         else:
             k += 1
     segs, out = [], []
+    global SEGMAP
+    SEGMAP = []                                    # (raw start s, out start s, length s) for ASR word times
     k = 0
+    pos = 0
+    f = int(0.005 * SR)
     while k < len(e):                              # join kept frames with 5 ms crossfades
         if keep[k]:
             j = k
             while j < len(e) and keep[j]:
                 j += 1
             segs.append(x[k * hop:j * hop].copy())
+            SEGMAP.append((k * hop / SR, pos / SR, (j - k) * hop / SR))
+            pos += (j - k) * hop - (f if len(segs) > 1 else 0)
             k = j
         else:
             k += 1
@@ -107,6 +114,7 @@ if __name__ == '__main__':
             w.setsampwidth(2)
             w.setframerate(SR)
             w.writeframes(np.clip(y, -32767, 32767).astype('<i2').tobytes())
+        (HERE / 'voice' / f'{line}.map.json').write_text(json.dumps({'tempo': TEMPO, 'segments': SEGMAP}))
         total += len(y) / SR
         print(f'{line} <- {ids[0][:8]}: {len(y) / SR:.2f} s')
     print(f'speech total {total:.2f} s')

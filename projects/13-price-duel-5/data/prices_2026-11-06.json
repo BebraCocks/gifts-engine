@@ -1,0 +1,73 @@
+{
+ "_note": "Цены для 13-price-duel-5. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот с анимацией в api.changes.tg, проверено 2026-11-06 07:56–08:05 UTC. Курс 89 ₽ за TON (tonapi.io 88,63 ₽ в 07:45 UTC). Вещи: страницы товаров, открытые 2026-11-06 08:00–08:15 UTC, цена к оплате на странице; машины — цена без акций.",
+ "ton_rub": 89.0,
+ "gifts": [
+  {
+   "gift": "Kissed Frog",
+   "model": "Brownie",
+   "rarity": "4%",
+   "ton": 67,
+   "rub": 5963,
+   "lot": "https://fragment.com/gift/kissedfrog-133"
+  },
+  {
+   "gift": "Mini Oscar",
+   "model": "Static",
+   "rarity": "1.5%",
+   "ton": 115,
+   "rub": 10235,
+   "lot": "https://fragment.com/gift/minioscar-474"
+  },
+  {
+   "gift": "Heroic Helmet",
+   "model": "Aegean Sea",
+   "rarity": "3%",
+   "ton": 200,
+   "rub": 17800,
+   "lot": "https://fragment.com/gift/heroichelmet-1764"
+  },
+  {
+   "gift": "Scared Cat",
+   "model": "Virus",
+   "rarity": "4%",
+   "ton": 298,
+   "rub": 26522,
+   "lot": "https://fragment.com/gift/scaredcat-10713"
+  },
+  {
+   "gift": "Algorithm Cup",
+   "model": "Silver",
+   "rarity": "33%",
+   "ton": 3450,
+   "rub": 307050,
+   "lot": "https://fragment.com/gift/algorithmcup-74"
+  }
+ ],
+ "things": [
+  {
+   "name": "LEGO Botanical «Мини-орхидея» 10343",
+   "rub": 4690,
+   "src": "https://www.chitai-gorod.ru/product/konstruktor-lego-mini-orchid-3118441"
+  },
+  {
+   "name": "Marshall Stockwell II, 20 Вт",
+   "rub": 24990,
+   "src": "https://www.iport.ru/products/productID105634/"
+  },
+  {
+   "name": "LEGO Batman «Тумблер Бэтмена против Двуликого и Джокера» 76303",
+   "rub": 10490,
+   "src": "https://www.chitai-gorod.ru/product/76303-konstruktor-detskij-lego-dc-tumbler-betmena-protiv-dvulikogo-i-dzokera-429-detalej-vozrast-8-3126514"
+  },
+  {
+   "name": "Apple AirPods Max (USB-C)",
+   "rub": 59990,
+   "src": "https://www.iport.ru/products/productID126901/"
+  },
+  {
+   "name": "Apple MacBook Pro 14.2″ M5, 16/1024 ГБ, 2025",
+   "rub": 236990,
+   "src": "https://www.iport.ru/products/productID150214/"
+  }
+ ]
+}

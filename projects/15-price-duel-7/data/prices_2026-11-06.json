@@ -1,0 +1,73 @@
+{
+ "_note": "Цены для 15-price-duel-7. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот с анимацией в api.changes.tg, проверено 2026-11-06 07:56–08:05 UTC. Курс 89 ₽ за TON (tonapi.io 88,63 ₽ в 07:45 UTC). Вещи: страницы товаров, открытые 2026-11-06 08:00–08:15 UTC, цена к оплате на странице; машины — цена без акций.",
+ "ton_rub": 89.0,
+ "gifts": [
+  {
+   "gift": "Electric Skull",
+   "model": "Corpse Mint",
+   "rarity": "3%",
+   "ton": 35,
+   "rub": 3115,
+   "lot": "https://fragment.com/gift/electricskull-1225"
+  },
+  {
+   "gift": "Ion Gem",
+   "model": "Bronzite",
+   "rarity": "2%",
+   "ton": 85,
+   "rub": 7565,
+   "lot": "https://fragment.com/gift/iongem-2889"
+  },
+  {
+   "gift": "Astral Shard",
+   "model": "Arctite",
+   "rarity": "1.7%",
+   "ton": 148,
+   "rub": 13172,
+   "lot": "https://fragment.com/gift/astralshard-3935"
+  },
+  {
+   "gift": "Nail Bracelet",
+   "model": "Red Fang",
+   "rarity": "3.5%",
+   "ton": 149,
+   "rub": 13261,
+   "lot": "https://fragment.com/gift/nailbracelet-4559"
+  },
+  {
+   "gift": "Magic Potion",
+   "model": "Dimensional",
+   "rarity": "2.5%",
+   "ton": 75,
+   "rub": 6675,
+   "lot": "https://fragment.com/gift/magicpotion-4607"
+  }
+ ],
+ "things": [
+  {
+   "name": "Икра горбуши зернистая, ст/б, 80 г",
+   "rub": 2190,
+   "src": "https://vkusvill.ru/goods/ikra-gorbushi-zernistaya-st-b-okhl-127207/"
+  },
+  {
+   "name": "LEGO Disney «101 далматинец: щенки Лаки и Пенни» 43271",
+   "rub": 3690,
+   "src": "https://www.chitai-gorod.ru/product/konstruktor-lego-disney-classic-43271-3118470"
+  },
+  {
+   "name": "Marshall Acton III, 60 Вт",
+   "rub": 25990,
+   "src": "https://www.iport.ru/products/productID120778/"
+  },
+  {
+   "name": "Apple Watch Ultra 4 GPS + Cellular 49 мм",
+   "rub": 99490,
+   "src": "https://www.iport.ru/products/productID156820/"
+  },
+  {
+   "name": "VOLGA K50 «Комфорт» 2.0 AT 4WD, без акций (по акции от 3 199 000 ₽)",
+   "rub": 4349000,
+   "src": "https://www.avtogermes.ru/sale/new/volga/"
+  }
+ ]
+}

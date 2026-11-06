@@ -1,0 +1,73 @@
+{
+ "_note": "Цены для 14-price-duel-6. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот с анимацией в api.changes.tg, проверено 2026-11-06 07:56–08:05 UTC. Курс 89 ₽ за TON (tonapi.io 88,63 ₽ в 07:45 UTC). Вещи: страницы товаров, открытые 2026-11-06 08:00–08:15 UTC, цена к оплате на странице; машины — цена без акций.",
+ "ton_rub": 89.0,
+ "gifts": [
+  {
+   "gift": "Khabib's Papakha",
+   "model": "Pile Of Hats",
+   "rarity": "1.5%",
+   "ton": 29,
+   "rub": 2581,
+   "lot": "https://fragment.com/gift/khabibspapakha-12936"
+  },
+  {
+   "gift": "Perfume Bottle",
+   "model": "Solar Eclipse",
+   "rarity": "4%",
+   "ton": 98,
+   "rub": 8722,
+   "lot": "https://fragment.com/gift/perfumebottle-406"
+  },
+  {
+   "gift": "Mighty Arm",
+   "model": "Petrified",
+   "rarity": "2%",
+   "ton": 150,
+   "rub": 13350,
+   "lot": "https://fragment.com/gift/mightyarm-2172"
+  },
+  {
+   "gift": "Intelligence Cup",
+   "model": "Silver",
+   "rarity": "33.3%",
+   "ton": 3099,
+   "rub": 275811,
+   "lot": "https://fragment.com/gift/intelligencecup-105"
+  },
+  {
+   "gift": "Durov's Glasses",
+   "model": "Lovestruck",
+   "rarity": "3%",
+   "ton": 148,
+   "rub": 13172,
+   "lot": "https://fragment.com/gift/durovsglasses-697"
+  }
+ ],
+ "things": [
+  {
+   "name": "Икра кеты из охлаждённого сырья солёная, ст/б, 100 г",
+   "rub": 3200,
+   "src": "https://vkusvill.ru/goods/ikra-kety-iz-okhlazhdennogo-syrya-solenaya-st-b-okhl-114858/"
+  },
+  {
+   "name": "LEGO Harry Potter «Тисовая улица: визит тёти Мардж» 76451",
+   "rub": 19549,
+   "src": "https://www.chitai-gorod.ru/product/76451-konstruktor-detskij-lego-harry-potter-tisovaa-ulica-vizit-teti-mardz-639-detalej-vozrast-8-3126520"
+  },
+  {
+   "name": "Marshall Stanmore III, 80 Вт",
+   "rub": 29990,
+   "src": "https://www.iport.ru/products/productID120569/"
+  },
+  {
+   "name": "Apple MacBook Air 13.6″ M5, 16/512 ГБ, 2026",
+   "rub": 164990,
+   "src": "https://www.iport.ru/products/productID152531/"
+  },
+  {
+   "name": "Москвич 3 «Стандарт Телематика» MY26 1.5 МТ, без акций (по акции от 1 430 000 ₽)",
+   "rub": 2040000,
+   "src": "https://www.avtogermes.ru/sale/new/moskvich/"
+  }
+ ]
+}

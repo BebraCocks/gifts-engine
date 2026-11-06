@@ -200,3 +200,10 @@ Airwrap, Resistance Dog / iPad 11; счёт 2 : 3. Звук автора на 2,
 Четвёртый выпуск «Что дороже?»: Ginger Cookie / печенье, Toy Bear / плюшевый медведь, Low Rider / Lada Iskra,
 Berry Box / голубика, Westside Sign / AirPods 4; счёт 3 : 2. Звук автора на 2,94 с с гэгом. Сборка
 `renders/12-price-duel-4/price_duel_4_v1.mp4` (59,6 с). Дальше: автору посмотреть и послушать; правки — `--name price_duel_4_v2`.
+
+## 2026-11-06 · 13–15 «Что дороже?» с дорогими вещами
+
+Три выпуска без звука автора: 13 «Один подарок дороже макбука» (Algorithm Cup дороже MacBook Pro, 3:2), 14 «Дорогие вещи
+против подарков» (1:4, финал — Москвич 3), 15 «В финале новая Волга» (2:3, VOLGA K50 в 650 раз дороже зелья). Сборки
+`renders/13-price-duel-5/price_duel_5_v1.mp4`, `renders/14-price-duel-6/price_duel_6_v1.mp4`, `renders/15-price-duel-7/price_duel_7_v1.mp4`.
+Дальше: автору посмотреть и послушать; правки — `--name …_v2`.

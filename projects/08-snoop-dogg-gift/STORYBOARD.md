@@ -135,4 +135,4 @@ Barks Lightyear выбран, потому что у него больше вс�
   хайлайты `build/review/highlights.png` и звук для прослушивания отправлены автору.
   Проверено: кадры и стоп на рекламу по картинкам. Не проверено: движение в темпе (видео не рендерилось),
   прослушивание микса.
-- Разрешение «собирай»: не получено. Сборка: `python -B engine/tools/build.py projects/08-snoop-dogg-gift --approved --name snoop_giveaway_v1`.
+- Разрешение «собирай»: не получено. Сборка: `python -B engine/tools/build.py projects/08-snoop-dogg-gift --approved --name snoop_dogg_v1`.

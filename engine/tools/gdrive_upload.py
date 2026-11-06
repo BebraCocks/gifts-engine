@@ -2,13 +2,15 @@
 
     python -B engine/tools/gdrive_upload.py renders/NN-topic/name_vN.mp4 [--folder FOLDER_ID]
 
-Credentials come only from the process environment (set by the author in the cloud environment settings,
-never written to the repository or printed):
+Preferred: the author's Google Apps Script web app (it runs as the author and writes to the folder):
+    GDRIVE_WEBHOOK_URL, GDRIVE_WEBHOOK_KEY — POST {key, name, data(base64)} -> {id, url}. Limit ≈ 50 MB per file.
+Fallback, Drive API (credentials only from the process environment, never written to the repository or printed):
     GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET, GDRIVE_REFRESH_TOKEN   — OAuth client of the author + refresh token
         (scope https://www.googleapis.com/auth/drive); a fresh access token is requested on every run;
     or GDRIVE_ACCESS_TOKEN — a short-lived access token (≈ 1 hour), for a one-off upload.
 Resumable upload in 8 MB chunks; prints the file id and the view link. Exit code 2 when no credentials are set."""
 import argparse
+import base64
 import json
 import os
 import sys
@@ -35,7 +37,24 @@ def access_token():
     sys.exit(2)
 
 
+def upload_webhook(path):
+    body = json.dumps({'key': os.environ['GDRIVE_WEBHOOK_KEY'], 'name': path.name,
+                       'data': base64.b64encode(path.read_bytes()).decode()}).encode()
+    req = urllib.request.Request(os.environ['GDRIVE_WEBHOOK_URL'], data=body, method='POST',
+                                 headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(req, timeout=600) as r:          # Apps Script answers via a 302 -> GET
+        text = r.read().decode('utf-8', 'replace')
+    try:
+        res = json.loads(text)
+    except ValueError:
+        sys.exit(f'Apps Script не принял файл: {text[:200]}')
+    print(f'{path.name} -> {res["id"]}  {res["url"]}')
+    return res
+
+
 def upload(path, folder):
+    if os.environ.get('GDRIVE_WEBHOOK_URL') and os.environ.get('GDRIVE_WEBHOOK_KEY') and folder == FOLDER:
+        return upload_webhook(path)
     tok = access_token()
     size = path.stat().st_size
     meta = json.dumps({'name': path.name, 'parents': [folder]}).encode()

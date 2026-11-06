@@ -1,4 +1,4 @@
-"""Music for 16-price-duel-8 (09-price-duel code, си-бемоль мажор B♭ – Gm – E♭ – F), synthesized in code
+"""Music for 18-price-duel-9 (09-price-duel code, ми мажор E – C♯m – A – B), synthesized in code
 A light quiz-show groove, 120 BPM (the timer needs 2 beats a second), G – Em – C – D (09: Am – F – C – G, 10: D – Bm – G – A, 11: Em – C – G – D). Content time, so RubUp pauses it like the voice.
 
 Sections follow the events:
@@ -17,7 +17,7 @@ from events import E
 BPM = 120.0
 BEAT = 60.0 / BPM
 RNG = np.random.default_rng(9)
-PROG = [(58, (58, 62, 65)), (55, (55, 58, 62)), (63, (63, 67, 70)), (65, (65, 69, 72))]   # си-бемоль мажор B♭ – Gm – E♭ – F (root, chord)
+PROG = [(64, (64, 68, 71)), (61, (61, 64, 68)), (57, (57, 61, 64)), (59, (59, 63, 66))]   # ми мажор E – C♯m – A – B (root, chord)
 
 
 def hz(m):
@@ -125,8 +125,8 @@ def timer_section(b, t0, sr, r):
         lvl = 0.55 + 0.12 * sec
         if i % 2 == 0:
             b.add(t, k, 0.75 * lvl)
-            b.add(t, marimba(70 + [0, 2, 4, 5, 7][sec], sr, 0.35), 0.22 * lvl, 0.15)
-        b.add(t, bass(58, sr, BEAT * 0.5), 0.35 * lvl)
+            b.add(t, marimba(76 + [0, 2, 4, 5, 7][sec], sr, 0.35), 0.22 * lvl, 0.15)
+        b.add(t, bass(64, sr, BEAT * 0.5), 0.35 * lvl)
         for q in range(2 if sec < 4 else 4):
             b.add(t + q * BEAT / (2 if sec < 4 else 4), hat(sr), 0.10 * lvl, -0.3)
 

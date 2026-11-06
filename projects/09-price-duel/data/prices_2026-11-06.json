@@ -1,0 +1,18 @@
+{
+  "_note": "Цены для 09-price-duel. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене (нижний лот = модель в ролике), проверено 2026-11-06 06:29 UTC. Курс TON: tonapi.io 88,96–89,12 ₽ и CoinGecko 89,0 ₽ в 06:10–06:29 UTC → в ролике 89 ₽. Вещи: страницы магазинов, открытые 2026-11-06 06:10–06:30 UTC, обычная цена без карты лояльности.",
+  "ton_rub": 89.0,
+  "gifts": [
+    {"gift": "Snoop Dogg", "model": "Super Bowl", "rarity": "3%", "ton": 6, "lot": "https://fragment.com/gift/snoopdogg-119586", "next_lots_ton": [6, 6, 6]},
+    {"gift": "Swiss Watch", "model": "Bruce Wayne", "rarity": "2%", "ton": 75, "lot": "https://fragment.com/gift/swisswatch-8191", "next_lots_ton": [77, 79, 80]},
+    {"gift": "Durov's Cap", "model": "Duskwave", "rarity": "2%", "ton": 463, "lot": "https://fragment.com/gift/durovscap-4114", "next_lots_ton": [464, 500, 510]},
+    {"gift": "Heart Locket", "model": "Heartwood", "rarity": "2%", "ton": 1444, "lot": "https://fragment.com/gift/heartlocket-416", "next_lots_ton": [1700, 1777, 1778]},
+    {"gift": "Plush Pepe", "model": "Sunset", "rarity": "2%", "ton": 7400, "lot": "https://fragment.com/gift/plushpepe-1175", "next_lots_ton": [7500, 8000, 8800]}
+  ],
+  "things": [
+    {"name": "Lay's со вкусом краба, 140 г", "rub": 231, "src": "https://vkusvill.ru/goods/chipsy-kartofelnye-lay-s-so-vkusom-kraba-140-g-114240.html", "note": "199 ₽ по карте ВкусВилл; в ролике обычная цена"},
+    {"name": "Apple Watch SE 3 GPS 44 мм", "rub": 31690, "src": "https://www.iport.ru/catalog/apple_watch/", "note": "самая дешёвая SE 3 в каталоге iPort"},
+    {"name": "AirPods Pro 3", "rub": 23990, "src": "https://www.iport.ru/catalog/naushniki/filter/apple_airpods-pro-3/", "note": "цена со скидкой iPort; зачёркнутая 34 990 ₽ — кепка дороже и её"},
+    {"name": "iPhone 18 Pro 256 ГБ (nano SIM + eSIM)", "rub": 164990, "src": "https://www.iport.ru/catalog/apple_iphone/", "note": "eSIM-версия 154 990 ₽ — медальон дешевле и её"},
+    {"name": "Lada Granta седан «Стандарт Плюс»", "rub": 850000, "src": "https://www.avtogermes.ru/sale/new/lada/granta/", "note": "цена без акций у дилера АвтоГЕРМЕС; по акции (трейд-ин/кредит) «от 570 000 ₽» — тогда Пепе дороже. В ролике — цена без акций, это сказано в подписи"}
+  ]
+}

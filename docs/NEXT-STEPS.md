@@ -172,3 +172,11 @@ v1 `renders/06-petya-scam/petya_nft_v1.mp4` (118,45 с) — превью; Тек
 `python -B engine/tools/build.py projects/08-snoop-dogg-gift --approved --name snoop_dogg_v1`.
 Обновление 2026-11-06 (4): собран `renders/08-snoop-dogg-gift/snoop_dogg_v3.mp4` (47,64 с, −14,1 LUFS), декодирован,
 кадры проверены. v1 и v2 сохранены. Дальше: автору посмотреть и послушать; правки — `--name snoop_dogg_v4`.
+
+## 2026-11-06 · 09-price-duel «Что дороже?»
+
+5 раундов «подарок или вещь из жизни» на весах (Снуп/Lay's, Swiss Watch/Apple Watch, кепка Дурова/AirPods Pro 3,
+Heart Locket/iPhone 18 Pro, Плюш Пепе/Гранта), счёт 2 : 3, таймер 5 с, RubUp после третьего раунда, финал
+«Пепе или Гранту?». Цены 06.11.2026 — `projects/09-price-duel/data/`. Голос автора `48ec28a4…` (drama-3),
+музыка кодом. Сборка `renders/09-price-duel/price_duel_v1.mp4` (59,0 с). Дальше: автору посмотреть и послушать
+(голос на слух не сверен, ASR остановлен автором); правки — `--name price_duel_v2`.

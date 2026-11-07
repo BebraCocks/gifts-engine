@@ -59,3 +59,7 @@ Fish Audio drama-3, голос `48ec28a4…`, 10 реплик, ускорени�
   `python -B engine/tools/build.py projects/21-early-gifts --approved --name early_gifts_v1`.
 - 2026-11-07 (2): автор: цены не в тонах — L04 переписана («в пятьдесят раз дороже — почти семь тысяч рублей»), новый дубль;
   на экране «≈ 6 700 ₽» вместо «75 TON», TON остались только в мелкой строке источника. 58,93 с. Ждём «собирай».
+- 2026-11-07 (3): автор: «жду финальную сборку». Собран `renders/21-early-gifts/early_gifts_v1.mp4` (58,93 с, 1080×1920, 60 к/с,
+  H.264 yuv420p + AAC, −13,5 LUFS, пик −2,0 dBFS), декодирован полностью, 9 кадров по всему ролику просмотрены (вкл. RubUp).
+  Загружен в Google Drive «TikTok»: https://drive.google.com/file/d/1jlTwt-IjvWgQiToAKUntt2wGg5BTrzmn/view.
+  Не сделано: просмотр в темпе и прослушивание на слух. Правки — `--name early_gifts_v2`.

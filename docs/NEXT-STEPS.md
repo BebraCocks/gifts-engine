@@ -281,3 +281,11 @@ Wikimedia Commons). Голос `7312c385…` drama-3 (1,15×), RubUp после 
 Сборка `renders/29-not-all-pay/not_all_pay_v1.mp4` (59,44 с, −12,3 LUFS), в Google Drive «TikTok».
 v2 (удержание: хук-загадка «вырос в 880 раз — и это не Пепе», карточка «×880 · в конце», прогресс n/5, тизер «×266 — не листай!»
 перед RubUp): `renders/29-not-all-pay/not_all_pay_v2.mp4` (59,83 с), в Google Drive. Дальше: автору посмотреть и послушать; правки — `--name not_all_pay_v3`.
+
+## 2026-11-07 · 30-price-duel-10 «Снежный шар за 10 000» («Что дороже?»)
+
+Новый выпуск серии с подарками, которых не было в 09–18: Lol Pop / леденец-петушок (×10), Tama Gadget / Tamagotchi (×8),
+Mad Pumpkin / 1 кг тыквы (×17), Sakura Flower / LEGO «Цветущая вишня» (×3,7), Snow Globe / стеклянный шар Glassglobe
+за 10 185 ₽ (×14); счёт 2:3. Цены 07.11 (Fragment, ВкусВилл, Детский мир; 90 ₽/TON). Сборка
+`renders/30-price-duel-10/price_duel_10_v1.mp4` (58,67 с, −14,1 LUFS), в Google Drive «TikTok»:
+https://drive.google.com/file/d/17Urk9fcJ0FskD4sRvEpGxaWAs0D2fJmO/view . Дальше: автору посмотреть и послушать; правки — `--name price_duel_10_v2`.

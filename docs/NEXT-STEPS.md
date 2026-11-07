@@ -289,3 +289,6 @@ Mad Pumpkin / 1 кг тыквы (×17), Sakura Flower / LEGO «Цветущая 
 за 10 185 ₽ (×14); счёт 2:3. Цены 07.11 (Fragment, ВкусВилл, Детский мир; 90 ₽/TON). Сборка
 `renders/30-price-duel-10/price_duel_10_v1.mp4` (58,67 с, −14,1 LUFS), в Google Drive «TikTok»:
 https://drive.google.com/file/d/17Urk9fcJ0FskD4sRvEpGxaWAs0D2fJmO/view . Дальше: автору посмотреть и послушать; правки — `--name price_duel_10_v2`.
+Обновление 2026-11-07 (2): по просьбе автора озвучка переписана (не копия серии, голос тот же). **Текущая —
+`renders/30-price-duel-10/price_duel_10_v2.mp4`** (59,68 с, −13,5 LUFS), Google Drive:
+https://drive.google.com/file/d/1XS9xD-V3DtPUUl3IecHwjw3qJLmZGDaU/view . Правки — `--name price_duel_10_v3`.

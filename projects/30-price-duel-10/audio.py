@@ -43,9 +43,9 @@ def sfx_layer(n, kit):
             label=f'round {r + 1}: «ДОРОЖЕ» stamp')
         add(fx, 'coin', REVEAL[r] + 0.08, gain_db=-22, label=f'round {r + 1}: price tags')
         add(fx, 'select-soft', REVEAL[r] + 0.2, gain_db=-21, label=f'round {r + 1}: score +1')
-    add(fx, 'whoosh-short', OUTRO, gain_db=-20, label='outro: prices go, «СКОЛЬКО УГАДАЛ?»')
-    add(fx, 'popup', E['comments'], gain_db=-16, label='«ПИШИ В КОММЕНТЫ» pill')
-    add(fx, 'flip', E['which'] - 0.1, gain_db=-19, label='«СКОЛЬКО УГАДАЛ?»')
+    add(fx, 'whoosh-short', OUTRO, gain_db=-20, label='outro: prices go, «ГДЕ ОШИБСЯ?»')
+    add(fx, 'popup', E['comments'], gain_db=-16, label='«ПИШИ В КОММЕНТЫ» pill on «жду»')
+    add(fx, 'flip', E['which'] - 0.1, gain_db=-19, label='«ГДЕ ОШИБСЯ?»')
     return fx
 
 

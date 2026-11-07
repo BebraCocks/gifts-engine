@@ -12,8 +12,8 @@ WIN = [0 if r[5] * TON_RUB > r[6] else 1 for r in ROUNDS]
 
 E = {
     'hook_q': END[0] - 0.25,                 # end of the hook line — the title settles
-    'comments': wt('outro', 'пиши'),
-    'which': wt('outro', 'сколько'),
+    'comments': wt('outro', 'жду'),
+    'which': wt('outro', 'каком'),
     'end': DUR,
 }
 

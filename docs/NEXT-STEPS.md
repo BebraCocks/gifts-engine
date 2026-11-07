@@ -271,3 +271,12 @@ iPhone 17e; кино на двоих = Plush Pepe → 3 × iPhone 18 Pro Max. С
 27: Pool Float, Resistance Dog, Surge Board, очки Дурова (юбилей 14.08.2025). 28: кепка Дурова, Snoop Dogg, Swag Bag,
 папаха Хабиба, гроб и надгробие (без улучшений). Сборки `renders/27-jubilee-gifts/jubilee_gifts_v1.mp4`,
 `renders/28-coffins/coffins_v1.mp4`, обе в Google Drive. Дальше: автору посмотреть и послушать; правки — `…_v2`.
+
+## 2026-11-07 · 29-not-all-pay «Не все подарки окупаются» — собрано
+
+Изучены цены выпуска 149 коллекций (telegifter.ru) и текущие минимумы Fragment. Пятёрка: Heart Locket ×12,5 (3 Switch 2),
+Bonded Ring −28% (AirTag), Top Hat −12% (не хватит на зарядку Apple), Plush Pepe ×266 (6 MacBook Air), Scared Cat ×880
+(AirPods Pro 3, он же хук); итог 18 025 ★ ≈ $270 → ≈ $10 269 = новая Lada Granta. Настоящие фото (apple.com, nintendo.com,
+Wikimedia Commons). Голос `7312c385…` drama-3 (1,15×), RubUp после второго подарка.
+Сборка `renders/29-not-all-pay/not_all_pay_v1.mp4` (59,44 с, −12,3 LUFS), в Google Drive «TikTok».
+Дальше: автору посмотреть и послушать; правки — `--name not_all_pay_v2`.

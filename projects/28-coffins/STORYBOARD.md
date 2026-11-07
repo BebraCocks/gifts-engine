@@ -44,5 +44,5 @@ Fish Audio drama-3, теги эмоций, ускорение 1.01× (atempo, т
 
 - 2026-11-07: данные, сценарий, озвучка, сцены, звук; сборка без хайлайтов по просьбе автора.
 - 2026-11-07 (2): собран `renders/28-coffins/coffins_v1.mp4` (59,67 с, 1080×1920, 60 к/с, −13,6 LUFS), декодирован,
-  9 кадров просмотрены (вкл. RubUp). Google Drive: см. ссылку в чате (загружен gdrive_upload.py).
+  9 кадров просмотрены (вкл. RubUp). Google Drive: https://drive.google.com/file/d/1Kx2yBeQbZ6XuDZcyqqJdM-6CWC5lImBm/view.
   Не сделано: просмотр в темпе, прослушивание, ASR. Правки — `--name coffins_v2`.

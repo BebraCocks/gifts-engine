@@ -264,3 +264,10 @@ iPhone 17e; кино на двоих = Plush Pepe → 3 × iPhone 18 Pro Max. С
 Решения — `docs/DECISIONS.md`.
 Сборки: `renders/25-year-ago/year_ago_v1.mp4` (59,62 с), `renders/26-three-weeks/three_weeks_v1.mp4` (59,87 с), обе в Google Drive.
 Дальше: автору посмотреть и послушать; правки — новыми версиями.
+
+## 2026-11-07 · 27-jubilee-gifts и 28-coffins «не все подарки окупаются» — собрано
+
+Автор: без TON, «телега», сначала цена в звёздах, потом сколько стоит сейчас; суть — не все подарки окупаются.
+27: Pool Float, Resistance Dog, Surge Board, очки Дурова (юбилей 14.08.2025). 28: кепка Дурова, Snoop Dogg, Swag Bag,
+папаха Хабиба, гроб и надгробие (без улучшений). Сборки `renders/27-jubilee-gifts/jubilee_gifts_v1.mp4`,
+`renders/28-coffins/coffins_v1.mp4`, обе в Google Drive. Дальше: автору посмотреть и послушать; правки — `…_v2`.

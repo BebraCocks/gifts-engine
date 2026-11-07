@@ -1,0 +1,40 @@
+{
+ "_note": "28-coffins. Магазин — цена в звёздах на выпуске (источник в строке). Сейчас — самый дешёвый лот Fragment 2026-11-07 06:47–07:00 UTC в GRAM × $1,1048 (tonapi.io) / $0,015 за звезду (Fragment: 1 000 ★ = $15, 07.11.2026). Плата за улучшение не учтена.",
+ "gifts": {
+  "Durov's Cap": {
+   "store_stars": 1000,
+   "now_gram": 463,
+   "now_stars": 34101,
+   "model_now": "Duskwave",
+   "source": "магазин: ≈ 1000 ★ (vc.ru, 27.11.2025) · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Snoop Dogg": {
+   "store_stars": 200,
+   "now_gram": 7,
+   "now_stars": 516,
+   "model_now": "Afro Disco",
+   "source": "магазин: CoinMarketCap, 10.07.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Swag Bag": {
+   "store_stars": 500,
+   "now_gram": 6,
+   "now_stars": 442,
+   "model_now": "Spicy Onion",
+   "source": "магазин: CoinMarketCap, 10.07.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Khabib's Papakha": {
+   "store_stars": 10000,
+   "now_gram": 29,
+   "now_stars": 2136,
+   "model_now": "Pile Of Hats",
+   "source": "аукцион: ≈ $4,4 млн / 29 000 шт. ≈ 10 000 ★ · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Гроб и надгробие": {
+   "store_stars": 5000,
+   "now_gram": null,
+   "now_stars": null,
+   "model_now": null,
+   "source": "магазин: OnlyTG, 01.11.2025 · улучшений нет: api.changes.tg, Fragment, 07.11.2026"
+  }
+ }
+}

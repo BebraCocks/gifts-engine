@@ -1,0 +1,33 @@
+{
+ "_note": "27-jubilee-gifts. Магазин — цена в звёздах на выпуске (источник в строке). Сейчас — самый дешёвый лот Fragment 2026-11-07 06:47–07:00 UTC в GRAM × $1,1048 (tonapi.io) / $0,015 за звезду (Fragment: 1 000 ★ = $15, 07.11.2026). Плата за улучшение не учтена.",
+ "gifts": {
+  "Pool Float": {
+   "store_stars": 300,
+   "now_gram": 5,
+   "now_stars": 368,
+   "model_now": "Sebastian",
+   "source": "магазин: kod.ru, 14.08.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Resistance Dog": {
+   "store_stars": 5000,
+   "now_gram": 569,
+   "now_stars": 41909,
+   "model_now": "Che Guevara",
+   "source": "магазин: kod.ru, 14.08.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Surge Board": {
+   "store_stars": 2500,
+   "now_gram": 8,
+   "now_stars": 589,
+   "model_now": "Blåhaj",
+   "source": "магазин: kod.ru, 14.08.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  },
+  "Durov's Glasses": {
+   "store_stars": 30000,
+   "now_gram": 148,
+   "now_stars": 10901,
+   "model_now": "Lovestruck",
+   "source": "магазин: kod.ru, 14.08.2025 · сейчас: Fragment, 07.11.2026 · 1 ★ = $0,015"
+  }
+ }
+}

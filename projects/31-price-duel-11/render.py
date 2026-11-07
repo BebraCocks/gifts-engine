@@ -19,7 +19,7 @@ import fx
 import gifts_api
 import lottie
 import config
-from script import LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, SIDES, OUTRO_1, OUTRO_2, ACC
+from script import LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, HOOK_NAMES, TEASER, SIDES, OUTRO_1, OUTRO_2, ACC
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP
 from words import WORDS
 from events import AD_STOP, E, WIN
@@ -264,15 +264,20 @@ def item_motion(t, r, side):
 
 
 def draw_items(c, t, plates):
-    if t < ROUND_IN[0]:                                            # hook: all ten flash on the pans
-        j = int(max(0.0, t - 0.15) / 0.24) % 5
+    if t < ROUND_IN[0]:                                            # hook v2: the final pair from frame 0, prices hidden
+        j = 4
         k = spr(-0.3, t, 2.4, 0.6)
+        o = sm(ROUND_IN[0] - 0.4, ROUND_IN[0], t)                  # the pair flies off, round 1 drops in
         for side in (0, 1):
             px, py = plates[side]
+            dx = (760 if side else -760) * o * o
             if side == 0:
-                put(c, lottie.frame(GIFTS[j], t, size=GS), px, py - ITEM_UP, GIFT_SC * 0.92 * k)
+                put(c, lottie.frame(GIFTS[j], t, size=GS), px + dx, py - ITEM_UP, GIFT_SC * 0.92 * k, 1 - o)
             else:
-                put(c, things.sprite(ROUNDS[j][3]), px, py - ITEM_UP, THING_SC * 0.92 * k)
+                put(c, things.sprite(ROUNDS[j][3]), px + dx, py - ITEM_UP, THING_SC * 0.92 * k, 1 - o)
+            kp = spr(0.25 + 0.1 * side, t, 2.4, 0.5) * (1 + 0.08 * math.sin(t * 7.0 + side))
+            put(c, pill('? ₽', 52, None, INK, INK), px + dx, py + 120, max(0.01, kp), (1 - o) * cl(kp * 2))
+            text(c, HOOK_NAMES[side], 38, 'Heavy', INK, px + dx, py + 54, (1 - o) * cl(k))
         return
     r = active_round(t)
     for rr in {max(0, r - 1), r}:
@@ -337,7 +342,7 @@ def score_at(t):
 
 
 def draw_header(c, t):
-    a = sm(E['hook_q'] - 0.1, E['hook_q'] + 0.25, t)
+    a = sm(E['hook_q'] + 0.08, E['hook_q'] + 0.4, t)            # after the hook text has gone (v2)
     if a <= 0.004:
         return
     s = score_at(t)
@@ -377,6 +382,16 @@ def draw_hook(c, t):
     put(c, pill(HOOK_BADGE, 38, ACC, (255, 255, 255)), 540, 478 + 30 * (1 - k2), k2 * k3, a)
 
 
+def draw_teaser(c, t):
+    """Retention before RubUp: the promised final is still ahead (the ad freeze frame shows this pill)."""
+    t0 = END[KEY['a3']] - 0.15
+    if not (t0 <= t < ROUND_IN[3] - SWAP):
+        return
+    k = spr(t0, t, 2.4, 0.5)
+    a = cl(k * 2) * (1 - sm(ROUND_IN[3] - SWAP - 0.3, ROUND_IN[3] - SWAP, t))
+    put(c, pill(TEASER, 40, ACC, (255, 255, 255)), 540, 1338, max(0.01, k) * (1 + 0.05 * fx.bump(t - t0 - 0.5, 3.0, 6.0)), a)
+
+
 def draw_outro(c, t):
     k = spr(E['comments'], t, 2.0, 0.5)
     if t < E['comments']:
@@ -403,6 +418,7 @@ def render_at(t):
     draw_labels(c, t, plates)
     draw_header(c, t)
     draw_hook(c, t)
+    draw_teaser(c, t)
     draw_outro(c, t)
     fx.over(c, CAP.layer(t))
     return np.clip(c, 0, 255).astype(np.uint8)

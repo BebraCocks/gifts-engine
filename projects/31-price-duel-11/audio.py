@@ -27,7 +27,7 @@ def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     add = kit.add
     add(fx, 'sparkle-whoosh', 0.0, gain_db=-18, label='hook: the bet appears')
-    add(fx, 'pop', 0.55, gain_db=-17, label='«ПРОТИВ» bumps')
+    add(fx, 'pop', 0.55, gain_db=-17, label='«ИЛИ» + «? ₽» tags pop')
     add(fx, 'select', E['hook_q'], gain_db=-19, label='title «ЧТО ДОРОЖЕ?» + score')
     for r in range(5):
         if r:
@@ -43,6 +43,8 @@ def sfx_layer(n, kit):
             label=f'round {r + 1}: «ДОРОЖЕ» stamp')
         add(fx, 'coin', REVEAL[r] + 0.08, gain_db=-22, label=f'round {r + 1}: price tags')
         add(fx, 'select-soft', REVEAL[r] + 0.2, gain_db=-21, label=f'round {r + 1}: score +1')
+    add(fx, 'sparkle', END[6] - 0.1, gain_db=-19, label='teaser pill «НЕ ЛИСТАЙ» before RubUp')
+    add(fx, 'whoosh-short', ROUND_IN[0] - 0.4, gain_db=-20, label='hook pair flies off')
     add(fx, 'whoosh-short', OUTRO, gain_db=-20, label='outro: prices go, «ЗВЕЗДА ИЛИ ЁЛКА?»')
     add(fx, 'popup', E['comments'], gain_db=-16, label='«ОТВЕЧАЙ В КОММЕНТАХ» pill')
     add(fx, 'flip', E['which'] - 0.1, gain_db=-19, label='«ЗВЕЗДА ИЛИ ЁЛКА?»')

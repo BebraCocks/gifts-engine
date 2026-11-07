@@ -299,3 +299,6 @@ Santa Hat / колпак (×3,2), Winter Wreath / венок из литой х�
 ёлочный колокольчик (×3,2), Hanging Star / ёлка 180 см (×13,7 вещь); счёт 3:2. Текст и подача свои, голос тот же.
 Сборка `renders/31-price-duel-11/price_duel_11_v1.mp4` (59,42 с, −12,8 LUFS), Google Drive «TikTok»:
 https://drive.google.com/file/d/1lbiYGRsTCOcD4oWd2pjNRqAQFCOZ47EH/view . Дальше: автору посмотреть и послушать; правки — `--name price_duel_11_v2`.
+Обновление 2026-11-07 (2): 31 v2 с удержанием в первые секунды (загадка «звезда или ёлка, одна дороже в 14 раз» с кадра 0,
+тизер перед RubUp). **Текущая — `renders/31-price-duel-11/price_duel_11_v2.mp4`** (59,85 с), Google Drive:
+https://drive.google.com/file/d/177kxPYTJEaPitaZPjbi5_5-GsqVNj3vp/view . Правки — `--name price_duel_11_v3`.

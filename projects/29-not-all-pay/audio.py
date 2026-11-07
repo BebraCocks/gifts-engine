@@ -25,13 +25,13 @@ def sfx_layer(n, kit):
     """One cue = one action on screen (STORYBOARD.md, «Звук»). No own SFX during RubUp (docs/ADVERTISING.md)."""
     fx = np.zeros((n, 2))
     add = kit.add
-    add(fx, 'whoosh-short', 0.02, gain_db=-18, label='cat in (hook)')
-    add(fx, 'coin', E['h_then'] - 0.05, gain_db=-16, label='«25 ★» in the store')
-    add(fx, 'popup', E['h_q'] - 0.1, gain_db=-17, label='«сейчас: ? ★»')
-    add(fx, 'impact', E['h_end'] + 0.05, gain_db=-17, label='stamp «ответ — в конце»')
+    add(fx, 'whoosh-short', 0.02, gain_db=-18, label='mystery silhouette in (hook)')
+    add(fx, 'riser', E['h_x'] - 0.05, gain_db=-18, fit=1.2, label='×1 → ×880 counter')
+    add(fx, 'error', E['h_pepe'], gain_db=-19, label='«не Пепе» cross')
+    add(fx, 'impact', E['h_end'] - 0.05, gain_db=-17, label='stamp «покажу последним»')
     add(fx, 'whoosh', E['intro'] + 0.1, align='peak', gain_db=-20, label='intro title')
     for i in range(5):
-        add(fx, 'select-soft', E['i_a'] + 0.12 * i, gain_db=-20, label=f'card {i + 1}')
+        add(fx, 'select-soft', E['intro'] + 0.2 + 0.1 * i, gain_db=-20, label=f'card {i + 1}')
     gain = {1: True, 2: False, 3: False, 4: True, 5: True}
     for n_ in range(1, 6):
         key, p = f'p{n_}', f'q{n_}'
@@ -41,6 +41,10 @@ def sfx_layer(n, kit):
             label=f'gift {n_}: price counts {"up" if gain[n_] else "down"}')
         add(fx, 'impact', E[p + '_pct'] + 0.05, gain_db=-17, label=f'gift {n_}: verdict stamp')
         add(fx, 'confirm', E[p + '_thing'], gain_db=-18, label=f'gift {n_}: real thing card')
+    add(fx, 'whoosh-deep', E['tease'], gain_db=-19, label='teaser: Pepe silhouette')
+    add(fx, 'power-up', E['ts_x'] - 0.05, gain_db=-19, fit=0.9, label='teaser: ×266 counter')
+    add(fx, 'cartoon-hit', E['ts_stop'] - 0.15, gain_db=-17, label='stamp «не листай!»')
+    add(fx, 'sparkle', E['q5_name'] - 0.2, gain_db=-18, label='cat revealed')
     add(fx, 'whoosh', E['total'], align='peak', gain_db=-19, label='total in')
     add(fx, 'coin', E['t_sum'] - 0.05, gain_db=-16, label='18 025 ★')
     add(fx, 'riser', E['t_today'], gain_db=-19, fit=0.9, label='$ counts up')

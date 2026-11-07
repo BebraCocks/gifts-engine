@@ -16,8 +16,8 @@ SR = 48000
 SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
-DEFAULT_GAP = 0.10
-TEMPO = 1.15
+DEFAULT_GAP = 0.06
+TEMPO = 1.2
 
 
 def fetch(task):

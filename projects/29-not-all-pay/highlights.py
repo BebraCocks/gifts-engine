@@ -4,7 +4,7 @@ import render as R
 import sfxkit
 from events import E
 
-CONTENT = [E['h_end'] + 0.6, E['i_b'] + 0.6, E['q1_thing'] + 1.0, E['q2_thing'] + 1.0, None, E['q3_thing'] + 1.2,
+CONTENT = [E['h_end'] + 0.6, E['i_b'] + 0.3, E['q1_thing'] + 1.0, E['ts_stop'] + 0.3, None, E['q3_thing'] + 1.2,
            E['q4_thing'] + 1.0, E['q5_thing'] + 1.0, E['t_today'] + 1.0, E['t_car'] + 0.8, E['o_write'] + 1.5, E['end'] - 0.1]
 ims = []
 for k, ct in enumerate(CONTENT):

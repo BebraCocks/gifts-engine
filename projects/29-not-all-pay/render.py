@@ -367,10 +367,11 @@ SCENES = {
            ('charger', 1, 'НЕ ХВАТИТ ДАЖЕ НА', ['Зарядку', 'Apple 20 Вт'], '$19', True)),
     'p4': (4, 'Plush Pepe', 'Плюшевый Пепе · вышел 01.12.2024', 2000, 533000, 30, 7997,
            ('mba', 6, 'МОЖНО КУПИТЬ', ['6 × MacBook', 'Air'], '$1 299 за штуку', False)),
-    'p5': (5, 'Scared Cat', 'Испуганный кот · вышел 29.10.2024', 25, 22000, 0.375, 330,
+    'p5': (5, 'Scared Cat', 'тот самый ×880 · вышел 29.10.2024', 25, 22000, 0.375, 330,
            ('airpods', 1, 'МОЖНО КУПИТЬ', ['AirPods Pro 3'], '$249', False)),
 }
 ORDER = ['p1', 'p2', 'p3', 'p4', 'p5', 'total']
+NEXT = {'p1': 'p2', 'p2': 'tease', 'p3': 'p4', 'p4': 'p5', 'p5': 'total'}
 SRC_LINE = 'магазин: telegifter.ru · сейчас: самый дешёвый на Fragment, 07.11.2026 · 1 ★ ≈ $0,015 · цена вещи: {}'
 
 
@@ -459,13 +460,14 @@ def stamp_v(c, t, t0, s, cx, cy, a, size, color):
 def scene(c, t, key):
     n, title, sub, then, now, then_usd, now_usd, thing = SCENES[key]
     p = f'q{n}'
-    t1 = E[ORDER[ORDER.index(key) + 1]]
+    t1 = E[NEXT[key]]
     a, ki, ko = win(t, E[key] + 0.05, t1, dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
     vtext, vcol = verdict(now, then)
     sx, sy = shake(t, E[p + '_pct'] + 0.05, 9 if vcol == ACC else 0)
+    hud(c, t, n, a)
     ring(c, t, E[key], n, dy, a, vcol)
     kn = sm(E[p + '_name'] - 0.2, E[p + '_name'] + 0.15, t)
     text(c, title, 62, 'Heavy', WHITE, 235, 222 + dy, a * kn, left=True)
@@ -473,8 +475,13 @@ def scene(c, t, key):
     kg = pop(E[key] + 0.1, t, 1.6)
     react = sm(E[p + '_now'] - 0.1, E[p + '_now'] + 0.6, t)
     up = 1 if now > then else -1
-    gift(c, LOT[key], t, 540 + sx, 520 + dy + 40 * (1 - kg) - 20 * up * react + sy, 330,
-         lerp(0.6, 1.0, kg) * (1 + 0.05 * up * react), a * cl(kg * 2), rot=(-0.1 if up < 0 else 0) * react)
+    gy = 520 + dy + 40 * (1 - kg) - 20 * up * react + sy
+    gs = lerp(0.6, 1.0, kg) * (1 + 0.05 * up * react)
+    if key == 'p5':                                   # the answer to the hook: silhouette -> real colours
+        mystery(c, t, LOT[key], 540 + sx, gy, 330, gs * (1 + 0.08 * fx.bump(t - E['q5_name'], 3, 6)), a * cl(kg * 2),
+                sm(E['q5_name'] - 0.3, E['q5_name'] + 0.4, t))
+    else:
+        gift(c, LOT[key], t, 540 + sx, gy, 330, gs, a * cl(kg * 2), rot=(-0.1 if up < 0 else 0) * react)
     columns(c, t, then, now, then_usd, now_usd, E[p + '_then'], E[p + '_now'], dy, a, vcol)
     stamp_v(c, t, E[p + '_pct'], vtext, 800 + sx, 1010 + dy + sy, a, 52, vcol)
     word = 'окупился' if vcol == GAIN else 'не окупился'
@@ -484,44 +491,102 @@ def scene(c, t, key):
     text(c, SRC_LINE.format(PHOTOS[thing[0]][2]), 20, 'Medium', SRC, 540, 1760 + dy, a)
 
 
-# ------------------------------------------------------------------ hook: the cat for 25 ★; today is a question
+# ------------------------------------------------------------------ retention: silhouette of the mystery gift, progress
+def silhouette(im, reveal=0.0):
+    """A dark shape with a gold rim (the mystery gift); reveal 0→1 fades the real colours in."""
+    from PIL import ImageFilter
+    a = im.getchannel('A')
+    rim = a.filter(ImageFilter.MaxFilter(9))
+    out = Image.new('RGBA', im.size, STAR + (0,))
+    out.putalpha(rim)
+    body = Image.new('RGBA', im.size, (22, 26, 52, 0))
+    body.putalpha(a)
+    out.alpha_composite(body)
+    if reveal > 0:
+        out = Image.blend(out, im, cl(reveal))
+    return out
+
+
+def mystery(c, t, path, cx, cy, size, sc=1.0, a=1.0, reveal=0.0):
+    if a > 0.004 and sc > 0.01:
+        put(c, silhouette(lottie.frame(path, t, size=size), reveal), cx, cy, sc, a)
+
+
+def hud(c, t, n, a):
+    """Progress «ПОДАРОК n / 5» and, until the cat is revealed, a locked teaser card «×880 ?» (keeps viewers to the end)."""
+    for j in range(5):
+        x = 540 + (j - 2) * 46
+        col = STAR if j < n else DIM
+        disc(c, x, 88, 9 if j == n - 1 else 6, col, a)
+    text(c, f'ПОДАРОК {n} / 5', 24, 'Semibold', GREY, 540, 128, a)
+    if n < 5:
+        k = 1 + 0.04 * math.sin(t * 4)
+        rrect(c, 868, 160, 1032, 360, 26, SURF, a, outline=mix(DIM, STAR, 0.5), width=2)
+        mystery(c, t, LOT['p5'], 950, 235, 110, k, a)
+        text(c, '×880', 34, 'Heavy', STAR, 950, 312, a)
+        text(c, 'В КОНЦЕ', 18, 'Semibold', GREY, 950, 342, a)
+
+
+# ------------------------------------------------------------------ hook: «один из них вырос в 880 раз — и это не Пепе»
 def hook(c, t):
     a, _, ko = win(t, -1, E['intro'], dout=0.3)
     if a <= 0.004:
         return
     dy = -80 * ko
     k0 = pop(-0.5, t, 1.6)
-    text(c, 'ИСПУГАННЫЙ КОТ', 84, 'Heavy', WHITE, 540, 280 + dy, a * cl(k0 * 2), 1 + 0.05 * fx.bump(t - E['h_name'], 3, 7))
-    text(c, 'Scared Cat · подарок в телеге, октябрь 2024', 34, 'Semibold', GREY, 540, 360 + dy, a * cl(k0 * 2))
-    gift(c, LOT['p5'], t, 540, 640 + dy + 40 * (1 - k0), 440, lerp(0.6, 1.0, k0), a * cl(k0 * 2))
-    kp = pop(E['h_then'] - 0.1, t, 1.8)
-    text(c, 'В МАГАЗИНЕ', 30, 'Semibold', GREY, 280, 920 + dy, a * cl(kp * 2))
-    text(c, '25 ★', 96, 'Heavy', STAR, 280, 1005 + dy, a * cl(kp * 2), lerp(0.8, 1, kp))
-    text(c, usd(0.375), 36, 'Semibold', GREY, 280, 1080 + dy, a * cl(kp * 2))
-    kq = pop(E['h_q'] - 0.1, t, 1.8)
-    arrow(c, 500, 1005 + dy, 580, 1005 + dy, sm(E['h_q'] - 0.3, E['h_q'] + 0.1, t), a, GREY, 4)
-    text(c, 'СЕЙЧАС', 30, 'Semibold', GREY, 800, 920 + dy, a * cl(kq * 2))
-    pulse = 1 + 0.07 * math.sin(max(0.0, t - E['h_q']) * 7)
-    text(c, '? ★', 96, 'Heavy', ACC, 800, 1005 + dy, a * cl(kq * 2), lerp(0.8, 1, kq) * pulse)
-    text(c, '≈ $ ???', 36, 'Semibold', GREY, 800, 1080 + dy, a * cl(kq * 2))
-    stamp_v(c, t, E['h_end'] + 0.05, 'ОТВЕТ — В КОНЦЕ', 540, 1260 + dy, a, 56, WHITE)
+    text(c, 'ОДИН ИЗ ЭТИХ ПОДАРКОВ', 56, 'Heavy', WHITE, 540, 250 + dy, a * cl(k0 * 2))
+    text(c, 'ВЫРОС В ЦЕНЕ', 56, 'Heavy', WHITE, 540, 320 + dy, a * cl(k0 * 2))
+    kx = pop(E['h_x'] - 0.1, t, 1.8)
+    p = fx.smooth(cl((t - E['h_x']) / 1.1))
+    v = round(value_between(1, 880, p))
+    text(c, f'×{v}', 170, 'Heavy', STAR, 540, 500 + dy, a * cl(kx * 2), lerp(0.7, 1, kx) * (1 + 0.06 * fx.bump(t - E['h_x'] - 1.1, 3, 7)))
+    mystery(c, t, LOT['p5'], 540, 820 + dy + 30 * (1 - k0), 380, lerp(0.7, 1, k0) * (1 + 0.03 * math.sin(t * 3)), a * cl(k0 * 2))
+    text(c, '?', 120, 'Heavy', WHITE, 540, 820 + dy, a * cl(k0 * 2) * 0.9)
+    kp = pop(E['h_pepe'] - 0.15, t, 1.8)
+    if kp > 0:
+        x0, y0 = 860, 700 + dy
+        rrect(c, x0 - 95, y0 - 110, x0 + 95, y0 + 120, 30, SURF, a * cl(kp * 2), outline=mix(DIM, ACC, 0.6), width=3)
+        put(c, mini(3, 256), x0, y0 - 10, lerp(0.4, 0.62, min(1, kp)), a * cl(kp * 2))
+        stroke(c, [(x0 - 70, y0 - 85), (x0 + 70, y0 + 65)], ACC, 8, sm(E['h_pepe'], E['h_pepe'] + 0.3, t), a)
+        stroke(c, [(x0 + 70, y0 - 85), (x0 - 70, y0 + 65)], ACC, 8, sm(E['h_pepe'] + 0.15, E['h_pepe'] + 0.45, t), a)
+        text(c, 'НЕ ПЕПЕ', 30, 'Heavy', ACC, x0, y0 + 95, a * cl(kp * 2))
+    stamp_v(c, t, E['h_end'] - 0.1, 'ПОКАЖУ ПОСЛЕДНИМ', 540, 1120 + dy, a, 56, WHITE)
 
 
-# ------------------------------------------------------------------ intro: «не все подарки окупаются»
+# ------------------------------------------------------------------ intro: «но окупаются не все»
 def intro(c, t):
-    a, ki, ko = win(t, E['intro'] + 0.1, E['p1'], dout=0.3)
+    a, ki, ko = win(t, E['intro'] + 0.05, E['p1'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    text(c, 'НЕ ВСЕ ПОДАРКИ', 80, 'Heavy', WHITE, 540, 470 + dy, a)
-    text(c, 'ОКУПАЮТСЯ', 124, 'Heavy', ACC, 540, 600 + dy, a, 1 + 0.06 * fx.bump(t - E['i_b'], 3, 7))
+    text(c, 'НО ОКУПАЮТСЯ', 96, 'Heavy', WHITE, 540, 470 + dy, a)
+    text(c, 'НЕ ВСЕ', 140, 'Heavy', ACC, 540, 610 + dy, a, 1 + 0.06 * fx.bump(t - E['i_a'], 3, 7))
     xs = [540 + (i - 2) * 190 for i in range(5)]
     for i, x in enumerate(xs):
-        k = pop(E['i_a'] + 0.12 * i, t, 1.8)
-        rrect(c, x - 80, 740 + dy, x + 80, 960 + dy, 32, SURF, a * cl(k * 2), outline=DIM, width=2)
-        put(c, mini(i, 128), x, 820 + dy + 20 * (1 - k), lerp(0.5, 0.95, k), a * cl(k * 2))
-        text(c, '?', 40, 'Heavy', STAR, x, 920 + dy, a * cl(k * 2))
+        k = pop(E['intro'] + 0.2 + 0.1 * i, t, 1.8)
+        rrect(c, x - 80, 740 + dy, x + 80, 960 + dy, 32, SURF, a * cl(k * 2), outline=mix(DIM, STAR, 0.5) if i == 4 else DIM, width=2)
+        if i == 4:
+            mystery(c, t, LOT['p5'], x, 820 + dy, 120, lerp(0.5, 0.95, k), a * cl(k * 2))
+            text(c, '×880', 34, 'Heavy', STAR, x, 920 + dy, a * cl(k * 2))
+        else:
+            put(c, mini(i, 128), x, 820 + dy + 20 * (1 - k), lerp(0.5, 0.95, k), a * cl(k * 2))
+            text(c, '?', 40, 'Heavy', STAR, x, 920 + dy, a * cl(k * 2))
     text(c, 'слева — цена в магазине · справа — сейчас', 34, 'Semibold', GREY, 540, 1050 + dy, a)
+
+
+# ------------------------------------------------------------------ teaser before the ad: «×266 — не листай!»
+def tease(c, t):
+    a, ki, ko = win(t, E['tease'] + 0.05, E['p3'], dout=0.25)
+    if a <= 0.004:
+        return
+    dy = 40 * (1 - ki) - 90 * ko
+    hud(c, t, 2, a)
+    text(c, 'СКОРО', 44, 'Heavy', GREY, 540, 330 + dy, a)
+    mystery(c, t, LOT['p4'], 540, 640 + dy, 400, 1 + 0.03 * math.sin(t * 3), a)
+    kx = pop(E['ts_x'] - 0.1, t, 1.8)
+    p = fx.smooth(cl((t - E['ts_x']) / 0.9))
+    text(c, f'×{round(value_between(1, 266, p))}', 150, 'Heavy', GAIN, 540, 960 + dy, a * cl(kx * 2), lerp(0.7, 1, kx))
+    stamp_v(c, t, E['ts_stop'] - 0.15, 'НЕ ЛИСТАЙ!', 540, 1180 + dy, a, 70, ACC)
 
 
 # ------------------------------------------------------------------ total: 18 025 ★ then -> what it buys today
@@ -596,7 +661,7 @@ def _green_glow():
 
 def render_at(t):
     c = _bg().copy()
-    for key, glow in (('q2_now', _red_glow), ('q3_now', _red_glow), ('q4_now', _green_glow), ('q5_now', _green_glow),
+    for key, glow in (('ts_x', _green_glow), ('q2_now', _red_glow), ('q3_now', _red_glow), ('q4_now', _green_glow), ('q5_now', _green_glow),
                       ('t_car', _green_glow)):
         g = math.exp(-((t - E[key] - 0.5) / 0.45) ** 2)
         if g > 0.01:
@@ -605,6 +670,7 @@ def render_at(t):
     intro(c, t)
     for key in ORDER[:-1]:
         scene(c, t, key)
+    tease(c, t)
     total(c, t)
     outro(c, t)
     fx.over(c, CAP.layer(t))

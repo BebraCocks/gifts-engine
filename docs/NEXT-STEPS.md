@@ -279,4 +279,5 @@ Bonded Ring −28% (AirTag), Top Hat −12% (не хватит на зарядк
 (AirPods Pro 3, он же хук); итог 18 025 ★ ≈ $270 → ≈ $10 269 = новая Lada Granta. Настоящие фото (apple.com, nintendo.com,
 Wikimedia Commons). Голос `7312c385…` drama-3 (1,15×), RubUp после второго подарка.
 Сборка `renders/29-not-all-pay/not_all_pay_v1.mp4` (59,44 с, −12,3 LUFS), в Google Drive «TikTok».
-Дальше: автору посмотреть и послушать; правки — `--name not_all_pay_v2`.
+v2 (удержание: хук-загадка «вырос в 880 раз — и это не Пепе», карточка «×880 · в конце», прогресс n/5, тизер «×266 — не листай!»
+перед RubUp): `renders/29-not-all-pay/not_all_pay_v2.mp4` (59,83 с), в Google Drive. Дальше: автору посмотреть и послушать; правки — `--name not_all_pay_v3`.

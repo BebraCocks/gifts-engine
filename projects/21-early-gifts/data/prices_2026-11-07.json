@@ -1,0 +1,29 @@
+{
+ "_note": "Цены ролика 21-early-gifts. Проверено 2026-11-07 04:39–04:45 UTC. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене (самые дешёвые лоты). Курс tonapi.io: 1 TON = 89,52 ₽ = $1,0958 (в ролике 89,5 ₽). Телефоны: iPort, страницы серий, цена к оплате. Стартовые цены подарков — ForkLog 25.08.2025 («from $15», «from $1.5», «from $30»); цены в звёздах не названы: источники расходятся и не ссылаются на Telegram.",
+ "ton_rub": 89.52,
+ "ton_usd": 1.0958,
+ "gifts": {
+  "Swiss Watch": {"released": "2024-12-01 (api.changes.tg releasedAt 1733004028)", "start_usd": 1.5,
+    "floor_ton": 75, "lot": "https://fragment.com/gift/swisswatch-8191",
+    "ten_cheapest_ton": [75, 77, 79, 80, 85, 88, 90, 99, 99, 99], "ten_sum_ton": 871, "ten_sum_rub": 77950,
+    "x_usd": "75 × 1,0958 / 1,5 ≈ ×55"},
+  "Durov's Cap": {"released": "2024-11-24 (api.changes.tg releasedAt 1732403676)", "start_usd": 15,
+    "floor_ton": 463, "lot": "https://fragment.com/gift/durovscap-4114",
+    "two_cheapest_ton": [463, 500], "two_sum_ton": 963, "two_sum_rub": 86200, "x_usd": "463 × 1,0958 / 15 ≈ ×34"},
+  "Plush Pepe": {"released": "2024-12-01 (api.changes.tg releasedAt 1733004030)", "start_usd": 30,
+    "floor_ton": 7250, "lot": "https://fragment.com/gift/plushpepe-931", "floor_rub": 649000,
+    "x_usd": "7250 × 1,0958 / 30 ≈ ×265"}
+ },
+ "start_source": "https://forklog.com/en/influencer-trades-porsche-gt3-for-18-digital-telegram-gifts/ (25.08.2025)",
+ "phones": [
+  {"name": "Apple iPhone 16e 128 ГБ", "rub": 66590, "src": "https://www.iport.ru/catalog/apple_iphone/filter/iphone-16e/"},
+  {"name": "Apple iPhone 17e 256 ГБ (eSIM)", "rub": 82390, "src": "https://www.iport.ru/catalog/apple_iphone/filter/iphone-17e/", "note": "nano SIM + eSIM 89 890 ₽ — две кепки дешевле её"},
+  {"name": "Apple iPhone 18 Pro Max 256 ГБ (nano SIM + eSIM, Black)", "rub": 179990, "src": "https://www.iport.ru/catalog/apple_iphone/", "note": "×3 = 539 970 ₽ < 649 000 ₽"}
+ ],
+ "everyday": {
+  "_note": "Сравнения образные: стартовая цена в долларах примерно равна вещи. Курс конца 2024 ≈ 100–105 ₽ за $.",
+  "сухарики": "ВкусВилл, поиск «сухарики», 2026-11-07: 78–103 ₽ за пачку → $1,5 ≈ пара пачек",
+  "пицца": "$15 ≈ 1 500 ₽ — большая пицца (не проверено по конкретной пиццерии)",
+  "кино": "$30 ≈ 3 000 ₽ — кино на двоих с попкорном (не проверено по конкретному кинотеатру)"
+ }
+}

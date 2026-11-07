@@ -1,0 +1,18 @@
+{
+ "_note": "29-not-all-pay. Магазин — «первоначальная цена» в звёздах (telegifter.ru, страницы коллекций, прочитано 2026-11-07; полный список 149 коллекций — store_prices_telegifter_2026-11-07.json; совпадает с ранее сверенными ценами: Durov's Cap 1000, Plush Pepe 2000 ≈ $30 ForkLog, Swag Bag 500 CoinMarketCap). Сейчас — самый дешёвый лот Fragment (gifts/<slug>?sort=price_asc&filter=sale) 2026-11-07 07:34 UTC, GRAM × $1,1030 (tonapi.io, 07:34 UTC; 90,12 ₽ → 81,7 ₽/$). Звёзды ↔ $: 1 ★ = $0,015 (Fragment 1 000 ★ = $15). Плата за улучшение не учтена.",
+ "usd_per_gram": 1.1030, "rub_per_usd": 81.70, "usd_per_star": 0.015,
+ "gifts": [
+  {"gift": "Heart Locket", "ru": "Медальон-сердце", "store_stars": 10000, "released": "14.02.2025", "now_gram": 1700, "now_usd": 1875, "now_stars": 125000, "x": "×12,5",
+   "thing": "3 × Nintendo Switch 2 + Mario Kart World", "thing_usd": 549.99, "thing_src": "nintendo.com/us/gaming-systems/switch-2/ (MSRP, 07.11.2026)"},
+  {"gift": "Bonded Ring", "ru": "Парные кольца", "store_stars": 5000, "released": "14.02.2025", "now_gram": 49, "now_usd": 54, "now_stars": 3600, "x": "−28%",
+   "thing": "AirTag", "thing_usd": 29, "thing_src": "apple.com/shop (07.11.2026)"},
+  {"gift": "Top Hat", "ru": "Цилиндр", "store_stars": 1000, "released": "23.02.2025", "now_gram": 12, "now_usd": 13.24, "now_stars": 880, "x": "−12%",
+   "thing": "Apple 20W USB-C Power Adapter (не хватает)", "thing_usd": 19, "thing_src": "apple.com/shop/accessories/all (07.11.2026)"},
+  {"gift": "Plush Pepe", "ru": "Плюшевый Пепе", "store_stars": 2000, "released": "01.12.2024", "now_gram": 7250, "now_usd": 7997, "now_stars": 533000, "x": "×266",
+   "thing": "6 × MacBook Air", "thing_usd": 1299, "thing_src": "apple.com/shop/buy-mac/macbook-air (from $1,299, 07.11.2026)"},
+  {"gift": "Scared Cat", "ru": "Испуганный кот", "store_stars": 25, "released": "29.10.2024", "now_gram": 299, "now_usd": 330, "now_stars": 22000, "x": "×880",
+   "thing": "AirPods Pro 3", "thing_usd": 249, "thing_src": "apple.com/shop/buy-airpods/airpods-pro-3 (07.11.2026)"}
+ ],
+ "total": {"store_stars": 18025, "store_usd": 270, "now_usd": 10269,
+   "thing": "Lada Granta (Standard)", "thing_rub": 771000, "thing_usd": 9437, "thing_src": "110km.ru «LADA Granta 2026: цены, комплектации» (Standard ≈ 771 тыс. ₽); не проверено на lada.ru (страница цен рендерится JS)"}
+}

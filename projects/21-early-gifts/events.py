@@ -1,8 +1,8 @@
-"""Shared content-time events (picture and sound). Word anchors come from words.py (voice envelope)."""
+"""Shared content-time events (picture and sound). Word anchors come from words.py (voice envelope, no ASR)."""
 from timeline import DUR, ON, END, KEY
 from words import wt
 
-AD_STOP = END[KEY['pepe834']] + 0.25        # RubUp after the three purchases (≈ middle of the content)
+AD_STOP = END[KEY['watch_phone']] + 0.25     # RubUp after the first example (≈ middle of the content)
 
 
 def on(key, d=0.0):
@@ -10,19 +10,17 @@ def on(key, d=0.0):
 
 
 E = {
-    'first': wt('hook', 'первый'),
-    'crazy': wt('hook', 'безумная'),
-    'link': on('link', -0.2), 'copy': wt('link', 'скопируй'), 'goal': wt('link', 'рекомендации'),
-    'pepe1': on('pepe1', -0.15), 'gave': wt('pepe1', 'подарили'), 'price1': wt('pepe1', 'сорок'),
-    'helmet': on('helmet', -0.15), 'h_buy': wt('helmet', 'купил'), 'h11': wt('helmet', 'одиннадцать'),
-    'h10': wt('helmet', 'десять'),
-    'p834': on('pepe834', -0.15), 'p_took': wt('pepe834', 'взял'), 'p_gift': wt('pepe834', 'подарил'),
-    'brick': on('brick', -0.2), 'b7000': wt('brick', 'семь'), 'b_sold': wt('brick', 'раскупили'),
-    'b34': wt('brick', 'тридцать'),
-    'cap': on('cap', -0.15), 'c15': wt('cap', 'пятнадцать'), 'c_year': wt('cap', 'через'), 'c3000': wt('cap', 'три'),
-    'quote': on('quote', -0.15), 'q2': wt('quote', 'пару'), 'q100': wt('quote', 'ста'),
-    'total': on('total', -0.15), 't761': wt('total', 'семьсот'), 't35': wt('total', 'почти'),
-    'outro': on('outro', -0.2), 'o_pepe': wt('outro', 'пепе'), 'o_helmet': wt('outro', 'шлем'),
-    'o_cap': wt('outro', 'кепку'), 'o_write': wt('outro', 'пиши'),
+    'h_crumbs': wt('hook', 'сухариков'), 'h_gift': wt('hook', 'подарок'), 'h_phone': wt('hook', 'айфон'),
+    'count': on('count', -0.2), 'c_how': wt('count', 'сколько'), 'c_early': wt('count', 'раньше'),
+    'watch': on('watch', -0.15), 'w15': wt('watch', 'полтора'), 'w_crumbs': wt('watch', 'сухариков'),
+    'wnow': on('watch_now', -0.15), 'w75': wt('watch_now', 'семьдесят'), 'w50': wt('watch_now', 'пятьдесят'),
+    'wph': on('watch_phone', -0.15), 'w20': wt('watch_phone', 'двадцать'), 'w10': wt('watch_phone', 'десять'),
+    'w_today': wt('watch_phone', 'сегодня'), 'w_phone': wt('watch_phone', 'айфон'),
+    'cap': on('cap', -0.2), 'c15': wt('cap', 'пятнадцать'), 'c_pizza': wt('cap', 'пиццу'),
+    'cph': on('cap_phone', -0.15), 'c2': wt('cap_phone', 'две'), 'c_caps': wt('cap_phone', 'кепки'),
+    'c_phone': wt('cap_phone', 'айфон'),
+    'pepe': on('pepe', -0.15), 'p30': wt('pepe', 'тридцать'), 'p_kino': wt('pepe', 'кино'),
+    'pnow': on('pepe_now', -0.15), 'p649': wt('pepe_now', 'шестьсот'), 'p3': wt('pepe_now', 'три'),
+    'outro': on('outro', -0.2), 'o_which': wt('outro', 'какой'), 'o_sorry': wt('outro', 'жалеете'),
     'end': DUR,
 }

@@ -1,6 +1,6 @@
 """Download chosen Fish Audio takes (takes.json), trim silence, shorten long gaps -> voice/LNN.wav (+ .map.json).
 leading/trailing silence trimmed, long internal silences shortened to MAX_GAP (the delivery itself is not
-drama-3 takes of this video, no time-stretch (TEMPO 1.0).
+drama-3 takes of this video, time-stretch TEMPO 1.06 (fits 58–60 s with RubUp).
 take is time-stretched by TEMPO with ffmpeg atempo — pitch unchanged. The paid takes stay in voice/raw/<task id>.wav."""
 import json
 import subprocess
@@ -17,7 +17,7 @@ SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.16
-TEMPO = 1.0
+TEMPO = 1.06
 
 
 def fetch(task):

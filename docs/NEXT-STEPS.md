@@ -228,3 +228,10 @@ Plush Pepe #1 у Дурова, 119 подарков Evelone, Porsche за 18 п�
 (59,92 с, красный акцент): папаха Хабиба, ответ Макгрегору, UFC Strike — 10 бойцов, 60 000 за 4 часа, N3on, золотые 0,5%.
 Сборки `renders/19-durov-collector/durov_collector_v1.mp4`, `renders/20-ufc-gifts/ufc_gifts_v1.mp4`, обе в Google Drive «TikTok».
 Дальше: автору посмотреть и послушать; правки — `--name …_v2`.
+
+## 2026-11-07 · 21-early-gifts «Сколько бы вы заработали?» — хайлайты
+
+Три примера «мелкая трата 2024 → телефон 2026»: 20 пачек сухариков = 10 Swiss Watch → iPhone 16e; 2 пиццы = 2 Durov's Cap →
+iPhone 17e; кино на двоих = Plush Pepe → 3 × iPhone 18 Pro Max. Стартовые цены — ForkLog 25.08.2025, текущие — Fragment и iPort
+07.11.2026. Минимализм, мятный акцент, голос `48ec28a4…` drama-3 (1,06×), 58,43 с, RubUp на 24,68 с. Хайлайты и звук отправлены.
+Ждём «собирай», затем `python -B engine/tools/build.py projects/21-early-gifts --approved --name early_gifts_v1`.

@@ -1,6 +1,6 @@
-"""16-celebrity-gifts «Подарки звёзд»: minimal 2D picture. Deep midnight-ink background, thin light lines, one warm gold
-accent, one idea per shot. Heroes are gifts and typography only (no faces of real people). Content time t -> RGB
-frame; RubUp via banner.Breaks (same in audio.py)."""
+"""21-early-gifts «Сколько бы вы заработали?»: minimal 2D picture. Midnight-ink background, thin light lines, one mint
+accent for profit and a warm tone for everyday things (crumbs, pizza, tickets). Content time t -> RGB frame; RubUp via
+banner.Breaks (same in audio.py)."""
 import functools
 import math
 import sys
@@ -28,12 +28,11 @@ BR = banner.Breaks([AD_STOP], cy=H / 2)
 
 BG, WHITE, GREY, DIM, ACC = config.BACKGROUND, config.WHITE, config.GREY, config.LINE, config.ACCENT
 SURF = config.SURFACE
-PEPE1 = str(gifts_api.model_file(*config.PEPE1, 'json'))
-PEPE834 = str(gifts_api.model_file(*config.PEPE834, 'json'))
-HELMET = str(gifts_api.original_file(config.HELMET, 'json'))
-BRICK = str(gifts_api.original_file(config.BRICK, 'json'))
+WARM = config.WARM
+WATCHG = str(gifts_api.original_file(config.WATCH, 'json'))
 CAPG = str(gifts_api.original_file(config.CAP, 'json'))
-MINI = [str(gifts_api.original_png(n, 128)) for n in ('Plush Pepe', "Durov's Cap")]
+PEPEG = str(gifts_api.original_file(config.PEPE, 'json'))
+MINI = [str(gifts_api.original_png(n, 128)) for n in (config.WATCH, config.CAP, config.PEPE)]
 SRC = (92, 95, 128)                      # source lines
 
 def cl(x):
@@ -343,10 +342,102 @@ def choice_cards(c, t, t0, items, dy, a):
         text(c, name, 42, 'Heavy', mix(WHITE, ACC, hi), x, 855 + dy, a * cl(k * 2))
 
 
+# ------------------------------------------------------------------ drawn everyday things and phones
+def crumbs(c, cx, cy, s, a=1.0, crossed=0.0):
+    """A crumbs pack: a bag with a zigzag top, a label band and a few crumbs. s = height in px."""
+    if a <= 0.004:
+        return
+    w, h = s * 0.70, s
+    x0, x1, y0, y1 = cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2
+    top = [(x0 + w * k / 8, y0 + (0 if k % 2 == 0 else s * 0.05)) for k in range(9)]
+    body = top + [(x1 - w * 0.04, y1), (x0 + w * 0.04, y1)]
+    fill(c, body, (46, 40, 34), a)
+    stroke(c, body + [body[0]], WARM, max(2.0, s * 0.018), 1, a)
+    rrect(c, x0 + w * 0.10, cy - s * 0.12, x1 - w * 0.10, cy + s * 0.12, s * 0.06, WARM, a)
+    if s >= 120:
+        text(c, 'СУХАРИКИ', int(s * 0.10), 'Heavy', (46, 40, 34), cx, cy, a)
+    for dx, dy in ((-0.18, 0.30), (0.05, 0.34), (0.20, 0.28)):
+        rrect(c, cx + dx * s - s * 0.035, cy + dy * s - s * 0.035, cx + dx * s + s * 0.035, cy + dy * s + s * 0.035,
+              s * 0.01, WARM, a * 0.8)
+    if crossed > 0.004:
+        stroke(c, [(x0 - s * 0.08, y1 + s * 0.05), (x1 + s * 0.08, y0 - s * 0.05)], (255, 110, 110),
+               max(3.0, s * 0.035), crossed, a)
+
+
+def pizza(c, cx, cy, r, a=1.0, crossed=0.0):
+    if a <= 0.004:
+        return
+    disc(c, cx, cy, r, (196, 128, 60), a)                      # crust
+    disc(c, cx, cy, r * 0.86, WARM, a)                         # cheese
+    for k in range(3):                                         # slice cuts
+        ang = math.radians(30 + 60 * k)
+        stroke(c, [(cx - r * 0.86 * math.cos(ang), cy - r * 0.86 * math.sin(ang)),
+                   (cx + r * 0.86 * math.cos(ang), cy + r * 0.86 * math.sin(ang))], (196, 128, 60), max(2, r * 0.03), 1, a)
+    for dx, dy in ((-0.4, -0.25), (0.35, -0.38), (0.1, 0.42), (-0.3, 0.35), (0.45, 0.15), (0.0, -0.05)):
+        disc(c, cx + dx * r, cy + dy * r, r * 0.11, (214, 70, 60), a)
+    if crossed > 0.004:
+        stroke(c, [(cx - r * 1.1, cy + r * 1.1), (cx + r * 1.1, cy - r * 1.1)], (255, 110, 110), max(3, r * 0.06), crossed, a)
+
+
+def ticket(c, cx, cy, s, a=1.0, rot=0.0):
+    if a <= 0.004:
+        return
+    w, h = s, s * 0.5
+    pts = rot_pts(rrect_pts(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2, s * 0.06, 6), cx, cy, rot)
+    fill(c, pts, (46, 40, 34), a)
+    stroke(c, pts, WARM, 3, 1, a)
+    for sx in (-1, 1):
+        x, y = rot_pts([(cx + sx * w / 2, cy)], cx, cy, rot)[0]
+        disc(c, x, y, s * 0.07, BG, a)
+    put(c, label('КИНО', int(s * 0.18), 'Heavy', WARM), cx, cy, 1.0, a, rot)
+
+
+def phone(c, cx, cy, h, a=1.0, name=None, glow=0.0):
+    """A modern phone in thin lines: body, screen, dynamic island; name inside the screen."""
+    if a <= 0.004:
+        return
+    w = h * 0.49
+    x0, x1, y0, y1 = cx - w / 2, cx + w / 2, cy - h / 2, cy + h / 2
+    if glow > 0.004:
+        disc(c, cx, cy, h * 0.56, mix(BG, ACC, 0.05), a * glow)
+    rrect(c, x0, y0, x1, y1, w * 0.18, (18, 20, 36), a, outline=mix(WHITE, ACC, glow), width=max(3, h * 0.012))
+    rrect(c, x0 + w * 0.06, y0 + w * 0.06, x1 - w * 0.06, y1 - w * 0.06, w * 0.13, (28, 31, 56), a)
+    rrect(c, cx - w * 0.17, y0 + w * 0.11, cx + w * 0.17, y0 + w * 0.20, w * 0.05, (8, 9, 18), a)
+    stroke(c, [(x0 + w * 0.22, y0 + h * 0.25), (x0 + w * 0.40, y0 + h * 0.15)], (60, 64, 100), max(2, h * 0.008), 1, a)
+    if name:
+        lines = name.split('\n')
+        for j, s in enumerate(lines):
+            size = int(h * (0.095 if j == 0 else 0.13))
+            text(c, s, size, 'Heavy', WHITE if j == 0 else ACC, cx, cy + (j - (len(lines) - 1) / 2) * h * 0.14,
+                 a, min(1.0, (w * 0.82) / max(1, label(s, size, 'Heavy', WHITE).width)))
+
+
+def arrow(c, x0, y0, x1, y1, p, a=1.0, color=None, width=4):
+    color = color or GREY
+    stroke(c, [(x0, y0), (x1, y1)], color, width, p, a)
+    if p > 0.6:
+        ang = math.atan2(y1 - y0, x1 - x0)
+        k = cl((p - 0.6) / 0.4)
+        L = 22
+        for s in (-1, 1):
+            stroke(c, [(x1, y1), (x1 - L * math.cos(ang + s * 0.6), y1 - L * math.sin(ang + s * 0.6))], color, width, k, a)
+
+
+def pop(t0, t, f=1.8, z=0.55):
+    return spr(t0, t, f, z) if t > t0 else 0.0
+
+
+def price(c, t, t0, s, size, color, cx, cy, a):
+    k = pop(t0 - 0.1, t)
+    if k > 0:
+        text(c, s, size, 'Heavy', color, cx, cy + 20 * (1 - k), a * cl(k * 2), lerp(0.8, 1, k) *
+             (1 + 0.06 * fx.bump(t - t0 - 0.2, 3, 7)))
+
+
 # ------------------------------------------------------------------ captions (not for the hook line)
-ACC_WORDS = {'ссылку', 'рекомендации.', 'Пепе', '2025', '$47 000.', '$11 000', '10', 'раз', 'подарил', '7000',
-             'кирпичей', '34', 'минуты.', '$15,', '$3000.', '$100 000.', '761', '35', 'млн', 'шлем', 'кепку?',
-             'комментарии.', 'Пепе,', 'дизайнеру'}
+ACC_WORDS = {'заработали,', 'раньше.', '$1,5.', 'сухариков.', '75', 'TON.', '50', 'раз', 'дороже!', '20', '10', 'часов.',
+             'iPhone', '16e.', '$15', 'пиццу.', '2', '17e.', '$30.', '649', '000', '649 000', '3', '18', 'Pro', 'Max!',
+             'жалеете?', 'подарок'}
 
 
 def _phr(k):
@@ -357,50 +448,79 @@ CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=900, top=
                         max_lines=2, color=WHITE, accent_color=ACC, shadow=False, fade_out=0.2, rise=10)
 
 
-# ------------------------------------------------------------------ hook: Plush Pepe #1 lives in Durov's profile
-def pepe1_pose(t):
-    k = spr(-0.05, t, 1.5, 0.55)
-    cx, cy, s, a = 540.0, 900.0, lerp(1.0, 1.25, k), 1.0                 # 440 px sprite
-    k = sm(E['link'] - 0.05, E['link'] + 0.35, t)
-    cy, a = cy - 140 * k, a * (1 - k)
-    return cx, cy, s * (1 + 0.07 * fx.bump(t - E['first'], 3, 7)), a
-
-
+# ------------------------------------------------------------------ 1 hook: crumbs -> gift -> phone
 def hook(c, t):
-    a, _, ko = win(t, -1, E['link'] - 0.1, dout=0.3)
+    a, _, ko = win(t, -1, E['count'] - 0.05, dout=0.3)
     if a <= 0.004:
         return
-    dy = -50 * ko
-    text(c, 'В ПРОФИЛЕ ПАВЛА ДУРОВА', 44, 'Semibold', GREY, 540, 230 + dy, a)
-    text(c, 'САМЫЙ ПЕРВЫЙ', 104, 'Heavy', WHITE, 540, 350 + dy, a, 1 + 0.05 * fx.bump(t - E['first'], 3, 7))
-    text(c, 'PLUSH PEPE #1', 104, 'Heavy', ACC, 540, 470 + dy, a)
-    cx, cy, s, ga = pepe1_pose(t)
-    gift(c, PEPE1, t, cx, cy, 440, s, ga)
-    k = sm(E['crazy'] - 0.1, E['crazy'] + 0.2, t)                        # «…и это не самая безумная покупка»
-    text(c, 'и это не самое безумное', 40, 'Semibold', GREY, 540, 1250 + dy, a * k)
+    dy = -60 * ko
+    text(c, 'ВМЕСТО ПАЧКИ СУХАРИКОВ —', 50, 'Heavy', WHITE, 540, 300 + dy, a,
+         1 + 0.05 * fx.bump(t - E['h_crumbs'], 3, 7))
+    kt = sm(E['h_gift'] - 0.1, E['h_gift'] + 0.25, t)
+    text(c, 'ПОДАРОК', 110, 'Heavy', ACC, 540, 420 + dy, a * kt, 1 + 0.05 * fx.bump(t - E['h_gift'], 3, 7))
+    kp = sm(E['h_phone'] - 0.1, E['h_phone'] + 0.25, t)
+    text(c, 'ЦЕНОЙ КАК АЙФОН', 72, 'Heavy', WHITE, 540, 530 + dy, a * kp, 1 + 0.05 * fx.bump(t - E['h_phone'], 3, 7))
+    k0 = pop(-0.6, t, 1.6)
+    move = sm(E['h_gift'] - 0.2, E['h_gift'] + 0.4, t)
+    x = lerp(540, 190, move)
+    s = lerp(lerp(200, 330, k0), 210, move)
+    crumbs(c, x, 880 + dy, s, a * cl(k0 * 2), crossed=sm(E['h_gift'] + 0.2, E['h_gift'] + 0.6, t))
+    kg = pop(E['h_gift'], t, 1.7)
+    arrow(c, 300, 880 + dy, 380, 880 + dy, sm(E['h_gift'], E['h_gift'] + 0.35, t), a)
+    gift(c, WATCHG, t, 540, 880 + dy, 300, lerp(0.5, 1.0, kg), a * cl(kg * 2))
+    arrow(c, 705, 880 + dy, 795, 880 + dy, sm(E['h_phone'] - 0.15, E['h_phone'] + 0.2, t), a)
+    kh = pop(E['h_phone'] - 0.1, t, 1.7)
+    phone(c, 890, 880 + dy, lerp(200, 320, kh), a * cl(kh * 2), 'iPhone', glow=kh)
+    text(c, '$1,5', 44, 'Heavy', WARM, 540, 1080 + dy, a * kg)
+    text(c, '→ сейчас ×50', 40, 'Semibold', ACC, 540, 1140 + dy, a * kp)
 
 
-# ------------------------------------------------------------------ the three purchases
-def pepe1_card(c, t):
-    a, ki, ko = win(t, E['pepe1'] + 0.05, E['helmet'], dout=0.3)
+# ------------------------------------------------------------------ 2 «считаем»
+def count(c, t):
+    a, ki, ko = win(t, E['count'], E['watch'], dout=0.3)
     if a <= 0.004:
         return
-    y = 40 * (1 - ki) - 90 * ko
-    tg_card(c, t, PEPE1, E['pepe1'], 'Plush Pepe #1', (('Владелец', 'Pavel Durov'), ('Модель', 'Pumpkin · 3%')),
-            y, a, (60, 64, 68), w_title=E['pepe1'] + 0.5)
-    kq = spr(E['price1'] - 0.1, t, 1.8, 0.55) if t > E['price1'] - 0.1 else 0
-    if kq > 0:
-        text(c, '$47 000', 84, 'Heavy', ACC, 540, 1180 + y + 20 * (1 - kq), a * cl(kq * 2), lerp(0.85, 1, kq))
-        text(c, '14 850 TON · подарок, апрель 2025', 26, 'Medium', GREY, 540, 1250 + y, a * cl(kq * 2))
-    text(c, 'ПОДАРИЛИ ДУРОВУ', 44, 'Heavy', WHITE, 540, 250 + y, a * sm(E['gave'] - 0.1, E['gave'] + 0.2, t))
-    text(c, 't.me/nft/PlushPepe-1 · ForkLog 27.04.2025', 24, 'Medium', SRC, 540, 300 + y, a)
+    dy = 40 * (1 - ki) - 90 * ko
+    text(c, 'СКОЛЬКО БЫ ВЫ', 84, 'Heavy', WHITE, 540, 420 + dy, a)
+    text(c, 'ЗАРАБОТАЛИ?', 118, 'Heavy', ACC, 540, 540 + dy, a, 1 + 0.05 * fx.bump(t - E['c_how'], 3, 7))
+    x0, x1, y = 190, 890, 1000 + dy
+    stroke(c, [(x0, y), (x1, y)], DIM, 3, 1, a)
+    p = fx.ease_out(cl((t - E['c_how']) / max(0.5, E['c_early'] - E['c_how'] + 0.3)))
+    stroke(c, [(x0, y), (lerp(x0, x1, p), y)], ACC, 5, 1, a)
+    disc(c, x0, y, 12, WHITE, a)
+    disc(c, lerp(x0, x1, p), y, 14, ACC, a)
+    text(c, 'декабрь 2024', 32, 'Semibold', GREY, x0 + 20, y + 50, a, left=True)
+    text(c, 'ноябрь 2026', 32, 'Semibold', ACC if p > 0.98 else GREY, x1 - 180, y + 50, a, left=True)
+    for i, x in enumerate((340, 540, 740)):
+        k = pop(E['count'] + 0.3 + 0.15 * i, t)
+        put(c, mini(i, 128), x, 820 + dy + 20 * (1 - k), lerp(0.5, 1, k), a * cl(k * 2))
+
+
+# ------------------------------------------------------------------ 3–5 Swiss Watch
+def watch(c, t):
+    a, ki, ko = win(t, E['watch'] + 0.05, E['wnow'], dout=0.3)
+    if a <= 0.004:
+        return
+    dy = 40 * (1 - ki) - 90 * ko
+    text(c, 'ДЕКАБРЬ 2024', 44, 'Heavy', GREY, 540, 250 + dy, a)
+    k = pop(E['watch'], t, 1.6)
+    gift(c, WATCHG, t, 540, 560 + dy + 40 * (1 - k), 400, lerp(0.6, 1.0, k), a * cl(k * 2))
+    text(c, 'Swiss Watch', 48, 'Semibold', ACC, 540, 800 + dy, a)
+    price(c, t, E['w15'], '$1,5', 130, WHITE, 540, 930 + dy, a)
+    kc = sm(E['w_crumbs'] - 0.2, E['w_crumbs'] + 0.2, t)
+    if kc > 0.004:
+        text(c, '=', 80, 'Heavy', GREY, 330, 1105 + dy, a * kc)
+        for j, x in enumerate((500, 710)):
+            kk = pop(E['w_crumbs'] - 0.15 + 0.12 * j, t)
+            crumbs(c, x, 1110 + dy + 20 * (1 - kk), 170, a * cl(kk * 2))
+    text(c, 'стартовая цена · ForkLog 25.08.2025', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
 def bars(c, t, t0, y, labels, vals, a, unit_w=640, colors=None):
     """Horizontal comparison bars growing from the left at t0 (vals relative to max)."""
     mx = max(vals)
     for j, (lab, v) in enumerate(zip(labels, vals)):
-        k = fx.ease_out(cl((t - t0 - 0.15 * j) / 0.6))
+        k = fx.ease_out(cl((t - t0 - 0.2 * j) / 0.7))
         yy = y + 110 * j
         text(c, lab, 32, 'Semibold', GREY, 220, yy - 34, a, left=True)
         rrect(c, 220, yy - 10, 220 + unit_w, yy + 10, 10, (30, 32, 56), a)
@@ -409,172 +529,154 @@ def bars(c, t, t0, y, labels, vals, a, unit_w=640, colors=None):
             rrect(c, 220, yy - 10, 220 + max(20, unit_w * v / mx * k), yy + 10, 10, col, a)
 
 
-def helmet(c, t):
-    a, ki, ko = win(t, E['helmet'] + 0.05, E['p834'], dout=0.3)
+def watch_now(c, t):
+    a, ki, ko = win(t, E['wnow'] + 0.05, E['wph'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    text(c, 'КУПИЛ САМ', 44, 'Heavy', WHITE, 540, 250 + dy, a * sm(E['h_buy'] - 0.1, E['h_buy'] + 0.2, t))
-    k = spr(E['helmet'], t, 1.6, 0.55)
-    gift(c, HELMET, t, 540, 560 + dy + 40 * (1 - k), 400, lerp(0.6, 0.95, k), a * cl(k * 2))
-    text(c, 'Heroic Helmet #1100', 46, 'Semibold', ACC, 540, 800 + dy, a)
-    kq = spr(E['h11'] - 0.1, t, 1.8, 0.55) if t > E['h11'] - 0.1 else 0
-    if kq > 0:
-        text(c, '$11 000', 110, 'Heavy', WHITE, 540, 920 + dy, a * cl(kq * 2), lerp(0.85, 1, kq))
-    kb = sm(E['h10'] - 0.3, E['h10'], t)
+    text(c, 'НОЯБРЬ 2026', 44, 'Heavy', ACC, 540, 250 + dy, a)
+    k = pop(E['wnow'], t, 1.6)
+    gift(c, WATCHG, t, 540, 500 + dy + 30 * (1 - k), 300, lerp(0.6, 1.0, k), a * cl(k * 2))
+    v = 75 * fx.ease_out(cl((t - E['w75'] + 0.1) / 0.8))
+    kk = sm(E['w75'] - 0.2, E['w75'] + 0.1, t)
+    text(c, f'{int(round(v))} TON', 130, 'Heavy', ACC if v >= 74.5 else WHITE, 540, 760 + dy, a * kk)
+    text(c, '≈ 6 700 ₽ · самый дешёвый на Fragment', 32, 'Semibold', GREY, 540, 850 + dy, a * kk)
+    kb = sm(E['w50'] - 0.3, E['w50'], t)
     if kb > 0.004:
-        bars(c, t, E['h10'] - 0.2, 1080 + dy, ('обычная цена ≈ $1 100', 'заплатил Дуров'), (1, 10), a * kb,
-             colors=[GREY, ACC])
-        text(c, '×10', 64, 'Heavy', ACC, 900, 1150 + dy, a * sm(E['h10'], E['h10'] + 0.3, t),
-             1 + 0.08 * fx.bump(t - E['h10'] - 0.3, 3, 7))
-    text(c, 'июль 2025 · Код.ру по данным канала barboskich.ton', 24, 'Medium', SRC, 540, 300 + dy, a)
+        bars(c, t, E['w50'] - 0.25, 990 + dy, ('декабрь 2024 · $1,5', 'сейчас · ≈ $82'), (1.5, 82), a * kb,
+             colors=[WARM, ACC])
+        text(c, '×50', 76, 'Heavy', ACC, 880, 920 + dy, a * sm(E['w50'], E['w50'] + 0.3, t),
+             1 + 0.08 * fx.bump(t - E['w50'] - 0.3, 3, 7))
+    text(c, 'Fragment · 07.11.2026 · 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
-def pepe834(c, t):
-    a, ki, ko = win(t, E['p834'] + 0.05, E['brick'], dout=0.35)
+def watch_phone(c, t):
+    a, ki, ko = win(t, E['wph'] + 0.05, E['cap'], dout=0.35)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    text(c, 'ИЮНЬ 2026', 44, 'Heavy', WHITE, 540, 250 + dy, a)
-    fly = sm(E['p_gift'], E['p_gift'] + 0.7, t)
-    k = spr(E['p834'], t, 1.6, 0.55)
-    cx, cy = lerp(540, 780, fly), lerp(640, 900, fly)
-    gift(c, PEPE834, t, cx, cy + dy + 40 * (1 - k), 400, lerp(0.6, 1.0, k) * lerp(1, 0.55, fly), a * cl(k * 2))
-    text(c, 'Plush Pepe #834', 56, 'Heavy', WHITE, 540, 330 + dy + 560 * 0, a * (1 - fly) * 0)
-    lab = 1 - fly
-    text(c, 'Plush Pepe #834 · Donatello', 42, 'Semibold', ACC, 540, 900 + dy, a * lab)
-    text(c, '7 500 GRAM', 72, 'Heavy', WHITE, 540, 1000 + dy, a * sm(E['p_took'], E['p_took'] + 0.3, t) * lab)
-    # the designer: an empty avatar (no face), the gift lands in his profile
-    kd = sm(E['p_gift'] - 0.2, E['p_gift'] + 0.2, t)
-    if kd > 0.004:
-        disc(c, 300, 900 + dy, 110, DIM, a * kd)
-        disc(c, 300, 870 + dy, 40, (78, 82, 120), a * kd)
-        rrect(c, 236, 920 + dy, 364, 980 + dy, 30, (78, 82, 120), a * kd)
-        text(c, 'ДИЗАЙНЕР ТЕЛЕГРАМА', 36, 'Heavy', WHITE, 540, 1090 + dy, a * kd)
-        p = sm(E['p_gift'], E['p_gift'] + 0.6, t)
-        stroke(c, [(440, 900 + dy), (650, 900 + dy)], ACC, 4, p, a * kd * (1 - fly * 0.0))
-        stroke(c, [(470, 880 + dy), (440, 900 + dy), (470, 920 + dy)], ACC, 4, cl(p * 2 - 1), a * kd)
-    text(c, 'BeInCrypto · 27.06.2026', 24, 'Medium', SRC, 540, 300 + dy, a)
+    swap = sm(E['w10'] - 0.1, E['w10'] + 0.4, t)
+    # 20 packs (5 × 4) -> 10 watches (5 × 2)
+    for j in range(20):
+        x, y = 220 + (j % 5) * 160, 330 + (j // 5) * 120 + dy
+        k = pop(E['w20'] - 0.3 + 0.03 * j, t, 2.2)
+        crumbs(c, x, y, 95 * lerp(0.5, 1, k), a * cl(k * 2) * (1 - swap))
+    for j in range(10):
+        x, y = 220 + (j % 5) * 160, 390 + (j // 5) * 160 + dy
+        k = pop(E['w10'] - 0.05 + 0.05 * j, t, 2.0)
+        put(c, mini(0, 128), x, y, lerp(0.4, 1.0, k), a * cl(k * 2) * swap)
+    k1 = sm(E['w10'] + 0.2, E['w10'] + 0.5, t)
+    text(c, '10 × Swiss Watch ≈ 78 000 ₽', 46, 'Heavy', WHITE, 540, 740 + dy, a * k1)
+    arrow(c, 540, 790 + dy, 540, 850 + dy, sm(E['w_today'], E['w_today'] + 0.4, t), a)
+    kp = pop(E['w_phone'] - 0.3, t, 1.6)
+    phone(c, 540, 1065 + dy, lerp(260, 400, kp), a * cl(kp * 2), 'iPhone\n16e', glow=kp)
+    text(c, '66 590 ₽ · iPort, 07.11.2026', 30, 'Semibold', ACC, 540, 1300 + dy, a * cl(kp * 2))
+    text(c, 'Fragment: 10 самых дешёвых лотов = 871 TON', 24, 'Medium', SRC, 540, 250 + dy, a * k1)
 
 
-# ------------------------------------------------------------------ after RubUp: bricks, the cap, the quote, the total
-def brick(c, t):
-    a, ki, ko = win(t, E['brick'] + 0.1, E['cap'], dout=0.3)
-    if a <= 0.004:
-        return
-    dy = 40 * (1 - ki) - 90 * ko
-    text(c, '1 АПРЕЛЯ 2025', 44, 'Heavy', WHITE, 540, 250 + dy, a)
-    k = spr(E['brick'], t, 1.6, 0.55)
-    gift(c, BRICK, t, 540, 560 + dy + 40 * (1 - k), 400, lerp(0.6, 0.95, k), a * cl(k * 2))
-    text(c, 'Artisan Brick', 44, 'Semibold', ACC, 540, 790 + dy, a)
-    v = 7000 * fx.ease_out(cl((t - E['b7000'] + 0.05) / 1.0))
-    kk = sm(E['b7000'] - 0.1, E['b7000'] + 0.2, t)
-    text(c, counter(v, 10), 120, 'Heavy', ACC if v >= 6999 else WHITE, 540, 910 + dy, a * kk)
-    text(c, 'КИРПИЧЕЙ ПО 5 000 ★', 36, 'Semibold', GREY, 540, 1005 + dy, a * kk)
-    x0, x1, y = 200, 880, 1100 + dy                                     # 34 minutes track
-    rrect(c, x0, y - 4, x1, y + 4, 4, DIM, a * kk)
-    f = 34 / 60 * fx.ease_out(cl((t - E['b_sold']) / (E['b34'] + 0.6 - E['b_sold'])))
-    if f > 0.01:
-        rrect(c, x0, y - 4, x0 + (x1 - x0) * f, y + 4, 4, ACC, a)
-        disc(c, x0 + (x1 - x0) * f, y, 11, ACC, a)
-        text(c, '34 мин', 30, 'Semibold', WHITE, x0 + (x1 - x0) * f, y - 42, a * sm(E['b34'], E['b34'] + 0.3, t))
-    text(c, '0', 30, 'Medium', GREY, x0, y + 46, a * kk, left=True)
-    text(c, '1 час', 30, 'Medium', GREY, x1 - 70, y + 46, a * kk, left=True)
-    text(c, 'ForkLog · 01.04.2025', 24, 'Medium', SRC, 540, 300 + dy, a)
-
-
+# ------------------------------------------------------------------ 6–7 Durov's Cap (after RubUp)
 def cap(c, t):
-    a, ki, ko = win(t, E['cap'] + 0.05, E['quote'], dout=0.3)
+    a, ki, ko = win(t, E['cap'] + 0.1, E['cph'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    k = spr(E['cap'], t, 1.6, 0.55)
-    gift(c, CAPG, t, 540, 500 + dy + 40 * (1 - k), 360, lerp(0.6, 0.95, k), a * cl(k * 2))
-    text(c, "Durov's Cap", 44, 'Semibold', ACC, 540, 700 + dy, a)
-    # price line: a flat start, then it climbs (two dated points, the line between is a sketch, not a chart of data)
-    x0, x1, yb, yt = 200, 880, 1180 + dy, 820 + dy
-    stroke(c, [(x0, yb), (x1, yb)], DIM, 2, 1, a)
-    p = sm(E['c_year'] - 0.1, E['c3000'] + 0.4, t)
-    pts = [(x0 + (x1 - x0) * u, yb - (yb - yt) * u ** 3) for u in [j / 40 for j in range(41)]]
-    stroke(c, pts, ACC, 4, p, a)
-    k15 = sm(E['c15'] - 0.1, E['c15'] + 0.2, t)
-    disc(c, x0, yb, 12, WHITE, a * k15)
-    text(c, '$15', 56, 'Heavy', WHITE, x0 + 10, yb - 60, a * k15, left=True)
-    text(c, 'ноябрь 2024', 26, 'Medium', GREY, x0, yb + 40, a * k15, left=True)
-    k3 = sm(E['c3000'] - 0.1, E['c3000'] + 0.3, t)
-    disc(c, x1, yt, 12, ACC, a * k3)
-    text(c, '$2 829', 64, 'Heavy', ACC, x1 - 190, yt - 30, a * k3, 1 + 0.06 * fx.bump(t - E['c3000'] - 0.3, 3, 7))
-    text(c, 'сентябрь 2025', 26, 'Medium', GREY, x1 - 180, yb + 40, a * k3, left=True)
-    text(c, 'Gift Charts через канал Дурова · vc.ru 18.09.2025', 24, 'Medium', SRC, 540, 1250 + dy, a * k3)
+    text(c, 'НОЯБРЬ 2024', 44, 'Heavy', GREY, 540, 250 + dy, a)
+    k = pop(E['cap'] + 0.1, t, 1.6)
+    gift(c, CAPG, t, 540, 560 + dy + 40 * (1 - k), 400, lerp(0.6, 1.0, k), a * cl(k * 2))
+    text(c, "Durov's Cap", 48, 'Semibold', ACC, 540, 800 + dy, a)
+    price(c, t, E['c15'], '$15', 130, WHITE, 540, 930 + dy, a)
+    kz = pop(E['c_pizza'] - 0.35, t, 1.7)
+    if kz > 0:
+        text(c, '=', 80, 'Heavy', GREY, 380, 1105 + dy, a * cl(kz * 2))
+        pizza(c, 570, 1120 + dy, lerp(60, 120, kz), a * cl(kz * 2))
+    text(c, 'стартовая цена · ForkLog 25.08.2025', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
-def quote(c, t):
-    a, ki, ko = win(t, E['quote'] + 0.05, E['total'], dout=0.3)
+def cap_phone(c, t):
+    a, ki, ko = win(t, E['cph'] + 0.05, E['pepe'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    text(c, 'ПАВЕЛ ДУРОВ', 44, 'Heavy', GREY, 540, 300 + dy, a)
-    text(c, '“', 260, 'Heavy', ACC, 540, 520 + dy, a * 0.9)
-    k2 = spr(E['q2'] - 0.1, t, 1.8, 0.55) if t > E['q2'] - 0.1 else 0
-    text(c, '$2', 150, 'Heavy', WHITE, 540, 720 + dy + 20 * (1 - k2), a * cl(k2 * 2))
-    p = sm(E['q2'] + 0.3, E['q100'] - 0.1, t)
-    stroke(c, [(540, 820 + dy), (540, 930 + dy)], GREY, 4, p, a)
-    stroke(c, [(505, 895 + dy), (540, 930 + dy), (575, 895 + dy)], GREY, 4, cl(p * 2 - 1), a)
-    k1 = spr(E['q100'] - 0.1, t, 1.8, 0.55) if t > E['q100'] - 0.1 else 0
-    text(c, '$100 000+', 140, 'Heavy', ACC, 540, 1050 + dy + 20 * (1 - k1), a * cl(k1 * 2), lerp(0.85, 1, k1))
-    text(c, 'подарки, юзернеймы и номера · канал Дурова, 22.07.2025', 24, 'Medium', SRC, 540, 1180 + dy, a)
+    swap = sm(E['c_caps'] - 0.15, E['c_caps'] + 0.35, t)
+    for j, x in enumerate((360, 720)):
+        k = pop(E['c2'] - 0.3 + 0.12 * j, t, 1.8)
+        pizza(c, x, 470 + dy, 110 * lerp(0.5, 1, k), a * cl(k * 2) * (1 - swap),
+              crossed=sm(E['c2'] + 0.3, E['c2'] + 0.7, t))
+        kc = pop(E['c_caps'] - 0.1 + 0.1 * j, t, 1.8)
+        gift(c, CAPG, t, x, 470 + dy, 280, lerp(0.5, 1, kc), a * cl(kc * 2) * swap, off=0.4 * j)
+    k1 = sm(E['c_caps'] + 0.1, E['c_caps'] + 0.4, t)
+    text(c, "2 × Durov's Cap ≈ 86 000 ₽", 46, 'Heavy', WHITE, 540, 690 + dy, a * k1)
+    arrow(c, 540, 740 + dy, 540, 810 + dy, sm(E['c_phone'] - 0.5, E['c_phone'] - 0.1, t), a)
+    kp = pop(E['c_phone'] - 0.25, t, 1.6)
+    phone(c, 540, 1050 + dy, lerp(260, 400, kp), a * cl(kp * 2), 'iPhone\n17e', glow=kp)
+    text(c, '82 390 ₽ · iPort, 07.11.2026', 30, 'Semibold', ACC, 540, 1290 + dy, a * cl(kp * 2))
+    text(c, 'Fragment: два самых дешёвых лота = 963 TON', 24, 'Medium', SRC, 540, 250 + dy, a * k1)
 
 
-COLS, ROWS, STEP = 28, 28, 26
-
-
-def total(c, t):
-    a, ki, ko = win(t, E['total'] + 0.05, E['outro'], dout=0.35)
+# ------------------------------------------------------------------ 8–9 Plush Pepe
+def pepe(c, t):
+    a, ki, ko = win(t, E['pepe'] + 0.05, E['pnow'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
-    n = int(761 * fx.ease_out(cl((t - E['t761'] + 0.3) / 1.4)))
-    text(c, counter(n), 130, 'Heavy', ACC if n >= 761 else WHITE, 540, 270 + dy, a,
-         1 + 0.06 * fx.bump(t - E['t761'] - 1.1, 3, 7))
-    text(c, 'ПУБЛИЧНЫХ ПОДАРКОВ', 40, 'Semibold', GREY, 540, 370 + dy, a)
-    gx0 = (W - (COLS - 1) * STEP) / 2
-    for j in range(COLS * ROWS):                                        # 784 dots, 761 of them light up
-        x = gx0 + (j % COLS) * STEP
-        y = 450 + (j // COLS) * STEP + dy
-        if j < n:
-            disc(c, x, y, 9, ACC if j % 7 else WHITE, a)
-        else:
-            disc(c, x, y, 5, DIM, a * (1 if j < 761 else 0.4))
-    kq = spr(E['t35'] - 0.1, t, 1.8, 0.55) if t > E['t35'] - 0.1 else 0
-    if kq > 0:
-        rrect(c, 170, 1200 + dy, 910, 1310 + dy, 55, SURF, a * cl(kq * 2), outline=ACC, width=3)
-        text(c, '≈ 35 000 000 ₽', 70, 'Heavy', WHITE, 540, 1255 + dy, a * cl(kq * 2), lerp(0.85, 1, kq))
-    text(c, 'оценка блога cyber.sports.ru · 16.06.2025', 24, 'Medium', SRC, 540, 1180 + dy, a * (1 - cl(kq * 2)))
+    text(c, 'ДЕКАБРЬ 2024', 44, 'Heavy', GREY, 540, 250 + dy, a)
+    k = pop(E['pepe'], t, 1.6)
+    gift(c, PEPEG, t, 540, 560 + dy + 40 * (1 - k), 400, lerp(0.6, 1.0, k), a * cl(k * 2))
+    text(c, 'Plush Pepe', 48, 'Semibold', ACC, 540, 800 + dy, a)
+    price(c, t, E['p30'], '$30', 130, WHITE, 540, 930 + dy, a)
+    for j, (x, rot) in enumerate(((440, -0.18), (640, 0.14))):
+        kk = pop(E['p_kino'] - 0.3 + 0.12 * j, t, 1.8)
+        if kk > 0:
+            ticket(c, x, 1110 + dy + 20 * (1 - kk), 200 * lerp(0.6, 1, kk), a * cl(kk * 2), rot)
+    text(c, 'стартовая цена · ForkLog 25.08.2025', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
+def pepe_now(c, t):
+    a, ki, ko = win(t, E['pnow'] + 0.05, E['outro'], dout=0.35)
+    if a <= 0.004:
+        return
+    dy = 40 * (1 - ki) - 90 * ko
+    text(c, 'НОЯБРЬ 2026', 44, 'Heavy', ACC, 540, 250 + dy, a)
+    k = pop(E['pnow'], t, 1.6)
+    gift(c, PEPEG, t, 540, 470 + dy + 30 * (1 - k), 300, lerp(0.6, 1.0, k), a * cl(k * 2))
+    v = 649000 * fx.ease_out(cl((t - E['p649'] + 0.3) / 1.2))
+    kk = sm(E['p649'] - 0.5, E['p649'] - 0.2, t)
+    text(c, counter(v, 1000) + ' ₽', 120, 'Heavy', ACC if v >= 648500 else WHITE, 540, 700 + dy, a * kk,
+         1 + 0.05 * fx.bump(t - E['p649'] - 0.9, 3, 7))
+    text(c, '7 250 TON · самый дешёвый на Fragment', 32, 'Semibold', GREY, 540, 790 + dy, a * kk)
+    for j, x in enumerate((290, 540, 790)):
+        kp = pop(E['p3'] - 0.1 + 0.18 * j, t, 1.7)
+        phone(c, x, 1020 + dy, lerp(200, 320, kp), a * cl(kp * 2), 'iPhone\n18 Pro Max', glow=kp * 0.5)
+    k3 = sm(E['p3'] + 0.5, E['p3'] + 0.8, t)
+    text(c, '3 × 179 990 ₽ = 539 970 ₽ · iPort', 30, 'Semibold', ACC, 540, 1240 + dy, a * k3)
+    text(c, 'Fragment · 07.11.2026 · 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
+
+
+# ------------------------------------------------------------------ 10 bait for comments
 def outro(c, t):
     a, ki, _ = win(t, E['outro'] + 0.05, None)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki)
-    text(c, 'КАКОЙ ПОДАРОК ДУРОВА', 70, 'Heavy', WHITE, 540, 300 + dy, a)
-    text(c, 'ЗАБРАЛ БЫ ТЫ?', 96, 'Heavy', ACC, 540, 410 + dy, a)
-    choice_cards(c, t, E['outro'], [(PEPE1, 'ПЕПЕ', E['o_pepe']), (HELMET, 'ШЛЕМ', E['o_helmet']),
-                                    (CAPG, 'КЕПКА', E['o_cap'])], dy, a)
-    comment_field(c, t, E['o_write'], 'Мой выбор — ')
+    text(c, 'КАКОЙ ПОДАРОК', 80, 'Heavy', WHITE, 540, 300 + dy, a)
+    text(c, 'ВЫ УПУСТИЛИ?', 104, 'Heavy', ACC, 540, 415 + dy, a, 1 + 0.05 * fx.bump(t - E['o_which'], 3, 7))
+    tw = [E['o_which'] + 0.1 * i for i in range(3)]
+    choice_cards(c, t, E['outro'], [(WATCHG, '×50', tw[0]), (CAPG, '×34', tw[1]), (PEPEG, '×265', tw[2])], dy, a)
+    text(c, 'рост в долларах от стартовой цены', 28, 'Medium', GREY, 540, 960 + dy, a)
+    comment_field(c, t, E['o_sorry'] - 0.4, 'Я не купил… ', y=1110)
 
 
 def render_at(t):
     c = _bg().copy()
     hook(c, t)
-    link_scene(c, t, E['link'] + 0.1, E['pepe1'] - 0.1, E['copy'], E['goal'], 'видео быстрее попадёт в рекомендации')
-    pepe1_card(c, t)
-    helmet(c, t)
-    pepe834(c, t)
-    brick(c, t)
+    count(c, t)
+    watch(c, t)
+    watch_now(c, t)
+    watch_phone(c, t)
     cap(c, t)
-    quote(c, t)
-    total(c, t)
+    cap_phone(c, t)
+    pepe(c, t)
+    pepe_now(c, t)
     outro(c, t)
     fx.over(c, CAP.layer(t))
     return np.clip(c, 0, 255).astype(np.uint8)

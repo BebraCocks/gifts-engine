@@ -4,8 +4,8 @@ import render as R
 import sfxkit
 from events import E
 
-CONTENT = [0.05, E['copy'] + 0.8, E['price1'] + 0.6, E['h10'] + 0.6, E['p_gift'] + 0.8, None,
-           E['b34'] + 0.6, E['c3000'] + 0.5, E['q100'] + 0.5, E['t35'] + 0.5, E['o_cap'] + 0.3, E['end'] - 0.1]
+CONTENT = [E['h_phone'] + 0.4, E['c_early'] + 0.3, E['w_crumbs'] + 0.5, E['w50'] + 0.8, E['w_phone'] + 0.7, None,
+           E['c_pizza'] + 0.4, E['c_phone'] + 0.7, E['p_kino'] + 0.5, E['p3'] + 1.0, E['o_which'] + 0.6, E['end'] - 0.1]
 ims = []
 for k, ct in enumerate(CONTENT):
     ot = R.AD_STOP + 3.0 if ct is None else sfxkit.out_time(R.BR, ct)

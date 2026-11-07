@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 31-price-duel-11. Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-07 11:05–11:10 UTC. Курс 90 ₽ за TON (tonapi.io 89,73 ₽ в 11:08 UTC). Вещи: страницы товаров 2026-11-07 11:10–11:30 UTC, цена на странице (Детский мир — из карточки товара, «онлайн»). Подарки, бывшие в выпусках 09–18 и 30, не брались.",
+ "ton_rub": 90.0,
+ "gifts": [
+  {"gift": "Santa Hat", "model": "Evergreen", "rarity": "2%", "ton": 7, "rub": 630, "lot": "https://fragment.com/gift/santahat-36623"},
+  {"gift": "Winter Wreath", "model": "Barbie Core", "rarity": "2%", "ton": 6, "rub": 540, "lot": "https://fragment.com/gift/winterwreath-43316"},
+  {"gift": "Candy Cane", "model": "Pink Mango", "rarity": "2.6%", "ton": 5, "rub": 450, "lot": "https://fragment.com/gift/candycane-44997"},
+  {"gift": "Jingle Bells", "model": "Blue Shadows", "rarity": "1.2%", "ton": 11, "rub": 990, "lot": "https://fragment.com/gift/jinglebells-25738"},
+  {"gift": "Hanging Star", "model": "Fusion", "rarity": "1.4%", "ton": 11, "rub": 990, "lot": "https://fragment.com/gift/hangingstar-30205"}
+ ],
+ "things": [
+  {"name": "Колпак Ball Masquerade новогодний", "rub": 199, "src": "https://www.detmir.ru/product/index/id/7043995/"},
+  {"name": "Венок рождественский хвойный BINOSHE Cones, литая хвоя, 60 см", "rub": 4374, "src": "https://www.detmir.ru/product/index/id/7031963/"},
+  {"name": "Карамель леденцовая фигурная со вкусом клубники (трость)", "rub": 42, "src": "https://vkusvill.ru/goods/karamel-ledentsovaya-figurnaya-so-vkusom-klubniki-trost-115749/"},
+  {"name": "Украшение ёлочное «Магия праздника» NY056, колокольчик", "rub": 306, "src": "https://www.detmir.ru/product/index/id/7054574/"},
+  {"name": "Ель искусственная «Ёлушка» Донская, 180 см", "rub": 13543, "src": "https://www.detmir.ru/product/index/id/7207047/"}
+ ],
+ "rejected": [
+  "Snow Mittens — у варежек «Детского мира» нет цены в карточке (нет в наличии).",
+  "Jingle Bells / колокольчик «Кольчугинский мельхиор» 921 ₽ — разница меньше 20%.",
+  "Xmas Stocking / носок «Золотая сказка» 954 ₽ — на всех фото текст поверх товара."
+ ]
+}

@@ -292,3 +292,10 @@ https://drive.google.com/file/d/17Urk9fcJ0FskD4sRvEpGxaWAs0D2fJmO/view . Дал�
 Обновление 2026-11-07 (2): по просьбе автора озвучка переписана (не копия серии, голос тот же). **Текущая —
 `renders/30-price-duel-10/price_duel_10_v2.mp4`** (59,68 с, −13,5 LUFS), Google Drive:
 https://drive.google.com/file/d/1XS9xD-V3DtPUUl3IecHwjw3qJLmZGDaU/view . Правки — `--name price_duel_10_v3`.
+
+## 2026-11-07 · 31-price-duel-11 «Новый год из Телеграма» («Что дороже?»)
+
+Santa Hat / колпак (×3,2), Winter Wreath / венок из литой хвои (×8,1 вещь), Candy Cane / трость (×10,7), Jingle Bells /
+ёлочный колокольчик (×3,2), Hanging Star / ёлка 180 см (×13,7 вещь); счёт 3:2. Текст и подача свои, голос тот же.
+Сборка `renders/31-price-duel-11/price_duel_11_v1.mp4` (59,42 с, −12,8 LUFS), Google Drive «TikTok»:
+https://drive.google.com/file/d/1lbiYGRsTCOcD4oWd2pjNRqAQFCOZ47EH/view . Дальше: автору посмотреть и послушать; правки — `--name price_duel_11_v2`.

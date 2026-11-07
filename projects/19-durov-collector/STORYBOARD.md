@@ -58,3 +58,6 @@ SFX Botanica через `sfxkit` (`build/review/sfx_cues.txt`), без музы�
 ### Статус
 
 - 2026-11-07: исследование, сценарий, озвучка, сцены, звук, хайлайты.
+- 2026-11-07 (2): автор: «Собирай видосы, без хайлайтов». Собран `renders/19-durov-collector/durov_collector_v1.mp4` (58,70 с, 1080×1920, 60 к/с,
+  H.264 + AAC, ≈ −13 LUFS, пик −2,1 dBFS), декодирован полностью, 20 кадров по всему ролику просмотрены.
+  Загружен в Google Drive «TikTok»: https://drive.google.com/file/d/1x1W0JtI4UqQ1uMjzQPtqP5PEY6Ln4Ki7/view. Не сделано: просмотр в темпе и прослушивание на слух.

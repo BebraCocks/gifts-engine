@@ -13,7 +13,7 @@ E = {
     'h_crumbs': wt('hook', 'сухариков'), 'h_gift': wt('hook', 'подарок'), 'h_phone': wt('hook', 'айфон'),
     'count': on('count', -0.2), 'c_how': wt('count', 'сколько'), 'c_early': wt('count', 'раньше'),
     'watch': on('watch', -0.15), 'w15': wt('watch', 'полтора'), 'w_crumbs': wt('watch', 'сухариков'),
-    'wnow': on('watch_now', -0.15), 'w75': wt('watch_now', 'семьдесят'), 'w50': wt('watch_now', 'пятьдесят'),
+    'wnow': on('watch_now', -0.15), 'w7k': wt('watch_now', 'семь'), 'w50': wt('watch_now', 'пятьдесят'),
     'wph': on('watch_phone', -0.15), 'w20': wt('watch_phone', 'двадцать'), 'w10': wt('watch_phone', 'десять'),
     'w_today': wt('watch_phone', 'сегодня'), 'w_phone': wt('watch_phone', 'айфон'),
     'cap': on('cap', -0.2), 'c15': wt('cap', 'пятнадцать'), 'c_pizza': wt('cap', 'пиццу'),

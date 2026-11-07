@@ -6,7 +6,7 @@ from events import E
 
 TS = [float(x) for x in sys.argv[1].split(',')] if len(sys.argv) > 1 else [
     0.05, E['h_gift'] + 0.5, E['h_phone'] + 0.3, E['c_early'] + 0.3, E['w15'] + 0.5, E['w_crumbs'] + 0.5,
-    E['w75'] + 0.9, E['w50'] + 0.8, E['w20'] + 0.5, E['w10'] + 0.6, E['w_phone'] + 0.6, E['c15'] + 0.4,
+    E['w7k'] + 0.9, E['w50'] + 0.8, E['w20'] + 0.5, E['w10'] + 0.6, E['w_phone'] + 0.6, E['c15'] + 0.4,
     E['c_pizza'] + 0.3, E['c_caps'] + 0.4, E['c_phone'] + 0.6, E['p30'] + 0.4, E['p_kino'] + 0.5, E['p649'] + 1.0,
     E['p3'] + 0.9, E['o_which'] + 0.6, E['end'] - 0.1]
 ims = []

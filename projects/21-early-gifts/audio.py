@@ -34,7 +34,7 @@ def sfx_layer(n, kit):
     add(fx, 'coin', E['w15'], gain_db=-16, label='$1,5')
     add(fx, 'pop', E['w_crumbs'] - 0.15, gain_db=-18, label='two crumbs packs')
     add(fx, 'whoosh-short', E['wnow'], gain_db=-19, label='«ноябрь 2026»')
-    add(fx, 'counter', E['w75'] - 0.1, gain_db=-21, fit=0.8, label='counter to 75 TON')
+    add(fx, 'counter', E['w7k'] - 0.1, gain_db=-21, fit=0.8, label='counter to ≈ 6 700 ₽')
     add(fx, 'riser-hit', E['w50'] + 0.3, align='peak', gain_db=-17, label='bars, ×50')
     add(fx, 'list', E['w20'] - 0.3, gain_db=-21, fit=0.9, label='20 packs appear')
     add(fx, 'sparkle-whoosh', E['w10'], gain_db=-19, label='packs turn into 10 watches')

@@ -435,7 +435,7 @@ def price(c, t, t0, s, size, color, cx, cy, a):
 
 
 # ------------------------------------------------------------------ captions (not for the hook line)
-ACC_WORDS = {'заработали,', 'раньше.', '$1,5.', 'сухариков.', '75', 'TON.', '50', 'раз', 'дороже!', '20', '10', 'часов.',
+ACC_WORDS = {'заработали,', 'раньше.', '$1,5.', 'сухариков.', '7000', 'рублей!', '50', 'раз', 'дороже!', '20', '10', 'часов.',
              'iPhone', '16e.', '$15', 'пиццу.', '2', '17e.', '$30.', '649', '000', '649 000', '3', '18', 'Pro', 'Max!',
              'жалеете?', 'подарок'}
 
@@ -537,17 +537,17 @@ def watch_now(c, t):
     text(c, 'НОЯБРЬ 2026', 44, 'Heavy', ACC, 540, 250 + dy, a)
     k = pop(E['wnow'], t, 1.6)
     gift(c, WATCHG, t, 540, 500 + dy + 30 * (1 - k), 300, lerp(0.6, 1.0, k), a * cl(k * 2))
-    v = 75 * fx.ease_out(cl((t - E['w75'] + 0.1) / 0.8))
-    kk = sm(E['w75'] - 0.2, E['w75'] + 0.1, t)
-    text(c, f'{int(round(v))} TON', 130, 'Heavy', ACC if v >= 74.5 else WHITE, 540, 760 + dy, a * kk)
-    text(c, '≈ 6 700 ₽ · самый дешёвый на Fragment', 32, 'Semibold', GREY, 540, 850 + dy, a * kk)
     kb = sm(E['w50'] - 0.3, E['w50'], t)
     if kb > 0.004:
-        bars(c, t, E['w50'] - 0.25, 990 + dy, ('декабрь 2024 · $1,5', 'сейчас · ≈ $82'), (1.5, 82), a * kb,
+        bars(c, t, E['w50'] - 0.25, 750 + dy, ('декабрь 2024 · $1,5', 'сейчас · ≈ $82'), (1.5, 82), a * kb,
              colors=[WARM, ACC])
-        text(c, '×50', 76, 'Heavy', ACC, 880, 920 + dy, a * sm(E['w50'], E['w50'] + 0.3, t),
+        text(c, '×50', 76, 'Heavy', ACC, 880, 680 + dy, a * sm(E['w50'], E['w50'] + 0.3, t),
              1 + 0.08 * fx.bump(t - E['w50'] - 0.3, 3, 7))
-    text(c, 'Fragment · 07.11.2026 · 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
+    v = 6700 * fx.ease_out(cl((t - E['w7k'] + 0.1) / 0.8))
+    kk = sm(E['w7k'] - 0.2, E['w7k'] + 0.1, t)
+    text(c, '≈ ' + counter(v, 100) + ' ₽', 130, 'Heavy', ACC if v >= 6690 else WHITE, 540, 1030 + dy, a * kk)
+    text(c, 'одни часы · самый дешёвый лот на Fragment', 32, 'Semibold', GREY, 540, 1120 + dy, a * kk)
+    text(c, 'Fragment · 07.11.2026 · 75 TON, 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
 def watch_phone(c, t):
@@ -643,13 +643,13 @@ def pepe_now(c, t):
     kk = sm(E['p649'] - 0.5, E['p649'] - 0.2, t)
     text(c, counter(v, 1000) + ' ₽', 120, 'Heavy', ACC if v >= 648500 else WHITE, 540, 700 + dy, a * kk,
          1 + 0.05 * fx.bump(t - E['p649'] - 0.9, 3, 7))
-    text(c, '7 250 TON · самый дешёвый на Fragment', 32, 'Semibold', GREY, 540, 790 + dy, a * kk)
+    text(c, 'самый дешёвый лот на Fragment', 32, 'Semibold', GREY, 540, 790 + dy, a * kk)
     for j, x in enumerate((290, 540, 790)):
         kp = pop(E['p3'] - 0.1 + 0.18 * j, t, 1.7)
         phone(c, x, 1020 + dy, lerp(200, 320, kp), a * cl(kp * 2), 'iPhone\n18 Pro Max', glow=kp * 0.5)
     k3 = sm(E['p3'] + 0.5, E['p3'] + 0.8, t)
     text(c, '3 × 179 990 ₽ = 539 970 ₽ · iPort', 30, 'Semibold', ACC, 540, 1240 + dy, a * k3)
-    text(c, 'Fragment · 07.11.2026 · 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
+    text(c, 'Fragment · 07.11.2026 · 7 250 TON, 1 TON ≈ 89,5 ₽', 24, 'Medium', SRC, 540, 300 + dy, a)
 
 
 # ------------------------------------------------------------------ 10 bait for comments

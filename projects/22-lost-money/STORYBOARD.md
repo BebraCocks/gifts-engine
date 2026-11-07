@@ -56,3 +56,7 @@ Fish Audio drama-3, голос `7312c385…`, 8 реплик с тегами э�
 
 - 2026-11-07: цены, сценарий, озвучка, сцены, звук, хайлайты. Ждём «собирай»:
   `python -B engine/tools/build.py projects/22-lost-money --approved --name lost_money_v1`.
+- 2026-11-07 (2): автор: «Сразу собирай, без хайлайтов». Собран `renders/22-lost-money/lost_money_v1.mp4` (59,73 с, 1080×1920,
+  60 к/с, H.264 yuv420p + AAC, −13,0 LUFS, пик −2,2 dBFS), декодирован полностью, 10 кадров по всему ролику просмотрены (вкл. RubUp).
+  Загружен в Google Drive «TikTok»: https://drive.google.com/file/d/1PQs0-qBW11MJTcab3zUue9FJrNmLu9qE/view.
+  Не сделано: просмотр в темпе, прослушивание на слух, ASR. Правки — `--name lost_money_v2`.

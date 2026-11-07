@@ -237,9 +237,10 @@ iPhone 17e; кино на двоих = Plush Pepe → 3 × iPhone 18 Pro Max. С
 Собран `renders/21-early-gifts/early_gifts_v1.mp4` (58,93 с, −13,5 LUFS), декодирован, загружен в Google Drive «TikTok».
 Дальше: автору посмотреть и послушать; правки — `--name early_gifts_v2`.
 
-## 2026-11-07 · 22-lost-money «На каких подарках вы бы потеряли деньги» — хайлайты
+## 2026-11-07 · 22-lost-money «На каких подарках вы бы потеряли деньги» — собрано
 
 Топ-5 обвалов «пик → сегодня» в долларах: Plush Pepe −51%, Heart Locket −58%, Precious Peach −76%, Khabib's Papakha −79%
 (от средней цены аукциона), Durov's Cap −82% (он же хук). Пики — Gift Charts через vc.ru 18.09.2025, сейчас — Fragment
 07.11.2026. Тёмно-синий почти чёрный фон, коралловый акцент, голос `7312c385…` drama-3 (1,10×), 59,73 с, RubUp на ≈ 23,9 с.
-Хайлайты и звук отправлены. Ждём «собирай»: `python -B engine/tools/build.py projects/22-lost-money --approved --name lost_money_v1`.
+Собран `renders/22-lost-money/lost_money_v1.mp4` (59,73 с, −13,0 LUFS), декодирован, загружен в Google Drive «TikTok».
+Дальше: автору посмотреть и послушать; правки — `--name lost_money_v2`.

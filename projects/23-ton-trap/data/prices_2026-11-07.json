@@ -1,19 +1,13 @@
 {
- "_note": "Ролик 23-ton-trap. Сделка = сумма в TON (GRAM — новое имя TON, tggifts.com: «prices in GRAM (formerly TON)») и её долларовая оценка в источнике на дату сделки. Сегодня = та же сумма TON × курс tonapi.io 2026-11-07 05:52 UTC: 1 TON = $1,1068 (= 90,43 ₽).",
- "ton_usd_today": 1.1068,
- "deals": {
-  "cat":    {"what": "Scared Cat, перепродажа", "ton": 500, "usd_then": 920, "date": "2025-11-15",
-             "source": "https://x.com/0xdamx/status/1989680407315439622 (пост 15.11.2025: «Picked up this scared cat for 23.9 $TON in March about $60 … Just flipped it for 500 TON ~ $920»; дата из ID поста)",
-             "usd_now": 553, "loss_usd": 367, "loss_pct": "−40%"},
-  "durov":  {"what": "Plush Pepe #834 (Donatello), купил Дуров и подарил дизайнеру", "ton": 7500, "usd_then": 12000, "date": "2026-06",
-             "source": "https://finance.yahoo.com/markets/crypto/articles/pavel-durov-gifts-12-000-122057840.html (BeInCrypto, 27.06.2026: 7 500 GRAM, «$12,000»)",
-             "usd_now": 8301, "loss_usd": 3699, "loss_pct": "−31%"},
-  "sept":   {"what": "минимальная цена Plush Pepe на Portals", "ton": 5000, "usd_then": 16170, "date": "2025-09-09",
-             "source": "https://u.today/plush-pepes-premium-telegram-gifts-drop-sees-floor-prices-targeting-5000-ton (09.09.2025: «almost 5,000 TON for one asset», «floor prices soaring to $16,170»)",
-             "usd_now": 5534, "loss_usd": 10636, "loss_pct": "−66%", "caveat": "«почти 5 000 TON» — округление источника"},
-  "record": {"what": "рекордная продажа Plush Pepe", "ton": 107207, "usd_then": 228000, "date": "2025-10-25",
-             "source": "https://vc.ru/promonetization/2621021-rynok-tsifrovykh-podarkov-v-telegram (27.11.2025: 25.10.2025, «107 000 TON», около $228 000); https://dtf.ru/sale/5237142-nft-podarki-v-telegram («107 207 TON (около $228 000)»)",
-             "usd_now": 118657, "loss_usd": 109343, "loss_pct": "−48%"}
+ "_note": "Ролик 23-ton-trap v3 (обычные подарки). Продажа: минимальная цена коллекции 29.01.2025 в TON — пост @s0meone_u_know в X (https://x.com/s0meone_u_know/status/1884596200621351138, дата из ID поста: 2025-01-29 13:35 UTC: «Signet Rings: 10 TON … Magic potions: 8 TON - Scared Cats: 7 TON - Eternal roses: 7 TON»). Курс TON 29.01.2025: $4,83 (Kraken TONUSD, дневная свеча, закрытие). Сегодня: та же сумма TON × tonapi.io 2026-11-07 06:30 UTC $1,1048 (GRAM — новое имя TON). Подарок сегодня: самый дешёвый лот на Fragment 2026-11-07 06:30 UTC, модель — этого лота.",
+ "ton_usd_2025_01_29": 4.83,
+ "ton_usd_today": 1.1048,
+ "gifts": {
+  "Signet Ring":  {"ton": 10, "usd_then": 48.3,  "usd_ton_now": 11.05, "floor_now_ton": 38,  "floor_now_usd": 41.98,  "lot": "https://fragment.com/gift/signetring-8657",  "model": "Mandarin 2%"},
+  "Eternal Rose": {"ton": 7,  "usd_then": 33.81, "usd_ton_now": 7.73,  "floor_now_ton": 35,  "floor_now_usd": 38.67,  "lot": "https://fragment.com/gift/eternalrose-26246", "model": "Pop Petal 1.9%"},
+  "Magic Potion": {"ton": 8,  "usd_then": 38.64, "usd_ton_now": 8.84,  "floor_now_ton": 75,  "floor_now_usd": 82.86,  "lot": "https://fragment.com/gift/magicpotion-4607",  "model": "Dimensional 2.5%"},
+  "Scared Cat":   {"ton": 7,  "usd_then": 33.81, "usd_ton_now": 7.73,  "floor_now_ton": 299, "floor_now_usd": 330.34, "lot": "https://fragment.com/gift/scaredcat-13897",   "model": "El Tigre 1.5%"}
  },
- "caveat": "Сценарий «продали за TON и не вывели» — гипотетический: что продавцы сделали с TON, неизвестно. В ролике это сказано как «если не вывели»."
+ "ton_change": "4,83 → 1,1048: −77%",
+ "caveat": "«Продали за TON и не вывели» — гипотетический сценарий по минимальной цене коллекции на дату; модель январского лота неизвестна, на экране — модель сегодняшнего самого дешёвого лота."
 }

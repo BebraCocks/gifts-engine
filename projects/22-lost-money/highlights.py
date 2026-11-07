@@ -4,7 +4,7 @@ import render as R
 import sfxkit
 from events import E
 
-CONTENT = [E['h_3k'] + 0.6, E['h_500'] + 0.6, E['i_burn'] + 0.6, E['pe_pct'] + 0.8, E['lo_pct'] + 0.6, None,
+CONTENT = [E['h_3k'] + 0.6, E['h_watch'] + 0.6, E['i_burn'] + 0.6, E['pe_pct'] + 0.8, E['lo_pct'] + 0.6, None,
            E['pc_pct'] + 0.8, E['pa_pct'] + 0.6, E['cp_then'] + 0.6, E['cp_pct'] + 0.5, E['o_which'] + 0.7,
            E['end'] - 0.1]
 ims = []

@@ -51,3 +51,5 @@ Fish Audio drama-3, 8 реплик с тегами эмоций, ускорен�
   пик −2,2 dBFS), декодирован полностью, 10 кадров по ролику просмотрены (вкл. RubUp). Google Drive «TikTok»:
   https://drive.google.com/file/d/1YK-igWUKBsZ1wkxUEBZFCxRJIopZP7oD/view. Не сделано: просмотр в темпе, прослушивание, ASR.
   Правки — `--name snoop_fans_v2`.
+- 2026-11-07 (3): переделка без графиков (`snoop_fans_v2`) остановлена: автор попросил два ролика ровно в формате 22 с
+  другими подарками (25-year-ago, 26-three-weeks). В сдаче остаётся v1.

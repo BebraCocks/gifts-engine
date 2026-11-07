@@ -1,0 +1,10 @@
+{
+ "_note": "Ролик 25-year-ago. «Сейчас» — самый дешёвый лот на Fragment 2026-11-07 06:30–06:47 UTC × tonapi.io 1 GRAM (бывш. TON) = $1,1048; модель — этого лота. «Тогда» — датированные цены из источников ниже.",
+ "gifts": {
+  "Swag Bag":      {"then_usd": 7.5,   "then": "магазин Telegram, 500 звёзд ≈ $7,5 (CoinMarketCap Academy, itc.ua, 10.07.2025)", "now_gram": 6,   "now_usd": 6.63,   "change": "−12%", "lot": "https://fragment.com/gift/swagbag-114311", "model": "Spicy Onion"},
+  "Signet Ring":   {"then_usd": 48.3,  "then": "минимальная цена 10 TON 29.01.2025 (x.com/s0meone_u_know/status/1884596200621351138) × $4,83 (Kraken TONUSD, закрытие 29.01.2025)", "now_gram": 38, "now_usd": 41.98, "change": "−13%", "lot": "https://fragment.com/gift/signetring-8657", "model": "Mandarin"},
+  "Toy Bear":      {"then_usd": 81.58, "then": "«Плюшевый мишка» $81,58 за неделю с 11.09.2025 (Gift Charts, vc.ru 18.09.2025)", "now_gram": 39, "now_usd": 43.09, "change": "−47%", "lot": "https://fragment.com/gift/toybear-23067", "model": "Cuddle", "caveat": "в статье русское имя «Плюшевый мишка» — принято за Toy Bear"},
+  "Scared Cat":    {"then_usd": 920,   "then": "продажа за 500 TON ≈ $920 (пост @0xdamx в X, 15.11.2025)", "now_gram": 299, "now_usd": 330.34, "change": "−64%", "lot": "https://fragment.com/gift/scaredcat-13897", "model": "El Tigre", "caveat": "одна сделка, а не минимальная цена"},
+  "Heroic Helmet": {"then_usd": 1100,  "then": "≈ рынок июля 2025: Дуров купил шлем за $11 000, «в 10 раз дороже рынка» (kod.ru 27.07.2025)", "now_gram": 200, "now_usd": 220.96, "change": "−80%", "lot": "https://fragment.com/gift/heroichelmet-1764", "model": "Aegean Sea", "caveat": "$1 100 — оценка из слов «в 10 раз»"}
+ }
+}

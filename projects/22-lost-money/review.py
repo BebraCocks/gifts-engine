@@ -5,7 +5,7 @@ import render as R
 from events import E
 
 TS = [float(x) for x in sys.argv[1].split(',')] if len(sys.argv) > 1 else [
-    0.3, E['h_3k'] + 0.5, E['h_500'] + 1.0, E['i_five'] + 0.8, E['i_burn'] + 0.6, E['pe_then'] + 0.6,
+    0.3, E['h_3k'] + 0.5, E['h_watch'] + 0.6, E['i_five'] + 0.8, E['i_burn'] + 0.6, E['pe_then'] + 0.6,
     E['pe_pct'] + 0.8, E['lo_pct'] + 0.6, E['pc_then'] + 0.5, E['pc_pct'] + 0.8, E['pa_pct'] + 0.6,
     E['cp_then'] + 0.5, E['cp_pct'] + 0.4, E['cp_pct'] + 1.5, E['o_which'] + 0.6, E['end'] - 0.1]
 ims = []

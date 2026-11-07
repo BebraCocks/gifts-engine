@@ -2,7 +2,7 @@
 from timeline import DUR, ON, END, KEY
 from words import wt
 
-AD_STOP = END[KEY['durov']] + 0.25     # RubUp after place 3 (≈ middle of the content)
+AD_STOP = END[KEY['ring']] + 0.25     # RubUp after place 4 (≈ middle of the content)
 
 
 def on(key, d=0.0):
@@ -10,20 +10,20 @@ def on(key, d=0.0):
 
 
 E = {
-    'h_pepe': wt('hook', 'плюш'), 'h_228': wt('hook', 'двести'), 'h_ton': wt('hook', 'тонах'),
-    'h_today': wt('hook', 'сегодня'), 'h_119': wt('hook', 'сто'),
-    'intro': on('intro', -0.2), 'i_ton': wt('intro', 'тоны'), 'i_melt': wt('intro', 'растаяли'),
-    'cat': on('cat', -0.15), 'ca_name': wt('cat', 'испуганный'), 'ca_ton': wt('cat', 'пятьсот'),
-    'ca_then': wt('cat', 'девятьсот'), 'ca_now': wt('cat', 'сегодня'),
-    'durov': on('durov', -0.15), 'du_name': wt('durov', 'дуров'), 'du_ton': wt('durov', 'семь'),
-    'du_then': wt('durov', 'двенадцать'), 'du_now': wt('durov', 'сейчас'),
-    'sept': on('sept', -0.2), 'se_name': wt('sept', 'сентябрь'), 'se_ton': wt('sept', 'пять'),
-    'se_then': wt('sept', 'шестнадцать'), 'se_now': wt('sept', 'сейчас'),
-    'record': on('record', -0.15), 're_name': wt('record', 'рекорд'), 're_ton': wt('record', 'сто'),
-    're_then': wt('record', 'двести'), 're_now': wt('record', 'превратились'),
-    'outro': on('outro', -0.2), 'o_hold': wt('outro', 'держите'), 'o_out': wt('outro', 'выводите'),
+    'h_cat': wt('hook', 'кота'), 'h_ton': wt('hook', 'семь'), 'h_usd': wt('hook', 'тридцать'),
+    'h_q': wt('hook', 'что'), 'h_qcat': wt('hook', 'котом'), 'h_end': wt('hook', 'ответ'),
+    'intro': on('intro', -0.2), 'i_ton': wt('intro', 'тоны'), 'i_twice': wt('intro', 'дважды'),
+    'ring': on('ring', -0.15), 'ri_name': wt('ring', 'кольцо'), 'ri_then': wt('ring', 'сорок'),
+    'ri_now': wt('ring', 'сегодня'), 'ri_gift': wt('ring', 'стоит'),
+    'rose': on('rose', -0.15), 'ro_name': wt('rose', 'роза'), 'ro_then': wt('rose', 'тридцать'),
+    'ro_now': wt('rose', 'сейчас'), 'ro_gift': wt('rose', 'роза', 1),
+    'potion': on('potion', -0.2), 'po_name': wt('potion', 'зелье'), 'po_then': wt('potion', 'тридцать'),
+    'po_now': wt('potion', 'теперь'), 'po_gift': wt('potion', 'подорожало'),
+    'cat': on('cat', -0.15), 'ca_name': wt('cat', 'кот'), 'ca_then': wt('cat', 'семь'),
+    'ca_now': wt('cat', 'сегодня'), 'ca_gift': wt('cat', 'сам'),
+    'outro': on('outro', -0.2), 'o_sell': wt('outro', 'продали'), 'o_hold': wt('outro', 'держали'),
     'o_write': wt('outro', 'пишите'),
     'end': DUR,
 }
-for p in ('ca', 'du', 'se', 're'):                  # the loss stamp lands shortly after today's value
-    E[p + '_pct'] = E[p + '_now'] + (0.55 if p == 'du' else 0.9)
+for p in ('ri', 'ro', 'po', 'ca'):                  # the loss stamp lands after today's value of the TON
+    E[p + '_pct'] = E[p + '_now'] + 0.6

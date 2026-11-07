@@ -5,8 +5,8 @@ import render as R
 from events import E
 
 TS = [float(x) for x in sys.argv[1].split(',')] if len(sys.argv) > 1 else [
-    E['h_228'] + 0.5, E['h_119'] + 1.0, E['i_ton'] + 0.6, E['i_melt'] + 0.8, E['ca_then'] + 0.5, E['ca_pct'] + 0.6,
-    E['du_pct'] + 0.6, E['se_pct'] + 0.6, E['re_then'] + 0.5, E['re_pct'] + 0.6, E['o_out'] + 0.4, E['end'] - 0.1]
+    E['h_usd'] + 0.5, E['h_end'] + 0.6, E['i_ton'] + 0.4, E['i_twice'] + 0.8, E['ri_then'] + 0.5, E['ri_pct'] + 0.6,
+    E['ri_gift'] + 0.8, E['ro_gift'] + 0.8, E['po_gift'] + 0.8, E['ca_now'] + 0.4, E['ca_gift'] + 0.9, E['end'] - 0.1]
 ims = []
 for t in TS:
     im = Image.fromarray(R.render_at(t))

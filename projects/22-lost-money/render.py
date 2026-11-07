@@ -28,6 +28,7 @@ BR = banner.Breaks([AD_STOP], cy=H / 2)
 BG, WHITE, GREY, DIM, ACC = config.BACKGROUND, config.WHITE, config.GREY, config.LINE, config.ACCENT
 SURF = config.SURFACE
 COOL = config.COOL
+GAIN = config.GAIN
 NAMES = (config.PEPE, config.LOCKET, config.PEACH, config.PAPAKHA, config.CAP)
 LOT = {n: str(gifts_api.original_file(n, 'json')) for n in NAMES}
 MINI = [str(gifts_api.original_png(n, 128)) for n in NAMES]
@@ -306,17 +307,18 @@ def money(v):
     return '$' + counter(v)
 
 
-def stamp(c, t, t0, s, cx, cy, a, size=130):
+def stamp(c, t, t0, s, cx, cy, a, size=130, color=None):
     """A loss stamp: lands from 1.5× with a spring, framed, slightly rotated."""
+    color = color or ACC
     k = pop(t0, t, 2.2, 0.45)
     if k <= 0:
         return
     sc = lerp(1.5, 1.0, min(1.0, k)) * (1 + 0.04 * fx.bump(t - t0 - 0.25, 3, 7))
-    im = label(s, size, 'Heavy', ACC)
+    im = label(s, size, 'Heavy', color)
     w, h = im.width * sc, im.height * sc
     al = a * cl(k * 2.5)
     pts = rot_pts(rrect_pts(cx - w / 2 - 26, cy - h / 2 - 18, cx + w / 2 + 26, cy + h / 2 + 18, 18, 6), cx, cy, -0.06)
-    stroke(c, pts, ACC, 5, 1, al)
+    stroke(c, pts, color, 5, 1, al)
     put(c, im, cx, cy, sc, al, -0.06)
 
 
@@ -338,7 +340,81 @@ def wiggle(x0, y0, x1, y1, n, seed, amp):
     return pts
 
 
-# ------------------------------------------------------------------ hero: the cap crashes (hook)
+# ------------------------------------------------------------------ money stacks: «было» / «сейчас» (no charts, v2)
+BILL, BILL_EDGE, BILL_DARK = (46, 132, 86), (128, 220, 158), (30, 92, 60)
+SX_L, SX_R, S_BOTTOM, BW, BH, BGAP, NMAX = 260, 820, 1215, 190, 24, 5, 10
+
+
+def bill(c, cx, cy, a=1.0, rot=0.0, red=0.0):
+    """A banknote seen from the edge of a stack: green body, light edge, a «$» in the middle; red>0 tints it."""
+    if a <= 0.004:
+        return
+    body = mix(BILL, (150, 50, 60), red)
+    edge = mix(BILL_EDGE, ACC, red)
+    pts = rot_pts(rrect_pts(cx - BW / 2, cy - BH / 2, cx + BW / 2, cy + BH / 2, 6, 4), cx, cy, rot)
+    fill(c, pts, body, a)
+    stroke(c, pts, edge, 2.5, 1, a)
+    inner = rot_pts(rrect_pts(cx - BW * 0.36, cy - BH * 0.26, cx + BW * 0.36, cy + BH * 0.26, 4, 3), cx, cy, rot)
+    stroke(c, inner, mix(BILL_DARK, (110, 30, 40), red), 2, 1, a)
+    put(c, label('$', 20, 'Heavy', mix(BILL_EDGE, ACC, red)), cx, cy, 1.0, a, rot)
+
+
+def counts(then, now):
+    if then >= now:
+        return NMAX, max(1, round(NMAX * now / then))
+    return max(1, round(NMAX * then / now)), NMAX
+
+
+def stacks(c, t, then, now, t_then, t_now, dy, a, then_lab='БЫЛО', now_lab='СЕЙЧАС', sub_then=None, sub_now=None,
+           fmt=None):
+    """Left: the stack that was paid; right: what it is worth now. Extra bills fly away (loss) or drop in (gain)."""
+    fmt = fmt or money
+    nt, nn = counts(then, now)
+    col = ACC if now < then * 0.97 else (GAIN if now > then * 1.2 else GREY)
+    step = BH + BGAP
+    # left stack
+    kl = sm(t_then - 0.25, t_then + 0.1, t)
+    text(c, then_lab, 30, 'Semibold', GREY, SX_L, 785 + dy, a * kl)
+    kv = pop(t_then - 0.05, t, 1.8)
+    text(c, fmt(then), 56, 'Heavy', COOL, SX_L, 840 + dy, a * cl(kv * 2), lerp(0.8, 1, kv))
+    if sub_then:
+        text(c, sub_then, 28, 'Semibold', GREY, SX_L, 888 + dy, a * cl(kv * 2))
+    for j in range(nt):
+        k = pop(t_then - 0.2 + 0.04 * j, t, 2.4, 0.6)
+        if k > 0:
+            bill(c, SX_L, S_BOTTOM + dy - j * step - 40 * (1 - min(1, k)), a * cl(k * 3))
+    # right stack: a copy of the left one appears, then the difference flies away or new bills drop in
+    kr = sm(t_now - 0.25, t_now + 0.1, t)
+    text(c, now_lab, 30, 'Semibold', GREY, SX_R, 785 + dy, a * kr)
+    base = min(nt, nn) if now < then else nt
+    for j in range(max(nt, nn)):
+        y = S_BOTTOM + dy - j * step
+        if j < nt:
+            k = pop(t_now - 0.45 + 0.015 * j, t, 2.6, 0.6)
+            if k <= 0:
+                continue
+            if j >= nn:                                   # lost: top bills leave first
+                t0 = t_now + 0.05 + 0.05 * (nt - 1 - j)
+                u = cl((t - t0) / 0.55)
+                side = 1 if j % 2 else -1
+                bill(c, SX_R + side * 160 * fx.ease_in(u), y - 260 * fx.ease_in(u), a * cl(k * 3) * (1 - u),
+                     rot=side * 0.9 * u, red=cl(u * 3))
+            else:
+                bill(c, SX_R, y - 40 * (1 - min(1, k)), a * cl(k * 3))
+        else:                                             # gained: new bills drop in
+            k = pop(t_now + 0.1 + 0.07 * (j - nt), t, 2.2, 0.55)
+            if k > 0:
+                bill(c, SX_R, y - 120 * (1 - min(1, k)), a * cl(k * 3))
+    p = fx.smooth(cl((t - t_now - 0.05) / (0.1 + 0.05 * abs(nt - nn) + 0.35)))
+    v = lerp(then, now, p)
+    kv2 = sm(t_now - 0.2, t_now + 0.1, t)
+    text(c, fmt(v), 56, 'Heavy', mix(COOL, col, p), SX_R, 840 + dy, a * kv2)
+    if sub_now:
+        text(c, sub_now, 28, 'Semibold', GREY, SX_R, 888 + dy, a * kv2)
+    arrow(c, 480, 1150 + dy, 600, 1150 + dy, sm(t_now - 0.3, t_now + 0.1, t), a, GREY, 4)
+
+
+# ------------------------------------------------------------------ hook: the cap's price then, today's is a question (v2)
 def hook(c, t):
     a, _, ko = win(t, -1, E['i_five'] - 0.25, dout=0.3)
     if a <= 0.004:
@@ -347,21 +423,16 @@ def hook(c, t):
     k0 = pop(-0.5, t, 1.6)
     text(c, 'КЕПКА ДУРОВА', 84, 'Heavy', WHITE, 540, 290 + dy, a * cl(k0 * 2), 1 + 0.05 * fx.bump(t - E['h_cap'], 3, 7))
     text(c, "Durov's Cap", 38, 'Semibold', GREY, 540, 370 + dy, a * cl(k0 * 2))
-    fall = sm(E['h_today'] + 0.1, E['h_500'] + 0.2, t)
-    sx, sy = shake(t, E['h_500'] + 0.1, 12)
-    gift(c, LOT[config.CAP], t, 540 + sx, 660 + dy + 40 * fall + 40 * (1 - k0) + sy, 460,
-         lerp(0.6, 1.0, k0) * lerp(1.0, 0.92, fall), a * cl(k0 * 2), rot=-0.12 * fall)
-    kp = sm(E['h_3k'] - 0.15, E['h_3k'] + 0.15, t)
-    v = lerp(2829, 512, fx.smooth(fall))
-    col = mix(COOL, ACC, fall)
-    text(c, money(v), 150, 'Heavy', col, 540 + sx, 1010 + dy, a * kp, 1 + 0.05 * fx.bump(t - E['h_3k'], 3, 7))
-    text(c, 'сентябрь 2025', 36, 'Semibold', GREY, 540, 1110 + dy, a * kp * (1 - fall))
-    text(c, 'сегодня', 36, 'Semibold', ACC, 540, 1110 + dy, a * fall)
-    # the old price, struck through, stays small above once the number has fallen
-    ko2 = sm(E['h_500'], E['h_500'] + 0.3, t)
-    text(c, '$2 829', 48, 'Heavy', GREY, 540, 905 + dy, a * ko2)
-    stroke(c, [(470, 908 + dy), (610, 902 + dy)], ACC, 4, ko2, a)
-    stamp(c, t, E['h_500'] + 0.1, '−82%', 540, 1250 + dy, a)
+    gift(c, LOT[config.CAP], t, 540, 640 + dy + 40 * (1 - k0), 440, lerp(0.6, 1.0, k0), a * cl(k0 * 2))
+    kp = pop(E['h_3k'] - 0.1, t, 1.8)
+    text(c, 'сентябрь 2025', 32, 'Semibold', GREY, 300, 900 + dy, a * cl(kp * 2))
+    text(c, '$2 829', 92, 'Heavy', COOL, 300, 985 + dy, a * cl(kp * 2), lerp(0.8, 1, kp))
+    kq = pop(E['h_today'] - 0.1, t, 1.8)
+    arrow(c, 480, 985 + dy, 590, 985 + dy, sm(E['h_today'] - 0.3, E['h_today'] + 0.1, t), a, GREY, 4)
+    text(c, 'сегодня', 32, 'Semibold', GREY, 790, 900 + dy, a * cl(kq * 2))
+    pulse = 1 + 0.07 * math.sin(max(0.0, t - E['h_today']) * 7)
+    text(c, '$ ???', 92, 'Heavy', ACC, 790, 985 + dy, a * cl(kq * 2), lerp(0.8, 1, kq) * pulse)
+    stamp(c, t, E['h_watch'] + 0.05, 'ОТВЕТ — В КОНЦЕ', 540, 1200 + dy, a, 58, WHITE)
 
 
 # ------------------------------------------------------------------ intro: five suspects
@@ -421,31 +492,8 @@ def place(c, t, key):
     sag = sm(E[w_now] - 0.1, E[w_now] + 0.6, t)
     gift(c, LOT[name], t, 540 + sx, 560 + dy + 40 * (1 - kg) + 30 * sag + sy, 380, lerp(0.6, 1.0, kg) * lerp(1, 0.94, sag),
          a * cl(kg * 2), rot=-0.09 * sag)
-    # price chart: hype up to the peak, then the fall to today's floor (proportional heights)
-    x0, x1, y0, y1 = 140, 940, 770, 1240
-    rrect(c, x0, y0, x1, y1, 36, SURF, a)
-    stroke(c, [(190, 1170 + dy), (890, 1170 + dy)], DIM, 2, 1, a)
-    ytop, ybot = 880, 1160
-    A = (360, ytop + dy)
-    B = (860, ytop + (ybot - ytop) * (1 - now / then) + dy)
-    S = (200, 1150 + dy)
-    up = wiggle(S[0], S[1], A[0], A[1], 16, n * 1.7, 14)
-    down = wiggle(A[0], A[1], B[0], B[1], 30, n * 2.3, 18)
-    pu = sm(E[w_then] - 0.35, E[w_then] + 0.25, t)
-    pd = fx.ease_in(cl((t - E[w_now] + 0.05) / 0.7))
-    stroke(c, up, COOL, 5, pu, a)
-    if pu > 0.97:
-        disc(c, A[0], A[1], 11, COOL, a)
-    stroke(c, down, ACC, 5, pd, a)
-    if pd > 0.98:
-        disc(c, B[0], B[1], 11, ACC, a)
-    kt = pop(E[w_then] - 0.05, t, 1.8)
-    text(c, money(then), 56, 'Heavy', COOL, A[0], A[1] - 52, a * cl(kt * 2), lerp(0.8, 1, kt))
-    text(c, then_lab, 28, 'Semibold', GREY, A[0], 1205 + dy, a * pu)
-    kn2 = pop(E[w_now] + 0.5, t, 1.8)
-    text(c, money(now), 56, 'Heavy', ACC, B[0] - 20, B[1] - 52, a * cl(kn2 * 2), lerp(0.8, 1, kn2))
-    text(c, 'ноя 2026', 28, 'Semibold', GREY, B[0] - 20, 1205 + dy, a * cl(kn2 * 2))
-    stamp(c, t, E[w_pct] + 0.05, pct, 700 + sx, 860 + dy + sy, a, 96)
+    stacks(c, t, then, now, E[w_then], E[w_now], dy, a, then_lab=then_lab.upper(), now_lab='СЕЙЧАС')
+    stamp(c, t, E[w_pct] + 0.05, pct, 540 + sx, 1010 + dy + sy, a, 80)
     text(c, src, 22, 'Medium', SRC, 540, 1275 + dy, a)
 
 
@@ -478,7 +526,7 @@ def _red_glow():
 
 def render_at(t):
     c = _bg().copy()
-    for t0 in (E['h_500'] + 0.1, E['cp_pct'] + 0.05):            # the two biggest crashes flush the room red
+    for t0 in (E['cp_pct'] + 0.05,):            # the two biggest crashes flush the room red
         g = math.exp(-((t - t0 - 0.25) / 0.45) ** 2)
         if g > 0.01:
             c += _red_glow() * g

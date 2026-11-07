@@ -11,7 +11,7 @@ def on(key, d=0.0):
 
 E = {
     'h_cap': wt('hook', 'кепку'), 'h_3k': wt('hook', 'три'), 'h_today': wt('hook', 'сегодня'),
-    'h_500': wt('hook', 'пятьсот'),
+    'h_watch': wt('hook', 'досмотрите'), 'h_wow': wt('hook', 'удивитесь'),
     'intro': on('intro', -0.2), 'i_five': wt('intro', 'пять'), 'i_burn': wt('intro', 'погорели'),
     'pepe': on('pepe', -0.15), 'pe_name': wt('pepe', 'плюш'), 'pe_then': wt('pepe', 'шестнадцать'),
     'pe_now': wt('pepe', 'стало'), 'pe_pct': wt('pepe', 'минус'),

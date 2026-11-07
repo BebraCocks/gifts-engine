@@ -254,3 +254,13 @@ iPhone 17e; кино на двоих = Plush Pepe → 3 × iPhone 18 Pro Max. С
 (звёзды, ≈ $0,015) → Fragment: Snoop Dogg ×2,6, Snoop Cigar +48%, Westside Sign +10%, Low Rider +3%, Swag Bag −11%.
 Сборки `renders/23-ton-trap/ton_trap_v1.mp4`, `renders/24-snoop-fans/snoop_fans_v1.mp4`, обе в Google Drive «TikTok».
 Дальше: автору посмотреть и послушать; правки — `--name …_v2`.
+
+## 2026-11-07 · Правки серии 22 и ролики 25, 26
+
+Автор: хук без итога, без графиков, обычные подарки и модели, «два подобных видео с другими подарками».
+22 → `renders/22-lost-money/lost_money_v3.mp4` (хук «$ ???», стопки купюр). 23 (ton_trap_v3) и 24 (snoop v2) не сданы —
+заменены роликами 25-year-ago («Год назад они стоили дороже»: Swag Bag, Signet Ring, Toy Bear, Scared Cat, Heroic Helmet)
+и 26-three-weeks («Потеряли бы всего за три недели»: Genie Lamp, Mighty Arm, Astral Shard, Surge Board, Durov's Glasses).
+Решения — `docs/DECISIONS.md`.
+Сборки: `renders/25-year-ago/year_ago_v1.mp4` (59,62 с), `renders/26-three-weeks/three_weeks_v1.mp4` (59,87 с), обе в Google Drive.
+Дальше: автору посмотреть и послушать; правки — новыми версиями.

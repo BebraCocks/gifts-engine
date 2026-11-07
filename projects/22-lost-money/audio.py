@@ -26,8 +26,8 @@ def sfx_layer(n, kit):
     add = kit.add
     add(fx, 'whoosh-short', 0.02, gain_db=-18, label='cap in (hook)')
     add(fx, 'coin', E['h_3k'] - 0.05, gain_db=-16, label='$2 829')
-    add(fx, 'downlifter', E['h_today'] + 0.1, gain_db=-19, fit=1.7, label='price rolls down to $512')
-    add(fx, 'impact', E['h_500'] + 0.1, gain_db=-15, label='stamp −82% (hook), red flush')
+    add(fx, 'popup', E['h_today'] - 0.1, gain_db=-17, label='«сегодня: $ ???»')
+    add(fx, 'impact', E['h_watch'] + 0.05, gain_db=-17, label='stamp «ответ — в конце»')
     add(fx, 'whoosh', E['i_five'] - 0.2, align='peak', gain_db=-20, label='title «на каких подарках…»')
     for i in range(5):
         add(fx, 'select-soft', E['i_five'] + 0.12 * i, gain_db=-20, label=f'suspect {i + 1} of 5')
@@ -36,8 +36,8 @@ def sfx_layer(n, kit):
     for n_, (key, p) in zip((5, 4, 3, 2, 1), places):
         add(fx, 'whoosh-short', E[key] + (0.1 if key == 'peach' else 0.0), gain_db=-19, label=f'place {n_} in')
         add(fx, 'pop', E[key] + 0.15, gain_db=-19, label=f'ring «{n_}»')
-        add(fx, 'power-up', E[p + '_then'] - 0.35, gain_db=-22, fit=0.6, label=f'place {n_}: line up to the peak')
-        add(fx, 'power-down', E[p + '_now'] - 0.05, gain_db=-19, fit=0.8, label=f'place {n_}: line falls, gift sags')
+        add(fx, 'paper', E[p + '_then'] - 0.2, gain_db=-21, fit=0.6, label=f'place {n_}: stack of bills')
+        add(fx, 'power-down', E[p + '_now'] + 0.2, gain_db=-20, fit=0.9, label=f'place {n_}: bills fly away, gift sags')
         add(fx, 'impact', E[p + '_pct'] + 0.05, gain_db=-16 if key != 'cap' else -14, label=f'place {n_}: stamp')
     add(fx, 'sub-drop', E['cp_pct'] + 0.05, gain_db=-17, label='place 1: red flush')
     add(fx, 'whoosh', E['outro'], align='peak', gain_db=-19, label='outro cards in')

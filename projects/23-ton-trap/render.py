@@ -29,11 +29,9 @@ BG, WHITE, GREY, DIM, ACC = config.BACKGROUND, config.WHITE, config.GREY, config
 SURF = config.SURFACE
 COOL = config.COOL
 GAIN = config.GAIN
-LOT = {'cat': str(gifts_api.original_file(config.CAT, 'json')),
-       'pepe': str(gifts_api.original_file(config.PEPE, 'json')),
-       'durov': str(gifts_api.model_file(config.PEPE, config.PEPE834_MODEL, 'json'))}
-MINI = [str(gifts_api.original_png(config.CAT, 128)), str(gifts_api.model_png(config.PEPE, config.PEPE834_MODEL, 128)),
-        str(gifts_api.original_png(config.PEPE, 128)), str(gifts_api.original_png(config.PEPE, 128))]
+KEYS = ('ring', 'rose', 'potion', 'cat')
+LOT = {k: str(gifts_api.model_file(*getattr(config, k.upper()), 'json')) for k in KEYS}
+MINI = [str(gifts_api.model_png(*getattr(config, k.upper()), 128)) for k in KEYS]
 SRC = (78, 86, 122)                      # source lines
 
 def cl(x):
@@ -291,7 +289,7 @@ def price(c, t, t0, s, size, color, cx, cy, a):
 
 
 # ------------------------------------------------------------------ captions (not for the hook and the intro)
-ACC_WORDS = {'$553.', '$8300.', '$5534.', '$118 657!', 'выводите?'}
+ACC_WORDS = {'$11.', '$8.', '$9.', 'меньше'}
 
 
 def _phr(k):
@@ -367,62 +365,141 @@ def ton_text(v):
     return counter(v) + ' TON'
 
 
-# ------------------------------------------------------------------ hook: the record Pepe, paid in TON
+# ------------------------------------------------------------------ money stacks: «было» / «сейчас» (no charts, v2)
+BILL, BILL_EDGE, BILL_DARK = (46, 132, 86), (128, 220, 158), (30, 92, 60)
+SX_L, SX_R, S_BOTTOM, BW, BH, BGAP, NMAX = 260, 820, 1215, 190, 24, 5, 10
+
+
+def bill(c, cx, cy, a=1.0, rot=0.0, red=0.0):
+    """A banknote seen from the edge of a stack: green body, light edge, a «$» in the middle; red>0 tints it."""
+    if a <= 0.004:
+        return
+    body = mix(BILL, (150, 50, 60), red)
+    edge = mix(BILL_EDGE, ACC, red)
+    pts = rot_pts(rrect_pts(cx - BW / 2, cy - BH / 2, cx + BW / 2, cy + BH / 2, 6, 4), cx, cy, rot)
+    fill(c, pts, body, a)
+    stroke(c, pts, edge, 2.5, 1, a)
+    inner = rot_pts(rrect_pts(cx - BW * 0.36, cy - BH * 0.26, cx + BW * 0.36, cy + BH * 0.26, 4, 3), cx, cy, rot)
+    stroke(c, inner, mix(BILL_DARK, (110, 30, 40), red), 2, 1, a)
+    put(c, label('$', 20, 'Heavy', mix(BILL_EDGE, ACC, red)), cx, cy, 1.0, a, rot)
+
+
+def counts(then, now):
+    if then >= now:
+        return NMAX, max(1, round(NMAX * now / then))
+    return max(1, round(NMAX * then / now)), NMAX
+
+
+def stacks(c, t, then, now, t_then, t_now, dy, a, then_lab='БЫЛО', now_lab='СЕЙЧАС', sub_then=None, sub_now=None,
+           fmt=None):
+    """Left: the stack that was paid; right: what it is worth now. Extra bills fly away (loss) or drop in (gain)."""
+    fmt = fmt or money
+    nt, nn = counts(then, now)
+    col = ACC if now < then * 0.97 else (GAIN if now > then * 1.2 else GREY)
+    step = BH + BGAP
+    # left stack
+    kl = sm(t_then - 0.25, t_then + 0.1, t)
+    text(c, then_lab, 30, 'Semibold', GREY, SX_L, 785 + dy, a * kl)
+    kv = pop(t_then - 0.05, t, 1.8)
+    text(c, fmt(then), 56, 'Heavy', COOL, SX_L, 840 + dy, a * cl(kv * 2), lerp(0.8, 1, kv))
+    if sub_then:
+        text(c, sub_then, 28, 'Semibold', GREY, SX_L, 888 + dy, a * cl(kv * 2))
+    for j in range(nt):
+        k = pop(t_then - 0.2 + 0.04 * j, t, 2.4, 0.6)
+        if k > 0:
+            bill(c, SX_L, S_BOTTOM + dy - j * step - 40 * (1 - min(1, k)), a * cl(k * 3))
+    # right stack: a copy of the left one appears, then the difference flies away or new bills drop in
+    kr = sm(t_now - 0.25, t_now + 0.1, t)
+    text(c, now_lab, 30, 'Semibold', GREY, SX_R, 785 + dy, a * kr)
+    base = min(nt, nn) if now < then else nt
+    for j in range(max(nt, nn)):
+        y = S_BOTTOM + dy - j * step
+        if j < nt:
+            k = pop(t_now - 0.45 + 0.015 * j, t, 2.6, 0.6)
+            if k <= 0:
+                continue
+            if j >= nn:                                   # lost: top bills leave first
+                t0 = t_now + 0.05 + 0.05 * (nt - 1 - j)
+                u = cl((t - t0) / 0.55)
+                side = 1 if j % 2 else -1
+                bill(c, SX_R + side * 160 * fx.ease_in(u), y - 260 * fx.ease_in(u), a * cl(k * 3) * (1 - u),
+                     rot=side * 0.9 * u, red=cl(u * 3))
+            else:
+                bill(c, SX_R, y - 40 * (1 - min(1, k)), a * cl(k * 3))
+        else:                                             # gained: new bills drop in
+            k = pop(t_now + 0.1 + 0.07 * (j - nt), t, 2.2, 0.55)
+            if k > 0:
+                bill(c, SX_R, y - 120 * (1 - min(1, k)), a * cl(k * 3))
+    p = fx.smooth(cl((t - t_now - 0.05) / (0.1 + 0.05 * abs(nt - nn) + 0.35)))
+    v = lerp(then, now, p)
+    kv2 = sm(t_now - 0.2, t_now + 0.1, t)
+    text(c, fmt(v), 56, 'Heavy', mix(COOL, col, p), SX_R, 840 + dy, a * kv2)
+    if sub_now:
+        text(c, sub_now, 28, 'Semibold', GREY, SX_R, 888 + dy, a * kv2)
+    arrow(c, 480, 1150 + dy, 600, 1150 + dy, sm(t_now - 0.3, t_now + 0.1, t), a, GREY, 4)
+
+
+# ------------------------------------------------------------------ hook: a cat sold for 7 TON; today is a question (v3)
 def hook(c, t):
-    a, _, ko = win(t, -1, E['i_ton'] - 0.6, dout=0.3)
+    a, _, ko = win(t, -1, E['intro'], dout=0.3)
     if a <= 0.004:
         return
     dy = -80 * ko
     k0 = pop(-0.5, t, 1.6)
-    text(c, 'РЕКОРДНЫЙ ПЕПЕ', 84, 'Heavy', WHITE, 540, 290 + dy, a * cl(k0 * 2), 1 + 0.05 * fx.bump(t - E['h_pepe'], 3, 7))
-    text(c, 'Plush Pepe · 25 октября 2025', 36, 'Semibold', GREY, 540, 370 + dy, a * cl(k0 * 2))
-    fall = sm(E['h_today'] + 0.1, E['h_119'] + 0.5, t)
-    sx, sy = shake(t, E['h_119'] + 0.6, 12)
-    gift(c, LOT['pepe'], t, 540 + sx, 640 + dy + 40 * fall + 40 * (1 - k0) + sy, 440,
-         lerp(0.6, 1.0, k0) * lerp(1.0, 0.92, fall), a * cl(k0 * 2), rot=-0.12 * fall)
-    kp = sm(E['h_228'] - 0.15, E['h_228'] + 0.15, t)
-    v = lerp(228000, 118657, fx.smooth(fall))
-    text(c, money(v), 140, 'Heavy', mix(COOL, ACC, fall), 540 + sx, 975 + dy, a * kp,
-         1 + 0.05 * fx.bump(t - E['h_228'], 3, 7))
-    text(c, 'тогда', 34, 'Semibold', GREY, 540, 1065 + dy, a * kp * (1 - fall))
-    text(c, 'сегодня', 34, 'Semibold', ACC, 540, 1065 + dy, a * fall)
+    text(c, 'ЯНВАРЬ 2025', 84, 'Heavy', WHITE, 540, 290 + dy, a * cl(k0 * 2))
+    text(c, 'Scared Cat · испуганный кот', 36, 'Semibold', GREY, 540, 370 + dy, a * cl(k0 * 2))
+    gift(c, LOT['cat'], t, 540, 640 + dy + 40 * (1 - k0), 440, lerp(0.6, 1.0, k0), a * cl(k0 * 2),
+         rot=0.05 * fx.bump(t - E['h_cat'], 3, 7))
     kt = pop(E['h_ton'] - 0.1, t, 1.8)
-    ton_coin(c, 365, 1160 + dy, 34, a * cl(kt * 2))
-    text(c, '107 207 TON', 56, 'Heavy', WHITE, 420, 1160 + dy, a * cl(kt * 2), left=True)
-    stamp(c, t, E['h_119'] + 0.6, '−$109 343', 540, 1290 + dy, a, 92)
+    text(c, 'продали за', 32, 'Semibold', GREY, 280, 900 + dy, a * cl(kt * 2))
+    ton_coin(c, 160, 975 + dy, 26, a * cl(kt * 2))
+    text(c, '7 TON', 72, 'Heavy', WHITE, 200, 975 + dy, a * cl(kt * 2), lerp(0.8, 1, kt), left=True)
+    ku = pop(E['h_usd'] - 0.1, t, 1.8)
+    text(c, '= $34', 52, 'Heavy', COOL, 280, 1055 + dy, a * cl(ku * 2), lerp(0.8, 1, ku))
+    arrow(c, 500, 975 + dy, 590, 975 + dy, sm(E['h_q'] - 0.3, E['h_q'] + 0.1, t), a, GREY, 4)
+    kq = pop(E['h_q'] - 0.1, t, 1.8)
+    pulse = 1 + 0.07 * math.sin(max(0.0, t - E['h_q']) * 7)
+    text(c, 'сегодня', 32, 'Semibold', GREY, 800, 900 + dy, a * cl(kq * 2))
+    text(c, 'TON = $ ?', 60, 'Heavy', ACC, 800, 975 + dy, a * cl(kq * 2), lerp(0.8, 1, kq) * pulse)
+    kc = pop(E['h_qcat'] - 0.15, t, 1.8)
+    text(c, 'кот = $ ?', 60, 'Heavy', GAIN, 800, 1055 + dy, a * cl(kc * 2), lerp(0.8, 1, kc) * pulse)
+    stamp(c, t, E['h_end'] + 0.05, 'ОТВЕТ — В КОНЦЕ', 540, 1210 + dy, a, 58, WHITE)
 
 
 # ------------------------------------------------------------------ intro: the coin melts
 def intro(c, t):
-    a, ki, ko = win(t, E['i_ton'] - 0.5, E['cat'], dout=0.3)
+    a, ki, ko = win(t, E['intro'], E['ring'], dout=0.3)
     if a <= 0.004:
         return
     dy = 40 * (1 - ki) - 90 * ko
     text(c, 'ПРОДАЛИ ЗА TON', 92, 'Heavy', WHITE, 540, 360 + dy, a)
-    text(c, 'И НЕ ВЫВЕЛИ?', 120, 'Heavy', ACC, 540, 490 + dy, a, 1 + 0.06 * fx.bump(t - E['i_melt'], 3, 7))
-    melt = sm(E['i_melt'] - 0.1, E['i_melt'] + 0.9, t)
+    text(c, 'И НЕ ВЫВЕЛИ?', 120, 'Heavy', WHITE, 540, 490 + dy, a)
+    melt = sm(E['i_twice'] - 0.4, E['i_twice'] + 0.6, t)
+    kd = pop(E['i_twice'] - 0.05, t, 1.8)
+    text(c, 'ПОТЕРЯЛИ ДВАЖДЫ', 80, 'Heavy', ACC, 540, 1010 + dy, a * cl(kd * 2), lerp(0.7, 1, kd))
     k = pop(E['i_ton'] - 0.3, t, 1.6)
     ton_coin(c, 540, 800 + dy, lerp(60, 150, k), a * cl(k * 2), melt)
-    text(c, 'курс TON: тогда  →  7 ноября 2026 · $1,107', 32, 'Semibold', GREY, 540, 1080 + dy, a)
+    text(c, 'курс TON: $4,83 в январе 2025  →  $1,10 сегодня', 32, 'Semibold', GREY, 540, 1100 + dy, a)
 
 
-# ------------------------------------------------------------------ places 4..1: the same TON, fewer dollars
+# ------------------------------------------------------------------ places 4..1: the TON melted, the gift grew (v3)
 PLACES = {
-    # key: (place, lottie key, title, subtitle, TON, $ then, $ now, then label, word prefix, source)
-    'cat': (4, 'cat', 'Scared Cat', 'перепродажа · 15.11.2025', 500, 920, 553, 'ноя 2025', 'ca',
-            'сделка: пост @0xdamx в X, 15.11.2025 · курс TON: tonapi.io, 07.11.2026'),
-    'durov': (3, 'durov', 'Plush Pepe #834', 'купил Дуров · июнь 2026', 7500, 12000, 8301, 'июн 2026', 'du',
-              'сделка: BeInCrypto, 27.06.2026 · курс TON: tonapi.io, 07.11.2026'),
-    'sept': (2, 'pepe', 'Plush Pepe', 'минимальная цена · сентябрь 2025', 5000, 16170, 5534, 'сен 2025', 'se',
-             'цена: U.Today, 09.09.2025 (≈ 5 000 TON) · курс TON: tonapi.io, 07.11.2026'),
-    'record': (1, 'pepe', 'Plush Pepe', 'рекордная продажа · 25.10.2025', 107207, 228000, 118657, 'окт 2025', 're',
-               'сделка: vc.ru 27.11.2025, DTF · курс TON: tonapi.io, 07.11.2026'),
+    # key: (place, title, ru, model, TON, $ then, $ of the TON now, $ of the gift now, prefix)
+    'ring': (4, 'Signet Ring', 'кольцо', 'Mandarin', 10, 48.3, 11.05, 41.98, 'ri'),
+    'rose': (3, 'Eternal Rose', 'роза', 'Pop Petal', 7, 33.81, 7.73, 38.67, 'ro'),
+    'potion': (2, 'Magic Potion', 'зелье', 'Dimensional', 8, 38.64, 8.84, 82.86, 'po'),
+    'cat': (1, 'Scared Cat', 'кот', 'El Tigre', 7, 33.81, 7.73, 330.34, 'ca'),
 }
-ORDER = ['cat', 'durov', 'sept', 'record', 'outro']
+ORDER = ['ring', 'rose', 'potion', 'cat', 'outro']
+SRC_LINE = 'январь 2025: пост @s0meone_u_know, курс Kraken · сегодня: Fragment, tonapi.io, 07.11.2026'
+
+
+def usd(v):
+    return '$' + counter(v)
 
 
 def place(c, t, key):
-    n, lot, name, sub, ton, then, now, then_lab, p, src = PLACES[key]
+    n, name, ru, model, ton, then, now, giftnow, p = PLACES[key]
     t1 = E[ORDER[ORDER.index(key) + 1]]
     a, ki, ko = win(t, E[key] + 0.05, t1, dout=0.3)
     if a <= 0.004:
@@ -435,38 +512,21 @@ def place(c, t, key):
     text(c, 'МЕСТО', 24, 'Semibold', GREY, 150, 345 + dy, a * cl(kh * 2))
     kn = sm(E[p + '_name'] - 0.15, E[p + '_name'] + 0.15, t)
     text(c, name, 62, 'Heavy', WHITE, 245, 228 + dy, a * kn, left=True)
-    text(c, sub, 34, 'Semibold', GREY, 245, 292 + dy, a * kn, left=True)
+    text(c, 'модель ' + model, 34, 'Semibold', GREY, 245, 292 + dy, a * kn, left=True)
+    # the gift grows when its own price is named
     kg = pop(E[key] + 0.1, t, 1.6)
-    sag = sm(E[p + '_now'] - 0.1, E[p + '_now'] + 0.6, t)
-    gift(c, LOT[lot], t, 540 + sx, 550 + dy + 40 * (1 - kg) + 30 * sag + sy, 360, lerp(0.6, 1.0, kg) * lerp(1, 0.94, sag),
-         a * cl(kg * 2), rot=-0.09 * sag)
-    # chart: the dollar value of the same TON, from the deal to today
-    rrect(c, 140, 750, 940, 1250, 36, SURF, a)
-    stroke(c, [(190, 1180 + dy), (890, 1180 + dy)], DIM, 2, 1, a)
-    ytop, ybot = 940, 1165
-    A = (250, ytop + dy)
-    B = (840, ytop + (ybot - ytop) * (1 - now / then) + dy)
-    down = wiggle(A[0], A[1], B[0], B[1], 30, n * 2.3, 16)
-    kt = pop(E[p + '_then'] - 0.05, t, 1.8)
-    if kt > 0:
-        disc(c, A[0], A[1], 11, COOL, a * cl(kt * 2))
-    pd = fx.ease_in(cl((t - E[p + '_now'] + 0.05) / 0.7))
-    stroke(c, down, ACC, 5, pd, a)
-    if pd > 0.98:
-        disc(c, B[0], B[1], 11, ACC, a)
-    text(c, money(then), 54, 'Heavy', COOL, A[0] + 30, A[1] - 52, a * cl(kt * 2), lerp(0.8, 1, kt))
-    text(c, then_lab, 28, 'Semibold', GREY, A[0], 1215 + dy, a * cl(kt * 2))
-    kn2 = pop(E[p + '_now'] + 0.3, t, 1.8)
-    text(c, money(now), 54, 'Heavy', ACC, B[0] - 60, B[1] - 52, a * cl(kn2 * 2), lerp(0.8, 1, kn2))
-    text(c, 'ноя 2026', 28, 'Semibold', GREY, B[0], 1215 + dy, a * cl(kn2 * 2))
-    # the TON amount: the same on both ends
-    kton = pop(E[p + '_ton'] - 0.05, t, 1.8)
-    ton_coin(c, 200, 800 + dy, 20, a * cl(kton * 2))
-    text(c, ton_text(ton), 36, 'Heavy', WHITE, 232, 800 + dy, a * cl(kton * 2), left=True)
-    text(c, '= столько же TON сегодня', 28, 'Semibold', GREY, 232 + fx.font('Heavy', 36).getlength(ton_text(ton)) + 18,
-         802 + dy, a * cl(kn2 * 2), left=True)
-    stamp(c, t, E[p + '_pct'] + 0.05, '−' + money(then - now), 715 + sx, 885 + dy + sy, a, 64 if then - now > 99999 else 72)
-    text(c, src, 21, 'Medium', SRC, 540, 1285 + dy, a)
+    grow = pop(E[p + '_gift'] - 0.1, t, 1.6, 0.5)
+    gift(c, LOT[key], t, 400, 560 + dy + 40 * (1 - kg), 360, lerp(0.6, 1.0, kg) * (1 + 0.12 * min(grow, 1.2)),
+         a * cl(kg * 2))
+    if grow > 0:
+        x0 = 640
+        rrect(c, x0, 500 + dy, x0 + 300, 640 + dy, 30, SURF, a * cl(grow * 2), outline=GAIN, width=3)
+        text(c, ru + ' сейчас', 30, 'Semibold', GREY, x0 + 150, 540 + dy, a * cl(grow * 2))
+        text(c, usd(giftnow), 60, 'Heavy', GAIN, x0 + 150, 600 + dy, a * cl(grow * 2), lerp(0.8, 1, min(grow, 1)))
+    stacks(c, t, then, now, E[p + '_then'], E[p + '_now'], dy, a, then_lab='ЯНВАРЬ 2025', now_lab='ЭТИ TON СЕЙЧАС',
+           sub_then='продали за ' + ton_text(ton), sub_now='те же ' + ton_text(ton), fmt=usd)
+    stamp(c, t, E[p + '_pct'] + 0.05, '−77%', 540 + sx, 1010 + dy + sy, a, 72)
+    text(c, SRC_LINE, 21, 'Medium', SRC, 540, 1285 + dy, a)
 
 
 # ------------------------------------------------------------------ bait: hold or cash out?
@@ -475,18 +535,18 @@ def outro(c, t):
     if a <= 0.004:
         return
     dy = 40 * (1 - ki)
-    text(c, 'А ВЫ ДЕРЖИТЕ TON', 80, 'Heavy', WHITE, 540, 300 + dy, a)
-    text(c, 'ИЛИ ВЫВОДИТЕ?', 120, 'Heavy', ACC, 540, 425 + dy, a, 1 + 0.06 * fx.bump(t - E['o_out'], 3, 7))
-    for i, (x, lab, tw, col) in enumerate(((310, 'ДЕРЖУ', E['o_hold'], config.TON_BLUE), (770, 'ВЫВОЖУ', E['o_out'], GAIN))):
+    text(c, 'ПРОДАТЬ ЗА TON', 84, 'Heavy', WHITE, 540, 300 + dy, a, 1 + 0.06 * fx.bump(t - E['o_sell'], 3, 7))
+    text(c, 'ИЛИ ДЕРЖАТЬ?', 120, 'Heavy', GAIN, 540, 425 + dy, a, 1 + 0.06 * fx.bump(t - E['o_hold'], 3, 7))
+    for i, (x, lab, tw, col) in enumerate(((310, 'ПРОДАТЬ', E['o_sell'], config.TON_BLUE), (770, 'ДЕРЖАТЬ', E['o_hold'], GAIN))):
         k = pop(E['outro'] + 0.15 + 0.12 * i, t, 1.8)
         hi = sm(tw - 0.05, tw + 0.2, t)
         rrect(c, x - 200, 560 + dy, x + 200, 860 + dy, 44, SURF, a * cl(k * 2), outline=mix(DIM, col, hi), width=4)
         if i == 0:
             ton_coin(c, x, 670 + dy + 20 * (1 - k), 62 * lerp(0.6, 1, k) * (1 + 0.1 * hi), a * cl(k * 2))
         else:
-            text(c, '$', 130, 'Heavy', col, x, 670 + dy + 20 * (1 - k), a * cl(k * 2), lerp(0.6, 1, k) * (1 + 0.1 * hi))
+            gift(c, LOT['cat'], t, x, 670 + dy + 20 * (1 - k), 170, lerp(0.6, 1, k) * (1 + 0.1 * hi), a * cl(k * 2))
         text(c, lab, 50, 'Heavy', mix(WHITE, col, hi), x, 800 + dy, a * cl(k * 2))
-    comment_field(c, t, E['o_write'], 'Я сразу вывожу, потому что ', y=1050)
+    comment_field(c, t, E['o_write'], 'Я бы держал подарок, потому что ', y=1050)
 
 
 @functools.lru_cache(None)
@@ -498,7 +558,7 @@ def _red_glow():
 
 def render_at(t):
     c = _bg().copy()
-    for t0 in (E['h_119'] + 0.6, E['re_pct'] + 0.05):              # the record loss flushes the room red twice
+    for t0 in (E['ca_pct'] + 0.05,):              # the record loss flushes the room red twice
         g = math.exp(-((t - t0 - 0.25) / 0.45) ** 2)
         if g > 0.01:
             c += _red_glow() * g

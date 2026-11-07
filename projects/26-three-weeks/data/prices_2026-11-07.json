@@ -1,0 +1,12 @@
+{
+ "_note": "Ролик 26-three-weeks. Минимальные цены Fragment по дням — открытые данные tggifts.com/data/floors-daily.json (CC BY 4.0, первое чтение дня UTC): 18.10.2026 и 07.11.2026; сегодня сверено с Fragment 2026-11-07 06:47 UTC. Курс GRAM (бывш. TON): 18.10.2026 — $1,348 (Kraken TONUSD, закрытие), 07.11.2026 — $1,1048 (tonapi.io). Минус в долларах складывается из цены в GRAM и курса (−18%).",
+ "rate": {"2026-10-18": 1.348, "2026-11-07": 1.1048},
+ "gifts": {
+  "Genie Lamp":      {"gram": [40, 40],   "usd": [53.92, 44.19],   "change": "−18%", "model_now": "Bronze Dust", "lot": "https://fragment.com/gift/genielamp-1935"},
+  "Mighty Arm":      {"gram": [150, 150], "usd": [202.2, 165.72],  "change": "−18%", "model_now": "Petrified", "lot": "https://fragment.com/gift/mightyarm-2172"},
+  "Astral Shard":    {"gram": [149, 148], "usd": [200.85, 163.51], "change": "−19%", "model_now": "Arctite", "lot": "https://fragment.com/gift/astralshard-3935", "caveat": "18.10 — цена аукционного лота (timed), 07.11 — купить сразу"},
+  "Surge Board":     {"gram": [9, 8],     "usd": [12.13, 8.84],    "change": "−27%", "model_now": "Blåhaj", "lot": "https://fragment.com/gift/surgeboard-23102"},
+  "Durov's Glasses": {"gram": [189, 148], "usd": [254.77, 163.51], "change": "−36%", "model_now": "Lovestruck", "lot": "https://fragment.com/gift/durovsglasses-697"}
+ },
+ "excluded": "Resistance Dog, Lucky Locket, Mirage Lamp (−95…−99% в данных — одиночные завышенные выставления без продаж), Heroic Helmet (в ролике 25)."
+}

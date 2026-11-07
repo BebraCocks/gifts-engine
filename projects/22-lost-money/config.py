@@ -20,3 +20,4 @@ CAP = "Durov's Cap"
 GIFT_NAME = None
 MODEL_NAME = None
 WITHOUT_NARRATION = False
+GAIN = (110, 231, 160)

@@ -1,0 +1,15 @@
+{
+ "_note": "Ролик 24-snoop-fans. Цена в магазине — звёзды на релизе 09.07.2025 и их долларовая оценка в источниках (CoinMarketCap Academy, itc.ua: 200–10 000 звёзд, «about $3 … $150», т. е. ≈ $0,015 за звезду). Сейчас — самый дешёвый лот на Fragment 07.11.2026 05:52 UTC × курс tonapi.io 1 TON (GRAM) = $1,1068. Плата за улучшение до NFT и комиссия покупки звёзд не учтены.",
+ "sources": ["https://coinmarketcap.com/academy/article/nft-news-snoop-dogg-nft-collection-sells-out-in-30-minutes-on-telegram-platform",
+             "https://itc.ua/en/news/snoop-dogg-s-nft-drop-on-telegram-sold-like-hotcakes-12-million-in-30-minutes",
+             "https://www.theblock.co/post/361955/snoop-dogg-telegram-digital-collectibles (10.07.2025: ≈ 996 000 штук, $12 млн, 30 минут)"],
+ "ton_usd": 1.1068,
+ "gifts": {
+  "Snoop Dogg":    {"stars": 200,   "usd_then": 3,    "floor_ton": 7,   "usd_now": 7.75,   "change": "+158% (×2,6)", "lot_page": "https://fragment.com/gifts/snoopdogg?sort=price_asc&filter=sale"},
+  "Snoop Cigar":   {"stars": 1000,  "usd_then": 15,   "floor_ton": 20,  "usd_now": 22.14,  "change": "+48%",  "lot_page": "https://fragment.com/gifts/snoopcigar?sort=price_asc&filter=sale"},
+  "Westside Sign": {"stars": 10000, "usd_then": 150,  "floor_ton": 149, "usd_now": 164.91, "change": "+10%",  "lot_page": "https://fragment.com/gifts/westsidesign?sort=price_asc&filter=sale"},
+  "Low Rider":     {"stars": 5000,  "usd_then": 75,   "floor_ton": 70,  "usd_now": 77.48,  "change": "+3%",   "lot_page": "https://fragment.com/gifts/lowrider?sort=price_asc&filter=sale"},
+  "Swag Bag":      {"stars": 500,   "usd_then": 7.5,  "floor_ton": 6,   "usd_now": 6.64,   "change": "−11%",  "lot_page": "https://fragment.com/gifts/swagbag?sort=price_asc&filter=sale"}
+ },
+ "caveat": "Тиражи в источниках расходятся (Westside Sign 12 000 или 24 000) — в ролике не названы."
+}

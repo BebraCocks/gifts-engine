@@ -1,0 +1,18 @@
+{
+ "_note": "Факты ролика 20-ufc-gifts: что сказано, источник, дата публикации, дата проверки.",
+ "hook": {"said": "10 чемпионов UFC стали подарками, раскупили за 4 часа",
+   "source": ["https://www.complex.com/sports/a/maggie-ekberg/viral-streamer-n3on-ufc-323-digital-drop (12.12.2025: 10 бойцов, аукцион «just over four hours», «all 60,000 gifts sold» по посту UFC Strike в X)",
+              "api.changes.tg: UFC Strike, 10 моделей бойцов по 4%, releasedAt 2025-12-07, auction"],
+   "note": "все десять — действующие или бывшие чемпионы UFC"},
+ "khabib": {"said": "29 000 папах за сутки, почти $4,5 млн; 22.11.2025",
+   "source": ["https://www.tmz.com/2025/12/05/neon-hosting-telegram-drop-livestream-ufc/", "https://www.essentiallysports.com/ufc-mma-news-khabib-nurmagomedov-raises-four-million-five-hundred-thousand-dollars-with-telegram-using-his-fathers-keepsake/"]},
+ "conor": {"said": "Макгрегор назвал это обманом; ему напомнили, что Джонс, Адесанья и Оливейра тоже рекламировали подарки",
+   "source": ["https://www.essentiallysports.com/ufc-mma-news-israel-adesanya-and-jon-jones-repeat-the-same-move-conor-mcgregor-called-khabib-a-scammer-for (05.12.2025: пост CEO Gameplan Магомеда Курбайтаева — Oliveira, Adesanya, Jones и Leon Edwards «all promoted Telegram gifts»)"]},
+ "strike": {"said": "через две недели вышла UFC Strike: Джонс, Перейра, Чимаев, Топурия, Волкановски и ещё пятеро",
+   "source": ["Complex 12.12.2025 (список 10 бойцов)", "api.changes.tg (модели J. Jones … A. Pantoja)"]},
+ "neon": {"said": "аукцион вёл стример N3on в ночь UFC 323", "source": ["Complex 12.12.2025", "TMZ 05.12.2025"]},
+ "octagon": {"said": "подарки показывали у входа в октагон на выходе бойцов",
+   "source": ["https://theblast.com/755482/n3on-follows-snoop-dogg-massive-ufc-fight-night-activation/ (21.12.2025)"]},
+ "gold": {"said": "золотые модели — по 0,5% каждая", "source": ["api.changes.tg, 2026-11-07: Gold Adesanya … Gold Volkanovski, rarity 0.5"]},
+ "unknown": ["общая сумма UFC Strike — «millions of dollars' worth of bids in Stars», точной цифры нет, в ролике не названа"]
+}

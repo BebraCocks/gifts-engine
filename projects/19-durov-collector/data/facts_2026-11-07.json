@@ -1,0 +1,23 @@
+{
+ "_note": "Факты ролика 19-durov-collector: что сказано, источник, дата публикации, дата проверки.",
+ "pepe1": {"said": "в профиле Дурова самый первый Plush Pepe; подарили весной 2025 за $47 000 (14 850 TON)",
+   "source": ["https://t.me/nft/PlushPepe-1 — Owner Pavel Durov, Pumpkin 3%, проверено 2026-11-07 03:26 UTC",
+              "https://forklog.com/en/telegrams-pavel-durov-receives-nft-frog-valued-at-4-million-rubles/amp (27.04.2025, подарил Mr FreeMan)"]},
+ "helmet": {"said": "летом Дуров купил шлем за $11 000, в 10 раз дороже рынка (Heroic Helmet #1100)",
+   "source": ["https://kod.ru/durov-gifts-purchases (27.07.2025, по данным канала barboskich.ton)"],
+   "note": "сейчас владелец HeroicHelmet-1100 — другой аккаунт (t.me, 2026-11-07): в ролике сказано «купил», не «владеет». «Обычная цена ≈ $1 100» на экране — следствие слов «переплатил в 10 раз»"},
+ "pepe834": {"said": "в июне 2026 купил ещё одного Пепе (#834, 7 500 GRAM) и подарил дизайнеру Телеграма",
+   "source": ["https://finance.yahoo.com/markets/crypto/articles/pavel-durov-gifts-12-000-122057840.html (BeInCrypto, 27.06.2026)",
+              "https://t.me/nft/PlushPepe-834 — Donatello 1%, проверено 2026-11-07"]},
+ "brick": {"said": "7 000 кирпичей на 1 апреля раскупили за 34 минуты (Artisan Brick, 5 000 ★)",
+   "source": ["https://forklog.com/en/pavel-durov-earns-95-8-million-rubles-from-nft-bricks/amp (01.04.2025)", "api.changes.tg: Artisan Brick releasedAt 2025-04-01"]},
+ "cap": {"said": "кепку продавали за $15, через год — почти $3 000 (на экране $2 829, сентябрь 2025)",
+   "source": ["https://forklog.com/en/influencer-trades-porsche-gt3-for-18-digital-telegram-gifts/ (25.08.2025: Durov's Cap «from $15»)",
+              "https://vc.ru/telegram/2221885-rost-tsen-na-podarki-telegram (18.09.2025: $2 829 по скриншоту Gift Charts в канале Дурова)"],
+   "note": "линия на экране — эскиз между двумя датированными точками, не график данных"},
+ "quote": {"said": "подарки за пару долларов теперь продают дороже $100 000",
+   "source": ["https://en.tengrinews.kz/internet/this-is-immoral-durov-responds-to-rising-extortion-schemes-268735 (22.07.2025: «Rare Telegram gifts, numbers, and usernames — once bought for just a few dollars — can now sell for over $100,000»)"]},
+ "total": {"said": "761 публичный подарок, почти на 35 млн ₽",
+   "source": ["https://cyber.sports.ru/tech/blogs/3331514.html (блог, 16.06.2025: 761 подарок ≈ 34 843 187 ₽)"], "note": "оценка блога, сейчас не перепроверено"},
+ "not_used": ["Plush Pepe девушке на 25-летие (только канал «Код Дурова»)"]
+}

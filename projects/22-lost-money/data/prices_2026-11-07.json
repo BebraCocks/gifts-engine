@@ -1,0 +1,15 @@
+{
+ "_note": "Цены ролика 22-lost-money. Сейчас: Fragment, коллекция, фильтр «в продаже», сортировка по цене (самый дешёвый лот), проверено 2026-11-07 05:52 UTC. Курс tonapi.io 2026-11-07 05:52 UTC: 1 TON = $1,1068 = 90,43 ₽. Пик: Gift Charts в канале Дурова (t.me/durov/450) через vc.ru 18.09.2025 (https://vc.ru/telegram/2221885-rost-tsen-na-podarki-telegram). Папаха: средняя цена аукциона = выручка $4,35–4,5 млн / 29 000 штук ≈ $150–155 (источники — projects/20-ufc-gifts/data/facts_2026-11-07.json).",
+ "ton_usd": 1.1068,
+ "ton_rub": 90.43,
+ "gifts": {
+  "Plush Pepe":     {"then_usd": 16300, "then": "vc.ru 18.09.2025 «самый дорогой — Плюшевый Пепе за $16,3 тысячи»", "now_ton": 7250, "now_usd": 8024, "lot": "https://fragment.com/gift/plushpepe-931", "change": "−51% (в речи «минус половина»)"},
+  "Heart Locket":   {"then_usd": 4473, "then": "vc.ru 18.09.2025 «Сердце-медальон $4473 (+49%)»", "now_ton": 1700, "now_usd": 1882, "lot": "https://fragment.com/gift/heartlocket-1437", "change": "−58%"},
+  "Precious Peach": {"then_usd": 1351, "then": "vc.ru 18.09.2025 «Драгоценный персик … до $1351»", "now_ton": 295, "now_usd": 327, "lot": "https://fragment.com/gift/preciouspeach-1685", "change": "−76%"},
+  "Khabib's Papakha": {"then_usd": 152, "then": "аукцион 22.11.2025: ≈ $4,4 млн / 29 000 штук (TMZ 05.12.2025, EssentiallySports, AMBCrypto)", "now_ton": 29, "now_usd": 32, "lot": "https://fragment.com/gift/khabibspapakha-12936", "change": "−79%"},
+  "Durov's Cap":    {"then_usd": 2829, "then": "vc.ru 18.09.2025 «Кепка Дурова выросла на 56% и составила $2829»", "now_ton": 463, "now_usd": 512, "lot": "https://fragment.com/gift/durovscap-4114", "change": "−82%"}
+ },
+ "caveats": ["Пиковые цены Gift Charts — по скриншоту в статье, методика Gift Charts (минимальная цена или средняя) в статье не раскрыта.",
+             "Сравнение в долларах: падение TON к доллару входит в минус.",
+             "Пепе: 107 207 TON за один лот в октябре 2025 (DTF) — не используется, это рекорд одного лота, а не рынок."]
+}

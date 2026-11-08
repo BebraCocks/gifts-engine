@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 32-price-duel-12 «День рождения». Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 04:12–04:20 UTC. Курс 86 ₽ за TON (tonapi.io 86,14 ₽ в 04:20 UTC). Вещи: страницы товаров 2026-11-08 04:20–04:40 UTC, цена на странице. Подарки, бывшие в выпусках 09–18, 30, 31, не брались.",
+ "ton_rub": 86.0,
+ "gifts": [
+  {"gift": "B-Day Candle", "model": "Magic Powers", "rarity": "1.2%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/bdaycandle-254791"},
+  {"gift": "Homemade Cake", "model": "Sweet Dawn", "rarity": "1.5%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/homemadecake-24293"},
+  {"gift": "Whip Cupcake", "model": "Hawaii", "rarity": "2.5%", "ton": 5, "rub": 430, "lot": "https://fragment.com/gift/whipcupcake-192951"},
+  {"gift": "Party Sparkler", "model": "Mai Tai", "rarity": "1.3%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/partysparkler-82974"},
+  {"gift": "Record Player", "model": "Sonic Fuchsia", "rarity": "1%", "ton": 15, "rub": 1290, "lot": "https://fragment.com/gift/recordplayer-12734"}
+ ],
+ "things": [
+  {"name": "Набор свечей Yotoy «С днём рождения» NSC-9", "rub": 99, "src": "https://www.detmir.ru/product/index/id/6725310/"},
+  {"name": "Торт домашний «Наполеон», 500 г", "rub": 748, "src": "https://vkusvill.ru/goods/tort-domashniy-napoleon-37174/"},
+  {"name": "Капкейк с начинкой сгущённое молоко, 280 г (упаковка)", "rub": 237, "src": "https://vkusvill.ru/goods/kapkeyk-s-nachinkoy-sgushchennoe-moloko-77382/"},
+  {"name": "Свеча-фонтан, 2 шт", "rub": 192, "src": "https://vkusvill.ru/goods/svecha-fontan-59845/"},
+  {"name": "Виниловый проигрыватель Audio-Technica AT-LP60X", "rub": 26990, "src": "https://www.audiomania.ru/proigryvatel_vinila/audio-technica/audio-technica_at-lp60x.html"}
+ ],
+ "rejected": [
+  "Капкейк «Морковный» с сырным кремом, 2 шт 398 ₽ — разница с Whip Cupcake меньше 20%.",
+  "Jack-in-the-Box — настоящей игрушки «чёртик из коробки» в «Детском мире» нет.",
+  "Бенгальские огни — в «Детском мире» и ВкусВилле нет; взята свеча-фонтан для торта."
+ ]
+}

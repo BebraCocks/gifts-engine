@@ -302,3 +302,12 @@ https://drive.google.com/file/d/1lbiYGRsTCOcD4oWd2pjNRqAQFCOZ47EH/view . Дал�
 Обновление 2026-11-07 (2): 31 v2 с удержанием в первые секунды (загадка «звезда или ёлка, одна дороже в 14 раз» с кадра 0,
 тизер перед RubUp). **Текущая — `renders/31-price-duel-11/price_duel_11_v2.mp4`** (59,85 с), Google Drive:
 https://drive.google.com/file/d/177kxPYTJEaPitaZPjbi5_5-GsqVNj3vp/view . Правки — `--name price_duel_11_v3`.
+
+## 2026-11-08 · 32-price-duel-12 «День рождения: телега против жизни» («Что дороже?»)
+
+B-Day Candle / свечи Yotoy (×5,2), Homemade Cake / «Наполеон» ВкусВилл (вещь ×1,45), Whip Cupcake / капкейки (×1,8),
+Party Sparkler / свеча-фонтан (×2,7), Record Player / Audio-Technica AT-LP60X 26 990 ₽ (вещь ×21); счёт 3:2 за телегу.
+Хук с кадра 0: два проигрывателя со скрытыми ценами, «один дороже в 21 раз — спорим?»; тизер «НЕ ЛИСТАЙ — ВПЕРЕДИ ×21»
+перед RubUp; финал «цифру или вещь? Пиши в комментах». Доп. звуки пака: cartoon-clock, -eat, -spin, -comic-expressions, -horn.
+**Текущая — `renders/32-price-duel-12/price_duel_12_v2.mp4`** (59,88 с, −13,3 LUFS), Google Drive:
+https://drive.google.com/file/d/1OdI1pMLI6KMLJE59W9UdZi0eA7NwCAJV/view . Правки — `--name price_duel_12_v3`.

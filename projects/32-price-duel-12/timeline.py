@@ -17,10 +17,10 @@ def _len(k):
     return max(1.4, len(LINES[k][0].split()) / 2.8)
 
 
-START = 0.15
-SWAP = 0.34          # items fly out / in between rounds
+START = 0.08
+SWAP = 0.30          # items fly out / in between rounds
 LAND = 0.25          # new items land before the question starts
-HOLD = 0.32          # verdict stays after the answer
+HOLD = 0.26          # verdict stays after the answer
 AD_HOLD = 0.45       # the answer settles before RubUp
 ON, END = [0.0] * len(LINES), [0.0] * len(LINES)
 ROUND_IN, TIMER0, REVEAL = [], [], []      # per round: items start dropping, timer starts, verdict
@@ -42,5 +42,5 @@ for r in range(5):
 OUTRO = END[10] + HOLD
 ON[11] = OUTRO + 0.35
 END[11] = ON[11] + _len(11)
-DUR = END[11] + 0.5
+DUR = END[11] + 0.35
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

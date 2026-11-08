@@ -1530,5 +1530,38 @@
    "botanica-v4/transition/whoosh/deep-mini-whoosh-16.flac#1",
    "botanica-v4/transition/whoosh/whoosh-03.flac#0"
   ]
+ },
+ "36-zodiac-wine-2": {
+  "date": "2026-11-08",
+  "sounds": [
+   "botanica-v4/bg-atmosphere/atmo-bg-static-musical-24.flac#0",
+   "botanica-v4/button/correct-approve-button-11.flac#0",
+   "botanica-v4/button/magnetic-button-05.flac#0",
+   "botanica-v4/button/pop-up-05.flac#0",
+   "botanica-v4/button/sparkle-button.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#1",
+   "botanica-v4/cartoon/cartoon-pop-3.flac#0",
+   "botanica-v4/granular/granular-transform-move-splash-16.flac#0",
+   "botanica-v4/granular/granular-transform-move-splash-18.flac#0",
+   "botanica-v4/granular/granular-transform-move-splash-28.flac#0",
+   "botanica-v4/granular/granular-transform-move-splash-43.flac#0",
+   "botanica-v4/impact-hit/hit-impact-no-fx-06.flac#1",
+   "botanica-v4/impact-hit/hit-impact-with-fx-09.flac#0",
+   "botanica-v4/music-transition/long-b-music-transition-01.flac#0",
+   "botanica-v4/music-transition/longer-b-music-transition-02.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-01.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-02.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-06.flac#0",
+   "botanica-v4/transition/sparkle/shimmer-sparkle-glimmer-02.flac#0",
+   "botanica-v4/transition/sparkle/shimmer-sparkle-glimmer-03.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-shimmer-01.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-shimmer-02.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-whoosh-03.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-whoosh-06.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-05.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-06.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-13.flac#0",
+   "botanica-v4/transition/whoosh/whoosh-13.flac#0"
+  ]
  }
 }

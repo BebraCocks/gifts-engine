@@ -38,7 +38,8 @@ def dark(col, k=0.66):
     return tuple(int(v * k) for v in col)
 FILES = {m: str(gifts_api.model_file(GIFT, m, 'json')) for m in WHEEL}
 HERO = [s[0] for s in SIGNS]
-HERO_IDX = [WHEEL.index(m) for m in HERO]           # 7 Scorpio, 4 Leo, 5 Virgo, 10 Aquarius
+HERO_IDX = [WHEEL.index(m) for m in HERO]
+WHEEL_OUT_SC, WHEEL_OUT_A = 0.9, 0.42                # = draw_wheel outro for a shown sign           # 7 Scorpio, 4 Leo, 5 Virgo, 10 Aquarius
 
 HS = 720                     # hero Lottie raster (the mug fills ~90% of the canvas height)
 HC = (540.0, 895.0)          # hero centre
@@ -370,10 +371,10 @@ def hero_motion(t, s):
         a *= 1 - sm(t_out + 0.3, t_out + 0.45, t)
     else:                                                       # outro: back to its place on the wheel
         o = sm(OUTRO - 0.1, OUTRO + 0.5, t)
-        gx, gy = wheel_pos(10, OUTRO + 0.5, WR)
+        gx, gy = wheel_pos(10, t, WR)                        # its live spot on the turning wheel
         x, y = lerp(x, gx, o), lerp(y, gy, o)
-        sc = lerp(sc, WS / HS * 0.9, o)
-        a *= lerp(1.0, 0.42, o)
+        sc = lerp(sc, WS / HS * WHEEL_OUT_SC, o)
+        a *= lerp(1.0, WHEEL_OUT_A, o) * (t < OUTRO + 0.5)     # the wheel's own mug takes over: no double
     return x, y, sc, a, rot
 
 

@@ -30,6 +30,12 @@ fx.set_frame(W, H)
 BR = banner.Breaks([AD_STOP], cy=H / 2)
 
 BG, STAR, INK, MUTED, LINE, GOLD = config.BACKGROUND, config.STAR, config.INK, config.MUTED, config.LINE, config.GOLD
+GRID, WHITE = config.GRID, config.WHITE
+
+
+def dark(col, k=0.66):
+    """Sign colour for text and lines on paper (the drink colours are too light to read)."""
+    return tuple(int(v * k) for v in col)
 FILES = {m: str(gifts_api.model_file(GIFT, m, 'json')) for m in WHEEL}
 HERO = [s[0] for s in SIGNS]
 HERO_IDX = [WHEEL.index(m) for m in HERO]           # 7 Scorpio, 4 Leo, 5 Virgo, 10 Aquarius
@@ -165,7 +171,7 @@ def draw_big_glyph(c, t, s, a):
     col = SIGNS[s][5]
     u = t - SIGN_IN[s]
     put(c, big_glyph(SIGNS[s][2], col), HC[0] + 14 * math.sin(u * 0.5), HC[1] - 10 + 10 * math.cos(u * 0.4),
-        lerp(0.9, 1.0, a) * (1 + 0.015 * math.sin(u * 0.9)), 0.2 * a, math.radians(2.5 * math.sin(u * 0.35)))
+        lerp(0.9, 1.0, a) * (1 + 0.015 * math.sin(u * 0.9)), 0.42 * a, math.radians(2.5 * math.sin(u * 0.35)))
 
 
 # ------------------------------------------------------------------ sky
@@ -176,22 +182,20 @@ TWINKLE = [(RNG.uniform(0, W), RNG.uniform(0, H), RNG.uniform(1.4, 2.6), RNG.uni
 
 @functools.lru_cache(None)
 def _bg():
+    """Flat paper + a static dot grid (series look, no gradients)."""
     im = Image.new('RGB', (W, H), BG)
     d = ImageDraw.Draw(im)
-    rng = np.random.default_rng(11)
-    for _ in range(420):
-        x, y = rng.uniform(0, W), rng.uniform(0, H)
-        r = rng.choice([0.7, 0.9, 1.1, 1.4])
-        k = rng.uniform(0.18, 0.6)
-        col = tuple(int(BG[i] + (STAR[i] - BG[i]) * k) for i in range(3))
-        d.ellipse([x - r, y - r, x + r, y + r], fill=col)
+    step = 54
+    for y in range(step // 2, H, step):
+        for x in range(step // 2 + 9, W, step):
+            d.ellipse([x - 2.2, y - 2.2, x + 2.2, y + 2.2], fill=GRID)
     return np.asarray(im, np.float32).copy()
 
 
 def draw_sky(c, t):
-    for x, y, r, ph, sp in TWINKLE:
-        a = 0.35 + 0.55 * (0.5 + 0.5 * math.sin(t * sp * 2.2 + ph))
-        put(c, dot(r, STAR), x, y, 1.0, a)
+    for x, y, r, ph, sp in TWINKLE[:22]:                     # a few amber sparkles breathe on the paper
+        a = 0.25 + 0.5 * (0.5 + 0.5 * math.sin(t * sp * 2.2 + ph))
+        put(c, sparkle_img(r * 3.2, STAR), x, y, 1.0, a)
 
 
 # ------------------------------------------------------------------ constellations (stylised, x/y in -1..1)
@@ -224,10 +228,10 @@ def draw_const(c, t, s, a):
     t0 = SIGN_IN[s] + 0.15
     per = 1.5 / len(segs)
     lay = fx.draw_rgba((0, int(HC[1] - CBOX[1] - 30), W, int(HC[1] + CBOX[1] + 30)), lambda d, m, S: [
-        d.line([m(*P[i]), m(*lerp_pt(P[i], P[j], cl((t - t0 - k * per) / per)))], fill=LINE + (255,),
+        d.line([m(*P[i]), m(*lerp_pt(P[i], P[j], cl((t - t0 - k * per) / per)))], fill=dark(col, 0.8) + (255,),
                width=round(2.6 * S))
         for k, (i, j) in enumerate(segs) if t > t0 + k * per])
-    fx.over(c, lay, 0.75 * a)
+    fx.over(c, lay, 0.6 * a)
     shown = {segs[0][0]} | {j for k, (i, j) in enumerate(segs) if t > t0 + (k + 0.9) * per} | \
             {i for k, (i, j) in enumerate(segs) if t > t0 + k * per}
     fl = fx.bump(t - FC[s], 2.0, 3.0) if t > FC[s] else 0.0        # forecast: the stars flash once
@@ -237,8 +241,8 @@ def draw_const(c, t, s, a):
         first = min([t0 + k * per for k, (p, q) in enumerate(segs) if i in (p, q)] or [t0])
         k = spr(first, t, 3.0, 0.5)
         r = (7.5 if i == bright else 4.6) * (1 + 0.6 * abs(fl))
-        put(c, glow(col, 64, 0.9), x, y, 0.9 * k * (1.6 if i == bright else 1.0), a * 0.8, add=True)
-        put(c, dot(r, (255, 250, 236)), x, y, max(0.02, k), a)
+        put(c, glow(col, 64, 0.9), x, y, 0.9 * k * (1.6 if i == bright else 1.0), a * 0.5)
+        put(c, dot(r, dark(col, 0.7)), x, y, max(0.02, k), a)
 
 
 def lerp_pt(p, q, k):
@@ -331,7 +335,7 @@ def draw_hook_title(c, t):
     text(c, HOOK[0], 112, 'Heavy', GOLD, 540, 236 + 24 * (1 - k1), a, k1)
     text(c, HOOK[1], 60, 'Heavy', INK, 540, 334 + 24 * (1 - k2), a, k2)
     kb = 1 + 0.12 * fx.bump(t - E['four'] - 0.3, 3.0, 5.0)
-    put(c, pill(HOOK_BADGE, 38, GOLD, BG), 540, 430 + 24 * (1 - k2), k2 * kb, a)
+    put(c, pill(HOOK_BADGE, 38, GOLD, WHITE), 540, 430 + 24 * (1 - k2), k2 * kb, a)
 
 
 # ------------------------------------------------------------------ the four signs
@@ -390,7 +394,7 @@ def draw_sign(c, t):
         if ha <= 0.004 and a <= 0.004:
             continue
         draw_big_glyph(c, t, ss, a)
-        put(c, glow(col), HC[0], HC[1] + 10, 1.0 * (0.9 + 0.1 * math.sin(t * 1.3)), a * 0.95, add=True)
+        put(c, glow(col), HC[0], HC[1] + 10, 1.0 * (0.9 + 0.1 * math.sin(t * 1.3)), a * 0.75)
         draw_const(c, t, ss, a)
         if ha > 0.004:
             # sparkles fly out of the mug on the forecast
@@ -399,7 +403,7 @@ def draw_sign(c, t):
                     ang = i * 2 * math.pi / 12 + 0.4 * ss
                     u = (t - FC[ss]) / 1.6
                     d = 200 + 260 * fx.ease_out(u)
-                    put(c, sparkle_img(13 if i % 2 else 9, (255, 246, 220)), HC[0] + d * math.cos(ang),
+                    put(c, sparkle_img(13 if i % 2 else 9, dark(SIGNS[ss][5], 0.85)), HC[0] + d * math.cos(ang),
                         HC[1] + 0.85 * d * math.sin(ang), 1.0, ha * (1 - u) * cl(u * 8))
             mug(c, HERO[ss], t - SIGN_IN[ss], x, y, HS, sc, ha, rot)
         draw_sign_text(c, t, ss, a)
@@ -412,15 +416,15 @@ def draw_sign_text(c, t, s, a):
     k = spr(SIGN_IN[s] - 0.05, t, 2.2, 0.55)
     rise = 26 * (1 - cl(k))
     text(c, f'{PART} · ЗНАК {s + 1} / 4', 30, 'Semibold', MUTED, 540, 150, a)
-    put(c, ring(56, 3, col), 540, 254 + rise, max(0.01, k), a)
-    text(c, glyph, 66, 'glyph', col, 540, 254 + rise, a, max(0.01, k))
+    put(c, ring(56, 3, dark(col)), 540, 254 + rise, max(0.01, k), a)
+    text(c, glyph, 66, 'glyph', dark(col), 540, 254 + rise, a, max(0.01, k))
     text(c, name, 100, 'Heavy', INK, 540, 392 + rise, a)
     text(c, dates, 36, 'Semibold', MUTED, 540, 464 + rise, a)
     kf = sm(FC[s] - 0.05, FC[s] + 0.25, t)
-    put(c, pill(f'СТИХИЯ · {elem}', 32, None, col, col), 540, 532 + rise, 1.0, a * (1 - kf))
-    put(c, pill(FORECAST, 32, col, BG), 540, 532, lerp(0.7, 1.0, kf) * (1 + 0.1 * fx.bump(t - FC[s], 3, 5)), a * kf)
+    put(c, pill(f'СТИХИЯ · {elem}', 32, None, dark(col), dark(col)), 540, 532 + rise, 1.0, a * (1 - kf))
+    put(c, pill(FORECAST, 32, dark(col, 0.8), WHITE), 540, 532, lerp(0.7, 1.0, kf) * (1 + 0.1 * fx.bump(t - FC[s], 3, 5)), a * kf)
     k2 = sm(SIGN_IN[s] + 0.2, SIGN_IN[s] + 0.55, t)
-    text(c, model, 60, 'Heavy', col, 540, 1276 + 16 * (1 - k2), a * k2)
+    text(c, model, 60, 'Heavy', dark(col), 540, 1276 + 16 * (1 - k2), a * k2)
     text(c, f'модель {GIFT} · {RARITY} · {ton} TON', 30, 'Semibold', MUTED, 540, 1330 + 16 * (1 - k2), a * k2)
 
 
@@ -432,7 +436,7 @@ def draw_teaser(c, t):
         return
     k = spr(t0, t, 2.4, 0.5)
     a = cl(k * 2) * (1 - sm(t1, t1 + 0.3, t))
-    put(c, pill(TEASER, 38, GOLD, BG), 540, 1580, max(0.01, k) * (1 + 0.05 * fx.bump(t - t0 - 0.5, 3.0, 6.0)), a)
+    put(c, pill(TEASER, 38, GOLD, WHITE), 540, 1580, max(0.01, k) * (1 + 0.05 * fx.bump(t - t0 - 0.5, 3.0, 6.0)), a)
 
 
 def draw_outro(c, t):
@@ -444,14 +448,14 @@ def draw_outro(c, t):
     text(c, OUTRO_2, 50, 'Heavy', INK, 540, 340, k2)
     kc = spr(E['comments'], t, 2.0, 0.5)
     if t >= E['comments']:
-        put(c, pill(COMMENTS, 40, GOLD, BG), 540, 1580, max(0.01, kc) * (1 + 0.05 * math.sin((t - E['comments']) * 4)),
+        put(c, pill(COMMENTS, 40, GOLD, WHITE), 540, 1580, max(0.01, kc) * (1 + 0.05 * math.sin((t - E['comments']) * 4)),
             cl(kc * 2))
 
 
 # ------------------------------------------------------------------ captions
 CAP = captions.Captions([captions.phrase(WORDS[k], accent=ACC, end=END[k] + 0.2) for k in range(len(LINES))],
                         width=940, top=1400, size=50, weight='Semibold', max_lines=2, color=INK, accent_color=GOLD,
-                        shadow=True, fade_out=0.2, rise=10)
+                        shadow=False, fade_out=0.2, rise=10)
 
 
 def render_at(t):

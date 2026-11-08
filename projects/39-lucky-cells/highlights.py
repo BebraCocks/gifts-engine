@@ -5,8 +5,8 @@ import sfxkit
 from timeline import ROUND_IN, TIMER0, REVEAL, OUTRO
 from events import E
 
-CONTENT = [0.05, TIMER0[0] + 2.4, REVEAL[0] + 1.0, REVEAL[1] + 1.0, REVEAL[2] + 1.0, None,
-           TIMER0[3] + 3.3, REVEAL[3] + 1.0, TIMER0[4] + 4.5, REVEAL[4] + 1.2, E['comments'] + 0.8, E['end'] - 0.1]
+CONTENT = [0.05, E['more'] + 0.8, TIMER0[0] + 2.5, REVEAL[0] + 1.6, REVEAL[1] + 1.6, REVEAL[2] + 2.0, None,
+           ROUND_IN[3] + 0.05, TIMER0[4] + 4.4, REVEAL[4] + 1.8, E['sum'] + 2.0, E['end'] - 0.05]
 ims = []
 for k, ct in enumerate(CONTENT):
     ot = R.AD_STOP + 3.0 if ct is None else sfxkit.out_time(R.BR, ct)

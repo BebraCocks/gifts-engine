@@ -11,7 +11,7 @@
   {"gift": "Snow Globe", "model": "Lost Color", "rarity": "3%", "ton": 8, "lot": "https://fragment.com/gift/snowglobe-24495"},
   {"gift": "Kissed Frog", "model": "Frogtart", "rarity": "3%", "ton": 55, "lot": "https://fragment.com/gift/kissedfrog-12836"},
   {"gift": "Heart Locket", "model": "Karaoke Bar", "rarity": "2%", "ton": 1700, "lot": "https://fragment.com/gift/heartlocket-1437"},
-  {"gift": "Instant Ramen", "model": "Ratatouille", "rarity": "3%", "ton": 5, "lot": "https://fragment.com/gift/instantramen-122885"},
+  {"gift": "Instant Ramen", "model": "Samurai", "rarity": "2.5%", "ton": 5, "lot": "https://fragment.com/gift/instantramen-199957", "note": "нижний лот 122885 — модель Ratatouille (тарелка рататуя, не похожа на рамен); взят соседний лот по той же цене 5 TON"},
   {"gift": "Ion Gem", "model": "Bronzite", "rarity": "2%", "ton": 85, "lot": "https://fragment.com/gift/iongem-2889"},
   {"gift": "Scared Cat", "model": "El Tigre", "rarity": "1.5%", "ton": 299, "lot": "https://fragment.com/gift/scaredcat-13897"},
   {"gift": "B-Day Candle", "model": "Be Awesome!", "rarity": "1.5%", "ton": 5, "lot": "https://fragment.com/gift/bdaycandle-57568"},

@@ -13,8 +13,10 @@ import wave
 import banner
 import sound
 import sfxkit
-from timeline import DUR, ON, END, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP
-from events import AD_STOP, E, WIN
+from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP
+from events import AD_STOP, E
+from script import ROUNDS
+from render import STEP, FLIP
 import music
 
 SR = 48000
@@ -24,40 +26,43 @@ MUSIC_DB = -12.0           # under the voice; ducks a further 7 dB while someone
 
 
 def sfx_layer(n, kit):
-    """One cue = one action on screen (STORYBOARD.md, «Звук»). No own SFX during RubUp (docs/ADVERTISING.md)."""
+    """One cue = one action on screen (STORYBOARD.md, «Звук»). No own SFX during RubUp (docs/ADVERTISING.md).
+    A series of the same action sounds different: the flip cascade climbs in pitch, ticks are one motif."""
     fx = np.zeros((n, 2))
     add = kit.add
-    add(fx, 'sparkle-whoosh', 0.0, gain_db=-18, label='hook: the bet appears')
-    add(fx, 'pop', 0.55, gain_db=-17, label='«ИЛИ» + «? ₽» tags pop')
-    add(fx, 'select', E['hook_q'], gain_db=-19, label='title «ЧТО ДОРОЖЕ?» + score')
+    add(fx, 'sparkle-whoosh', 0.0, gain_db=-18, label='hook: six closed cells + «4400 БАЛЛОВ»')
+    add(fx, 'pop', 2.2, gain_db=-19, label='hook: «1 ИЗ 200» pulses')
+    add(fx, 'select', E['blue'], gain_db=-19, pan=-0.1, label='rules: blue row bounces, tag')
+    add(fx, 'select', E['red'], gain_db=-19, pan=0.1, label='rules: red row bounces, tag')
+    add(fx, 'paper', E['pick'] - 0.1, gain_db=-21, label='rules: title «ВЫБЕРИ 1 СИНЮЮ И 1 КРАСНУЮ»')
+    for k in range(3):
+        add(fx, 'counter', E['more'] + 0.12 * k, gain_db=-22, key='chip', vary=False, semitones=3 * k,
+            label=f'rules: chip {(100, 300, 500)[k]}')
     for r in range(5):
         if r:
-            add(fx, 'whoosh-short', ROUND_IN[r] - SWAP + 0.05, gain_db=-19, label=f'round {r}: items fly out')
-        add(fx, 'whoosh-organic', ROUND_IN[r] - (SWAP - 0.1 if r else 0.0), gain_db=-22, label=f'round {r + 1}: items drop')
-        add(fx, 'pop', ROUND_IN[r] + 0.2, gain_db=-20, label=f'round {r + 1}: items land on the pans')
-        for s in range(5):                      # one tick sound for the whole video: a timer is a motif
+            add(fx, 'whoosh-short', ROUND_IN[r] - SWAP, gain_db=-20, label=f'round {r}: open cards fall away')
+            add(fx, 'pop', ROUND_IN[r] - SWAP + 0.2, gain_db=-21, label=f'round {r + 1}: new closed cells pop in')
+        for s in range(5):
             add(fx, 'click', TIMER0[r] + s, gain_db=-23 + 1.5 * (s >= 3), key='tick', vary=False, dur=(0, 0.3),
                 label=f'round {r + 1}: timer {5 - s}')
-        add(fx, 'impact', REVEAL[r], gain_db=-18, pan=-0.35 if WIN[r] == 0 else 0.35,
-            label=f'round {r + 1}: the scale falls to the dearer side')
-        add(fx, 'pop', REVEAL[r] + 0.14, gain_db=-19, key='stamp', vary=False, pan=-0.35 if WIN[r] == 0 else 0.35,
-            label=f'round {r + 1}: «ДОРОЖЕ» stamp')
-        add(fx, 'coin', REVEAL[r] + 0.08, gain_db=-22, label=f'round {r + 1}: price tags')
-        add(fx, 'select-soft', REVEAL[r] + 0.2, gain_db=-21, label=f'round {r + 1}: score +1')
-    # extra character sounds from the pack, not used in the series before
-    add(fx, 'cartoon', REVEAL[1] + 0.45, gain_db=-20, file='cartoon-spoon-bend', vary=False, label='round 2: bow tie wobble')
-    add(fx, 'cartoon-move', REVEAL[3] + 0.45, gain_db=-20, file='cartoon-flute-slide-4', vary=False,
-        label='round 4: cowboy boots — whistle')
-    add(fx, 'cartoon-move', ROUND_IN[4] - SWAP + 0.05, gain_db=-21, file='cartoon-run-away.flac', vary=False,
-        label='final pair runs in')
-    add(fx, 'cartoon-move', REVEAL[4] + 0.45, gain_db=-19, file='cartoon-flute-slide-1', vary=False,
-        label='final: ×11 — rising slide')
-    add(fx, 'confirm', OUTRO + 0.1, gain_db=-18, label='outro: «ТЕЛЕГА ВЫИГРАЛА 3:2»')
-    add(fx, 'sparkle', END[6] - 0.1, gain_db=-19, label='teaser pill «НЕ ЛИСТАЙ» before RubUp')
-    add(fx, 'whoosh-short', ROUND_IN[0] - 0.4, gain_db=-20, label='hook pair flies off')
-    add(fx, 'whoosh-short', OUTRO, gain_db=-20, label='outro: prices go')
-    add(fx, 'popup', E['comments'], gain_db=-16, label='«ПИШИ В КОММЕНТАХ» pill')
-    add(fx, 'flip', E['which'] - 0.1, gain_db=-19, label='«ЧТО БЫ ТЫ НАДЕЛ?»')
+        add(fx, 'riser', REVEAL[r], gain_db=-27, align='end', fit=1.2, label=f'round {r + 1}: last second')
+        for j in range(6):
+            row, k = divmod(j, 3)
+            tf = REVEAL[r] + STEP * j
+            add(fx, 'flip', tf, gain_db=-21, key='flip', vary=False, semitones=0.8 * j - 2, pan=(k - 1) * 0.4,
+                label=f'round {r + 1}: flip {"blue" if row == 0 else "red"} {k + 1}')
+            pts = (ROUNDS[r]['blue_pts'], ROUNDS[r]['red_pts'])[row][k]
+            if pts == 500:
+                add(fx, 'coin', tf + FLIP + 0.12, gain_db=-19, pan=(k - 1) * 0.4,
+                    label=f'round {r + 1}: ★ 500 ({"blue" if row == 0 else "red"} {k + 1})')
+    add(fx, 'sparkle', END[KEY['a3']] - 0.15, gain_db=-19, label='teaser pill «НЕ ЛИСТАЙ» before RubUp')
+    add(fx, 'impact', REVEAL[4] + STEP + FLIP, gain_db=-19, label='final: Plush Pepe ≈ 688 000 ₽')
+    add(fx, 'whoosh', OUTRO, gain_db=-20, label='outro: cards leave')
+    for i in range(5):
+        add(fx, 'list', E['sum'] + 0.05 + 0.16 * i, gain_db=-21, key='lvl', vary=False, semitones=2 * i,
+            label=f'levels: row {i + 1}')
+    add(fx, 'confirm', E['sum'] + 0.05 + 0.16 * 4 + 0.1, gain_db=-19, label='levels: «ВАНГА ИЗ ТЕЛЕГИ» (gold)')
+    add(fx, 'popup', E['comments'], gain_db=-16, label='«ПИШИ СВОЙ РЕЗУЛЬТАТ» pill')
     return fx
 
 
@@ -92,7 +97,7 @@ def mp3(x, path):
 
 
 if __name__ == '__main__':
-    kit = sfxkit.Kit(HERE, seed=zlib.crc32(b'35-price-duel-15'))   # built as 35-…, renumbered to 38 (number taken)
+    kit = sfxkit.Kit(HERE, seed=zlib.crc32(b'39-lucky-cells'))
     content, fx, mus = make_mix(kit)
     data = BR.audio(content, SR)
     output = paths.build(HERE) / 'mix.wav'

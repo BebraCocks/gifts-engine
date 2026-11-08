@@ -1643,5 +1643,40 @@
    "botanica-v4/transition/whoosh/deep-mini-whoosh-16.flac#0",
    "botanica-v4/transition/whoosh/deep-mini-whoosh-16.flac#1"
   ]
+ },
+ "39-lucky-cells": {
+  "date": "2026-11-08",
+  "sounds": [
+   "botanica-v4/button/correct-approve-button-03.flac#0",
+   "botanica-v4/button/magnetic-button-02.flac#0",
+   "botanica-v4/button/magnetic-button-13.flac#0",
+   "botanica-v4/button/metalic-click-01.flac#0",
+   "botanica-v4/button/pop-up-01.flac#0",
+   "botanica-v4/button/sparkle-button.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#1",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#2",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#3",
+   "botanica-v4/cartoon/cartoon-coin.flac#0",
+   "botanica-v4/cartoon/cartoon-pop-3.flac#0",
+   "botanica-v4/countdown-list/mini-list-down-5.flac#0",
+   "botanica-v4/countdown-list/number-count-down-up-04.flac#0",
+   "botanica-v4/foley/coin-flip-spin-rotation-01.flac#0",
+   "botanica-v4/foley/coin-flip-spin-rotation-02.flac#0",
+   "botanica-v4/foley/lamination.flac#0",
+   "botanica-v4/impact-hit/hit-impact-no-fx-06.flac#1",
+   "botanica-v4/transform/spin-rotation-flip-02.flac#0",
+   "botanica-v4/transition/risers/riser-02.flac#0",
+   "botanica-v4/transition/risers/riser-04.flac#0",
+   "botanica-v4/transition/risers/riser-granular-02.flac#0",
+   "botanica-v4/transition/risers/riser-second-support-02.flac#0",
+   "botanica-v4/transition/risers/riser-second-support-03.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-whoosh-03.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-05.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-07.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-10.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-16.flac#1",
+   "botanica-v4/transition/whoosh/whoosh-18.flac#0"
+  ]
  }
 }

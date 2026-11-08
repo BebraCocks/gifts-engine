@@ -1,4 +1,5 @@
-"""Real product photos for the «настоящий» side (as in 09-price-duel v2: «используй настоящие предметы, их реальные фото»).
+"""39-lucky-cells: real product photos (15 things, data/prices_2026-11-08.json).
+Real product photos for the «настоящий» side (as in 09-price-duel v2: «используй настоящие предметы, их реальные фото»).
 Photos come from the same shop pages the prices come from (data/prices_2026-11-08.json), downloaded into
 .cache/photos/ (not in Git: third-party images). White studio backgrounds are cut out (flood fill from the
 border + hole filling), then every photo becomes a die-cut sticker: white rim + thin ink outline, so it sits
@@ -16,19 +17,39 @@ import paths
 import config
 
 CACHE = paths.CACHE / 'photos'
-SRC = {   # kind: (url, page, crop box in source px or None, background)
-    'mittens': ('https://catalog-cdn.detmir.st/media/C7JYf1kt4_Vnx0yB9cnAaRAJdAjsrJNeLwFp2Dzc2GY=.webp',
-        'https://www.detmir.ru/product/index/id/6673857/', None, 'light'),
-    'bowtie': ('https://catalog-cdn.detmir.st/media/ECVB1UYB-SnIene_xjxPTCfjCBsLXLbkjqxDWich94w=.webp',
-        'https://www.detmir.ru/product/index/id/6676281/', None, 'white'),
-    'brooch': ('https://catalog-cdn.detmir.st/media/Eu84DnSdzyxbUv3aXO-zccyW35UW6buHDN2JOvamsd0=.webp',
-        'https://www.detmir.ru/product/index/id/7161664/', None, 'light'),
-    'boots': ('https://catalog-cdn.detmir.st/media/FQD3xnCjo7_zQ3JqG-MvMd_0z-zZpibg1ComVQyq-ZI=.webp',
-        'https://www.detmir.ru/product/index/id/6750953/', None, 'light'),
-    'heart': ('https://static2.585.cloud/media/products/281993b4-1c3f-446f-bb42-ff4ed20408b5.jpg',
-        'https://www.585zolotoy.ru/catalog/products/1215237/', None, 'white'),
+SRC = {   # kind: (url, page, crop box in source px or None, background) — data/prices_2026-11-08.json
+    'crackers': ('https://img.vkusvill.ru/pim/images/site_for_feed/8d61f739-6af7-4b29-b1e4-e83fc7b9aec3.jpg',
+        'https://vkusvill.ru/goods/sukhariki-rzhanye-s-chesnokom-i-solyu-43322.html', (300, 40, 780, 690), 'light'),
+    'book': ('https://content.img-gorod.ru/pim/products/images/62/a8/018f5cb0-84aa-78c9-a36c-9d49401462a8.jpg',
+        'https://www.chitai-gorod.ru/product/garri-potter-i-filosofskiy-kamen-2405917', None, 'white'),
+    'airpods': ('https://cdn.iport.ru/iblock/a9b/a9b7638df32d35d6e3571e1e9bce6839/3b0279de3c6742d03d6b44137a70ac77.jpg',
+        'https://www.iport.ru/products/productID149174/', None, 'white'),
+    'icecream': ('https://img.vkusvill.ru/pim/images/site_for_feed/2b97071f-9340-48c1-b748-a617b78e6fc3.jpg',
+        'https://vkusvill.ru/goods/plombir-v-rozhke-klubnika-27166/', (230, 40, 870, 690), 'light'),
+    'bear': ('https://content.img-gorod.ru/pim/products/images/10/5b/019e8375-92c6-7162-b48b-5435b6c0105b.jpg',
+        'https://www.chitai-gorod.ru/product/magkaa-igruska-medved-33sm-12-191025-i13-3132979', (150, 420, 1500, 2000), 'corner'),
+    'watch': ('https://cdn.iport.ru/iblock/bcd/bcdbb5a219cd79072ff58c94c73bba00/ec02c8fd5cac7a77153f5e565f9485e8.jpg',
+        'https://www.iport.ru/products/productID149302/', None, 'white'),
+    'chips': ('https://img.vkusvill.ru/pim/images/site/site_for_feed/5f3b7192-9464-43f8-9407-37417cceaa2d.png',
+        'https://vkusvill.ru/goods/chipsy-kartofelnye-lay-s-so-vkusom-kraba-140-g-114240.html', None, 'white'),
+    'lego': ('https://content.img-gorod.ru/pim/products/images/0e/40/019957af-b8ba-782d-b028-beea28c70e40.jpg',
+        'https://www.chitai-gorod.ru/product/76303-konstruktor-detskij-lego-dc-tumbler-betmena-protiv-dvulikogo-i-dzokera-429-detalej-vozrast-8-3126514', None, 'white'),
+    'iphone': ('https://cdn.iport.ru/iblock/515/515a5ff5f18a935bf05bcd3e483779f3/df37e6f0f3652eba8aef1d503a6fc820.png',
+        'https://www.iport.ru/products/productID156657/', None, 'corner'),
+    'ramen': ('https://img.vkusvill.ru/pim/images/site/site_for_feed/ac43af53-5815-4fed-a57c-afeb94d8ec1e.jpg',
+        'https://vkusvill.ru/goods/lapsha-ottogi-syrnyy-ramen-62-g-93229.html', None, 'white'),
+    'pen': ('https://content.img-gorod.ru/pim/products/images/df/5d/018ed324-0bc4-7667-9ec1-939102d8df5d.jpg',
+        'https://www.chitai-gorod.ru/product/ruchka-sharikovaya-parker-jotter-stainless-steel-gt-podarochnaya-sinyaya-242818', None, 'white'),
+    'dyson': ('https://cdn.iport.ru/iblock/d1f/d1fe0e831db24a53b6ec01f3fc94f030/888dbd2ec523c7931de31fcc1543f408.jpg',
+        'https://www.iport.ru/products/productID143566/', None, 'white'),
+    'cookie': ('https://img.vkusvill.ru/pim/images/site/site_for_feed/bbd8cad5-cad5-4682-aa7b-32def877f05c.jpg',
+        'https://vkusvill.ru/goods/pechene-zatyazhnoe-imbirnoe-63631/', (180, 60, 900, 660), 'light'),
+    'airpodsmax': ('https://cdn.iport.ru/iblock/ac8/ac8a78719106991954c58fe5912a08ae/af6accea4d375c28bacd0351625f8c0f.jpg',
+        'https://www.iport.ru/products/productID126901/', None, 'white'),
+    'macbook': ('https://cdn.iport.ru/iblock/51f/51f0a87413258c6bad5917c28cb8655d/a01f2462158fc6dbb1489c1a4468fe52.jpg',
+        'https://www.iport.ru/products/productID150214/', None, 'white'),
 }
-BOX = {k: (340, 340) for k in SRC}
+BOX = {k: (250, 250) for k in SRC}       # fits a 300 px card
 GLASS = {}
 SAT = {}        # (saturation threshold, closing): white stripes between red ones
 RING = {}   # wreath on a door: outer ellipse (inner unused), source px
@@ -38,7 +59,7 @@ INK_W = 4
 
 def fetch(kind):
     url = SRC[kind][0]
-    f = CACHE / f'{kind}_35{Path(url.split("?")[0]).suffix}'
+    f = CACHE / f'{kind}_39{Path(url.split("?")[0]).suffix}'
     if not f.exists():
         CACHE.mkdir(parents=True, exist_ok=True)
         subprocess.run(['curl', '-sSfL', '--retry', '5', '--retry-all-errors', '--retry-delay', '2', '-m', '60',
@@ -140,16 +161,14 @@ def sprite(kind):
     out[rim] = (255, 255, 255, 255)
     st = Image.fromarray(out).filter(ImageFilter.GaussianBlur(0.6))
     st.alpha_composite(obj, (pad, pad))
-    canvas = Image.new('RGBA', (max(W, 330), max(H, 340)), (0, 0, 0, 0))       # sits on the plate like the gifts
-    canvas.alpha_composite(st, ((canvas.width - W) // 2, canvas.height - H - 6))
-    return canvas
+    return st
 
 
 if __name__ == '__main__':
-    sheet = Image.new('RGBA', (5 * 400, 380), config.BACKGROUND + (255,))
+    sheet = Image.new('RGBA', (5 * 300, 3 * 300), config.BACKGROUND + (255,))
     for k, kind in enumerate(SRC):
         im = sprite(kind)
-        sheet.alpha_composite(im, (k * 400 + (400 - im.width) // 2, (380 - im.height) // 2))
+        sheet.alpha_composite(im, ((k % 5) * 300 + (300 - im.width) // 2, (k // 5) * 300 + (300 - im.height) // 2))
     Path('build/review').mkdir(parents=True, exist_ok=True)
     sheet.save('build/review/photos.png')
     print('build/review/photos.png')

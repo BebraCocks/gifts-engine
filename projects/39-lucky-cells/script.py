@@ -75,7 +75,7 @@ ROUNDS = [
     {'blue': [('Heart Locket', 'Karaoke Bar', 1700), ('Snow Globe', 'Lost Color', 8), ('Kissed Frog', 'Frogtart', 55)],
      'red': [('chips', "Чипсы Lay's", 199, 'ВкусВилл'), ('lego', 'LEGO Batman', 10490, 'Читай-город'),
              ('iphone', 'iPhone 18 Pro', 164990, 'iPort')]},
-    {'blue': [('Ion Gem', 'Bronzite', 85), ('Instant Ramen', 'Ratatouille', 5), ('Scared Cat', 'El Tigre', 299)],
+    {'blue': [('Ion Gem', 'Bronzite', 85), ('Instant Ramen', 'Samurai', 5), ('Scared Cat', 'El Tigre', 299)],
      'red': [('dyson', 'Dyson Airwrap', 42990, 'iPort'), ('pen', 'Ручка Parker', 3990, 'Читай-город'),
              ('ramen', 'Рамен', 206, 'ВкусВилл')]},
     {'blue': [('B-Day Candle', 'Be Awesome!', 5), ('Plush Pepe', 'Kung Fu Pepe', 8000), ('Mini Oscar', 'Static', 115)],

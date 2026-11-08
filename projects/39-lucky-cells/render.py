@@ -1,8 +1,7 @@
-"""38-price-duel-15 «Образ на зиму: телега против жизни» — код 09–12/31 («весы на бумаге»).
-09-price-duel: «весы на бумаге». Тёплая бумага с точечной сеткой, чернильные линии, один томатный акцент.
-Слева на весах — NFT-подарок (Lottie, полный цикл), справа — вещь из жизни (плоский рисунок кодом).
-Ось весов — таймер на 5 с. На ответе весы падают в сторону дорогой вещи, выпадают ценники и штамп «ДОРОЖЕ».
-Content time t -> RGB frame; RubUp via banner.Breaks (same in audio.py)."""
+"""39-lucky-cells «Проверь свою чуйку» — бумага серии «Что дороже?» (точечная сетка, чернила), шесть ячеек.
+Сверху три синие ячейки (подарки из телеги, Lottie полным циклом), снизу три красные (настоящие фото вещей).
+Таймер 5 с над ячейками; на ответе ячейки переворачиваются по очереди, у каждой — цена и баллы 100 / 300 / 500.
+Финал: таблица из пяти уровней. Content time t -> RGB frame; RubUp via banner.Breaks (same in audio.py)."""
 import functools
 import math
 import sys
@@ -19,32 +18,34 @@ import fx
 import gifts_api
 import lottie
 import config
-from script import (LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, HOOK_NAMES, TEASER, SIDES, OUTRO_1, OUTRO_2, ACC,
-                    OUTRO_TAG, COMMENTS)
-from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP
+from script import (LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, TITLE, TAGS, TEASER, LEVELS, SUM_TITLE, COMMENTS,
+                    ACC)
+from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP, HOLD
 from words import WORDS
-from events import AD_STOP, E, WIN
-import photos as things          # real photos as stickers (author, 2026-11-06); things.py = drawn v1
+from events import AD_STOP, E
+import photos
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
 BR = banner.Breaks([AD_STOP], cy=H / 2)
 
-BG, GRID, INK, MUTED, LIGHT, ACC = (config.BACKGROUND, config.GRID, config.INK, config.MUTED, config.LIGHT,
+BG, GRID, INK, MUTED, LIGHT, GOLD = (config.BACKGROUND, config.GRID, config.INK, config.MUTED, config.LIGHT,
                                      config.ACCENT)
-PAPER = BG
-GIFTS = [str(gifts_api.model_file(g, m, 'json')) for g, m, *_ in ROUNDS]
-GS = 512                       # Lottie raster size
-GIFT_SC = 0.66                 # -> ≈ 348 px on screen
-THING_SC = 1.0
+BLUE, RED = config.BLUE, config.RED
+WHITE = (255, 255, 255)
+ROWCOL = (BLUE, RED)
+GIFTS = [[str(gifts_api.model_file(g, m, 'json')) for g, m, _ in r['blue']] for r in ROUNDS]
 
-PIV = (540.0, 590.0)           # pivot of the scale = the timer
-L = 300.0                      # half beam
-ROPE = 382.0                   # beam end -> plate
-PLATE_W = 330.0
-POST_Y = 1292.0
-ITEM_UP = 162.0                # item centre above the plate
-SRC = [r[7] for r in ROUNDS]
+CW, CH, GAP = 312, 352, 22
+XS = [W / 2 + (k - 1) * (CW + GAP) for k in range(3)]
+YS = [708, 1150]                 # blue row, red row (centres)
+TAG_Y = (502, 942)
+TIMER_Y = 392
+CAP_TOP = 1398
+PILL_Y = 1590
+GIFT_PX = 196                    # Lottie raster on the open card
+FLIP = 0.30                      # one card flip, s
+STEP = 0.075                     # delay between cards in the reveal cascade
 
 
 # ------------------------------------------------------------------ helpers
@@ -62,6 +63,10 @@ def lerp(a, b, k):
 
 def spr(t0, t, f=2.0, z=0.55):
     return fx.spring(t - t0, f, z) if t > t0 else 0.0
+
+
+def mix(c1, c2, k):
+    return tuple(int(round(lerp(a, b, k))) for a, b in zip(c1, c2))
 
 
 @functools.lru_cache(None)
@@ -86,33 +91,19 @@ def label(s, size, weight, color):
     return im
 
 
-def text(c, s, size, weight, color, cx, cy, a=1.0, sc=1.0, rot=0.0):
+def text(c, s, size, weight, color, cx, cy, a=1.0, sc=1.0, rot=0.0, maxw=None):
     if a <= 0.004 or sc <= 0.01:
         return
-    fx.over(c, fx.warp(label(s, size, weight, color), cx, cy, sc, sc, rot), a)
+    im = label(s, size, weight, color)
+    if maxw:
+        sc *= min(1.0, maxw / im.width)
+    fx.over(c, fx.warp(im, cx, cy, sc, sc, rot), a)
 
 
-def put(c, im, cx, cy, sc=1.0, a=1.0, rot=0.0):
-    if a > 0.004 and sc > 0.01:
-        fx.over(c, fx.warp(im, cx, cy, sc, sc, rot), a)
-
-
-def _box(pts, pad):
-    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
-    return (max(0, min(xs) - pad), max(0, min(ys) - pad), min(W, max(xs) + pad), min(H, max(ys) + pad))
-
-
-def line(c, pts, color, width=6.0, a=1.0):
-    if a <= 0.004:
-        return
-
-    def draw(d, m, S):
-        q = [m(x, y) for x, y in pts]
-        r = width * S / 2
-        d.line(q, fill=color + (255,), width=max(1, round(width * S)), joint='curve')
-        for x, y in (q[0], q[-1]):
-            d.ellipse([x - r, y - r, x + r, y + r], fill=color + (255,))
-    fx.over(c, fx.draw_rgba(_box(pts, width * 2 + 4), draw), a)
+def put(c, im, cx, cy, sx=1.0, a=1.0, rot=0.0, sy=None):
+    sy = sx if sy is None else sy
+    if a > 0.004 and sx > 0.01 and sy > 0.01:
+        fx.over(c, fx.warp(im, cx, cy, sx, sy, rot), a)
 
 
 def disc(c, cx, cy, r, color, a=1.0):
@@ -145,32 +136,90 @@ def pill(s, size, fill_, tcol, outline=None, padx=30, h=None):
     return im.resize((w, hh), Image.LANCZOS)
 
 
+def rub(v, approx=False):
+    """Shop prices exactly; gift prices (TON × rate) rounded to hundreds from 10 000 ₽ with «≈»."""
+    v = int(round(v))
+    if approx and v >= 10000:
+        v = int(round(v / 100) * 100)
+    return ('≈ ' if approx else '') + f'{v:,}'.replace(',', ' ') + ' ₽'
+
+
+# ------------------------------------------------------------------ cells
 @functools.lru_cache(None)
-def stamp():
-    """«ДОРОЖЕ» rubber stamp: tomato outline + text."""
+def closed_cell(row, n):
+    """A closed cell: a coloured «button» with a deeper base, a big «?» and its number."""
+    col = ROWCOL[row]
     S = 2
-    f = fx.font('Heavy', 46 * S)
-    l, t, r, b = f.getbbox('ДОРОЖЕ', anchor='ls')
-    w, h = int(r - l) + 56 * S, 92 * S
+    w, h = CW * S, (CH + 14) * S
     im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle([4 * S, 4 * S, w - 4 * S, h - 4 * S], 14 * S, outline=ACC + (255,), width=6 * S)
-    d.text((w / 2, h / 2 + 2 * S), 'ДОРОЖЕ', font=f, fill=ACC + (255,), anchor='mm')
-    return im.resize((w // S, h // S), Image.LANCZOS)
+    r = 34 * S
+    d.rounded_rectangle([0, 14 * S, w - 1, h - 1], r, fill=mix(col, INK, 0.38) + (255,))          # base
+    d.rounded_rectangle([0, 0, w - 1, CH * S - 1], r, fill=col + (255,))
+    d.rounded_rectangle([14 * S, 14 * S, w - 14 * S, CH * S - 14 * S], r - 12 * S, outline=mix(col, WHITE, 0.32) + (255,),
+                        width=4 * S)
+    d.text((w / 2, CH * S / 2 + 4 * S), '?', font=fx.font('Heavy', 168 * S), fill=WHITE + (255,), anchor='mm')
+    d.ellipse([26 * S, 26 * S, 74 * S, 74 * S], fill=WHITE + (255,))
+    d.text((50 * S, 51 * S), str(n), font=fx.font('Heavy', 32 * S), fill=col + (255,), anchor='mm')
+    return im.resize((CW, CH + 14), Image.LANCZOS)
 
 
-def rub(v):
-    s = f'{int(round(v)):,}'.replace(',', ' ')
-    return s + ' ₽'
+@functools.lru_cache(None)
+def open_card(r, row, k):
+    """The open face without the Lottie: white card, coloured frame, name, price (photo for the red row)."""
+    col = ROWCOL[row]
+    rd = ROUNDS[r]
+    pts = (rd['blue_pts'], rd['red_pts'])[row][k]
+    best = pts == 500
+    S = 2
+    w, h = CW * S, (CH + 14) * S
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    rr = 34 * S
+    d.rounded_rectangle([0, 14 * S, w - 1, h - 1], rr, fill=mix(col, INK, 0.38) + (255,))
+    d.rounded_rectangle([0, 0, w - 1, CH * S - 1], rr, fill=col + (255,))
+    d.rounded_rectangle([9 * S, 9 * S, w - 9 * S, CH * S - 9 * S], rr - 8 * S, fill=WHITE + (255,),
+                        outline=GOLD + (255,) if best else None, width=7 * S if best else 0)       # 500: gold rim
+    if row == 0:
+        name, model, ton = rd['blue'][k]
+        price = rub(ton * TON_RUB, approx=True)
+    else:
+        kind, name, rub_, shop = rd['red'][k]
+        price = rub(rub_)
+    im = im.resize((CW, CH + 14), Image.LANCZOS)
+    if row == 1:
+        ph = photos.sprite(rd['red'][k][0])
+        sc = min(206 / ph.width, 196 / ph.height)
+        ph = ph.resize((round(ph.width * sc), round(ph.height * sc)), Image.LANCZOS)
+        im.alpha_composite(ph, (CW // 2 - ph.width // 2, 128 - ph.height // 2))
+    for s, size, wt, colr, y in ((name, 33, 'Heavy', INK, 252), (price, 27, 'Semibold', MUTED, 290)):
+        lb = label(s, size, wt, colr)
+        if lb.width > CW - 34:
+            lb = lb.resize((CW - 34, round(lb.height * (CW - 34) / lb.width)), Image.LANCZOS)
+        im.alpha_composite(lb, (CW // 2 - lb.width // 2, y - lb.height // 2))
+    return im
 
 
-def gift_rub(r):
-    v = ROUNDS[r][5] * TON_RUB
-    return v if v < 1000 else round(v / 100) * 100
+def points_pill(pts):
+    if pts == 500:
+        return pill('★ 500', 40, GOLD, WHITE, padx=26)
+    return pill(str(pts), 38, WHITE, INK, INK, padx=30)
 
 
-# ------------------------------------------------------------------ the scale
-def active_round(t):
+def card_face(r, row, k, t):
+    im = open_card(r, row, k)
+    if row == 0:
+        im = im.copy()
+        g = lottie.frame(GIFTS[r][k], t + 0.31 * k + 0.17 * r, size=GIFT_PX)
+        im.alpha_composite(g, (CW // 2 - g.width // 2, 132 - g.height // 2))
+    return im
+
+
+def flip_t(r, row, k):
+    return REVEAL[r] + STEP * (3 * row + k)
+
+
+def round_at(t):
     r = 0
     for k, t0 in enumerate(ROUND_IN):
         if t >= t0 - SWAP:
@@ -178,247 +227,195 @@ def active_round(t):
     return r
 
 
-def beam_angle(t):
-    """Degrees, positive = right side down. Wobbles while undecided, falls to the dearer side on the answer."""
-    if t < ROUND_IN[0]:                                         # hook: a nervous swing
-        ang = 9.0 * math.sin(t * 5.2) * (0.4 + 0.6 * sm(0.0, 0.6, t))
-        return ang
-    r = active_round(t)
-    ang = 0.0
-    land = ROUND_IN[r] + 0.18
-    ang += 3.5 * fx.bump(t - land, 2.6, 4.5) * (1 if r % 2 else -1)       # items land: a small jolt
-    if TIMER0[r] <= t < REVEAL[r]:
-        ang += 2.2 * math.sin((t - TIMER0[r]) * 2 * math.pi * 0.62) * sm(TIMER0[r], TIMER0[r] + 0.8, t)
-    side = 1 if WIN[r] else -1
-    k = spr(REVEAL[r], t, 1.7, 0.42)
-    ang += side * 11.0 * k
-    if r + 1 < len(ROUND_IN):                                   # back to level before the next round
-        ang *= 1 - sm(ROUND_IN[r + 1] - SWAP, ROUND_IN[r + 1] - SWAP + 0.4, t)
-    if t > OUTRO:                                               # outro: undecided again, «Пепе или Гранту?»
-        ang *= 1 - sm(OUTRO, OUTRO + 0.6, t)
-        ang += 5.0 * math.sin((t - OUTRO) * 2.4) * sm(OUTRO + 0.3, OUTRO + 1.2, t)
-    return ang
+def leave_t(r):
+    """Open cards of round r start flying out (next round or the outro)."""
+    return ROUND_IN[r + 1] - SWAP if r + 1 < len(ROUND_IN) else OUTRO
 
 
-def geometry(t):
-    th = math.radians(beam_angle(t))
-    ex, ey = L * math.cos(th), L * math.sin(th)
-    ends = ((PIV[0] - ex, PIV[1] - ey), (PIV[0] + ex, PIV[1] + ey))
-    plates = [(x, y + ROPE) for x, y in ends]
-    return ends, plates
+def draw_cells(c, t):
+    r = round_at(t)
+    rounds = {r} if r == 0 else {r - 1, r}
+    for rr in sorted(rounds):
+        for row in (0, 1):
+            for k in range(3):
+                j = 3 * row + k
+                x, y = XS[k], YS[row]
+                # in: the first round is on screen from frame 0; later rounds pop in after the old cards leave
+                if rr == 0:
+                    kin = 0.86 + 0.14 * spr(-0.06 + 0.035 * j, t, 2.2, 0.5)
+                else:
+                    kin = spr(ROUND_IN[rr] - SWAP + 0.16 + 0.04 * j, t, 2.3, 0.52)
+                if kin <= 0.01:
+                    continue
+                # out
+                t_out = leave_t(rr) + 0.035 * j
+                o = sm(t_out, t_out + 0.32, t)
+                if o >= 1:
+                    continue
+                sc = kin * (1 - 0.35 * o)
+                a = 1 - o
+                dy = 260 * o * o
+                rot = (0.25 if k == 2 else -0.25 if k == 0 else 0.08) * o
+                # idle: closed cells breathe; rules: a row bounces when it is named
+                if t < flip_t(rr, row, k):
+                    ph = t * 2.2 + j * 0.9
+                    sc *= 1 + 0.018 * math.sin(ph)
+                    if rr == 0 and t < ROUND_IN[0] + 0.5:
+                        hit = E['blue'] if row == 0 else E['red']
+                        sc *= 1 + 0.10 * fx.bump(t - hit - 0.03 * k, 3.0, 6.0) if t > hit else 1.0
+                    if TIMER0[rr] <= t < REVEAL[rr]:                  # the timer runs: cells jitter a little more
+                        rot += 0.025 * math.sin(t * 9.0 + j * 1.7) * sm(REVEAL[rr] - 2.0, REVEAL[rr], t)
+                # flip
+                tf = flip_t(rr, row, k)
+                kf = cl((t - tf) / FLIP)
+                sx = abs(math.cos(math.pi * kf))
+                if kf < 0.5:
+                    put(c, closed_cell(row, k + 1), x, y + dy, sc * max(0.02, sx), a, rot, sc)
+                else:
+                    pts = (ROUNDS[rr]['blue_pts'], ROUNDS[rr]['red_pts'])[row][k]
+                    pop = 1 + (0.07 if pts == 500 else 0.03) * fx.bump(t - tf - FLIP, 2.6, 5.0)
+                    put(c, card_face(rr, row, k, t), x, y + dy, sc * max(0.02, sx) * pop, a, rot, sc * pop)
+                    kp = spr(tf + FLIP + 0.12, t, 2.5, 0.5)
+                    if kp > 0.01:
+                        put(c, points_pill(pts), x, y + dy + CH / 2 - 8, sc * kp, a * cl(kp * 3), rot)
 
 
-def draw_scale(c, t, ends, plates):
-    a = 1.0
-    line(c, [(PIV[0], PIV[1]), (PIV[0], POST_Y)], INK, 9, a)                         # post
-    fx.over(c, fx.draw_rgba((PIV[0] - 120, POST_Y - 6, PIV[0] + 120, POST_Y + 22), lambda d, m, S:
-            d.rounded_rectangle([*m(PIV[0] - 110, POST_Y - 2), *m(PIV[0] + 110, POST_Y + 16)], 9 * S,
-                                fill=INK + (255,))), a)
-    for (x, y), (px, py) in zip(ends, plates):
-        line(c, [(x, y), (px - PLATE_W / 2 + 18, py)], INK, 3, a)                    # ropes
-        line(c, [(x, y), (px + PLATE_W / 2 - 18, py)], INK, 3, a)
-    line(c, [ends[0], ends[1]], INK, 11, a)                                          # beam
-    for x, y in ends:
-        disc(c, x, y, 9, INK, a)
-    for px, py in plates:                                                            # shallow bowls
-        x0, x1 = px - PLATE_W / 2, px + PLATE_W / 2
-        fx.over(c, fx.draw_rgba((x0 - 8, py - 8, x1 + 8, py + 34), lambda d, m, S, x0=x0, x1=x1, py=py: (
-            d.chord([*m(x0, py - 26), *m(x1, py + 26)], 0, 180, fill=LIGHT + (255,), outline=INK + (255,),
-                    width=round(5 * S)))), a)
-
-
+# ------------------------------------------------------------------ header, timer, tags
 def draw_timer(c, t):
-    """The pivot: a plain hub, or the 5 s timer ring with the digit."""
-    r = active_round(t) if t >= ROUND_IN[0] else -1
-    ton = 0.0
-    if r >= 0 and t < OUTRO:
-        ton = sm(TIMER0[r] - 0.05, TIMER0[r] + 0.25, t) * (1 - sm(REVEAL[r], REVEAL[r] + 0.3, t))
-    rad = lerp(16, 66, ton)
-    disc(c, PIV[0], PIV[1], rad + 5, INK)
-    disc(c, PIV[0], PIV[1], rad, PAPER if ton > 0.02 else INK)
-    if ton <= 0.02:
+    r = round_at(t)
+    if t < ROUND_IN[0] or t >= OUTRO:
         return
+    ton = sm(TIMER0[r] - 0.05, TIMER0[r] + 0.25, t) * (1 - sm(REVEAL[r], REVEAL[r] + 0.3, t))
+    if ton <= 0.01:
+        return
+    rad = lerp(20, 58, ton)
+    disc(c, W / 2, TIMER_Y, rad + 5, INK, ton)
+    disc(c, W / 2, TIMER_Y, rad, WHITE, ton)
     left = cl((REVEAL[r] - t) / TIMER)
-    arc(c, PIV[0], PIV[1], rad - 9, -90, 270, LIGHT, 10, ton)
-    arc(c, PIV[0], PIV[1], rad - 9, -90 + 360 * (1 - left), 270, ACC, 10, ton)
+    arc(c, W / 2, TIMER_Y, rad - 9, -90, 270, LIGHT, 10, ton)
+    arc(c, W / 2, TIMER_Y, rad - 9, -90 + 360 * (1 - left), 270, GOLD, 10, ton)
     n = max(1, math.ceil((REVEAL[r] - t) - 1e-6))
-    tick = REVEAL[r] - n                                            # moment this digit appeared
+    tick = REVEAL[r] - n
     k = 1 + 0.22 * fx.bump(t - tick, 3.0, 7.0) if t >= tick else 1.0
-    text(c, str(min(5, n)), 54, 'Heavy', ACC if n <= 2 else INK, PIV[0], PIV[1], ton, k * lerp(0.6, 1.0, ton))
+    text(c, str(min(5, n)), 50, 'Heavy', GOLD if n <= 2 else INK, W / 2, TIMER_Y, ton, k * lerp(0.6, 1.0, ton))
 
 
-# ------------------------------------------------------------------ items, labels, prices
-def item_motion(t, r, side):
-    """(dx, dy, scale, alpha, rot) of round r's item on its plate: drops in from above while the previous pair
-    slides out sideways (they overlap, the pans are never empty)."""
-    t_in = ROUND_IN[r] - (SWAP - 0.1 if r else 0.0) + 0.06 * side
-    k = spr(t_in, t, 2.1, 0.55)
-    dx, dy, sc, a, rot = 0.0, lerp(-600, 0, k), 1.0, float(t >= t_in), 0.0
-    if r + 1 < len(ROUND_IN):
-        t_out = ROUND_IN[r + 1] - SWAP + 0.04 * side
-        o = sm(t_out, t_out + 0.45, t)
-        dx += (760 if side else -760) * o * o
-        dy -= 140 * o
-        rot += (0.45 if side else -0.45) * o
-        a *= 1 - sm(t_out + 0.32, t_out + 0.45, t)
-    return dx, dy, sc, a, rot
-
-
-def draw_items(c, t, plates):
-    if t < ROUND_IN[0]:                                            # hook v2: the final pair from frame 0, prices hidden
-        j = 4
-        k = spr(-0.3, t, 2.4, 0.6)
-        o = sm(ROUND_IN[0] - 0.4, ROUND_IN[0], t)                  # the pair flies off, round 1 drops in
-        for side in (0, 1):
-            px, py = plates[side]
-            dx = (760 if side else -760) * o * o
-            if side == 0:
-                put(c, lottie.frame(GIFTS[j], t, size=GS), px + dx, py - ITEM_UP, GIFT_SC * 0.92 * k, 1 - o)
-            else:
-                put(c, things.sprite(ROUNDS[j][3]), px + dx, py - ITEM_UP, THING_SC * 0.92 * k, 1 - o)
-            kp = spr(0.25 + 0.1 * side, t, 2.4, 0.5) * (1 + 0.08 * math.sin(t * 7.0 + side))
-            put(c, pill('? ₽', 52, None, INK, INK), px + dx, py + 120, max(0.01, kp), (1 - o) * cl(kp * 2))
-            text(c, HOOK_NAMES[side], 38, 'Heavy', INK, px + dx, py + 54, (1 - o) * cl(k))
-        return
-    r = active_round(t)
-    for rr in {max(0, r - 1), r}:
-        for side in (0, 1):
-            dx, dy, sc, a, rot = item_motion(t, rr, side)
-            if a <= 0.004:
-                continue
-            px, py = plates[side]
-            if side == 0:
-                put(c, lottie.frame(GIFTS[rr], t + 0.37 * rr, size=GS), px + dx, py - ITEM_UP + dy, GIFT_SC * sc, a,
-                    rot)
-            else:
-                put(c, things.sprite(ROUNDS[rr][3]), px + dx, py - ITEM_UP + dy, THING_SC * sc, a, rot)
-
-
-def draw_labels(c, t, plates):
-    if t < ROUND_IN[0]:
-        return
-    r = active_round(t)
-    gift, model, rar, kind, (n1, n2), ton, price = ROUNDS[r][:7]
-    t_in = ROUND_IN[r] + 0.15
-    a_in = sm(t_in, t_in + 0.3, t)
-    a_out = 1.0 if r + 1 >= len(ROUND_IN) else 1 - sm(ROUND_IN[r + 1] - SWAP, ROUND_IN[r + 1] - SWAP + 0.25, t)
-    if t > OUTRO:
-        a_out *= 1 - sm(OUTRO, OUTRO + 0.3, t) * 0       # names stay in the outro, prices go
-    a = a_in * a_out
-    rows = ((gift, f'модель {model}'), (n1, n2))
-    for side in (0, 1):
-        px, py = plates[side]
-        rise = 18 * (1 - a_in)
-        for txt, size, wt, col, dy in ((rows[side][0], 44, 'Heavy', INK, 70), (rows[side][1], 31, 'Semibold', MUTED, 117)):
-            fit = min(1.0, 400 / max(1, label(txt, size, wt, col).width))      # long names shrink to stay in frame
-            text(c, txt, size, wt, col, px, py + dy + rise, a, fit)
-    # prices on the answer
-    k = sm(REVEAL[r] - 0.02, REVEAL[r] + 0.22, t)
-    if k <= 0:
-        return
-    pa = a_out * (1 - sm(OUTRO, OUTRO + 0.35, t))
-    vals = (gift_rub(r), price)
-    for side in (0, 1):
-        px, py = plates[side]
-        win = WIN[r] == side
-        s = ('≈ ' if side == 0 else '') + rub(vals[side])
-        im = pill(s, 46, ACC if win else None, (255, 255, 255) if win else INK, None if win else INK)
-        kk = spr(REVEAL[r] + 0.06 * side, t, 2.6, 0.5)
-        put(c, im, px, py + 200 - 30 * (1 - kk), max(0.01, kk), pa)
-        sub = 'в телеге' if side == 0 else SRC[r]           # no «TON» on screen (crypto wording, 2026-11-08)
-        text(c, sub, 29, 'Semibold', MUTED, px, py + 266, pa * k)
-        if win:                                                   # the stamp lands on the dearer one
-            ks = spr(REVEAL[r] + 0.12, t, 2.2, 0.45)
-            put(c, stamp(), px + (16 if side else -16), py - ITEM_UP - 150, lerp(2.4, 1.18, cl(ks)), pa * cl(ks * 3),
-                -0.16 if side == 0 else 0.14)
-
-
-# ------------------------------------------------------------------ titles, score, hook, outro
-def score_at(t):
-    s = [0, 0]
-    for r in range(5):
-        if t >= REVEAL[r] + 0.15:
-            s[WIN[r]] += 1
-    return s
+def draw_tags(c, t):
+    for row in (0, 1):
+        t0 = E['blue'] if row == 0 else E['red']
+        k = spr(t0 - 0.05, t, 2.4, 0.55)
+        a = cl(k * 2) * (1 - sm(OUTRO, OUTRO + 0.3, t))
+        if a <= 0.004:
+            continue
+        put(c, pill(TAGS[row], 28, ROWCOL[row], WHITE, padx=22), W / 2, TAG_Y[row], max(0.01, k), a)
 
 
 def draw_header(c, t):
-    a = sm(E['hook_q'] + 0.08, E['hook_q'] + 0.4, t)            # after the hook text has gone (v2)
+    # hook: the bet from frame 0
+    ah = 1 - sm(E['hook_out'] - 0.15, E['hook_out'] + 0.1, t)
+    if ah > 0.004:
+        k1 = 0.8 + 0.2 * spr(-0.05, t, 2.2, 0.5)
+        k2 = 0.75 + 0.25 * spr(0.1, t, 2.2, 0.5)
+        k3 = 1 + 0.14 * fx.bump(t - 2.2, 3.0, 6.0)                         # «1 ИЗ 200» pulses on «двухсот»
+        text(c, HOOK[0], 92, 'Heavy', INK, W / 2, 208 + 30 * (1 - k1), ah, k1)
+        text(c, HOOK[1], 58, 'Heavy', GOLD, W / 2, 290 + 30 * (1 - k1), ah, k1)
+        text(c, HOOK[2], 92, 'Heavy', INK, W / 2, 374 + 30 * (1 - k2), ah, k2 * k3)
+        text(c, 'если выбирать наугад', 28, 'Semibold', MUTED, W / 2, 440, ah * k2)
+        put(c, pill(HOOK_BADGE, 38, GOLD, WHITE), W / 2, CAP_TOP + 40, k2, ah)
+    if t >= OUTRO:
+        ko = sm(OUTRO + 0.1, OUTRO + 0.4, t)
+        text(c, 'ТВОЙ УРОВЕНЬ', 31, 'Semibold', GOLD, W / 2, 208, ko)
+        text(c, SUM_TITLE, 78, 'Heavy', INK, W / 2, 302, ko, 0.9 + 0.1 * spr(OUTRO + 0.1, t))
+        return
+    a = sm(E['hook_out'] - 0.05, E['hook_out'] + 0.3, t)
     if a <= 0.004:
         return
-    s = score_at(t)
-    # score: ПОДАРОК 0 : 0 ЖИЗНЬ
-    y = 196
-    text(c, SIDES[0], 32, 'Heavy', MUTED, 318, y, a)
-    text(c, SIDES[1], 32, 'Heavy', MUTED, 778, y, a)
-    for side, x in ((0, 476), (1, 604)):
-        last = max([REVEAL[r] + 0.15 for r in range(5) if WIN[r] == side and t >= REVEAL[r] + 0.15] or [-9])
-        k = 1 + 0.45 * fx.bump(t - last, 3.0, 6.5) if last > 0 else 1.0
-        text(c, str(s[side]), 62, 'Heavy', ACC if last > 0 and t - last < 0.6 else INK, x, y, a, k)
-    text(c, ':', 56, 'Heavy', INK, 540, y - 3, a)
-    # round label + title
-    if t < OUTRO:
-        r = max([k for k in range(5) if t >= ROUND_IN[k] - 0.1] or [0])
-        rl = 'ФИНАЛ' if r == 4 else f'РАУНД {r + 1} / 5'
-        text(c, rl, 31, 'Semibold', ACC if r == 4 else MUTED, 540, 290, a)
-        text(c, 'ЧТО ДОРОЖЕ?', 84, 'Heavy', INK, 540, 386, a)
+    if t < ROUND_IN[0] - 0.1:
+        rl = 'КАК ИГРАТЬ'
     else:
-        ko = sm(OUTRO, OUTRO + 0.3, t)
-        k2 = sm(E['which'] - 0.15, E['which'] + 0.15, t)
-        text(c, OUTRO_TAG, 31, 'Semibold', ACC, 540, 290, ko * k2)
-        text(c, OUTRO_1, 78, 'Heavy', INK, 540, 386 - 20 * k2, ko * (1 - k2))
-        text(c, OUTRO_2, 78, 'Heavy', INK, 540, 386 + 20 * (1 - k2), k2)
-
-
-def draw_hook(c, t):
-    a = 1 - sm(E['hook_q'] - 0.15, E['hook_q'] + 0.1, t)
-    if a <= 0.004:
-        return
-    k1 = 0.8 + 0.2 * spr(-0.05, t, 2.2, 0.5)         # the whole bet is readable from the first frame
-    k2 = 0.75 + 0.25 * spr(0.08, t, 2.2, 0.5)
-    k3 = 1 + 0.12 * fx.bump(t - 0.55, 3.0, 6.0)
-    text(c, HOOK[0], 92, 'Heavy', INK, 540, 200 + 30 * (1 - k1), a, k1)
-    text(c, HOOK[1], 66, 'Heavy', ACC, 540, 288 + 30 * (1 - k1), a, k1)
-    text(c, HOOK[2], 92, 'Heavy', INK, 540, 376 + 30 * (1 - k2), a, k2)
-    put(c, pill(HOOK_BADGE, 38, ACC, (255, 255, 255)), 540, 478 + 30 * (1 - k2), k2 * k3, a)
+        r = max([k for k in range(5) if t >= ROUND_IN[k] - 0.1] or [0])
+        rl = 'ФИНАЛ · РАУНД 5 / 5' if r == 4 else f'РАУНД {r + 1} / 5'
+    text(c, rl, 31, 'Semibold', GOLD if 'ФИНАЛ' in rl else MUTED, W / 2, 208, a)
+    kt = spr(E['pick'] - 0.1, t, 2.2, 0.55) if t < ROUND_IN[0] else 1.0
+    text(c, TITLE, 60, 'Heavy', INK, W / 2, 286, a * cl(kt * 2), 0.85 + 0.15 * kt, maxw=1000)
+    # rules: 100 · 300 · 500 under the title, where the timer will be
+    km = spr(E['more'] - 0.05, t, 2.3, 0.5)
+    am = cl(km * 2) * (1 - sm(TIMER0[0] - 0.3, TIMER0[0], t))
+    if am > 0.004:
+        for k, (pts, x) in enumerate(((100, -190), (300, 0), (500, 190))):
+            kk = spr(E['more'] + 0.12 * k, t, 2.4, 0.5)
+            put(c, points_pill(pts), W / 2 + x, TIMER_Y, max(0.01, kk), am * cl(kk * 2))
+        text(c, 'дешевле', 26, 'Semibold', MUTED, W / 2 - 190, TIMER_Y + 50, am)
+        text(c, 'дороже', 26, 'Semibold', MUTED, W / 2 + 190, TIMER_Y + 50, am)
 
 
 def draw_teaser(c, t):
-    """Retention before RubUp: the promised final is still ahead (the ad freeze frame shows this pill)."""
+    """Retention before RubUp: the freeze frame of the ad shows this pill."""
     t0 = END[KEY['a3']] - 0.15
     if not (t0 <= t < ROUND_IN[3] - SWAP):
         return
     k = spr(t0, t, 2.4, 0.5)
-    a = cl(k * 2) * (1 - sm(max(AD_STOP + 0.02, ROUND_IN[3] - SWAP - 0.3), ROUND_IN[3] - SWAP, t))   # full on the ad freeze
-    put(c, pill(TEASER, 40, ACC, (255, 255, 255)), 540, 1338, max(0.01, k) * (1 + 0.05 * fx.bump(t - t0 - 0.5, 3.0, 6.0)), a)
+    a = cl(k * 2) * (1 - sm(max(AD_STOP + 0.02, ROUND_IN[3] - SWAP - 0.3), ROUND_IN[3] - SWAP, t))
+    put(c, pill(TEASER, 40, GOLD, WHITE), W / 2, PILL_Y, max(0.01, k) * (1 + 0.05 * fx.bump(t - t0 - 0.5, 3.0, 6.0)), a)
+
+
+# ------------------------------------------------------------------ outro: levels
+@functools.lru_cache(None)
+def level_row(i):
+    lo, hi, name, share = LEVELS[i]
+    top = i == len(LEVELS) - 1
+    S = 2
+    w, h = 960, 128
+    fill = GOLD if top else WHITE
+    tc = WHITE if top else INK
+    im = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([0, 0, w * S - 1, h * S - 1], 30 * S, fill=fill + (255,), outline=INK + (255,), width=5 * S)
+    d.text((40 * S, 64 * S), f'{lo}–{hi}', font=fx.font('Heavy', 40 * S), fill=tc + (255,), anchor='lm')
+    f = fx.font('Heavy', 38 * S)
+    d.text((w * S - 40 * S, 52 * S), name, font=f, fill=(tc if top else INK) + (255,), anchor='rm')
+    d.text((w * S - 40 * S, 96 * S), f'наугад так играют {share}', font=fx.font('Semibold', 24 * S),
+           fill=(WHITE if top else MUTED) + (255,), anchor='rm')
+    return im.resize((w, h), Image.LANCZOS)
+
+
+def draw_levels(c, t):
+    if t < OUTRO + 0.2:
+        return
+    for i in range(len(LEVELS)):
+        t0 = E['sum'] + 0.05 + 0.16 * i
+        k = spr(t0, t, 2.2, 0.55)
+        if k <= 0.01:
+            continue
+        y = 500 + i * 152
+        top = i == len(LEVELS) - 1
+        pulse = 1 + (0.04 * math.sin((t - t0) * 5.0) * sm(t0 + 0.5, t0 + 1.0, t) if top else 0.0)
+        put(c, level_row(i), W / 2 + 120 * (1 - k), y, (0.9 + 0.1 * k) * pulse, cl(k * 2))
 
 
 def draw_outro(c, t):
-    k = spr(E['comments'], t, 2.0, 0.5)
     if t < E['comments']:
         return
-    put(c, pill(COMMENTS, 40, ACC, (255, 255, 255)), 540, 1338, max(0.01, k), cl(k * 2))
+    k = spr(E['comments'], t, 2.0, 0.5)
+    put(c, pill(COMMENTS, 38, GOLD, WHITE), W / 2, PILL_Y, max(0.01, k), cl(k * 2))
 
 
 # ------------------------------------------------------------------ captions
 def _phr(k):
-    acc = ACC
-    return captions.phrase(WORDS[k], accent=acc, end=END[k] + 0.2)
+    return captions.phrase(WORDS[k], accent=ACC, end=END[k] + 0.2)
 
 
-CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=900, top=1400, size=52, weight='Semibold',
-                        max_lines=2, color=INK, accent_color=ACC, shadow=False, fade_out=0.2, rise=10)
+CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=960, top=CAP_TOP, size=50, weight='Semibold',
+                        max_lines=2, color=INK, accent_color=GOLD, shadow=False, fade_out=0.2, rise=10)
 
 
 def render_at(t):
     c = _bg().copy()
-    ends, plates = geometry(t)
-    draw_scale(c, t, ends, plates)
-    draw_items(c, t, plates)
-    draw_timer(c, t)
-    draw_labels(c, t, plates)
     draw_header(c, t)
-    draw_hook(c, t)
+    draw_timer(c, t)
+    draw_cells(c, t)
+    draw_tags(c, t)                 # tags stay readable over popping cells
+    draw_levels(c, t)
     draw_teaser(c, t)
     draw_outro(c, t)
     fx.over(c, CAP.layer(t))

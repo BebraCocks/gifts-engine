@@ -1,4 +1,4 @@
-"""Music for 33-price-duel-13 (09-price-duel code, ре мажор D – Bm – G – A), synthesized in code
+"""Music for 39-lucky-cells (09-price-duel code, «гадалка»: ля минор Am – F – Dm – E), synthesized in code
 A light quiz-show groove, 120 BPM (the timer needs 2 beats a second), G – Em – C – D (09: Am – F – C – G, 10: D – Bm – G – A, 11: Em – C – G – D). Content time, so RubUp pauses it like the voice.
 
 Sections follow the events:
@@ -16,8 +16,8 @@ from events import E
 
 BPM = 120.0
 BEAT = 60.0 / BPM
-RNG = np.random.default_rng(15)
-PROG = [(62, (62, 66, 69)), (59, (59, 62, 66)), (55, (55, 59, 62)), (57, (57, 61, 64))]   # ре мажор D – Bm – G – A (root, chord)
+RNG = np.random.default_rng(39)
+PROG = [(57, (57, 60, 64)), (53, (57, 60, 65)), (50, (57, 62, 65)), (52, (56, 59, 64))]   # Am – F – Dm – E (root, chord)
 
 
 def hz(m):

@@ -319,3 +319,10 @@ Moon Pendant / серебряная подвеска (вещь на четвер
 Хук в первые 3 с: «Одно кольцо дороже другого почти в девять раз!» + два кольца со скрытыми ценами. Простые реплики.
 **`renders/33-price-duel-13/price_duel_13_v1.mp4`** (59,05 с, −13,3 LUFS), Google Drive:
 https://drive.google.com/file/d/19-tBwekl6ukL7r4zfDwz8WTAa9Xi_5Ms/view . Правки — `--name price_duel_13_v2`.
+
+## 2026-11-08 · 34-price-duel-14 «Телега против Детского мира» («Что дороже?»)
+
+Light Sword / неоновый меч (телега ×3), Jolly Chimp / мягкая обезьянка (вещь ×1,9), Fresh Socks / 3 пары носков (телега ×2,9),
+Easter Egg / Kinder Сюрприз (телега ×2,4), Stellar Rocket / LEGO Technic ракета 6 799 ₽ (вещь ×13); 3:2. Хук за 2,3 с.
+**`renders/34-price-duel-14/price_duel_14_v1.mp4`** (59,27 с, −13,0 LUFS), Google Drive:
+https://drive.google.com/file/d/1jY1_yrf50OVmV_bDpMyWjMFv-iVfa-yI/view . Правки — `--name price_duel_14_v2`.

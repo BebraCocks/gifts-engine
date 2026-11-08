@@ -1,0 +1,22 @@
+{
+ "_note": "Цены для 34-price-duel-14 «Телега против Детского мира». Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 04:56–05:05 UTC. Курс 86 ₽ за TON (tonapi.io 86,11 ₽ в 04:56 UTC). Вещи: карточки «Детского мира» 2026-11-08 05:00–05:10 UTC, цена на странице. Подарки, бывшие в выпусках 09–18, 30–33, не брались.",
+ "ton_rub": 86.0,
+ "gifts": [
+  {"gift": "Light Sword", "model": "Andromeda", "rarity": "3%", "ton": 7, "rub": 602, "lot": "https://fragment.com/gift/lightsword-72715"},
+  {"gift": "Jolly Chimp", "model": "Abubu", "rarity": "2%", "ton": 9, "rub": 774, "lot": "https://fragment.com/gift/jollychimp-1785"},
+  {"gift": "Fresh Socks", "model": "Barry Allen", "rarity": "2%", "ton": 5, "rub": 430, "lot": "https://fragment.com/gift/freshsocks-110489"},
+  {"gift": "Easter Egg", "model": "Ice Cream", "rarity": "1.5%", "ton": 5, "rub": 430, "lot": "https://fragment.com/gift/easteregg-5934"},
+  {"gift": "Stellar Rocket", "model": "Squirrel", "rarity": "2%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/stellarrocket-62135"}
+ ],
+ "things": [
+  {"name": "Набор аксессуаров Yotoy «Неоновый БУМ» меч зелёный", "rub": 199, "src": "https://www.detmir.ru/product/index/id/7075598/"},
+  {"name": "Мягкая игрушка Snuggles «Обезьянка» Панч, 30 см", "rub": 1499, "src": "https://www.detmir.ru/product/index/id/7123375/"},
+  {"name": "Носки Futurino, 3 пары", "rub": 149, "src": "https://www.detmir.ru/product/index/id/6654111/"},
+  {"name": "Яйцо шоколадное Kinder Сюрприз, 20 г", "rub": 179, "src": "https://www.detmir.ru/product/index/id/7036139/"},
+  {"name": "Конструктор LEGO Technic «Ракета-носитель» 42221, 632 детали", "rub": 6799, "src": "https://www.detmir.ru/product/index/id/7090589/"}
+ ],
+ "rejected": [
+  "Pet Snake / игрушка-змея 636 ₽ — третья победа вещи подряд не нужна; лизун-змея 415 ₽ — разница меньше 20%.",
+  "Jelly Bunny / заяц Laffi 999 ₽ — разница меньше 20%."
+ ]
+}

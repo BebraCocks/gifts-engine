@@ -370,6 +370,7 @@ def draw_gold(c, t):
         put(c, box_body(GOLD_C, GOLD_SZ, GOLD_SZ, 0, '?'), x, y, kin, a, shake)
         put(c, box_lid(GOLD_C, GOLD_SZ, GOLD_SZ), x, y + lid_offset(GOLD_SZ) * kin, kin, a, shake)
         text(c, 'ЗОЛОТАЯ', 26, 'Heavy', GOLD, x, y + GOLD_SZ / 2 + 30, a * kin)
+        text(c, 'открывать не обязательно', 24, 'Semibold', MUTED, x, y + GOLD_SZ / 2 + 62, a * kin)
         return
     # v7 (author): a black hole instead of the bomb. It opens, sucks in «1000», then the gold box itself, and closes.
     k = t - go
@@ -411,6 +412,7 @@ def draw_gold(c, t):
     if kr > 0.01:
         put(c, pill('−1000', 40, (214, 48, 48), WHITE, padx=26), x, y, max(0.01, kr), a * cl(kr * 3))
         text(c, 'ЧЁРНАЯ ДЫРА', 26, 'Heavy', MUTED, x, y + 62, a * cl(kr * 2))
+        text(c, 'у тех, кто открыл', 24, 'Semibold', MUTED, x, y + 94, a * cl(kr * 2))
 
 
 # ------------------------------------------------------------------ header, timer, tags

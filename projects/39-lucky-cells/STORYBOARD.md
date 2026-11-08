@@ -88,4 +88,9 @@ whoosh, downlifter, power-down (тихо); строки таблицы — ле�
   таймера (ровно 5 с), покачивание коробок, рамка и бледные значки. Сборка `lucky_cells_v2.mp4` (79,88 с, −12,8 LUFS,
   42,7 МБ) не прошла через Apps Script (лимит запроса); **`renders/39-lucky-cells/lucky_cells_v3.mp4`** — тот же ролик,
   пережат CRF 20 (28 МБ, SSIM 0,998 к v2, звук без перекодирования), декодирован целиком, таймеры 5,0 с проверены.
-  Google Drive «TikTok»: https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view . Правки — `--name lucky_cells_v4`.
+  Google Drive «TikTok»: https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view .
+- 2026-11-08 v8: звук таймера (тик-так каждую секунду громче, бип на 2 и 1, «дзынь» часов в конце), золотая коробка
+  объяснена: «открывать её не обязательно» (голос + подпись), в конце «Кто открыл — сочувствую: минус тысяча баллов»,
+  под «−1000» — «у тех, кто открыл». **`renders/39-lucky-cells/lucky_cells_v4.mp4`** — 79,47 с, 28,6 МБ (VIZ_CQ=30),
+  −13,1 LUFS, декодирован, кадры просмотрены. Google Drive: https://drive.google.com/file/d/11aStsSxjbG7c9SYPHTj20I_YBnQDB3Cn/view .
+  Не проверено на слух. Правки — `--name lucky_cells_v5`.

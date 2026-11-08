@@ -43,9 +43,14 @@ def sfx_layer(n, kit):
         if r:
             add(fx, 'whoosh-short', ROUND_IN[r] - SWAP, gain_db=-20, label=f'round {r}: open cards fall away')
             add(fx, 'pop', ROUND_IN[r] - SWAP + 0.2, gain_db=-21, label=f'round {r + 1}: new boxes pop in')
-        for s in range(5):
-            add(fx, 'click', TIMER0[r] + s, gain_db=-24 + 1.5 * (s >= 3), key='tick', vary=False, dur=(0, 0.3),
-                label=f'round {r + 1}: timer {5 - s}')
+        for s in range(5):                      # v7 (author): an audible tick-tock every second, beeps on 2 and 1
+            add(fx, 'click', TIMER0[r] + s, gain_db=-14 + 1.5 * (s >= 3), key='tick', vary=False, dur=(0, 0.3),
+                semitones=0.0 if s % 2 == 0 else -4.0, label=f'round {r + 1}: timer {5 - s} (tick-tock)')
+            if s >= 3:
+                add(fx, 'counter', TIMER0[r] + s + 0.02, gain_db=-19, key='beep', vary=False, semitones=2.0 * (s - 3),
+                    label=f'round {r + 1}: timer {5 - s} — beep')
+        add(fx, 'cartoon', REVEAL[r] - 0.02, gain_db=-17, file='cartoon/cartoon-clock.flac', vary=False,
+            label=f'round {r + 1}: time is up — clock ding')
         add(fx, 'riser', REVEAL[r], gain_db=-28, align='end', fit=1.2, label=f'round {r + 1}: last second')
         for row in (0, 1):
             pts = (ROUNDS[r]['blue_pts'], ROUNDS[r]['red_pts'])[row]
@@ -97,7 +102,7 @@ def make_mix(kit):
         env = np.convolve(env, np.ones(2400) / 2400, 'same')
         k = np.clip(env / (np.percentile(env, 95) * 0.5 + 1e-9), 0, 1)
         k = np.convolve(k, np.ones(4800) / 4800, 'same')          # smooth duck, no pumping
-        fx *= (1 - 0.45 * k)[:, None]
+        fx *= (1 - 0.30 * k)[:, None]               # v7: the timer must stay audible under the narration
         mus *= (1 - (1 - 10 ** (-7 / 20)) * k)[:, None]
     g = 10 ** (CONTENT_GAIN_DB / 20)
     return (voice + fx + mus) * g, fx * g, mus * g

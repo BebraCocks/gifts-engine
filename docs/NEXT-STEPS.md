@@ -368,4 +368,6 @@ https://drive.google.com/file/d/1w9-4UTtReWs3jBlVtIxfmQLqx-S5qlig/view . Пра�
 https://drive.google.com/file/d/1j1GyHBXBekZFwbmsp_ttVZPatumlY7NM/view .
 v7 (чёрная дыра, таблица автора 0–499…5000–9999, реплика перед раундом и во время таймера, рамка и значки):
 **`renders/39-lucky-cells/lucky_cells_v3.mp4`** (79,88 с), Google Drive:
-https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view . Правки — `--name lucky_cells_v4`.
+https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view .
+v8 (звук таймера, золотая «открывать не обязательно», сочувствие тем, кто открыл): **`renders/39-lucky-cells/lucky_cells_v4.mp4`**
+(79,47 с), Google Drive: https://drive.google.com/file/d/11aStsSxjbG7c9SYPHTj20I_YBnQDB3Cn/view . Правки — `--name lucky_cells_v5`.

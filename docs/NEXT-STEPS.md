@@ -326,3 +326,10 @@ Light Sword / неоновый меч (телега ×3), Jolly Chimp / мягк
 Easter Egg / Kinder Сюрприз (телега ×2,4), Stellar Rocket / LEGO Technic ракета 6 799 ₽ (вещь ×13); 3:2. Хук за 2,3 с.
 **`renders/34-price-duel-14/price_duel_14_v1.mp4`** (59,27 с, −13,0 LUFS), Google Drive:
 https://drive.google.com/file/d/1jY1_yrf50OVmV_bDpMyWjMFv-iVfa-yI/view . Правки — `--name price_duel_14_v2`.
+
+## 2026-11-08 · 35-zodiac-wine «Гороскоп из телеги» — хайлайты
+
+Зодиакальные модели Spiced Wine (12 знаков, по 0,8%): Скорпион, Лев, Дева, Водолей — по одному на стихию, шуточный прогноз
+каждому. Хук: колесо из 12 кружек с кадра 0; тизер перед RubUp; финал «А ТВОЙ ЗНАК? — пиши в комментариях».
+Голос автора `48ec28a4…` drama-3 с тегами эмоций (1,15×), 59,3 с с RubUp, −14,1 LUFS. Хайлайты, превью и звук отправлены.
+Ждём «собирай»: `python -B engine/tools/build.py projects/35-zodiac-wine --approved --name zodiac_wine_v1`.

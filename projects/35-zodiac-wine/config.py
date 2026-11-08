@@ -1,0 +1,14 @@
+"""35-zodiac-wine «Гороскоп из телеги»: ночное небо, созвездия, кружка-герой крупно, акцент = цвет напитка знака."""
+STYLE_READY = True
+BACKGROUND = (11, 12, 30)          # night sky, flat (no gradients: banding)
+STAR = (214, 220, 255)
+INK = (244, 242, 255)              # main text on the sky
+MUTED = (150, 154, 196)
+LINE = (120, 128, 190)             # constellation lines
+GOLD = (246, 206, 120)             # hook accent, stars of the chosen
+TEXT_COLOR = INK
+FONT_WEIGHT = 'Semibold'
+FONT_SIZE = 52
+GIFT_NAME = 'Spiced Wine'
+MODEL_NAME = None                  # 12 models — script.WHEEL, 4 heroes — script.SIGNS
+WITHOUT_NARRATION = False

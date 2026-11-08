@@ -24,7 +24,7 @@ SRC = {   # kind: (url, page, crop box in source px or None, background)
     'scooter': ('https://catalog-cdn.detmir.st/media/nMe0XT18VhvqKs0byGaAtF8QSoGkwLOON_-njnuzdJU=.webp', 'https://www.detmir.ru/product/index/id/7173074/', None, 'white'),
 }
 BOX = {k: (340, 340) for k in SRC}
-BOX['keyboard'] = (420, 340)       # wide keyboard: a bigger box so it reads as big as the others
+BOX['keyboard'] = (380, 340)       # wide keyboard: a bigger box so it reads as big as the others
 GLASS = {}
 SAT = {}        # (saturation threshold, closing): white stripes between red ones
 RING = {}   # wreath on a door: outer ellipse (inner unused), source px

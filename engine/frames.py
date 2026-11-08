@@ -24,8 +24,8 @@ def nvenc_ok():
 
 
 # Delivery for TikTok / Shorts / Reels (2026-11-08): RGB -> BT.709 limited range with matching colour tags (without them
-# players guess BT.601 and colours shift), a keyframe every 2 s at 60 fps.
-DELIVERY = ["-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p", "-colorspace", "bt709",
+# players guess BT.601 and colours shift), a keyframe every 2 s at 60 fps, square pixels tagged (SAR 1:1, 2026-11-08).
+DELIVERY = ["-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p,setsar=1", "-colorspace", "bt709",
             "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv", "-g", "120", "-keyint_min", "60"]
 
 

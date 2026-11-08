@@ -38,8 +38,8 @@ GS = 512                       # Lottie raster size
 GIFT_SC = 0.66                 # -> ≈ 348 px on screen
 THING_SC = 1.0
 
-PIV = (540.0, 590.0)           # pivot of the scale = the timer
-L = 300.0                      # half beam
+PIV = (525.0, 590.0)           # pivot of the scale = the timer (v2: 15 px left, clear of TikTok's right buttons)
+L = 280.0                      # half beam (v2: 300 → 280, safe zone)
 ROPE = 382.0                   # beam end -> plate
 PLATE_W = 330.0
 POST_Y = 1292.0
@@ -310,7 +310,7 @@ def draw_labels(c, t, plates):
         px, py = plates[side]
         rise = 18 * (1 - a_in)
         for txt, size, wt, col, dy in ((rows[side][0], 44, 'Heavy', INK, 70), (rows[side][1], 31, 'Semibold', MUTED, 117)):
-            fit = min(1.0, 400 / max(1, label(txt, size, wt, col).width))      # long names shrink to stay in frame
+            fit = min(1.0, 340 / max(1, label(txt, size, wt, col).width))      # long names shrink to stay in frame
             text(c, txt, size, wt, col, px, py + dy + rise, a, fit)
     # prices on the answer
     k = sm(REVEAL[r] - 0.02, REVEAL[r] + 0.22, t)
@@ -407,7 +407,8 @@ def _phr(k):
     return captions.phrase(WORDS[k], accent=acc, end=END[k] + 0.2)
 
 
-CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=900, top=1400, size=52, weight='Semibold',
+CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=760,   # v2: clear of TikTok's right button column
+                        top=1400, size=52, weight='Semibold',
                         max_lines=2, color=INK, accent_color=ACC, shadow=False, fade_out=0.2, rise=10)
 
 

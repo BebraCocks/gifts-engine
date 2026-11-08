@@ -391,3 +391,5 @@ Pool Float / круг «Уточка» (телега ×2), Input Key / игро�
 Money Pot / копилка-свинка (телега +36%), Neko Helmet / электросамокат Segway C2 Pro 36 541 ₽ (вещь ×10,6); 3:2. Хук 1,0×, пауза перед
 первым раундом (правка к 40), RubUp с 32,4 с. **`renders/41-price-duel-17/price_duel_17_v1.mp4`** (59,99 с, −13,3 LUFS), Google Drive:
 https://drive.google.com/file/d/1w2vnUPBE-7r6Iqy7vOWu0wEb0dhEmEB3/view . Правки — `--name price_duel_17_v2`.
+v2 (техника для TikTok: SAR 1:1, CRF 14, безопасные зоны справа/снизу): **`renders/41-price-duel-17/price_duel_17_v2.mp4`**, Google Drive: https://drive.google.com/file/d/1vIAD2m33lEbOqFH_gYPXeqezandjTbb4/view .
+Вероятные причины скрытия, которые от файла не зависят, — в ответе автору 2026-11-08 и в `docs/DECISIONS.md`.

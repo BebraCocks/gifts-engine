@@ -64,3 +64,9 @@
 - 2026-11-08: озвучка отправлена, кадры проверены (`build/review/sheet.png`), хайлайты не показывались (автор: сразу
   собирать). **`renders/41-price-duel-17/price_duel_17_v1.mp4`** — 59,99 с, 1080×1920, 60 к/с, −13,3 LUFS, пик −1,7 dBFS; декодирован, кадры (хук, тизер, RubUp, финал) просмотрены. Google Drive «TikTok»: https://drive.google.com/file/d/1w2vnUPBE-7r6Iqy7vOWu0wEb0dhEmEB3/view .
   Не проверено: голос и SFX на слух, движение в темпе.
+- 2026-11-08 v2 (автор: «сделай технически нормальным, чтобы TikTok не скрывал»): SAR 1:1 в теге (движок, `engine/frames.py`),
+  исходник CRF 14 (`VIZ_CQ=24`, ≈ 4,0 Мбит/с), субтитры шириной 760 и весы уже/левее (PIV x 525, плечо 280) — всё важное вне
+  колонки кнопок TikTok справа и нижней подписи (проверка наложением зон, `build/review/safezone.png`). Прочее как в v1:
+  H.264 High@4.2, yuv420p, BT.709 limited с тегами, CFR 60, ключевой кадр каждые 2 с, moov в начале, AAC 48 кГц 192 кбит/с,
+  −13,3 LUFS, пик −1,7 dBFS, без лишних метаданных. **`renders/41-price-duel-17/price_duel_17_v2.mp4`** (59,99 с),
+  Google Drive: https://drive.google.com/file/d/1vIAD2m33lEbOqFH_gYPXeqezandjTbb4/view .

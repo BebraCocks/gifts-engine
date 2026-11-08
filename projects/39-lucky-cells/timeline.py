@@ -19,7 +19,7 @@ def _len(k):
 
 START = 0.08
 SWAP = 0.38          # open cards fly out, new closed cells drop in
-LAND = 0.22          # new cells land before the question
+LAND = 0.16          # new cells land before the question
 ANS = 0.30           # the cells flip, then the answer starts
 HOLD = 0.26          # the answer settles before the swap
 AD_HOLD = 0.35       # the answer settles before RubUp

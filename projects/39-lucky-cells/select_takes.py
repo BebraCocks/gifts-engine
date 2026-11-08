@@ -16,7 +16,7 @@ SR = 48000
 SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
-DEFAULT_GAP = 0.16
+DEFAULT_GAP = 0.11   # 39 v4: shorter inner pauses keep ≤ 80 s
 TEMPO = 1.25  # 39 v2: 52 s of speech + the gold box; 1.25 keeps the video ≤ 80 s (v1: 1.2)
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.

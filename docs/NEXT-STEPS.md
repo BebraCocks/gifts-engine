@@ -384,3 +384,10 @@ Swag Bag / электробритва (вещь ×4,5), Love Potion / набор
 Фото и цены — «Детский мир», подарки — Fragment 08.11 ~17:30 UTC. Голос серии `48ec28a4…` drama-3 (1,17×), озвучка отправлена до сборки.
 **`renders/40-price-duel-16/price_duel_16_v1.mp4`** (59,97 с, −12,9 LUFS), Google Drive: https://drive.google.com/file/d/19-DSV5NwhP-gBVdpAe2qKL8G69xFMrgs/view . 
 v2 (автор: хук слишком быстрый, нет паузы перед «Поехали»): L01 без ускорения (1,0×), пауза 0,55 с после хука, L09 перезаписана без смеха; RubUp на 30,7 с. **`renders/40-price-duel-16/price_duel_16_v2.mp4`** (59,95 с, −12,7 LUFS), Google Drive: https://drive.google.com/file/d/1inXIK2q5n2nXLS4DenyxG28eqzczHuyn/view . Правки — `--name price_duel_16_v3`.
+
+## 2026-11-08 · 41-price-duel-17 «Шлем или самокат» («Что дороже?»)
+
+Pool Float / круг «Уточка» (телега ×2), Input Key / игровая клавиатура SVEN (вещь ×2,5), Rare Bird / попугай-повторюшка (телега ×2,8),
+Money Pot / копилка-свинка (телега +36%), Neko Helmet / электросамокат Segway C2 Pro 36 541 ₽ (вещь ×10,6); 3:2. Хук 1,0×, пауза перед
+первым раундом (правка к 40), RubUp с 32,4 с. **`renders/41-price-duel-17/price_duel_17_v1.mp4`** (59,99 с, −13,3 LUFS), Google Drive:
+https://drive.google.com/file/d/1w2vnUPBE-7r6Iqy7vOWu0wEb0dhEmEB3/view . Правки — `--name price_duel_17_v2`.

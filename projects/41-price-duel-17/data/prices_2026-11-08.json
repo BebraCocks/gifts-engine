@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 41-price-duel-17 «Шлем или самокат». Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 20:00–20:02 UTC. Курс 86 ₽ за TON (tonapi.io 85,78 ₽ в 20:02 UTC). Вещи: страницы товаров «Детский мир» 2026-11-08 20:05–20:30 UTC, цена в заголовке страницы. Подарки из выпусков 09–18, 30–34, 38–40 не брались. Пары не обязаны быть похожими (автор, 2026-11-08).",
+ "ton_rub": 86.0,
+ "gifts": [
+  {"gift": "Pool Float", "model": "Quacky", "rarity": "3%", "ton": 5, "rub": 430, "lot": "https://fragment.com/gift/poolfloat-28548"},
+  {"gift": "Input Key", "model": "Hot Grill", "rarity": "2%", "ton": 7, "rub": 602, "lot": "https://fragment.com/gift/inputkey-132336"},
+  {"gift": "Rare Bird", "model": "Jade Jay", "rarity": "3.5%", "ton": 33, "rub": 2838, "lot": "https://fragment.com/gift/rarebird-6040"},
+  {"gift": "Money Pot", "model": "Doctor Jones", "rarity": "3%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/moneypot-29292"},
+  {"gift": "Neko Helmet", "model": "Databreak", "rarity": "2.5%", "ton": 40, "rub": 3440, "lot": "https://fragment.com/gift/nekohelmet-2117"}
+ ],
+ "things": [
+  {"name": "Круг для плавания Attivio «Уточка»", "rub": 219, "src": "https://www.detmir.ru/product/index/id/7054173/"},
+  {"name": "Игровая клавиатура SVEN KB-G8500 с подсветкой", "rub": 1510, "src": "https://www.detmir.ru/product/index/id/6238995/"},
+  {"name": "Игрушка УМка «Попугай-повторюшка»", "rub": 999, "src": "https://www.detmir.ru/product/index/id/6024359/"},
+  {"name": "Копилка-свинка Funny ducks розовая в короне", "rub": 380, "src": "https://www.detmir.ru/product/index/id/6727587/"},
+  {"name": "Детский электросамокат Segway-Ninebot C2 Pro", "rub": 36541, "src": "https://www.detmir.ru/product/index/id/7173074/"}
+ ],
+ "rejected": [
+  "Круг Bestway «Лягушка» 129 ₽ — утка точнее к модели Quacky.",
+  "Деревянная копилка LAMMYS 236 ₽ — на всех фото надписи.",
+  "Rare Bird и Neko Helmet: на экране цена округлена до сотен (≈ 2 800 и ≈ 3 400 ₽), как во всей серии."
+ ]
+}

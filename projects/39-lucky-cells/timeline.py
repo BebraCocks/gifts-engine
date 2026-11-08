@@ -30,26 +30,31 @@ ON[0] = START
 END[0] = START + _len(0)
 ON[1] = END[0] + 0.14
 END[1] = ON[1] + _len(1)
+KEY = {LINES[k][1]: k for k in range(len(LINES))}
 cur = END[1] + 0.12
 for r in range(5):
-    q, a = 2 + 2 * r, 3 + 2 * r
+    q, a = KEY.get(f'q{r + 1}'), KEY[f'a{r + 1}']   # v5: round 1 has no question line — the rules end with «выбери»
     ROUND_IN.append(cur)
-    ON[q] = cur + LAND
-    END[q] = ON[q] + _len(q)
-    TIMER0.append(max(ON[q], END[q] + 0.3 - TIMER))   # a long question (final: the gold box) runs under the timer
+    if q is None:
+        TIMER0.append(cur + LAND)
+    else:
+        ON[q] = cur + LAND
+        END[q] = ON[q] + _len(q)
+        TIMER0.append(END[q] - 0.05)            # v5 (author): a clean 5 s timer right after every question
     REVEAL.append(TIMER0[-1] + TIMER)
     ON[a] = REVEAL[-1] + ANS
     END[a] = ON[a] + _len(a)
-    cur = END[a] + (AD_HOLD if a == 7 else HOLD) + (0.0 if r == 4 else SWAP)
-    if a == 7:
+    cur = END[a] + (AD_HOLD if r == 2 else HOLD) + (0.0 if r == 4 else SWAP)
+    if r == 2:
         cur += 0.1
-GOLD_OPEN = END[11] + 0.25                  # final: after the best cells are named, the gold box opens
-ON[12] = GOLD_OPEN + 0.4
-END[12] = ON[12] + _len(12)
-OUTRO = END[12] + HOLD + 0.1                # cards go, the levels table comes in
-ON[13] = OUTRO + 0.45
-END[13] = ON[13] + _len(13)
-ON[14] = END[13] + TABLE_READ
-END[14] = ON[14] + _len(14)
-DUR = END[14] + 0.55
+G, S, O = KEY['gold'], KEY['sum'], KEY['outro']
+GOLD_OPEN = END[KEY['a5']] + 0.2            # final: after the best cells are named, the gold box opens
+ON[G] = GOLD_OPEN + 0.4
+END[G] = ON[G] + _len(G)
+OUTRO = END[G] + HOLD + 0.1                 # cards go, the levels table comes in
+ON[S] = OUTRO + 0.45
+END[S] = ON[S] + _len(S)
+ON[O] = END[S] + TABLE_READ
+END[O] = ON[O] + _len(O)
+DUR = END[O] + 0.55
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

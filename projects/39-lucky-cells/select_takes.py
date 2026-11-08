@@ -17,7 +17,7 @@ SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.2    # v5: short lines, natural pauses
-TEMPO = 1.1   # v5 (author: «быстро говорит»): short lines at 1.1 (v2–v4: 1.25)
+TEMPO = 1.0   # v6: speech fits the timers, natural pace (v5 1.1, v2–v4 1.25)
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.
 INSERT = {}                     # no author's sound in this video

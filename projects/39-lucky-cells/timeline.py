@@ -33,15 +33,12 @@ END[1] = ON[1] + _len(1)
 KEY = {LINES[k][1]: k for k in range(len(LINES))}
 cur = END[1] + 0.12
 for r in range(5):
-    q, a = KEY.get(f'q{r + 1}'), KEY[f'a{r + 1}']   # v5: round 1 has no question line — the rules end with «выбери»
+    q, a = KEY[f'q{r + 1}'], KEY[f'a{r + 1}']
     ROUND_IN.append(cur)
-    if q is None:
-        TIMER0.append(cur + LAND)
-    else:
-        ON[q] = cur + LAND
-        END[q] = ON[q] + _len(q)
-        TIMER0.append(END[q] - 0.05)            # v5 (author): a clean 5 s timer right after every question
-    REVEAL.append(TIMER0[-1] + TIMER)
+    ON[q] = cur + LAND
+    END[q] = ON[q] + _len(q)
+    TIMER0.append(ON[q])                        # v6 (author): the round line is spoken while the 5 s timer runs
+    REVEAL.append(max(TIMER0[-1] + TIMER, END[q] + 0.15))
     ON[a] = REVEAL[-1] + ANS
     END[a] = ON[a] + _len(a)
     cur = END[a] + (AD_HOLD if r == 2 else HOLD) + (0.0 if r == 4 else SWAP)

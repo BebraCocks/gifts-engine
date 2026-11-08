@@ -1,5 +1,6 @@
-"""Voice + SFX (Botanica V4 via sfxkit, no repeats) + music (music.py, code) + the complete RubUp sound.
-Writes build/mix.wav and, for the author, build/review/{sfx_only,mix,music_only}.mp3 + sfx_cues.txt."""
+"""Voice + SFX + background bed — every non-voice sound from the pack input/sfx/ (Botanica V4) via sfxkit
+(author, 2026-11-08: «звуки используй из папки»; the code-synthesized music of v1 removed) + the complete RubUp sound.
+Writes build/mix.wav and, for the author, build/review/{sfx_only,mix,bed_only,voice_only}.mp3 + sfx_cues.txt."""
 import subprocess
 import sys
 from pathlib import Path
@@ -13,12 +14,11 @@ import sound
 import sfxkit
 from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, SIGN_IN, FORECAST, OUTRO, SWAP, AD_STOP
 from events import E
-import music
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
 CONTENT_GAIN_DB = 3.0
-MUSIC_DB = -13.0           # under the voice; ducks a further 7 dB while someone speaks
+BED_DB = -8.0              # pack bed under the voice; ducks a further 7 dB while someone speaks
 
 
 def sfx_layer(n, kit):
@@ -46,6 +46,19 @@ def sfx_layer(n, kit):
     return fx
 
 
+def bed_layer(n, kit):
+    """Night-sky bed from the pack (dark, tonal, wide, unused by other videos) + musical swells on the big turns."""
+    b = np.zeros((n, 2))
+    kit.add(b, ['bed', 'ambience', 'music-transition', '*'], 0.0, gain_db=0.0, vary=False, fit=DUR, fade_out=0.8,
+            file='atmo-bg-static-musical-24', label='bed: night sky under the whole video')
+    kit.add(b, ['music-transition', '*'], SIGN_IN[0] - 0.05, gain_db=-4.0, vary=False, align='peak',
+            file='long-b-music-transition-01', label='swell: hook -> Scorpio')
+    kit.add(b, ['music-transition', '*'], OUTRO + 0.1, gain_db=-4.0, vary=False, align='peak',
+            file='longer-b-music-transition-02', label='swell: the wheel returns (outro)')
+    f = np.minimum(1, np.arange(n) / SR / 0.3)
+    return b * f[:, None]
+
+
 def make_mix(kit):
     n = int(round(DUR * SR))
     voice = np.zeros((n, 2), np.float64)
@@ -58,7 +71,7 @@ def make_mix(kit):
     else:
         print('Дикторской озвучки нет: текст + звук баннера.')
     fx = sfx_layer(n, kit)
-    mus = music.music(n, SR) * 10 ** (MUSIC_DB / 20)
+    mus = bed_layer(n, kit) * 10 ** (BED_DB / 20)
     if HAS_NARRATION:
         env = np.abs(voice).max(1)
         env = np.convolve(env, np.ones(2400) / 2400, 'same')
@@ -67,7 +80,7 @@ def make_mix(kit):
         fx *= (1 - 0.45 * k)[:, None]
         mus *= (1 - (1 - 10 ** (-7 / 20)) * k)[:, None]
     g = 10 ** (CONTENT_GAIN_DB / 20)
-    return (voice + fx + mus) * g, fx * g, mus * g
+    return (voice + fx + mus) * g, fx * g, mus * g, voice * g
 
 
 def mp3(x, path):
@@ -78,7 +91,7 @@ def mp3(x, path):
 
 if __name__ == '__main__':
     kit = sfxkit.Kit(HERE)
-    content, fx, mus = make_mix(kit)
+    content, fx, mus, voice = make_mix(kit)
     data = BR.audio(content, SR)
     output = paths.build(HERE) / 'mix.wav'
     with wave.open(str(output), 'wb') as w:
@@ -88,6 +101,7 @@ if __name__ == '__main__':
         w.writeframes((np.clip(data, -0.98, 0.98) * 32767).astype('<i2').tobytes())
     kit.save(BR)
     rev = sfxkit.write_review(HERE, fx, data, BR, SR, kit.cues)
-    mp3(mus, rev / 'music_only.mp3')
+    mp3(mus, rev / 'bed_only.mp3')
+    mp3(voice / (np.abs(voice).max() + 1e-9) * 0.9, rev / 'voice_only.mp3')    # narration alone, content time
     print('build/mix.wav готов; для прослушивания:', rev / 'sfx_only.mp3', rev / 'mix.mp3', rev / 'sfx_cues.txt',
-          rev / 'music_only.mp3')
+          rev / 'bed_only.mp3', rev / 'voice_only.mp3')

@@ -139,6 +139,34 @@ def glow(color, n=1000, peak=0.42):
     return Image.fromarray(im, 'RGBA')
 
 
+@functools.lru_cache(8)
+def big_glyph(glyph, color, size=860):
+    """Background sign, one style for all 12: the DejaVu glyph as a line drawing — 7 px outline + a faint fill."""
+    from PIL import ImageFilter
+    f = ImageFont.truetype(DEJAVU, size)
+    l, t, r, b = f.getbbox(glyph)
+    pad = 30
+    m = Image.new('L', (r - l + 2 * pad, b - t + 2 * pad), 0)
+    ImageDraw.Draw(m).text((pad - l, pad - t), glyph, font=f, fill=255)
+    edge = np.asarray(m.filter(ImageFilter.MaxFilter(15)), np.float32) - np.asarray(m, np.float32)
+    fill = np.asarray(m, np.float32)
+    a = np.clip(edge * 1.0 + fill * 0.28, 0, 255)
+    im = np.zeros(a.shape + (4,), np.uint8)
+    im[..., :3] = color
+    im[..., 3] = a.astype(np.uint8)
+    return Image.fromarray(im, 'RGBA').filter(ImageFilter.GaussianBlur(1.2))
+
+
+def draw_big_glyph(c, t, s, a):
+    """Half-transparent sign behind the hero: fades in with the scene, slow drift and breathing."""
+    if a <= 0.004:
+        return
+    col = SIGNS[s][5]
+    u = t - SIGN_IN[s]
+    put(c, big_glyph(SIGNS[s][2], col), HC[0] + 14 * math.sin(u * 0.5), HC[1] - 10 + 10 * math.cos(u * 0.4),
+        lerp(0.9, 1.0, a) * (1 + 0.015 * math.sin(u * 0.9)), 0.2 * a, math.radians(2.5 * math.sin(u * 0.35)))
+
+
 # ------------------------------------------------------------------ sky
 RNG = np.random.default_rng(35)
 TWINKLE = [(RNG.uniform(0, W), RNG.uniform(0, H), RNG.uniform(1.4, 2.6), RNG.uniform(0, 6.3), RNG.uniform(0.6, 1.4))
@@ -358,6 +386,7 @@ def draw_sign(c, t):
         x, y, sc, ha, rot = hero_motion(t, ss)
         if ha <= 0.004 and a <= 0.004:
             continue
+        draw_big_glyph(c, t, ss, a)
         put(c, glow(col), HC[0], HC[1] + 10, 1.0 * (0.9 + 0.1 * math.sin(t * 1.3)), a * 0.95, add=True)
         draw_const(c, t, ss, a)
         if ha > 0.004:

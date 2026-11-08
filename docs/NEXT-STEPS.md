@@ -375,3 +375,11 @@ v9 (финал 3 + 3 + золотая, «…если ты решил её отк
 **`renders/39-lucky-cells/lucky_cells_v5.mp4`** (79,45 с), Google Drive: https://drive.google.com/file/d/13O9jtt-cBU4HZrGYs2FxANxeKjIy7Ce6/view .
 v10 (счётчик среднего счёта): **`renders/39-lucky-cells/lucky_cells_v6.mp4`** (79,45 с), Google Drive:
 https://drive.google.com/file/d/1bWuL1KS6xKYR8I-PCJxLs1GfMMWAqYPM/view . Правки — `--name lucky_cells_v7`.
+
+## 2026-11-08 · 40-price-duel-16 «Котёл за 24 тысячи» («Что дороже?»)
+
+Автор: «подобное видео» серии весов, 58–60 с с RubUp, сразу сборка без хайлайтов; пары не обязаны быть похожими.
+Swag Bag / электробритва (вещь ×4,5), Love Potion / набор «Волшебное зелье» (телега +24%), Witch Hat / шляпка с вуалью
+(вещь на треть), Flying Broom / щётка с совком (телега ×2,3), Hex Pot / Magic Mixies «Волшебный котёл» 23 751 ₽ (вещь ×40); 2:3.
+Фото и цены — «Детский мир», подарки — Fragment 08.11 ~17:30 UTC. Голос серии `48ec28a4…` drama-3 (1,17×), озвучка отправлена до сборки.
+**`renders/40-price-duel-16/price_duel_16_v1.mp4`** (59,97 с, −12,9 LUFS), Google Drive: https://drive.google.com/file/d/19-DSV5NwhP-gBVdpAe2qKL8G69xFMrgs/view . Правки — `--name price_duel_16_v2`.

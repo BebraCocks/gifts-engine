@@ -12,8 +12,8 @@ import wave
 import banner
 import sound
 import sfxkit
-from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, SIGN_IN, FORECAST, OUTRO, SWAP, AD_STOP
-from events import E
+from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, SIGN_IN, OUTRO, SWAP, AD_STOP
+from events import E, FORECAST
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
@@ -26,9 +26,9 @@ def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     add = kit.add
     add(fx, 'sparkle-whoosh', 0.0, gain_db=-17, label='hook: the zodiac wheel of 12 mugs')
-    add(fx, 'sparkle', E['twelve'], gain_db=-19, label='«двенадцать»: ripple around the wheel, «12»')
-    add(fx, 'select', E['four'], gain_db=-18, label='«четыре»: 4 mugs glow, the rest dim')
-    add(fx, 'pop', E['find'], gain_db=-19, label='«найди свой»: badge bump')
+    add(fx, 'sparkle', E['twelve'], gain_db=-19, label='«у каждого»: ripple around the wheel, «12»')
+    add(fx, 'select', E['four'], gain_db=-18, label='«первая»: 4 mugs glow, the rest dim')
+    add(fx, 'pop', E['four'] + 0.3, gain_db=-19, label='«первая часть»: «ЧАСТЬ 1», badge bump')
     add(fx, 'whoosh', SIGN_IN[0] - 0.55, gain_db=-19, label='Scorpio leaves the wheel for the centre')
     for s in range(4):
         if s:
@@ -39,10 +39,11 @@ def sfx_layer(n, kit):
         add(fx, 'popup', FORECAST[s] - 0.05, gain_db=-20, key='forecast', vary=False,
             label=f'sign {s + 1}: «ПРОГНОЗ» pill (one sound — a motif)')
         add(fx, 'sparkle', FORECAST[s] + 0.05, gain_db=-21, label=f'sign {s + 1}: sparkles fly out')
-    add(fx, 'popup', END[KEY['h2']] + 0.1, gain_db=-18, label='teaser «НЕ ЛИСТАЙ» before RubUp')
+    add(fx, 'popup', END[KEY['s2']] + 0.1, gain_db=-18, label='teaser «НЕ ЛИСТАЙ» before RubUp')
     add(fx, 'sparkle-whoosh', OUTRO - 0.1, gain_db=-18, label='outro: the wheel returns')
     add(fx, 'confirm', OUTRO + 0.15, gain_db=-20, label='«А ТВОЙ ЗНАК?»')
     add(fx, 'pop', E['comments'], gain_db=-16, label='«ПИШИ В КОММЕНТАРИЯХ» pill')
+    add(fx, 'select-soft', E['part2'] - 0.05, gain_db=-20, label='«во второй части»')
     return fx
 
 

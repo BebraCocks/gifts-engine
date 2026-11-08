@@ -18,11 +18,12 @@ import fx
 import gifts_api
 import lottie
 import config
-from script import (LINES, GIFT, RARITY, SIGNS, WHEEL, GLYPHS, HOOK, HOOK_BADGE, TEASER, FORECAST, OUTRO_1, COMMENTS,
+from script import (LINES, GIFT, RARITY, SIGNS, WHEEL, GLYPHS, HOOK, HOOK_BADGE, PART, TEASER, FORECAST, OUTRO_1, OUTRO_2,
+                    COMMENTS,
                     ACC)
-from timeline import DUR, ON, END, KEY, SIGN_IN, FORECAST as FC, OUTRO, SWAP, AD_STOP
+from timeline import DUR, ON, END, KEY, SIGN_IN, OUTRO, SWAP, AD_STOP
 from words import WORDS
-from events import E
+from events import E, FORECAST as FC
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -312,11 +313,12 @@ def draw_wheel_centre(c, t):
     vis = 1 - sm(SIGN_IN[0] - 0.6, SIGN_IN[0] - 0.2, t)
     k12 = spr(E['twelve'] - 0.05, t, 2.4, 0.5)
     k4 = sm(E['four'] - 0.1, E['four'] + 0.25, t)
-    a12 = vis * cl(k12 * 2) * (1 - k4)
+    a12 = vis * cl(k12 * 2)
+    k4 = 0.0                                          # «ЧАСТЬ 1» is in the title from frame 0 (v2)
     text(c, '12', 150, 'Heavy', GOLD, WC[0], WC[1] - 24, a12, max(0.01, k12))
     text(c, 'ЗНАКОВ', 38, 'Heavy', INK, WC[0], WC[1] + 72, a12)
-    text(c, '4', 150, 'Heavy', GOLD, WC[0], WC[1] - 24, vis * k4, lerp(0.6, 1.0, k4))
-    text(c, 'СТИХИИ', 38, 'Heavy', INK, WC[0], WC[1] + 72, vis * k4)
+    text(c, PART.split()[0], 38, 'Heavy', INK, WC[0], WC[1] - 92, vis * k4)          # «ЧАСТЬ 1» on «первая часть»
+    text(c, PART.split()[1], 150, 'Heavy', GOLD, WC[0], WC[1] + 10, vis * k4, lerp(0.6, 1.0, k4))
 
 
 def draw_hook_title(c, t):
@@ -325,9 +327,10 @@ def draw_hook_title(c, t):
         return
     k1 = 0.84 + 0.16 * spr(-0.05, t, 2.2, 0.5)          # readable from frame 0
     k2 = 0.8 + 0.2 * spr(0.1, t, 2.2, 0.5)
+    put(c, pill(PART, 40, None, GOLD, GOLD), 540, 132 + 24 * (1 - k1), k1, a)
     text(c, HOOK[0], 112, 'Heavy', GOLD, 540, 236 + 24 * (1 - k1), a, k1)
     text(c, HOOK[1], 60, 'Heavy', INK, 540, 334 + 24 * (1 - k2), a, k2)
-    kb = 1 + 0.12 * fx.bump(t - E['find'], 3.0, 5.0)
+    kb = 1 + 0.12 * fx.bump(t - E['four'] - 0.3, 3.0, 5.0)
     put(c, pill(HOOK_BADGE, 38, GOLD, BG), 540, 430 + 24 * (1 - k2), k2 * kb, a)
 
 
@@ -408,7 +411,7 @@ def draw_sign_text(c, t, s, a):
     model, name, glyph, dates, elem, col, ton, count = SIGNS[s]
     k = spr(SIGN_IN[s] - 0.05, t, 2.2, 0.55)
     rise = 26 * (1 - cl(k))
-    text(c, f'ЗНАК {s + 1} / 4', 30, 'Semibold', MUTED, 540, 150, a)
+    text(c, f'{PART} · ЗНАК {s + 1} / 4', 30, 'Semibold', MUTED, 540, 150, a)
     put(c, ring(56, 3, col), 540, 254 + rise, max(0.01, k), a)
     text(c, glyph, 66, 'glyph', col, 540, 254 + rise, a, max(0.01, k))
     text(c, name, 100, 'Heavy', INK, 540, 392 + rise, a)
@@ -423,7 +426,7 @@ def draw_sign_text(c, t, s, a):
 
 def draw_teaser(c, t):
     """Retention before RubUp: the ad freeze frame shows what is still ahead."""
-    t0 = END[KEY['h2']] + 0.1
+    t0 = END[KEY['s2']] + 0.1
     t1 = SIGN_IN[2] - SWAP - 0.2
     if not (t0 <= t < t1 + 0.3):
         return
@@ -438,7 +441,7 @@ def draw_outro(c, t):
     k = spr(OUTRO + 0.1, t, 2.0, 0.55)
     text(c, OUTRO_1, 104, 'Heavy', GOLD, 540, 250 + 24 * (1 - cl(k)), cl(k * 2), max(0.01, lerp(0.8, 1.0, cl(k))))
     k2 = sm(OUTRO + 0.4, OUTRO + 0.8, t)
-    text(c, 'ЕЩЁ 8 ЗНАКОВ ЖДУТ ПРОГНОЗ', 44, 'Heavy', INK, 540, 340, k2)
+    text(c, OUTRO_2, 50, 'Heavy', INK, 540, 340, k2)
     kc = spr(E['comments'], t, 2.0, 0.5)
     if t >= E['comments']:
         put(c, pill(COMMENTS, 40, GOLD, BG), 540, 1580, max(0.01, kc) * (1 + 0.05 * math.sin((t - E['comments']) * 4)),

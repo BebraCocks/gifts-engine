@@ -2,12 +2,12 @@
 import sys
 from PIL import Image
 import render as R
-from timeline import SIGN_IN, FORECAST, OUTRO, END, KEY
-from events import E
+from timeline import SIGN_IN, OUTRO, END, KEY
+from events import E, FORECAST
 
 TS = [float(x) for x in sys.argv[1].split(',')] if len(sys.argv) > 1 else [
     0.0, 1.0, E['twelve'] + 0.4, E['four'] + 0.8, SIGN_IN[0] - 0.3, SIGN_IN[0] + 0.5,
-    SIGN_IN[0] + 2.5, FORECAST[0] + 0.4, SIGN_IN[1] - 0.6, SIGN_IN[1] + 2.0, FORECAST[1] + 2.0, END[KEY['h2']] + 0.4,
+    SIGN_IN[0] + 2.5, FORECAST[0] + 0.4, SIGN_IN[1] - 0.6, SIGN_IN[1] + 2.0, FORECAST[1] + 2.0, END[KEY['s2']] + 0.4,
     SIGN_IN[2] + 2.0, FORECAST[2] + 1.5, SIGN_IN[3] + 2.0, FORECAST[3] + 1.5, OUTRO + 0.8, E['end'] - 0.1]
 ims = []
 for t in TS:

@@ -2,8 +2,8 @@
 from PIL import Image
 import render as R
 import sfxkit
-from timeline import SIGN_IN, FORECAST, OUTRO
-from events import E
+from timeline import SIGN_IN, OUTRO
+from events import E, FORECAST
 
 CONTENT = [0.0, E['twelve'] + 0.5, E['four'] + 0.8, SIGN_IN[0] + 1.2, FORECAST[0] + 0.5, SIGN_IN[1] + 1.5,
            None, SIGN_IN[2] + 1.5, FORECAST[2] + 0.6, SIGN_IN[3] + 1.5, OUTRO + 1.0, E['end'] - 0.1]

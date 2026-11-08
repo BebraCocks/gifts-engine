@@ -93,4 +93,9 @@ whoosh, downlifter, power-down (тихо); строки таблицы — ле�
   объяснена: «открывать её не обязательно» (голос + подпись), в конце «Кто открыл — сочувствую: минус тысяча баллов»,
   под «−1000» — «у тех, кто открыл». **`renders/39-lucky-cells/lucky_cells_v4.mp4`** — 79,47 с, 28,6 МБ (VIZ_CQ=30),
   −13,1 LUFS, декодирован, кадры просмотрены. Google Drive: https://drive.google.com/file/d/11aStsSxjbG7c9SYPHTj20I_YBnQDB3Cn/view .
-  Не проверено на слух. Правки — `--name lucky_cells_v5`.
+  Не проверено на слух.
+- 2026-11-08 v9: финал 3 + 3 + золотая (Candy Cane, Santa Hat, Cookie Heart / Варежки, Мишка, MacBook Pro), фраза
+  «Она засосала тысячу баллов, если ты решил её открыть», 3-й раунд без шёпота; оформление полей: гирлянда флажков сверху,
+  стопки бледных подарков снизу, конфетти и значки по бокам (цвета серии, приглушены). **`renders/39-lucky-cells/lucky_cells_v5.mp4`**
+  — 79,45 с, 30 МБ, −13,0 LUFS, декодирован, кадры просмотрены. Google Drive:
+  https://drive.google.com/file/d/13O9jtt-cBU4HZrGYs2FxANxeKjIy7Ce6/view . Не проверено на слух. Правки — `--name lucky_cells_v6`.

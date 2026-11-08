@@ -370,4 +370,7 @@ v7 (чёрная дыра, таблица автора 0–499…5000–9999, р
 **`renders/39-lucky-cells/lucky_cells_v3.mp4`** (79,88 с), Google Drive:
 https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view .
 v8 (звук таймера, золотая «открывать не обязательно», сочувствие тем, кто открыл): **`renders/39-lucky-cells/lucky_cells_v4.mp4`**
-(79,47 с), Google Drive: https://drive.google.com/file/d/11aStsSxjbG7c9SYPHTj20I_YBnQDB3Cn/view . Правки — `--name lucky_cells_v5`.
+(79,47 с), Google Drive: https://drive.google.com/file/d/11aStsSxjbG7c9SYPHTj20I_YBnQDB3Cn/view .
+v9 (финал 3 + 3 + золотая, «…если ты решил её открыть», без шёпота, гирлянда и подарки на полях):
+**`renders/39-lucky-cells/lucky_cells_v5.mp4`** (79,45 с), Google Drive: https://drive.google.com/file/d/13O9jtt-cBU4HZrGYs2FxANxeKjIy7Ce6/view .
+Правки — `--name lucky_cells_v6`.

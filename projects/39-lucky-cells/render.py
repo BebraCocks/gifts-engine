@@ -106,6 +106,17 @@ def put(c, im, cx, cy, sx=1.0, a=1.0, rot=0.0, sy=None):
         fx.over(c, fx.warp(im, cx, cy, sx, sy, rot), a)
 
 
+def line(c, pts, color, width=6.0, a=1.0):
+    if a <= 0.004:
+        return
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    box = (max(0, min(xs) - width * 2), max(0, min(ys) - width * 2), min(W, max(xs) + width * 2), min(H, max(ys) + width * 2))
+
+    def draw(d, m, S):
+        d.line([m(x, y) for x, y in pts], fill=color + (255,), width=max(1, round(width * S)), joint='curve')
+    fx.over(c, fx.draw_rgba(box, draw), a)
+
+
 def disc(c, cx, cy, r, color, a=1.0):
     if a > 0.004 and r > 0.5:
         fx.over(c, fx.draw_rgba((cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2),
@@ -138,17 +149,18 @@ def pill(s, size, fill_, tcol, outline=None, padx=30, h=None):
 
 # ------------------------------------------------------------------ boxes (v6: boxes with «?», points only, final 5 + 5)
 def layout(r):
-    """(n per row, cell w, cell h, xs, row ys, tag ys) of round r."""
-    if len(ROUNDS[r]['blue']) == 5:
-        w, h, gap = 188, 236, 10
-        xs = [W / 2 + (k - 2) * (w + gap) for k in range(5)]
-        return 5, w, h, xs, (668, 962), (522, 816)
+    """(n per row, cell w, cell h, xs, row ys, tag ys) of round r. v9: the final is 3 + 3 too, a little smaller,
+    to leave room for the gold box under the rows."""
+    if r == 4:
+        w, h, gap = 270, 266, 24
+        xs = [W / 2 + (k - 1) * (w + gap) for k in range(3)]
+        return 3, w, h, xs, (676, 1006), (504, 852)
     return 3, CW, CH, XS, YS, TAG_Y
 
 
 GOLD_C = (232, 168, 20)
-GOLD_XY = (W / 2, 1218)
-GOLD_SZ = 150
+GOLD_XY = (W / 2, 1250)
+GOLD_SZ = 128
 
 
 @functools.lru_cache(None)
@@ -369,8 +381,7 @@ def draw_gold(c, t):
         shake = 0.06 * math.sin(t * 40) * sm(go - 0.5, go, t)
         put(c, box_body(GOLD_C, GOLD_SZ, GOLD_SZ, 0, '?'), x, y, kin, a, shake)
         put(c, box_lid(GOLD_C, GOLD_SZ, GOLD_SZ), x, y + lid_offset(GOLD_SZ) * kin, kin, a, shake)
-        text(c, 'ЗОЛОТАЯ', 26, 'Heavy', GOLD, x, y + GOLD_SZ / 2 + 30, a * kin)
-        text(c, 'открывать не обязательно', 24, 'Semibold', MUTED, x, y + GOLD_SZ / 2 + 62, a * kin)
+        text(c, 'ЗОЛОТАЯ · открывать не обязательно', 25, 'Heavy', GOLD, x, y + GOLD_SZ / 2 + 32, a * kin)
         return
     # v7 (author): a black hole instead of the bomb. It opens, sucks in «1000», then the gold box itself, and closes.
     k = t - go
@@ -411,8 +422,7 @@ def draw_gold(c, t):
     kr = spr(go + T_CLOSE + 0.5, t, 2.4, 0.5)
     if kr > 0.01:
         put(c, pill('−1000', 40, (214, 48, 48), WHITE, padx=26), x, y, max(0.01, kr), a * cl(kr * 3))
-        text(c, 'ЧЁРНАЯ ДЫРА', 26, 'Heavy', MUTED, x, y + 62, a * cl(kr * 2))
-        text(c, 'у тех, кто открыл', 24, 'Semibold', MUTED, x, y + 94, a * cl(kr * 2))
+        text(c, 'ЧЁРНАЯ ДЫРА · у тех, кто открыл', 25, 'Heavy', MUTED, x, y + 60, a * cl(kr * 2))
 
 
 # ------------------------------------------------------------------ header, timer, tags
@@ -573,8 +583,8 @@ def doodle(kind, size):
     s = size * S
     im = Image.new('RGBA', (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    col = mix(BG, MUTED, 0.38) + (255,)
-    lw = max(2, size // 14) * S
+    col = mix(BG, MUTED, 0.50) + (255,)
+    lw = max(2, size // 12) * S
     p = lw
     if kind == 'box':
         d.rounded_rectangle([p, s * 0.32, s - p, s - p], 5 * S, outline=col, width=lw)
@@ -599,19 +609,71 @@ def doodle(kind, size):
     return im.resize((size, size), Image.LANCZOS)
 
 
-# (kind, x, y, size, phase): the empty top corners and the bottom band under the captions
-DOODLES = [('box', 112, 128, 70, 0.0), ('star', 968, 120, 54, 1.1), ('q', 240, 410, 46, 2.0), ('sparkle', 930, 400, 40, 0.6),
-           ('coin', 120, 470, 40, 2.6), ('sparkle', 975, 290, 34, 1.7), ('q', 960, 470, 40, 0.3),
-           ('box', 150, 1650, 84, 0.9), ('star', 330, 1770, 50, 2.3), ('q', 540, 1700, 60, 1.4), ('coin', 735, 1785, 46, 0.2),
-           ('box', 925, 1665, 76, 2.8), ('sparkle', 92, 1560, 36, 1.9), ('sparkle', 990, 1560, 34, 0.7),
-           ('star', 120, 1835, 38, 1.2), ('q', 975, 1840, 40, 2.1)]
+TINT = {'b': mix(BG, BLUE, 0.22), 'r': mix(BG, RED, 0.22), 'g': mix(BG, GOLD_C, 0.30)}
+TINT_D = {k: mix(v, INK, 0.10) for k, v in TINT.items()}
+
+
+@functools.lru_cache(None)
+def flag(kind):
+    """A bunting pennant: a pale triangle with a darker rim and a dot."""
+    S = 3
+    w, h = 54, 66
+    im = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.polygon([(2 * S, 2 * S), (w * S - 2 * S, 2 * S), (w * S / 2, h * S - 2 * S)], fill=TINT[kind] + (255,),
+              outline=TINT_D[kind] + (255,), width=3 * S)
+    d.ellipse([w * S / 2 - 5 * S, 16 * S, w * S / 2 + 5 * S, 26 * S], fill=mix(TINT[kind], WHITE, 0.5) + (255,))
+    return im.resize((w, h), Image.LANCZOS)
+
+
+@functools.lru_cache(None)
+def pale_box(kind, w, h):
+    """A flat pale gift box (lid, ribbon, bow) in the series colours, for the empty bottom of the frame."""
+    S = 3
+    im = Image.new('RGBA', (w * S, (h + 18) * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    c, cd = TINT[kind] + (255,), TINT_D[kind] + (255,)
+    lid = int(h * 0.26)
+    top = 18 * S
+    d.rounded_rectangle([4 * S, top + lid * S - 4 * S, w * S - 4 * S, top + h * S], 8 * S, fill=c, outline=cd, width=3 * S)
+    d.rounded_rectangle([0, top, w * S, top + lid * S], 8 * S, fill=c, outline=cd, width=3 * S)
+    rib = max(6, w // 7) * S
+    d.rectangle([w * S / 2 - rib / 2, top, w * S / 2 + rib / 2, top + h * S - 2 * S], fill=mix(TINT[kind], WHITE, 0.45) + (255,))
+    for sx in (-1, 1):
+        x0 = w * S / 2 + (0 if sx > 0 else -rib * 1.9)
+        d.ellipse([x0, 2 * S, x0 + rib * 1.9, top + 2 * S], outline=cd, width=3 * S)
+    return im.resize((w, h + 18), Image.LANCZOS)
+
+
+# the pile at the bottom: (kind, x, bottom y, w, h, phase); centre stays low so the pills above remain clear
+PILE = [('b', 112, 1872, 120, 96, 0.0), ('r', 236, 1872, 92, 118, 1.3), ('g', 150, 1768, 74, 64, 2.1),
+        ('g', 352, 1872, 84, 70, 0.7), ('r', 728, 1872, 86, 74, 1.9), ('b', 846, 1872, 96, 120, 0.4),
+        ('r', 968, 1872, 112, 92, 2.6), ('g', 930, 1770, 70, 60, 1.1)]
+CONFETTI = [(x, y, k, ph) for k, (x, y, ph) in enumerate(
+    [(70, 560, 0.2), (1010, 640, 1.4), (62, 900, 2.2), (1018, 1010, 0.9), (76, 1240, 1.7), (1004, 1330, 2.9),
+     (300, 150, 0.5), (780, 150, 1.8), (430, 1640, 2.4), (650, 1700, 0.1), (520, 1820, 1.2), (180, 1530, 2.0),
+     (900, 1530, 0.8)])]
 
 
 def draw_decor(c, t):
     fx.over(c, (Image.fromarray(_frame()), 0, 0))
-    for k, (kind, x, y, size, ph) in enumerate(DOODLES):
-        put(c, doodle(kind, size), x + 6 * math.sin(t * 0.7 + ph), y + 9 * math.sin(t * 0.9 + ph * 1.7), 1.0, 0.9,
-            0.15 * math.sin(t * 0.5 + ph))
+    # bunting across the top: a sagging string with pennants that sway
+    xs = np.linspace(56, W - 56, 15)
+    sag = lambda x: 76 + 34 * (1 - ((x - W / 2) / (W / 2 - 56)) ** 2)
+    pts = [(x, sag(x)) for x in np.linspace(56, W - 56, 40)]
+    line(c, pts, mix(BG, MUTED, 0.45), 3, 1.0)
+    for k, x in enumerate(xs[1:-1]):
+        sw = 0.10 * math.sin(t * 1.6 + k * 0.9)
+        put(c, flag('brg'[k % 3]), x, sag(x) + 30, 1.0, 1.0, sw)
+    # a pile of pale gift boxes at the bottom
+    for kind, x, yb, w, h, ph in PILE:
+        bob = 3 * math.sin(t * 1.3 + ph)
+        put(c, pale_box(kind, w, h), x, yb - (h + 18) / 2 + bob, 1.0, 1.0, 0.03 * math.sin(t * 0.8 + ph))
+    # confetti and faint icons drifting on the sides
+    for x, y, k, ph in CONFETTI:
+        kind = ('star', 'sparkle', 'coin', 'q')[k % 4]
+        put(c, doodle(kind, 34 + 6 * (k % 3)), x + 7 * math.sin(t * 0.7 + ph), y + 10 * math.sin(t * 0.9 + ph * 1.7), 1.0,
+            0.95, 0.2 * math.sin(t * 0.5 + ph))
 
 
 def render_at(t):

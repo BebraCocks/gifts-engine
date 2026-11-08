@@ -251,7 +251,7 @@ def draw_timer(c, t):
 def item_motion(t, r, side):
     """(dx, dy, scale, alpha, rot) of round r's item on its plate: drops in from above while the previous pair
     slides out sideways (they overlap, the pans are never empty)."""
-    t_in = ROUND_IN[r] - (SWAP - 0.1 if r else 0.0) + 0.06 * side
+    t_in = ROUND_IN[r] - (SWAP - 0.1 if r else 0.25) + 0.06 * side     # v2: round 1 overlaps the hook pair leaving
     k = spr(t_in, t, 2.1, 0.55)
     dx, dy, sc, a, rot = 0.0, lerp(-600, 0, k), 1.0, float(t >= t_in), 0.0
     if r + 1 < len(ROUND_IN):

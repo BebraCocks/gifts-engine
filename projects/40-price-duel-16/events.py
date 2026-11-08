@@ -11,7 +11,7 @@ AD_STOP = END[KEY['a3']] + AD_HOLD          # RubUp right after the third answer
 WIN = [0 if r[5] * TON_RUB > r[6] else 1 for r in ROUNDS]
 
 E = {
-    'hook_q': END[0] - 0.6,                  # hook text clears before round 1 drops in (v2)
+    'hook_q': END[0] - 0.1,                  # v2: the hook text stays until the line ends (pause follows)
     'comments': wt('outro', 'пиши'),
     'which': wt('outro', 'выбрал'),
     'end': DUR,

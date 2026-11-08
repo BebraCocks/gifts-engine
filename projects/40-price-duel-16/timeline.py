@@ -20,13 +20,14 @@ def _len(k):
 START = 0.08
 SWAP = 0.28          # items fly out / in between rounds
 LAND = 0.20          # new items land before the question starts
-HOLD = 0.24          # verdict stays after the answer
+HOLD = 0.20          # verdict stays after the answer (v2: 0.24 → 0.20 for the hook pause)
 AD_HOLD = 0.35       # the answer settles before RubUp
 ON, END = [0.0] * len(LINES), [0.0] * len(LINES)
 ROUND_IN, TIMER0, REVEAL = [], [], []      # per round: items start dropping, timer starts, verdict
 ON[0] = START
 END[0] = START + _len(0)
-cur = END[0] - 0.35          # round 1 drops in while the hook line ends
+HOOK_GAP = 0.55     # v2 (author): a real pause between the hook and «Поехали!»
+cur = END[0] + HOOK_GAP - 0.2  # round 1 drops in during the pause
 for r in range(5):
     q, a = 1 + 2 * r, 2 + 2 * r
     ROUND_IN.append(cur)
@@ -40,7 +41,7 @@ for r in range(5):
     if a == 6:
         cur += 0.1        # after RubUp the next round starts with a little air
 OUTRO = END[10] + HOLD
-ON[11] = OUTRO + 0.35
+ON[11] = OUTRO + 0.2
 END[11] = ON[11] + _len(11)
-DUR = END[11] + 0.35
+DUR = END[11] + 0.25
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

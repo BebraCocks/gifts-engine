@@ -1,5 +1,5 @@
 {
- "_note": "Fish Audio drama-3 task ids, голос 48ec28a4… (голос серии), свой текст, простые реплики. Audio: https://platform.r2.fish.audio/tasks/2026-11-08/<id>.mp3. Первый id = выбранный дубль.",
+ "_note": "Fish Audio drama-3 task ids, голос 48ec28a4… (голос серии), свой текст, простые реплики. Audio: https://platform.r2.fish.audio/tasks/2026-11-08/<id>.mp3. Первый id = выбранный дубль. v2 (автор): L01 без ускорения, L09 перезаписана без смеха ([cheerful]).",
  "L01": [
   "b677b24253474bf98054e3516ae1873f"
  ],
@@ -25,6 +25,7 @@
   "81bf3b2059fb4ba1a198f7882e266314"
  ],
  "L09": [
+  "e3ff00cc20724cdab29b126ea863cfc3",
   "7ded684a53844d958f9d9399c6e96444"
  ],
  "L10": [

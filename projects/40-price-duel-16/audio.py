@@ -33,7 +33,7 @@ def sfx_layer(n, kit):
     for r in range(5):
         if r:
             add(fx, 'whoosh-short', ROUND_IN[r] - SWAP + 0.05, gain_db=-19, label=f'round {r}: items fly out')
-        add(fx, 'whoosh-organic', ROUND_IN[r] - (SWAP - 0.1 if r else 0.0), gain_db=-22, label=f'round {r + 1}: items drop')
+        add(fx, 'whoosh-organic', ROUND_IN[r] - (SWAP - 0.1 if r else 0.25), gain_db=-22, label=f'round {r + 1}: items drop')
         add(fx, 'pop', ROUND_IN[r] + 0.2, gain_db=-20, label=f'round {r + 1}: items land on the pans')
         for s in range(5):                      # one tick sound for the whole video: a timer is a motif
             add(fx, 'click', TIMER0[r] + s, gain_db=-23 + 1.5 * (s >= 3), key='tick', vary=False, dur=(0, 0.3),

@@ -18,6 +18,7 @@ KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.16
 TEMPO = 1.17
+TEMPO_LINE = {'L01': 1.0}       # v2: author — the hook was too fast; it plays at natural speed
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.
 INSERT = {}                     # no author's sound in this video
@@ -36,8 +37,9 @@ def fetch(task):
         return np.frombuffer(w.readframes(w.getnframes()), '<i2').astype(np.float64)
 
 
-def stretch(y):
-    if TEMPO == 1.0:
+def stretch(y, tempo=None):
+    tempo = TEMPO if tempo is None else tempo
+    if tempo == 1.0:
         return y
     a, b = RAW / '_in.wav', RAW / '_out.wav'
     with wave.open(str(a), 'wb') as w:
@@ -45,7 +47,7 @@ def stretch(y):
         w.setsampwidth(2)
         w.setframerate(SR)
         w.writeframes(np.clip(y, -32767, 32767).astype('<i2').tobytes())
-    subprocess.run(['ffmpeg', '-nostdin', '-loglevel', 'error', '-y', '-i', str(a), '-af', f'atempo={TEMPO}',
+    subprocess.run(['ffmpeg', '-nostdin', '-loglevel', 'error', '-y', '-i', str(a), '-af', f'atempo={tempo}',
                     str(b)], check=True)
     with wave.open(str(b)) as w:
         out = np.frombuffer(w.readframes(w.getnframes()), '<i2').astype(np.float64)
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     takes = {k: v for k, v in json.loads((HERE / 'takes.json').read_text()).items() if k.startswith('L')}
     total = 0
     for line, ids in sorted(takes.items()):
-        y = stretch(tighten(fetch(ids[0]), MAX_GAP.get(line, DEFAULT_GAP)))
+        y = stretch(tighten(fetch(ids[0]), MAX_GAP.get(line, DEFAULT_GAP)), TEMPO_LINE.get(line))
         if line in INSERT:                         # split at the k-th pause, add silence there
             k, sec = INSERT[line]
             hop = SR // 100
@@ -137,7 +139,7 @@ if __name__ == '__main__':
             w.setsampwidth(2)
             w.setframerate(SR)
             w.writeframes(np.clip(y, -32767, 32767).astype('<i2').tobytes())
-        (HERE / 'voice' / f'{line}.map.json').write_text(json.dumps({'tempo': TEMPO, 'segments': SEGMAP}))
+        (HERE / 'voice' / f'{line}.map.json').write_text(json.dumps({'tempo': TEMPO_LINE.get(line, TEMPO), 'segments': SEGMAP}))
         total += len(y) / SR
         print(f'{line} <- {ids[0][:8]}: {len(y) / SR:.2f} s')
     print(f'speech total {total:.2f} s')

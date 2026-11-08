@@ -382,4 +382,5 @@ https://drive.google.com/file/d/1bWuL1KS6xKYR8I-PCJxLs1GfMMWAqYPM/view . Пра�
 Swag Bag / электробритва (вещь ×4,5), Love Potion / набор «Волшебное зелье» (телега +24%), Witch Hat / шляпка с вуалью
 (вещь на треть), Flying Broom / щётка с совком (телега ×2,3), Hex Pot / Magic Mixies «Волшебный котёл» 23 751 ₽ (вещь ×40); 2:3.
 Фото и цены — «Детский мир», подарки — Fragment 08.11 ~17:30 UTC. Голос серии `48ec28a4…` drama-3 (1,17×), озвучка отправлена до сборки.
-**`renders/40-price-duel-16/price_duel_16_v1.mp4`** (59,97 с, −12,9 LUFS), Google Drive: https://drive.google.com/file/d/19-DSV5NwhP-gBVdpAe2qKL8G69xFMrgs/view . Правки — `--name price_duel_16_v2`.
+**`renders/40-price-duel-16/price_duel_16_v1.mp4`** (59,97 с, −12,9 LUFS), Google Drive: https://drive.google.com/file/d/19-DSV5NwhP-gBVdpAe2qKL8G69xFMrgs/view . 
+v2 (автор: хук слишком быстрый, нет паузы перед «Поехали»): L01 без ускорения (1,0×), пауза 0,55 с после хука, L09 перезаписана без смеха; RubUp на 30,7 с. **`renders/40-price-duel-16/price_duel_16_v2.mp4`** (59,95 с, −12,7 LUFS), Google Drive: https://drive.google.com/file/d/1inXIK2q5n2nXLS4DenyxG28eqzczHuyn/view . Правки — `--name price_duel_16_v3`.

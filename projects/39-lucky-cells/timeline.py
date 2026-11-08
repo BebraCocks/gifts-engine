@@ -20,8 +20,8 @@ def _len(k):
 START = 0.08
 SWAP = 0.38          # open cards fly out, new closed cells drop in
 LAND = 0.16          # new cells land before the question
-ANS = 0.30           # the cells flip, then the answer starts
-HOLD = 0.26          # the answer settles before the swap
+ANS = 0.22           # the cells flip, then the answer starts
+HOLD = 0.22          # the answer settles before the swap
 AD_HOLD = 0.35       # the answer settles before RubUp
 TABLE_READ = 0.7     # pause to read the levels table before the last line
 ON, END = [0.0] * len(LINES), [0.0] * len(LINES)
@@ -33,12 +33,14 @@ END[1] = ON[1] + _len(1)
 KEY = {LINES[k][1]: k for k in range(len(LINES))}
 cur = END[1] + 0.12
 for r in range(5):
-    q, a = KEY[f'q{r + 1}'], KEY[f'a{r + 1}']
+    p, q, a = KEY[f'p{r + 1}'], KEY[f'q{r + 1}'], KEY[f'a{r + 1}']
     ROUND_IN.append(cur)
-    ON[q] = cur + LAND
+    ON[p] = cur - (0.25 if r else -LAND)        # v7 (author): the narrator opens the round (over the box swap)
+    END[p] = ON[p] + _len(p)
+    TIMER0.append(max(END[p] + 0.12, cur + 0.5))  # then a real 5 s timer, the narrator talks during it
+    ON[q] = TIMER0[-1] + 0.3
     END[q] = ON[q] + _len(q)
-    TIMER0.append(ON[q])                        # v6 (author): the round line is spoken while the 5 s timer runs
-    REVEAL.append(max(TIMER0[-1] + TIMER, END[q] + 0.15))
+    REVEAL.append(max(TIMER0[-1] + TIMER, END[q] + 0.2))
     ON[a] = REVEAL[-1] + ANS
     END[a] = ON[a] + _len(a)
     cur = END[a] + (AD_HOLD if r == 2 else HOLD) + (0.0 if r == 4 else SWAP)
@@ -53,5 +55,5 @@ ON[S] = OUTRO + 0.45
 END[S] = ON[S] + _len(S)
 ON[O] = END[S] + TABLE_READ
 END[O] = ON[O] + _len(O)
-DUR = END[O] + 0.55
+DUR = END[O] + 0.45
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

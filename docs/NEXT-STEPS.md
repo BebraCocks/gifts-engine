@@ -365,4 +365,7 @@ https://drive.google.com/file/d/1w9-4UTtReWs3jBlVtIxfmQLqx-S5qlig/view . Пра�
 Баллы автора: 1 ₽ = 1 балл, 1 TON = 100, до сотни, максимум 5000 за коробку; Plush Pepe и MacBook — по 5000.
 Хук — вопрос «Сможешь набрать больше пяти тысяч?» (фраза «1% наберёт больше 5000» была бы неправдой: ~69%).
 **`renders/39-lucky-cells/lucky_cells_v1.mp4`** (75,44 с, −13,3 LUFS), Google Drive:
-https://drive.google.com/file/d/1j1GyHBXBekZFwbmsp_ttVZPatumlY7NM/view . Правки — `--name lucky_cells_v2`.
+https://drive.google.com/file/d/1j1GyHBXBekZFwbmsp_ttVZPatumlY7NM/view .
+v7 (чёрная дыра, таблица автора 0–499…5000–9999, реплика перед раундом и во время таймера, рамка и значки):
+**`renders/39-lucky-cells/lucky_cells_v3.mp4`** (79,88 с), Google Drive:
+https://drive.google.com/file/d/1oy-JMXZgfBZDfeVgBxK6MZ5CzkiebgH_/view . Правки — `--name lucky_cells_v4`.

@@ -40,7 +40,7 @@ CW, CH, GAP = 312, 352, 22
 XS = [W / 2 + (k - 1) * (CW + GAP) for k in range(3)]
 YS = [708, 1150]                 # blue row, red row (centres)
 TAG_Y = (502, 942)
-TIMER_Y = 392
+TIMER_Y = 400
 CAP_TOP = 1398
 PILL_Y = 1590
 GIFT_PX = 196                    # Lottie raster on the open card
@@ -292,8 +292,8 @@ def draw_cells(c, t):
                     continue
                 sc = kin * (1 - 0.35 * o)
                 a = 1 - o
-                dy = 260 * o * o
-                rot = ((k - (n - 1) / 2) * 0.12) * o
+                dy = 260 * o * o + 7 * math.sin(t * 2.3 + j * 1.27)          # a gentle float, each box its own phase
+                rot = ((k - (n - 1) / 2) * 0.12) * o + 0.028 * math.sin(t * 1.7 + j * 0.83)
                 tf = flip_t(rr, row, k)
                 col = ROWCOL[row]
                 if t < tf:                                                    # closed box
@@ -322,7 +322,7 @@ def draw_cells(c, t):
 
 # ------------------------------------------------------------------ the gold box (final round)
 @functools.lru_cache(None)
-def bomb_sprite():
+def bomb_sprite():                  # v6, not used since v7 (black hole)
     S = 2
     s = 150
     im = Image.new('RGBA', (s * S, s * S), (0, 0, 0, 0))
@@ -342,10 +342,10 @@ def bomb_sprite():
 
 
 def gold_shake(t):
-    """Small screen shake on the explosion (px)."""
+    """Small screen shake when the hole opens (px)."""
     k = t - E['gold_open']
     if 0 <= k < 0.35:
-        amp = 9 * (1 - k / 0.35)
+        amp = 5 * (1 - k / 0.35)
         return int(round(amp * math.sin(k * 90))), int(round(amp * 0.6 * math.cos(k * 77)))
     return 0, 0
 
@@ -371,17 +371,46 @@ def draw_gold(c, t):
         put(c, box_lid(GOLD_C, GOLD_SZ, GOLD_SZ), x, y + lid_offset(GOLD_SZ) * kin, kin, a, shake)
         text(c, 'ЗОЛОТАЯ', 26, 'Heavy', GOLD, x, y + GOLD_SZ / 2 + 30, a * kin)
         return
+    # v7 (author): a black hole instead of the bomb. It opens, sucks in «1000», then the gold box itself, and closes.
     k = t - go
-    if k < 0.5:                                                               # a small burst: flash + ring
-        disc(c, x, y, lerp(40, 190, cl(k / 0.3)), (255, 214, 120), a * (1 - cl(k / 0.3)) * 0.85)
-        arc(c, x, y, lerp(60, 230, cl(k / 0.5)), 0, 360, (255, 150, 40), 10, a * (1 - cl(k / 0.5)))
-    kl = cl(k / 0.45)
+    T_PTS, T_BOX, T_CLOSE = 0.7, 2.0, 3.1          # «1000» gets sucked in · the box gets sucked in · the hole closes
+    grow = spr(go, t, 1.6, 0.7)
+    close = sm(go + T_CLOSE, go + T_CLOSE + 0.45, t)
+    hr = 64 * cl(grow) * (1 - close) + 18 * fx.bump(t - go - T_CLOSE - 0.45, 3.0, 8.0) * (t > go + T_CLOSE + 0.45)
+    kl = cl(k / 0.45)                                                         # the lid is blown off
     if kl < 1:
-        put(c, box_lid(GOLD_C, GOLD_SZ, GOLD_SZ), x, y + lid_offset(GOLD_SZ) - 220 * kl, 1, a * (1 - kl), 1.2 * kl)
-    kb = spr(go + 0.05, t, 2.6, 0.45)
-    put(c, bomb_sprite(), x, y - 8, max(0.01, kb), a * cl(kb * 3), 0.08 * math.sin(t * 6))
-    kp = spr(go + 0.35, t, 2.4, 0.5)
-    put(c, pill('−1000', 40, (214, 48, 48), WHITE, padx=26), x, y + GOLD_SZ / 2 + 22, max(0.01, kp), a * cl(kp * 3))
+        put(c, box_lid(GOLD_C, GOLD_SZ, GOLD_SZ), x + 60 * kl, y + lid_offset(GOLD_SZ) - 200 * kl, 1, a * (1 - kl), 1.4 * kl)
+    # the box: shakes, then spirals into the hole
+    kb = sm(go + T_BOX, go + T_BOX + 0.9, t)
+    if kb < 1:
+        ang = 6.0 * kb * kb
+        rad = 70 * (1 - kb)
+        bx, by = x + rad * math.cos(ang * 2.2), y + 6 + 14 * (1 - kb) + rad * 0.4 * math.sin(ang * 2.2)
+        jit = 0.05 * math.sin(t * 50) * (1 - kb) * sm(go, go + 0.3, t)
+        bdy = 30 * (1 - kb) * sm(go, go + 0.4, t)                             # it slides down a little: the hole sits on it
+        put(c, box_body(GOLD_C, GOLD_SZ, GOLD_SZ, 0, '?'), bx, by + bdy, max(0.02, 1 - kb), a * (1 - kb ** 3), ang + jit)
+    if hr > 0.5:
+        swirl = t * 5.0
+        disc(c, x, y + 6, hr * 1.55, (178, 140, 220), a * 0.25)                 # glow
+        for j in range(3):                                                    # the accretion ring: three arcs that spin
+            a0 = math.degrees(swirl * (1 + 0.3 * j)) + 120 * j
+            arc(c, x, y + 6, hr * (1.18 + 0.12 * j), a0, a0 + 200, ((150, 90, 230), (240, 140, 60), (110, 160, 255))[j],
+                max(3, hr * 0.12), a * 0.9)
+        disc(c, x, y + 6, hr, (14, 12, 22), a)
+        disc(c, x, y + 6, hr * 0.62, (4, 3, 8), a)
+    # «1000» appears above and spirals in
+    kp = spr(go + 0.35, t, 2.4, 0.55)
+    ks = sm(go + T_PTS, go + T_PTS + 1.1, t)
+    if kp > 0.01 and ks < 1:
+        ang = 7.0 * ks * ks
+        rad = 150 * (1 - ks)
+        px, py = x + rad * math.sin(ang), y + 6 - rad * math.cos(ang)
+        put(c, pill('1000', 44, GOLD, WHITE, padx=28), px, py, max(0.02, 1.15 * kp * (1 - ks)), a * cl(kp * 3), ang)
+    # after the hole closes: what the viewer lost
+    kr = spr(go + T_CLOSE + 0.5, t, 2.4, 0.5)
+    if kr > 0.01:
+        put(c, pill('−1000', 40, (214, 48, 48), WHITE, padx=26), x, y, max(0.01, kr), a * cl(kr * 3))
+        text(c, 'ЧЁРНАЯ ДЫРА', 26, 'Heavy', MUTED, x, y + 62, a * cl(kr * 2))
 
 
 # ------------------------------------------------------------------ header, timer, tags
@@ -392,16 +421,16 @@ def draw_timer(c, t):
     ton = sm(TIMER0[r] - 0.05, TIMER0[r] + 0.25, t) * (1 - sm(REVEAL[r], REVEAL[r] + 0.3, t))
     if ton <= 0.01:
         return
-    rad = lerp(20, 58, ton)
+    rad = lerp(22, 74, ton)                                      # v7: a bigger timer, a real 5 s count
     disc(c, W / 2, TIMER_Y, rad + 5, INK, ton)
     disc(c, W / 2, TIMER_Y, rad, WHITE, ton)
     left = cl((REVEAL[r] - t) / TIMER)
-    arc(c, W / 2, TIMER_Y, rad - 9, -90, 270, LIGHT, 10, ton)
-    arc(c, W / 2, TIMER_Y, rad - 9, -90 + 360 * (1 - left), 270, GOLD, 10, ton)
+    arc(c, W / 2, TIMER_Y, rad - 11, -90, 270, LIGHT, 13, ton)
+    arc(c, W / 2, TIMER_Y, rad - 11, -90 + 360 * (1 - left), 270, GOLD, 13, ton)
     n = max(1, math.ceil((REVEAL[r] - t) - 1e-6))
     tick = REVEAL[r] - n
     k = 1 + 0.22 * fx.bump(t - tick, 3.0, 7.0) if t >= tick else 1.0
-    text(c, str(min(5, n)), 50, 'Heavy', GOLD if n <= 2 else INK, W / 2, TIMER_Y, ton, k * lerp(0.6, 1.0, ton))
+    text(c, str(min(5, n)), 66, 'Heavy', GOLD if n <= 2 else INK, W / 2, TIMER_Y, ton, k * lerp(0.6, 1.0, ton))
 
 
 def draw_tags(c, t):
@@ -470,7 +499,7 @@ def draw_teaser(c, t):
 # ------------------------------------------------------------------ outro: levels
 @functools.lru_cache(None)
 def level_row(i):
-    lo, hi, name, share = LEVELS[i]
+    lo, hi, name = LEVELS[i]
     top = i == len(LEVELS) - 1
     S = 2
     w, h = 960, 128
@@ -481,9 +510,7 @@ def level_row(i):
     d.rounded_rectangle([0, 0, w * S - 1, h * S - 1], 30 * S, fill=fill + (255,), outline=INK + (255,), width=5 * S)
     d.text((40 * S, 64 * S), f'{lo}–{hi}', font=fx.font('Heavy', 40 * S), fill=tc + (255,), anchor='lm')
     f = fx.font('Heavy', 38 * S)
-    d.text((w * S - 40 * S, 52 * S), name, font=f, fill=(tc if top else INK) + (255,), anchor='rm')
-    d.text((w * S - 40 * S, 96 * S), f'наугад так играют {share}', font=fx.font('Semibold', 24 * S),
-           fill=(WHITE if top else MUTED) + (255,), anchor='rm')
+    d.text((w * S - 40 * S, 64 * S), name, font=f, fill=(tc if top else INK) + (255,), anchor='rm')
     return im.resize((w, h), Image.LANCZOS)
 
 
@@ -517,8 +544,77 @@ CAP = captions.Captions([_phr(k) for k in range(1, len(LINES))], width=960, top=
                         max_lines=2, color=INK, accent_color=GOLD, shadow=False, fade_out=0.2, rise=10)
 
 
+@functools.lru_cache(None)
+def _frame():
+    """A quiet stylised frame: a rounded line inset from the edges, dotted corners (v7: fill the empty paper)."""
+    S = 2
+    im = Image.new('RGBA', (W * S, H * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    col = mix(BG, MUTED, 0.32) + (255,)
+    m, r = 34 * S, 48 * S
+    d.rounded_rectangle([m, m, W * S - m, H * S - m], r, outline=col, width=3 * S)
+    m2 = 48 * S
+    d.rounded_rectangle([m2, m2, W * S - m2, H * S - m2], r - 14 * S, outline=mix(BG, MUTED, 0.18) + (255,), width=2 * S)
+    for cx, cy in ((m, m), (W * S - m, m), (m, H * S - m), (W * S - m, H * S - m)):     # corner diamonds
+        q = 11 * S
+        d.polygon([(cx, cy - q), (cx + q, cy), (cx, cy + q), (cx - q, cy)], fill=BG + (255,), outline=col, width=3 * S)
+    for x in range(160 * S, W * S - 150 * S, 38 * S):                                         # top / bottom ticks
+        for y in (m, H * S - m):
+            d.ellipse([x - 3 * S, y - 3 * S, x + 3 * S, y + 3 * S], fill=col)
+    return np.asarray(im.resize((W, H), Image.LANCZOS)).copy()
+
+
+@functools.lru_cache(None)
+def doodle(kind, size):
+    """Faint outline icons on the paper: gift box, star, «?», coin, sparkle."""
+    S = 3
+    s = size * S
+    im = Image.new('RGBA', (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    col = mix(BG, MUTED, 0.38) + (255,)
+    lw = max(2, size // 14) * S
+    p = lw
+    if kind == 'box':
+        d.rounded_rectangle([p, s * 0.32, s - p, s - p], 5 * S, outline=col, width=lw)
+        d.rounded_rectangle([0 + p // 2, s * 0.18, s - p // 2, s * 0.34], 4 * S, outline=col, width=lw)
+        d.line([(s / 2, s * 0.18), (s / 2, s - p)], fill=col, width=lw)
+        d.arc([s * 0.22, 0, s * 0.5, s * 0.24], 180, 360, fill=col, width=lw)
+        d.arc([s * 0.5, 0, s * 0.78, s * 0.24], 180, 360, fill=col, width=lw)
+    elif kind == 'star':
+        pts = [(s / 2 + (s / 2 - p) * (1 if k % 2 == 0 else 0.45) * math.cos(math.radians(-90 + 36 * k)),
+                s / 2 + (s / 2 - p) * (1 if k % 2 == 0 else 0.45) * math.sin(math.radians(-90 + 36 * k))) for k in range(10)]
+        d.line(pts + [pts[0]], fill=col, width=lw, joint='curve')
+    elif kind == 'q':
+        d.text((s / 2, s / 2), '?', font=fx.font('Heavy', int(s * 0.9)), fill=col, anchor='mm')
+    elif kind == 'coin':
+        d.ellipse([p, p, s - p, s - p], outline=col, width=lw)
+        d.ellipse([s * 0.25, s * 0.25, s * 0.75, s * 0.75], outline=col, width=max(1, lw // 2))
+    else:                                                                                   # sparkle
+        d.line([(s / 2, p), (s / 2, s - p)], fill=col, width=lw)
+        d.line([(p, s / 2), (s - p, s / 2)], fill=col, width=lw)
+        d.line([(s * 0.3, s * 0.3), (s * 0.7, s * 0.7)], fill=col, width=max(1, lw // 2))
+        d.line([(s * 0.7, s * 0.3), (s * 0.3, s * 0.7)], fill=col, width=max(1, lw // 2))
+    return im.resize((size, size), Image.LANCZOS)
+
+
+# (kind, x, y, size, phase): the empty top corners and the bottom band under the captions
+DOODLES = [('box', 112, 128, 70, 0.0), ('star', 968, 120, 54, 1.1), ('q', 240, 410, 46, 2.0), ('sparkle', 930, 400, 40, 0.6),
+           ('coin', 120, 470, 40, 2.6), ('sparkle', 975, 290, 34, 1.7), ('q', 960, 470, 40, 0.3),
+           ('box', 150, 1650, 84, 0.9), ('star', 330, 1770, 50, 2.3), ('q', 540, 1700, 60, 1.4), ('coin', 735, 1785, 46, 0.2),
+           ('box', 925, 1665, 76, 2.8), ('sparkle', 92, 1560, 36, 1.9), ('sparkle', 990, 1560, 34, 0.7),
+           ('star', 120, 1835, 38, 1.2), ('q', 975, 1840, 40, 2.1)]
+
+
+def draw_decor(c, t):
+    fx.over(c, (Image.fromarray(_frame()), 0, 0))
+    for k, (kind, x, y, size, ph) in enumerate(DOODLES):
+        put(c, doodle(kind, size), x + 6 * math.sin(t * 0.7 + ph), y + 9 * math.sin(t * 0.9 + ph * 1.7), 1.0, 0.9,
+            0.15 * math.sin(t * 0.5 + ph))
+
+
 def render_at(t):
     c = _bg().copy()
+    draw_decor(c, t)
     draw_header(c, t)
     draw_timer(c, t)
     draw_cells(c, t)

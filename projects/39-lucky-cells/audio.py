@@ -63,10 +63,13 @@ def sfx_layer(n, kit):
                     add(fx, 'impact', tf + 0.32, gain_db=-20, label=f'round {r + 1}: ★ 5000 jackpot')
     add(fx, 'sparkle', END[KEY['a3']] - 0.15, gain_db=-19, label='teaser pill «НЕ ЛИСТАЙ» before RubUp')
     add(fx, 'sparkle', ROUND_IN[4] - SWAP + 0.5, gain_db=-21, label='final: the gold box appears')
-    # the gold box: a small, quiet explosion (author: «небольшого и не особо громкого»)
-    add(fx, 'impact', E['gold_open'], gain_db=-21, file='impact-hit/hit-impact-with-fx-04.flac', vary=False, fit=1.3,
-        fade_out=0.4, label='gold box: bomb — small explosion')
-    add(fx, 'error', E['gold_open'] + 0.4, gain_db=-23, label='gold box: «−1000»')
+    # the gold box (v7): a black hole opens, sucks in «1000», then the box, and closes
+    go = E['gold_open']
+    add(fx, 'sub-drop', go, gain_db=-20, label='gold box: the black hole opens')
+    add(fx, 'whoosh-deep', go + 0.7, gain_db=-22, label='black hole: «1000» is sucked in')
+    add(fx, 'downlifter', go + 2.0, gain_db=-22, fit=1.1, label='black hole: the gold box is sucked in')
+    add(fx, 'power-down', go + 3.1, gain_db=-24, fit=0.6, label='black hole: closes')
+    add(fx, 'error', go + 3.6, gain_db=-24, label='«−1000»')
     add(fx, 'whoosh', OUTRO, gain_db=-20, label='outro: cards leave')
     for i in range(5):
         add(fx, 'list', E['sum'] + 0.05 + 0.16 * i, gain_db=-21, key='lvl', vary=False, semitones=2 * i,

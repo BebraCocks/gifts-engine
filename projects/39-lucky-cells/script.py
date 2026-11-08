@@ -122,6 +122,12 @@ for _r in ROUNDS:
     _r['blue_pts'] = [points_ton(ton) for _, _, ton in _r['blue']]
     _r['red_pts'] = [points_rub(rub) for _, _, rub, _ in _r['red']]
 
+# Счётчик среднего результата (автор, v10): после каждого раунда + среднее арифметическое синих и красных коробок раунда,
+# округлено до сотни (половина — вверх). Золотая не входит: открывать её не обязательно. Не озвучивается.
+AVG_STEP = [int(Decimal(str((sum(r['blue_pts']) + sum(r['red_pts'])) / len(r['blue']) / 100)).quantize(Decimal(1),
+                    rounding=ROUND_HALF_UP)) * 100 for r in ROUNDS]
+AVG_TOTAL = [sum(AVG_STEP[:k + 1]) for k in range(len(AVG_STEP))]      # 700, 1700, 3900, 5000, 8000
+
 # Пятый раунд: секретная золотая коробка — открывать или нет решает зритель; внутри чёрная дыра −1000 (автор, v7).
 GOLD = ('black hole', -1000)
 

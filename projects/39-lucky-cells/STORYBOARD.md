@@ -98,4 +98,8 @@ whoosh, downlifter, power-down (тихо); строки таблицы — ле�
   «Она засосала тысячу баллов, если ты решил её открыть», 3-й раунд без шёпота; оформление полей: гирлянда флажков сверху,
   стопки бледных подарков снизу, конфетти и значки по бокам (цвета серии, приглушены). **`renders/39-lucky-cells/lucky_cells_v5.mp4`**
   — 79,45 с, 30 МБ, −13,0 LUFS, декодирован, кадры просмотрены. Google Drive:
-  https://drive.google.com/file/d/13O9jtt-cBU4HZrGYs2FxANxeKjIy7Ce6/view . Не проверено на слух. Правки — `--name lucky_cells_v6`.
+  https://drive.google.com/file/d/13O9jtt-cBU4HZrGYs2FxANxeKjIy7Ce6/view . Не проверено на слух.
+- 2026-11-08 v10: счётчик «СРЕДНИЙ СЧЁТ» справа от таймера (после каждого раунда + среднее синих и красных коробок,
+  до сотни: 700 → 1700 → 3900 → 5000 → 8000, золотая не входит, не озвучивается). Везде 3 + 3, в финале + золотая.
+  **`renders/39-lucky-cells/lucky_cells_v6.mp4`** — 79,45 с, 30 МБ, −13,0 LUFS, декодирован, кадры просмотрены.
+  Google Drive: https://drive.google.com/file/d/1bWuL1KS6xKYR8I-PCJxLs1GfMMWAqYPM/view . Правки — `--name lucky_cells_v7`.

@@ -18,7 +18,7 @@ import fx
 import gifts_api
 import lottie
 import config
-from script import (LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, TITLE, TAGS, TEASER, LEVELS, SUM_TITLE, COMMENTS,
+from script import (AVG_TOTAL, LINES, ROUNDS, TON_RUB, TIMER, HOOK, HOOK_BADGE, TITLE, TAGS, TEASER, LEVELS, SUM_TITLE, COMMENTS,
                     ACC)
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO, SWAP, HOLD
 from words import WORDS
@@ -498,6 +498,33 @@ def draw_header(c, t):
         text(c, 'дороже', 26, 'Semibold', MUTED, W / 2 + 200, TIMER_Y + 50, am)
 
 
+def avg_at(t):
+    """Average score so far and the moment of its last change (it counts up after each reveal)."""
+    val, t_last, prev = 0, None, 0
+    for k in range(5):
+        t0 = REVEAL[k] + 0.9
+        if t >= t0:
+            prev, val, t_last = val, AVG_TOTAL[k], t0
+    if t_last is None:
+        return 0, None
+    kc = sm(t_last, t_last + 0.6, t)
+    shown = int(round((prev + (val - prev) * kc) / 100)) * 100      # always a whole hundred
+    return shown, t_last
+
+
+def draw_avg(c, t):
+    """v10 (author): a counter of the average score at the top right, next to the timer; not voiced."""
+    a = sm(ROUND_IN[0] - 0.2, ROUND_IN[0] + 0.2, t) * (1 - sm(OUTRO, OUTRO + 0.3, t))
+    if a <= 0.004:
+        return
+    x, y = 878, TIMER_Y
+    v, tl = avg_at(t)
+    k = 1 + 0.18 * fx.bump(t - tl - 0.6, 3.0, 6.0) if tl is not None and t > tl + 0.6 else 1.0
+    text(c, 'СРЕДНИЙ СЧЁТ', 22, 'Heavy', MUTED, x, y - 42, a)
+    put(c, pill(f'{v}', 40, WHITE, INK, INK, padx=30, h=64), x, y + 4, k, a)
+    text(c, 'баллов', 22, 'Semibold', MUTED, x, y + 50, a)
+
+
 def draw_teaser(c, t):
     """Retention before RubUp: the freeze frame of the ad shows this pill."""
     t0 = END[KEY['a3']] - 0.15
@@ -681,6 +708,7 @@ def render_at(t):
     draw_decor(c, t)
     draw_header(c, t)
     draw_timer(c, t)
+    draw_avg(c, t)
     draw_cells(c, t)
     draw_gold(c, t)
     draw_tags(c, t)                 # tags stay readable over popping cells

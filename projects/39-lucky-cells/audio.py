@@ -66,6 +66,9 @@ def sfx_layer(n, kit):
                         label=f'round {r + 1}: best of the row {pts[k]} ({"blue" if row == 0 else "red"} {k + 1})')
                 if pts[k] >= 5000:
                     add(fx, 'impact', tf + 0.32, gain_db=-20, label=f'round {r + 1}: ★ 5000 jackpot')
+    for r in range(5):                          # v10: the average counter ticks up after each reveal
+        add(fx, 'counter', REVEAL[r] + 0.9, gain_db=-24, key='avg', vary=False, semitones=r,
+            label=f'round {r + 1}: average score counter')
     add(fx, 'sparkle', END[KEY['a3']] - 0.15, gain_db=-19, label='teaser pill «НЕ ЛИСТАЙ» before RubUp')
     add(fx, 'sparkle', ROUND_IN[4] - SWAP + 0.5, gain_db=-21, label='final: the gold box appears')
     # the gold box (v7): a black hole opens, sucks in «1000», then the box, and closes

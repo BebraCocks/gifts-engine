@@ -48,6 +48,24 @@ SRC = {   # kind: (url, page, crop box in source px or None, background) — dat
         'https://www.iport.ru/products/productID126901/', None, 'white'),
     'macbook': ('https://cdn.iport.ru/iblock/51f/51f0a87413258c6bad5917c28cb8655d/a01f2462158fc6dbb1489c1a4468fe52.jpg',
         'https://www.iport.ru/products/productID150214/', None, 'white'),
+    'sword': ('https://catalog-cdn.detmir.st/media/aSHFyfnXvOfEWxwwYIfZ4dFZDvGPEKixd3pgsPEzukg=.webp',
+        'https://www.detmir.ru/product/index/id/7075598/', None, 'white'),
+    'monkey': ('https://catalog-cdn.detmir.st/media/NQcTzLim6GHXBaXQ5QuTo3o9bYqG0VqCfKUFFGhBgCU=.webp',
+        'https://www.detmir.ru/product/index/id/7123375/', None, 'white'),
+    'socks': ('https://catalog-cdn.detmir.st/media/kPbtWUVfer_DVduptTKIAhkP2PkMyv4_ZOZQX4FYnTE=.webp',
+        'https://www.detmir.ru/product/index/id/6654111/', None, 'light'),
+    'kinder': ('https://catalog-cdn.detmir.st/media/mToM-Fs3RRB5cLDdR1Y8qP9ly_jTSjjQVqJPsLdweHY=.webp',
+        'https://www.detmir.ru/product/index/id/7036139/', None, 'white'),
+    'mittens': ('https://catalog-cdn.detmir.st/media/C7JYf1kt4_Vnx0yB9cnAaRAJdAjsrJNeLwFp2Dzc2GY=.webp',
+        'https://www.detmir.ru/product/index/id/6673857/', None, 'light'),
+    'bowtie': ('https://catalog-cdn.detmir.st/media/ECVB1UYB-SnIene_xjxPTCfjCBsLXLbkjqxDWich94w=.webp',
+        'https://www.detmir.ru/product/index/id/6676281/', None, 'white'),
+    'brooch': ('https://catalog-cdn.detmir.st/media/Eu84DnSdzyxbUv3aXO-zccyW35UW6buHDN2JOvamsd0=.webp',
+        'https://www.detmir.ru/product/index/id/7161664/', None, 'light'),
+    'boots': ('https://catalog-cdn.detmir.st/media/FQD3xnCjo7_zQ3JqG-MvMd_0z-zZpibg1ComVQyq-ZI=.webp',
+        'https://www.detmir.ru/product/index/id/6750953/', None, 'light'),
+    'seeds': ('https://img.vkusvill.ru/pim/images/site_for_feed/e0a503e8-d102-457c-94a8-afcfb8da1bab.jpg',
+        'https://vkusvill.ru/goods/semechki-zharenye-16531.html', None, 'light'),
 }
 BOX = {k: (250, 250) for k in SRC}       # fits a 300 px card
 GLASS = {}
@@ -165,7 +183,7 @@ def sprite(kind):
 
 
 if __name__ == '__main__':
-    sheet = Image.new('RGBA', (5 * 300, 3 * 300), config.BACKGROUND + (255,))
+    sheet = Image.new('RGBA', (5 * 300, 5 * 300), config.BACKGROUND + (255,))
     for k, kind in enumerate(SRC):
         im = sprite(kind)
         sheet.alpha_composite(im, ((k % 5) * 300 + (300 - im.width) // 2, (k // 5) * 300 + (300 - im.height) // 2))

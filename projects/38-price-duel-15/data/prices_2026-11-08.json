@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 38-price-duel-15 «Образ на зиму». Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 13:55–14:10 UTC. Курс 86 ₽ за TON (tonapi.io 86,39 ₽ в 13:56 UTC). Вещи: страницы товаров 2026-11-08 13:56–14:15 UTC, цена на странице. Подарки, бывшие в выпусках 09–18, 30–34, не брались.",
+ "ton_rub": 86.0,
+ "gifts": [
+  {"gift": "Snow Mittens", "model": "Brown Suede", "rarity": "1.3%", "ton": 10, "rub": 860, "lot": "https://fragment.com/gift/snowmittens-20208"},
+  {"gift": "Bow Tie", "model": "The Serpent", "rarity": "1.5%", "ton": 7, "rub": 602, "lot": "https://fragment.com/gift/bowtie-15505"},
+  {"gift": "Clover Pin", "model": "Hot Brand", "rarity": "2%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/cloverpin-185914"},
+  {"gift": "Sky Stilettos", "model": "Cowgirl", "rarity": "1.5%", "ton": 22, "rub": 1892, "lot": "https://fragment.com/gift/skystilettos-29064"},
+  {"gift": "Lucky Locket", "model": "Snapshot", "rarity": "3%", "ton": 17, "rub": 1462, "lot": "https://fragment.com/gift/luckylocket-4067"}
+ ],
+ "things": [
+  {"name": "Варежки Futurino, розовые", "rub": 499, "src": "https://www.detmir.ru/product/index/id/6673857/"},
+  {"name": "Галстук-бабочка 2beMan, синий", "rub": 850, "src": "https://www.detmir.ru/product/index/id/6676281/"},
+  {"name": "Брошь Acoola (булавка с цепочками)", "rub": 199, "src": "https://www.detmir.ru/product/index/id/7161664/"},
+  {"name": "Резиновые сапоги Wappo, коричневые («ковбойские» со шпорой)", "rub": 999, "src": "https://www.detmir.ru/product/index/id/6750953/"},
+  {"name": "Золотая подвеска-сердце, арт. 1215237", "rub": 16794, "src": "https://www.585zolotoy.ru/catalog/products/1215237/"}
+ ],
+ "rejected": [
+  "Top Hat / «Колпак Paterra Шляпа цилиндр» 185 ₽ — по фото это праздничные колпаки, не цилиндр.",
+  "Туфли Futurino 599 ₽ — на фото наклейка «суперцена»; к сапогам Cowgirl лучше подходят «ковбойские» резиновые сапоги.",
+  "Spiced Wine, Vintage Cigar — алкоголь и табак не берём (ограничения платформ)."
+ ]
+}

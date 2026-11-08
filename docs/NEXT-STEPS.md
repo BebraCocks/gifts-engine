@@ -350,3 +350,10 @@ https://drive.google.com/file/d/1HcoEKSjgf5v3RKDNSM5HAxGrKza83t8_/view . Пра�
 Весы, Стрелец, Козерог, Рыбы; RubUp после Стрельца (25,5 с), 59,65 с, голос `48ec28a4…` drama-3 (1,07×); финал «все 12 знаков».
 Озвучка отправлена автору сразу. **`renders/37-zodiac-wine-3/zodiac_wine_3_v1.mp4`** (59,65 с, −13,1 LUFS), Google Drive:
 https://drive.google.com/file/d/1bIjVKREpXNthY7kQW7zup2LaT2GAeHNN/view . Открыто: пересборка части 1 (`zodiac_wine_v2`, двойная кружка в финале) — по слову автора.
+## 2026-11-08 · 38-price-duel-15 «Образ на зиму: телега против жизни» + техника выдачи
+
+Snow Mittens / варежки (телега +70%), Bow Tie / бабочка (вещь ×1,4), Clover Pin / брошь (телега ×2,6), Sky Stilettos /
+резиновые сапоги со шпорой (телега ×1,9), Lucky Locket / золотой кулон-сердце 16 794 ₽ (вещь ×11,5); 3:2.
+Движок: кодирование для соцсетей (BT.709 с тегами, High@4.2, CRF 16, GOP 2 с) — `engine/frames.py`; «TON» с экрана убран.
+**`renders/38-price-duel-15/price_duel_15_v1.mp4`** (59,78 с), Google Drive:
+https://drive.google.com/file/d/1w9-4UTtReWs3jBlVtIxfmQLqx-S5qlig/view . Правки — `--name price_duel_15_v2`.

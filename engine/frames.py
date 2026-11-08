@@ -23,6 +23,12 @@ def nvenc_ok():
     return r.returncode == 0
 
 
+# Delivery for TikTok / Shorts / Reels (2026-11-08): RGB -> BT.709 limited range with matching colour tags (without them
+# players guess BT.601 and colours shift), a keyframe every 2 s at 60 fps.
+DELIVERY = ["-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p", "-colorspace", "bt709",
+            "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv", "-g", "120", "-keyint_min", "60"]
+
+
 def encoder_args(crf, tune=None):
     """Select output quality through VIZ_CQ."""
     cq = int(os.environ.get("VIZ_CQ", "26"))
@@ -32,11 +38,13 @@ def encoder_args(crf, tune=None):
                 "-b:v", "0", "-maxrate", "30M", "-bufsize", "60M", "-spatial-aq", "1", "-temporal-aq", "1", "-bf", "3",
                 "-pix_fmt", "yuv420p"]
         args += ["-tag:v", "hvc1"] if hevc else ["-profile:v", "high", "-b_ref_mode", "middle"]
-        return args, f"{'hevc' if hevc else 'h264'}_nvenc cq {cq} (GPU)"
-    args = ["-c:v", "libx265" if hevc else "libx264", "-preset", "slow", "-crf", str(cq - 5), "-pix_fmt", "yuv420p"]
+        return args + DELIVERY, f"{'hevc' if hevc else 'h264'}_nvenc cq {cq} (GPU)"
+    args = ["-c:v", "libx265" if hevc else "libx264", "-preset", "slow", "-crf", str(cq - 10), "-pix_fmt", "yuv420p"]
+    if not hevc:                                   # social upload profile (2026-11-08): High@4.2, capped CRF
+        args += ["-profile:v", "high", "-level", "4.2", "-maxrate", "16M", "-bufsize", "32M"]
     if tune:
         args += ["-tune", tune]
-    return args, f"{'libx265' if hevc else 'libx264'} crf {cq - 5} (CPU)"
+    return args + DELIVERY, f"{'libx265' if hevc else 'libx264'} crf {cq - 10} (CPU)"
 
 
 def low_priority():

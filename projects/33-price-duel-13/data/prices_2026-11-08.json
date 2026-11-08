@@ -1,0 +1,22 @@
+{
+ "_note": "Цены для 33-price-duel-13 «Подарки на свидание». Подарки: Fragment, коллекция, фильтр «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 04:40–04:45 UTC. Курс 86 ₽ за TON (tonapi.io 86,06 ₽ в 04:40 UTC). Вещи: страницы товаров 2026-11-08 04:40–04:50 UTC, цена на странице. Подарки, бывшие в выпусках 09–18, 30–32, не брались.",
+ "ton_rub": 86.0,
+ "gifts": [
+  {"gift": "Eternal Rose", "model": "Pop Petal", "rarity": "1.9%", "ton": 35, "rub": 3010, "lot": "https://fragment.com/gift/eternalrose-26246"},
+  {"gift": "Love Candle", "model": "Silver Temple", "rarity": "3%", "ton": 13, "rub": 1118, "lot": "https://fragment.com/gift/lovecandle-16482"},
+  {"gift": "Cookie Heart", "model": "The Star", "rarity": "1%", "ton": 6, "rub": 516, "lot": "https://fragment.com/gift/cookieheart-12509"},
+  {"gift": "Moon Pendant", "model": "Copper Alloy", "rarity": "3%", "ton": 7, "rub": 602, "lot": "https://fragment.com/gift/moonpendant-43770"},
+  {"gift": "Diamond Ring", "model": "Dragon Eyes", "rarity": "1.5%", "ton": 37, "rub": 3182, "lot": "https://fragment.com/gift/diamondring-27167"}
+ ],
+ "things": [
+  {"name": "Розы кустовые в горшочке", "rub": 450, "src": "https://vkusvill.ru/goods/rozy-kustovye-v-gorshochke-67859/"},
+  {"name": "Ароматическая свеча «Ванильный лес»", "rub": 1452, "src": "https://vkusvill.ru/goods/aromaticheskaya-svecha-vanilnyy-les-114128/"},
+  {"name": "Печенье сахарное в молочном шоколаде, 210 г", "rub": 220, "src": "https://vkusvill.ru/goods/pechene-sakharnoe-v-molochnom-shokolade-49775/"},
+  {"name": "Серебряная подвеска-полумесяц с фианитами, арт. 1221798", "rub": 766, "src": "https://www.585zolotoy.ru/catalog/products/1221798/"},
+  {"name": "Золотое кольцо с бриллиантом, арт. 1107829", "rub": 27894, "src": "https://www.585zolotoy.ru/catalog/products/1107829/"}
+ ],
+ "rejected": [
+  "Золотая подвеска-полумесяц 6 294 ₽ — разница ×10 больше, чем у финального кольца; взята серебряная.",
+  "Живые букеты (florist.ru, flowwow, cvety.ru) из контейнера не открываются; взяты розы в горшке."
+ ]
+}

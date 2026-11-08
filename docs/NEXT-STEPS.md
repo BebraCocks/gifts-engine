@@ -311,3 +311,11 @@ Party Sparkler / свеча-фонтан (×2,7), Record Player / Audio-Technica
 перед RubUp; финал «цифру или вещь? Пиши в комментах». Доп. звуки пака: cartoon-clock, -eat, -spin, -comic-expressions, -horn.
 **Текущая — `renders/32-price-duel-12/price_duel_12_v2.mp4`** (59,88 с, −13,3 LUFS), Google Drive:
 https://drive.google.com/file/d/1OdI1pMLI6KMLJE59W9UdZi0eA7NwCAJV/view . Правки — `--name price_duel_12_v3`.
+
+## 2026-11-08 · 33-price-duel-13 «Подарки на свидание: телега против жизни» («Что дороже?»)
+
+Eternal Rose / розы в горшке (телега ×6,7), Love Candle / аромасвеча (вещь на треть), Cookie Heart / печенье (телега ×2,3),
+Moon Pendant / серебряная подвеска (вещь на четверть), Diamond Ring / золотое кольцо с бриллиантом 27 894 ₽ (вещь ×8,8); 2:3.
+Хук в первые 3 с: «Одно кольцо дороже другого почти в девять раз!» + два кольца со скрытыми ценами. Простые реплики.
+**`renders/33-price-duel-13/price_duel_13_v1.mp4`** (59,05 с, −13,3 LUFS), Google Drive:
+https://drive.google.com/file/d/19-tBwekl6ukL7r4zfDwz8WTAa9Xi_5Ms/view . Правки — `--name price_duel_13_v2`.

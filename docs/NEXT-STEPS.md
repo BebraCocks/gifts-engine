@@ -348,4 +348,5 @@ https://drive.google.com/file/d/1HcoEKSjgf5v3RKDNSM5HAxGrKza83t8_/view . Пра�
 ## 2026-11-08 · 37-zodiac-wine-3 «Гороскоп из телеги», часть 3 (финал серии) — сборка
 
 Весы, Стрелец, Козерог, Рыбы; RubUp после Стрельца (25,5 с), 59,65 с, голос `48ec28a4…` drama-3 (1,07×); финал «все 12 знаков».
-Озвучка отправлена автору сразу. Сборка `zodiac_wine_3_v1`.
+Озвучка отправлена автору сразу. **`renders/37-zodiac-wine-3/zodiac_wine_3_v1.mp4`** (59,65 с, −13,1 LUFS), Google Drive:
+https://drive.google.com/file/d/1bIjVKREpXNthY7kQW7zup2LaT2GAeHNN/view . Открыто: пересборка части 1 (`zodiac_wine_v2`, двойная кружка в финале) — по слову автора.

@@ -51,5 +51,7 @@ Cancer Collins (84, 186, 228). Созвездия Овна, Тельца, Бли
 ### Статус
 
 - 2026-11-08: озвучка записана и сразу отправлена автору (`build/review/voice_only.mp3`); графика, звук, хайлайты готовы.
-  Ждём «собирай», затем `python -B engine/tools/build.py projects/36-zodiac-wine-2 --approved --name zodiac_wine_2_v1`.
+- 2026-11-08: **`renders/36-zodiac-wine-2/zodiac_wine_2_v1.mp4`** — 59,62 с, 1080×1920, 60 к/с, H.264 yuv420p + AAC,
+  −13,7 LUFS, декодирован полностью, кадры финала просмотрены (RubUp по центру после Тельца, тизер на стоп-кадре).
+  Google Drive «TikTok»: https://drive.google.com/file/d/1HcoEKSjgf5v3RKDNSM5HAxGrKza83t8_/view . Правки — `--name zodiac_wine_2_v2`.
 - Не проверено: голос и микс на слух, движение в реальном темпе.

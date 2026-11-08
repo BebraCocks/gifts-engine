@@ -341,5 +341,6 @@ https://drive.google.com/file/d/1LyNlSaKZPPiw3gcf7WPXExTF7GJgK7jb/view . Дал�
 
 Овен, Телец, Близнецы, Рак (по стихии), формат части 1; RubUp после Тельца (27,7 с), 59,61 с, голос `48ec28a4…` drama-3 (1,03×).
 Озвучка и хайлайты отправлены автору. Исправлена двойная кружка в финале (и в коде 35; финал 35 v1 собран с этой ошибкой).
-Ждём «собирай»: `python -B engine/tools/build.py projects/36-zodiac-wine-2 --approved --name zodiac_wine_2_v1`.
+**`renders/36-zodiac-wine-2/zodiac_wine_2_v1.mp4`** (59,62 с, −13,7 LUFS), Google Drive:
+https://drive.google.com/file/d/1HcoEKSjgf5v3RKDNSM5HAxGrKza83t8_/view . Правки — `--name zodiac_wine_2_v2`.
 Часть 3: Весы, Стрелец, Козерог, Рыбы.

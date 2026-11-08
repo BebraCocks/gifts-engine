@@ -244,7 +244,7 @@ def draw_cells(c, t):
                 if rr == 0:
                     kin = 0.86 + 0.14 * spr(-0.06 + 0.035 * j, t, 2.2, 0.5)
                 else:
-                    kin = spr(ROUND_IN[rr] - SWAP + 0.16 + 0.04 * j, t, 2.3, 0.52)
+                    kin = spr(ROUND_IN[rr] - SWAP + 0.16 + 0.04 * j, t, 2.3, 0.72)   # small overshoot: cells must not overlap
                 if kin <= 0.01:
                     continue
                 # out

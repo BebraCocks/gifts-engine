@@ -1,45 +1,92 @@
 {
- "_note": "Fish Audio drama-3 task ids, голос 48ec28a4… (голос серии «Что дороже?»), свой текст. Audio: https://platform.r2.fish.audio/tasks/2026-11-08/<id>.mp3. Первый id = выбранный дубль.",
+ "_note": "Fish Audio drama-3 task ids, голос 48ec28a4… (голос серии). v2 (автор 2026-11-08): баллы вместо цен, озвучиваются только лучшие ячейки, золотая коробка в 5-м раунде. Audio: https://platform.r2.fish.audio/tasks/2026-11-08/<id>.mp3. Первый id = выбранный дубль.",
  "L01": [
-  "11bbcdd1706d4da5a86b03cc3ff6578a"
+  "75f90261d31f46bc940527600bcfefd6"
  ],
  "L02": [
-  "a79d9758fa774e5785594c5f703b8a78"
+  "98c379c6d2924f009f5329153c3718e7"
  ],
  "L03": [
   "9b24f71d23fa4ae0bf49477be03ecf3d"
  ],
  "L04": [
-  "1b2bb22806f848cd9bec1f046357a0c5"
+  "cccd386614184201ab0ce7a2bf015fcf"
  ],
  "L05": [
   "ff61595807874c8db27d813acb891e20"
  ],
  "L06": [
-  "cd13f2bc91094b6b8835f765fa22803f"
+  "19a8b4b2f8fe4a6c885718d9120b961d"
  ],
  "L07": [
   "ec25bb4fd7f54ae085f9e468cbf96375"
  ],
  "L08": [
-  "687cbb7331ee4f5bb3f66f9151b74566"
+  "a2c16ef5710e44569db01104bde8a2a4"
  ],
  "L09": [
   "3f1f35c8c23542ae9ae6c6288c271a2a"
  ],
  "L10": [
-  "bcf66e7983384902b83202747eb71b08"
+  "5a8dc896f00f4a9d85df201fdd943907"
  ],
  "L11": [
-  "5fbe1eb07abd47b0a91d93b07571f262"
+  "a97c8876223a47afa7c7ad1fe6b4dabc"
  ],
  "L12": [
-  "c287f6d5ddcb40dc8b9f4bcc1fb2d88f"
+  "7f9f235e64e54b429d9639341e3566db"
  ],
  "L13": [
-  "cacf6e23860f4e8fa24185cf1853067f"
+  "a3b8566a87654f8db36d9e93b72dee89"
  ],
  "L14": [
+  "cacf6e23860f4e8fa24185cf1853067f"
+ ],
+ "L15": [
   "898f5898dfe141559f8b36eb4460b496"
- ]
+ ],
+ "_v1": {
+  "L01": [
+   "11bbcdd1706d4da5a86b03cc3ff6578a"
+  ],
+  "L02": [
+   "a79d9758fa774e5785594c5f703b8a78"
+  ],
+  "L03": [
+   "9b24f71d23fa4ae0bf49477be03ecf3d"
+  ],
+  "L04": [
+   "1b2bb22806f848cd9bec1f046357a0c5"
+  ],
+  "L05": [
+   "ff61595807874c8db27d813acb891e20"
+  ],
+  "L06": [
+   "cd13f2bc91094b6b8835f765fa22803f"
+  ],
+  "L07": [
+   "ec25bb4fd7f54ae085f9e468cbf96375"
+  ],
+  "L08": [
+   "687cbb7331ee4f5bb3f66f9151b74566"
+  ],
+  "L09": [
+   "3f1f35c8c23542ae9ae6c6288c271a2a"
+  ],
+  "L10": [
+   "bcf66e7983384902b83202747eb71b08"
+  ],
+  "L11": [
+   "5fbe1eb07abd47b0a91d93b07571f262"
+  ],
+  "L12": [
+   "c287f6d5ddcb40dc8b9f4bcc1fb2d88f"
+  ],
+  "L13": [
+   "cacf6e23860f4e8fa24185cf1853067f"
+  ],
+  "L14": [
+   "898f5898dfe141559f8b36eb4460b496"
+  ]
+ }
 }

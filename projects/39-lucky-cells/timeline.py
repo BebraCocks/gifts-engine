@@ -1,4 +1,4 @@
-"""Content timeline from the selected takes voice/L01..L14.wav. A round question q* starts the 5 s timer; the cells flip
+"""Content timeline from the selected takes voice/L01..L15.wav. A round question q* starts the 5 s timer; the cells flip
 at REVEAL = timer end; the answer a* follows. Text estimate as fallback (no narration)."""
 from pathlib import Path
 import wave
@@ -23,7 +23,7 @@ LAND = 0.22          # new cells land before the question
 ANS = 0.38           # the cells flip, then the answer starts
 HOLD = 0.32          # the answer settles before the swap
 AD_HOLD = 0.35       # the answer settles before RubUp
-TABLE_READ = 1.1     # pause to read the levels table before the last line
+TABLE_READ = 0.9     # pause to read the levels table before the last line
 ON, END = [0.0] * len(LINES), [0.0] * len(LINES)
 ROUND_IN, TIMER0, REVEAL = [], [], []
 ON[0] = START
@@ -36,17 +36,20 @@ for r in range(5):
     ROUND_IN.append(cur)
     ON[q] = cur + LAND
     END[q] = ON[q] + _len(q)
-    TIMER0.append(ON[q])
-    REVEAL.append(ON[q] + TIMER)
+    TIMER0.append(max(ON[q], END[q] + 0.3 - TIMER))   # a long question (final: the gold box) runs under the timer
+    REVEAL.append(TIMER0[-1] + TIMER)
     ON[a] = REVEAL[-1] + ANS
     END[a] = ON[a] + _len(a)
     cur = END[a] + (AD_HOLD if a == 7 else HOLD) + (0.0 if r == 4 else SWAP)
     if a == 7:
         cur += 0.1
-OUTRO = END[11] + HOLD + 0.1               # cards go, the levels table comes in
-ON[12] = OUTRO + 0.45
+GOLD_OPEN = END[11] + 0.25                  # final: after the best cells are named, the gold box opens
+ON[12] = GOLD_OPEN + 0.45
 END[12] = ON[12] + _len(12)
-ON[13] = END[12] + TABLE_READ
+OUTRO = END[12] + HOLD + 0.1                # cards go, the levels table comes in
+ON[13] = OUTRO + 0.45
 END[13] = ON[13] + _len(13)
-DUR = END[13] + 0.8
+ON[14] = END[13] + TABLE_READ
+END[14] = ON[14] + _len(14)
+DUR = END[14] + 0.7
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

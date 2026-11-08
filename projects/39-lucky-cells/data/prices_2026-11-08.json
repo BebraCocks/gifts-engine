@@ -2,38 +2,189 @@
  "_note": "Цены для 39-lucky-cells «Проверь свою чуйку». Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот, модель этого лота (анимация есть в api.changes.tg), проверено 2026-11-08 ~15:10–15:20 UTC. Курс 86 ₽ за TON (tonapi.io 86,29 ₽ в 15:15 UTC). Вещи: страницы товаров 2026-11-08 ~15:15–15:20 UTC, цена на странице. Баллы: в каждом ряду из трёх самая дешёвая ячейка = 100, средняя = 300, самая дорогая = 500.",
  "ton_rub": 86.0,
  "gifts": [
-  {"gift": "Lol Pop", "model": "Spectrum", "rarity": "1.2%", "ton": 5, "lot": "https://fragment.com/gift/lolpop-394273"},
-  {"gift": "Record Player", "model": "Sonic Fuchsia", "rarity": "1%", "ton": 15, "lot": "https://fragment.com/gift/recordplayer-12734"},
-  {"gift": "Loot Bag", "model": "Cargo Citron", "rarity": "2%", "ton": 150, "lot": "https://fragment.com/gift/lootbag-12736"},
-  {"gift": "Ice Cream", "model": "Funky Disco", "rarity": "2.5%", "ton": 5, "lot": "https://fragment.com/gift/icecream-260179"},
-  {"gift": "Toy Bear", "model": "Macchiato", "rarity": "1.5%", "ton": 35, "lot": "https://fragment.com/gift/toybear-44311"},
-  {"gift": "Durov's Cap", "model": "Ivory", "rarity": "2%", "ton": 499, "lot": "https://fragment.com/gift/durovscap-1634"},
-  {"gift": "Snow Globe", "model": "Lost Color", "rarity": "3%", "ton": 8, "lot": "https://fragment.com/gift/snowglobe-24495"},
-  {"gift": "Kissed Frog", "model": "Frogtart", "rarity": "3%", "ton": 55, "lot": "https://fragment.com/gift/kissedfrog-12836"},
-  {"gift": "Heart Locket", "model": "Karaoke Bar", "rarity": "2%", "ton": 1700, "lot": "https://fragment.com/gift/heartlocket-1437"},
-  {"gift": "Instant Ramen", "model": "Samurai", "rarity": "2.5%", "ton": 5, "lot": "https://fragment.com/gift/instantramen-199957", "note": "нижний лот 122885 — модель Ratatouille (тарелка рататуя, не похожа на рамен); взят соседний лот по той же цене 5 TON"},
-  {"gift": "Ion Gem", "model": "Bronzite", "rarity": "2%", "ton": 85, "lot": "https://fragment.com/gift/iongem-2889"},
-  {"gift": "Scared Cat", "model": "El Tigre", "rarity": "1.5%", "ton": 299, "lot": "https://fragment.com/gift/scaredcat-13897"},
-  {"gift": "B-Day Candle", "model": "Be Awesome!", "rarity": "1.5%", "ton": 5, "lot": "https://fragment.com/gift/bdaycandle-57568"},
-  {"gift": "Mini Oscar", "model": "Static", "rarity": "1.5%", "ton": 115, "lot": "https://fragment.com/gift/minioscar-474"},
-  {"gift": "Plush Pepe", "model": "Kung Fu Pepe", "rarity": "2%", "ton": 8000, "lot": "https://fragment.com/gift/plushpepe-203"}
+  {
+   "gift": "Lol Pop",
+   "model": "Spectrum",
+   "rarity": "1.2%",
+   "ton": 5,
+   "lot": "https://fragment.com/gift/lolpop-394273"
+  },
+  {
+   "gift": "Record Player",
+   "model": "Sonic Fuchsia",
+   "rarity": "1%",
+   "ton": 15,
+   "lot": "https://fragment.com/gift/recordplayer-12734"
+  },
+  {
+   "gift": "Loot Bag",
+   "model": "Cargo Citron",
+   "rarity": "2%",
+   "ton": 150,
+   "lot": "https://fragment.com/gift/lootbag-12736"
+  },
+  {
+   "gift": "Ice Cream",
+   "model": "Funky Disco",
+   "rarity": "2.5%",
+   "ton": 5,
+   "lot": "https://fragment.com/gift/icecream-260179"
+  },
+  {
+   "gift": "Toy Bear",
+   "model": "Macchiato",
+   "rarity": "1.5%",
+   "ton": 35,
+   "lot": "https://fragment.com/gift/toybear-44311"
+  },
+  {
+   "gift": "Durov's Cap",
+   "model": "Ivory",
+   "rarity": "2%",
+   "ton": 499,
+   "lot": "https://fragment.com/gift/durovscap-1634"
+  },
+  {
+   "gift": "Snow Globe",
+   "model": "Lost Color",
+   "rarity": "3%",
+   "ton": 8,
+   "lot": "https://fragment.com/gift/snowglobe-24495"
+  },
+  {
+   "gift": "Kissed Frog",
+   "model": "Frogtart",
+   "rarity": "3%",
+   "ton": 55,
+   "lot": "https://fragment.com/gift/kissedfrog-12836"
+  },
+  {
+   "gift": "Heart Locket",
+   "model": "Karaoke Bar",
+   "rarity": "2%",
+   "ton": 1700,
+   "lot": "https://fragment.com/gift/heartlocket-1437"
+  },
+  {
+   "gift": "Instant Ramen",
+   "model": "Samurai",
+   "rarity": "2.5%",
+   "ton": 5,
+   "lot": "https://fragment.com/gift/instantramen-199957",
+   "note": "нижний лот 122885 — модель Ratatouille (тарелка рататуя, не похожа на рамен); взят соседний лот по той же цене 5 TON"
+  },
+  {
+   "gift": "Ion Gem",
+   "model": "Bronzite",
+   "rarity": "2%",
+   "ton": 85,
+   "lot": "https://fragment.com/gift/iongem-2889"
+  },
+  {
+   "gift": "Scared Cat",
+   "model": "El Tigre",
+   "rarity": "1.5%",
+   "ton": 299,
+   "lot": "https://fragment.com/gift/scaredcat-13897"
+  },
+  {
+   "gift": "B-Day Candle",
+   "model": "Be Awesome!",
+   "rarity": "1.5%",
+   "ton": 5,
+   "lot": "https://fragment.com/gift/bdaycandle-57568"
+  },
+  {
+   "gift": "Mini Oscar",
+   "model": "Static",
+   "rarity": "1.5%",
+   "ton": 115,
+   "lot": "https://fragment.com/gift/minioscar-474"
+  },
+  {
+   "gift": "Plush Pepe",
+   "model": "Kung Fu Pepe",
+   "rarity": "2%",
+   "ton": 8000,
+   "lot": "https://fragment.com/gift/plushpepe-203"
+  }
  ],
  "things": [
-  {"name": "Сухарики ржаные с чесноком и солью, 80 г", "rub": 98, "src": "https://vkusvill.ru/goods/sukhariki-rzhanye-s-chesnokom-i-solyu-43322.html"},
-  {"name": "«Гарри Поттер и философский камень», книга", "rub": 1249, "src": "https://www.chitai-gorod.ru/product/garri-potter-i-filosofskiy-kamen-2405917"},
-  {"name": "Apple AirPods Pro 3", "rub": 23990, "src": "https://www.iport.ru/products/productID149174/"},
-  {"name": "Пломбир в рожке «Клубника», 100 г", "rub": 145, "src": "https://vkusvill.ru/goods/plombir-v-rozhke-klubnika-27166/"},
-  {"name": "Мягкая игрушка Медведь 33 см", "rub": 1690, "src": "https://www.chitai-gorod.ru/product/magkaa-igruska-medved-33sm-12-191025-i13-3132979"},
-  {"name": "Apple Watch SE 3 44 мм", "rub": 31690, "src": "https://www.iport.ru/products/productID149302/"},
-  {"name": "Чипсы Lay's со вкусом краба, 140 г", "rub": 199, "src": "https://vkusvill.ru/goods/chipsy-kartofelnye-lay-s-so-vkusom-kraba-140-g-114240.html"},
-  {"name": "LEGO Batman 76303, 429 деталей", "rub": 10490, "src": "https://www.chitai-gorod.ru/product/76303-konstruktor-detskij-lego-dc-tumbler-betmena-protiv-dvulikogo-i-dzokera-429-detalej-vozrast-8-3126514"},
-  {"name": "Apple iPhone 18 Pro 256 ГБ", "rub": 164990, "src": "https://www.iport.ru/products/productID156657/"},
-  {"name": "Лапша Ottogi «Сырный рамен», 62 г", "rub": 206, "src": "https://vkusvill.ru/goods/lapsha-ottogi-syrnyy-ramen-62-g-93229.html"},
-  {"name": "Ручка Parker Jotter Stainless Steel GT", "rub": 3990, "src": "https://www.chitai-gorod.ru/product/ruchka-sharikovaya-parker-jotter-stainless-steel-gt-podarochnaya-sinyaya-242818"},
-  {"name": "Стайлер Dyson Airwrap Complete Long HS08", "rub": 42990, "src": "https://www.iport.ru/products/productID143566/"},
-  {"name": "Печенье «Имбирное», 190 г", "rub": 144, "src": "https://vkusvill.ru/goods/pechene-zatyazhnoe-imbirnoe-63631/"},
-  {"name": "Apple AirPods Max (USB-C)", "rub": 59990, "src": "https://www.iport.ru/products/productID126901/"},
-  {"name": "Apple MacBook Pro 14″ M5, 16/1024 ГБ", "rub": 236990, "src": "https://www.iport.ru/products/productID150214/"}
+  {
+   "name": "Сухарики ржаные с чесноком и солью, 80 г",
+   "rub": 98,
+   "src": "https://vkusvill.ru/goods/sukhariki-rzhanye-s-chesnokom-i-solyu-43322.html"
+  },
+  {
+   "name": "«Гарри Поттер и философский камень», книга",
+   "rub": 1249,
+   "src": "https://www.chitai-gorod.ru/product/garri-potter-i-filosofskiy-kamen-2405917"
+  },
+  {
+   "name": "Apple AirPods Pro 3",
+   "rub": 23990,
+   "src": "https://www.iport.ru/products/productID149174/"
+  },
+  {
+   "name": "Пломбир в рожке «Клубника», 100 г",
+   "rub": 145,
+   "src": "https://vkusvill.ru/goods/plombir-v-rozhke-klubnika-27166/"
+  },
+  {
+   "name": "Мягкая игрушка Медведь 33 см",
+   "rub": 1690,
+   "src": "https://www.chitai-gorod.ru/product/magkaa-igruska-medved-33sm-12-191025-i13-3132979"
+  },
+  {
+   "name": "Apple Watch SE 3 44 мм",
+   "rub": 31690,
+   "src": "https://www.iport.ru/products/productID149302/"
+  },
+  {
+   "name": "Чипсы Lay's со вкусом краба, 140 г",
+   "rub": 199,
+   "src": "https://vkusvill.ru/goods/chipsy-kartofelnye-lay-s-so-vkusom-kraba-140-g-114240.html"
+  },
+  {
+   "name": "LEGO Batman 76303, 429 деталей",
+   "rub": 10490,
+   "src": "https://www.chitai-gorod.ru/product/76303-konstruktor-detskij-lego-dc-tumbler-betmena-protiv-dvulikogo-i-dzokera-429-detalej-vozrast-8-3126514"
+  },
+  {
+   "name": "Apple iPhone 18 Pro 256 ГБ",
+   "rub": 164990,
+   "src": "https://www.iport.ru/products/productID156657/"
+  },
+  {
+   "name": "Лапша Ottogi «Сырный рамен», 62 г",
+   "rub": 206,
+   "src": "https://vkusvill.ru/goods/lapsha-ottogi-syrnyy-ramen-62-g-93229.html"
+  },
+  {
+   "name": "Ручка Parker Jotter Stainless Steel GT",
+   "rub": 3990,
+   "src": "https://www.chitai-gorod.ru/product/ruchka-sharikovaya-parker-jotter-stainless-steel-gt-podarochnaya-sinyaya-242818"
+  },
+  {
+   "name": "Стайлер Dyson Airwrap Complete Long HS08",
+   "rub": 42990,
+   "src": "https://www.iport.ru/products/productID143566/"
+  },
+  {
+   "name": "Печенье «Имбирное», 190 г",
+   "rub": 144,
+   "src": "https://vkusvill.ru/goods/pechene-zatyazhnoe-imbirnoe-63631/"
+  },
+  {
+   "name": "Apple AirPods Max (USB-C)",
+   "rub": 59990,
+   "src": "https://www.iport.ru/products/productID126901/"
+  },
+  {
+   "name": "Apple MacBook Pro 14″ M5, 16/1024 ГБ",
+   "rub": 236990,
+   "src": "https://www.iport.ru/products/productID150214/"
+  }
  ],
  "odds": "Наугад (каждая ячейка с вероятностью 1/3), 10 выборов: 4400+ — 0,47% (≈ 1 из 213), 5000 — 1 из 59 049. Уровни: 1000–2400 16,8%; 2600–3000 40,8%; 3200–3600 33,6%; 3800–4200 8,3%; 4400–5000 0,5%.",
  "rejected": [
@@ -41,5 +192,7 @@
   "Resistance Dog · Che Guevara (560 TON): модель с политической фигурой, не берём.",
   "Lada Granta (АвтоГЕРМЕС): страница дилера показывает только скидки, вторая загрузка заблокирована — цена не проверена.",
   "Spiced Wine, Vintage Cigar, Snoop Cigar — алкоголь и табак не берём."
- ]
+ ],
+ "points_v2": "Автор 2026-11-08: цены не показывать, только баллы 100…5000 с шагом 100, Plush Pepe = 5000. Баллы = 5000 × √(₽ / 688 000), до сотни, минимум 100. Максимум за игру 18 700 (лучшие ячейки, золотую не открывать).",
+ "odds_v2": "Наугад (каждая ячейка 1/3, золотую открывают с вероятностью 1/2, внутри бомба −1000): 15 000+ — 0,94% (≈ 1 из 100); 0–4900 19,5%; 5000–7900 36,3%; 8000–10900 27,7%; 11000–14900 15,6%; 15000–18700 0,9%."
 }

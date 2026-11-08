@@ -18,17 +18,17 @@ def _len(k):
 
 
 START = 0.08
-SWAP = 0.42          # open cards fly out, new closed cells drop in
+SWAP = 0.38          # open cards fly out, new closed cells drop in
 LAND = 0.22          # new cells land before the question
-ANS = 0.38           # the cells flip, then the answer starts
-HOLD = 0.32          # the answer settles before the swap
+ANS = 0.30           # the cells flip, then the answer starts
+HOLD = 0.26          # the answer settles before the swap
 AD_HOLD = 0.35       # the answer settles before RubUp
-TABLE_READ = 0.9     # pause to read the levels table before the last line
+TABLE_READ = 0.7     # pause to read the levels table before the last line
 ON, END = [0.0] * len(LINES), [0.0] * len(LINES)
 ROUND_IN, TIMER0, REVEAL = [], [], []
 ON[0] = START
 END[0] = START + _len(0)
-ON[1] = END[0] + 0.22
+ON[1] = END[0] + 0.14
 END[1] = ON[1] + _len(1)
 cur = END[1] + 0.12
 for r in range(5):
@@ -44,12 +44,12 @@ for r in range(5):
     if a == 7:
         cur += 0.1
 GOLD_OPEN = END[11] + 0.25                  # final: after the best cells are named, the gold box opens
-ON[12] = GOLD_OPEN + 0.45
+ON[12] = GOLD_OPEN + 0.4
 END[12] = ON[12] + _len(12)
 OUTRO = END[12] + HOLD + 0.1                # cards go, the levels table comes in
 ON[13] = OUTRO + 0.45
 END[13] = ON[13] + _len(13)
 ON[14] = END[13] + TABLE_READ
 END[14] = ON[14] + _len(14)
-DUR = END[14] + 0.7
+DUR = END[14] + 0.55
 KEY = {LINES[k][1]: k for k in range(len(LINES))}

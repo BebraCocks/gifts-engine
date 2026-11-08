@@ -333,4 +333,6 @@ https://drive.google.com/file/d/1jY1_yrf50OVmV_bDpMyWjMFv-iVfa-yI/view . Пра�
 каждому. Хук: колесо из 12 кружек с кадра 0; тизер перед RubUp; финал «А ТВОЙ ЗНАК? — пиши в комментариях».
 v2: «Часть 1», каждому знаку ≈ 11 с, звуки только из пака, фоновый знак зодиака; голос `48ec28a4…` drama-3 (1,13×), 59,82 с.
 Озвучка отправлена автору до сборки (его просьба).
-Ждём «собирай»: `python -B engine/tools/build.py projects/35-zodiac-wine --approved --name zodiac_wine_v1`.
+v3: без «Прогноз», финал «А кто ты по знаку зодиака? Пиши в комментариях!», 1,08×, светлый фон серии.
+**`renders/35-zodiac-wine/zodiac_wine_v1.mp4`** (59,57 с, −14,1 LUFS), Google Drive:
+https://drive.google.com/file/d/1LyNlSaKZPPiw3gcf7WPXExTF7GJgK7jb/view . Дальше: части 2 и 3 (остальные 8 знаков); правки — `--name zodiac_wine_v2`.

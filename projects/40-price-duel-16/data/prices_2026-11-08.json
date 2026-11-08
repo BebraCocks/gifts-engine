@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 40-price-duel-16 «Котёл за 24 тысячи». Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg), проверено 2026-11-08 17:25–17:30 UTC. Курс 85,5 ₽ за TON (tonapi.io 85,47 ₽ в 17:40 UTC). Вещи: страницы товаров «Детский мир» 2026-11-08 17:40–18:10 UTC, цена в заголовке страницы. Подарки, бывшие в выпусках 09–18, 30–34, 38, 39, не брались. Пары не обязаны быть похожими (автор, 2026-11-08).",
+ "ton_rub": 85.5,
+ "gifts": [
+  {"gift": "Swag Bag", "model": "Crook To Cook", "rarity": "2.5%", "ton": 6, "rub": 513, "lot": "https://fragment.com/gift/swagbag-142328"},
+  {"gift": "Love Potion", "model": "Rusty Water", "rarity": "2.5%", "ton": 16, "rub": 1368, "lot": "https://fragment.com/gift/lovepotion-24943"},
+  {"gift": "Witch Hat", "model": "Twilight", "rarity": "1.5%", "ton": 8, "rub": 684, "lot": "https://fragment.com/gift/witchhat-7260"},
+  {"gift": "Flying Broom", "model": "Dusk Duster", "rarity": "2.5%", "ton": 15, "rub": 1283, "lot": "https://fragment.com/gift/flyingbroom-8684"},
+  {"gift": "Hex Pot", "model": "Rainbow Pearl", "rarity": "0.8%", "ton": 7, "rub": 598, "lot": "https://fragment.com/gift/hexpot-18363"}
+ ],
+ "things": [
+  {"name": "Электробритва ENDEVER Sven-965", "rub": 2324, "src": "https://www.detmir.ru/product/index/id/6164991/"},
+  {"name": "Набор Attivio «Волшебное зелье» (FCJ0706317)", "rub": 1099, "src": "https://www.detmir.ru/product/index/id/7039256/"},
+  {"name": "Шляпа BOOMZEE с вуалью на ободке (шляпка ведьмы)", "rub": 899, "src": "https://www.detmir.ru/product/index/id/6004798/"},
+  {"name": "Щётка Мультидом с совком VL58-227", "rub": 552, "src": "https://www.detmir.ru/product/index/id/4625842/"},
+  {"name": "Игровой набор Magic Mixies «Волшебный котёл»", "rub": 23751, "src": "https://www.detmir.ru/product/index/id/7205837/"}
+ ],
+ "rejected": [
+  "Crystal Ball / ночник DASWERK «Вселенная» 1 561 ₽ — на всех фото товара надписи и линия поверх шара.",
+  "Flying Broom / робот-пылесос ENDEVER Spectre-11 17 980 ₽ — второй огромный разрыв рядом с финалом ×40.",
+  "Love Potion · Old Rum — модель с названием алкоголя; взята Rusty Water той же цены."
+ ]
+}

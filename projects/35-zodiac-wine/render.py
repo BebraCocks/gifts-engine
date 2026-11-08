@@ -420,9 +420,8 @@ def draw_sign_text(c, t, s, a):
     text(c, glyph, 66, 'glyph', dark(col), 540, 254 + rise, a, max(0.01, k))
     text(c, name, 100, 'Heavy', INK, 540, 392 + rise, a)
     text(c, dates, 36, 'Semibold', MUTED, 540, 464 + rise, a)
-    kf = sm(FC[s] - 0.05, FC[s] + 0.25, t)
+    kf = 0.0                                   # v3: no «ПРОГНОЗ» pill (author), the element chip stays
     put(c, pill(f'СТИХИЯ · {elem}', 32, None, dark(col), dark(col)), 540, 532 + rise, 1.0, a * (1 - kf))
-    put(c, pill(FORECAST, 32, dark(col, 0.8), WHITE), 540, 532, lerp(0.7, 1.0, kf) * (1 + 0.1 * fx.bump(t - FC[s], 3, 5)), a * kf)
     k2 = sm(SIGN_IN[s] + 0.2, SIGN_IN[s] + 0.55, t)
     text(c, model, 60, 'Heavy', dark(col), 540, 1276 + 16 * (1 - k2), a * k2)
     text(c, f'модель {GIFT} · {RARITY} · {ton} TON', 30, 'Semibold', MUTED, 540, 1330 + 16 * (1 - k2), a * k2)
@@ -445,7 +444,7 @@ def draw_outro(c, t):
     k = spr(OUTRO + 0.1, t, 2.0, 0.55)
     text(c, OUTRO_1, 104, 'Heavy', GOLD, 540, 250 + 24 * (1 - cl(k)), cl(k * 2), max(0.01, lerp(0.8, 1.0, cl(k))))
     k2 = sm(OUTRO + 0.4, OUTRO + 0.8, t)
-    text(c, OUTRO_2, 50, 'Heavy', INK, 540, 340, k2)
+    text(c, OUTRO_2, 62, 'Heavy', INK, 540, 345, k2)
     kc = spr(E['comments'], t, 2.0, 0.5)
     if t >= E['comments']:
         put(c, pill(COMMENTS, 40, GOLD, WHITE), 540, 1580, max(0.01, kc) * (1 + 0.05 * math.sin((t - E['comments']) * 4)),

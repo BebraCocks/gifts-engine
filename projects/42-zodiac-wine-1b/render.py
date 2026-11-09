@@ -254,8 +254,8 @@ def lerp_pt(p, q, k):
 def wheel_angle(k, t):
     """Degrees of mug k on the wheel. Hook: Scorpio (7) arrives at the top when sign 1 starts."""
     if t < OUTRO:
-        return -90 + 30 * (k - 7) + OMEGA * (SIGN_IN[0] - t)
-    return -90 + 30 * (k - 10) - OMEGA * 0.5 * (t - OUTRO)          # outro: Aquarius back at the top
+        return -90 + 30 * (k - 7) - OMEGA * (SIGN_IN[0] - t)          # 42: spins the other way than 35
+    return -90 + 30 * (k - 10) + OMEGA * 0.5 * (t - OUTRO)          # outro: Aquarius back at the top
 
 
 def wheel_pos(k, t, rad=WR):

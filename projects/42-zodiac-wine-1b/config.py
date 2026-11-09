@@ -2,8 +2,8 @@
 «на белом фоне, как в видео из прошлых сессий»), созвездия чернилами цвета знака, кружка-герой крупно,
 полупрозрачный стилизованный знак зодиака на фоне — хорошо видно."""
 STYLE_READY = True
-BACKGROUND = (241, 234, 221)       # paper (series)
-GRID = (222, 213, 198)             # dot grid, static
+BACKGROUND = (245, 238, 228)       # paper, a touch lighter than 35 (42: a new-looking copy)
+GRID = (226, 216, 201)             # dot grid, static
 STAR = (214, 186, 120)             # small twinkles on paper
 INK = (28, 26, 38)
 MUTED = (146, 138, 126)

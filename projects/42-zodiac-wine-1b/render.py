@@ -21,7 +21,7 @@ import config
 from script import (LINES, GIFT, RARITY, SIGNS, WHEEL, GLYPHS, HOOK, HOOK_BADGE, PART, TEASER, FORECAST, OUTRO_1, OUTRO_2,
                     COMMENTS,
                     ACC)
-from timeline import DUR, ON, END, KEY, SIGN_IN, OUTRO, SWAP, AD_STOP
+from timeline import DUR, ON, END, KEY, SIGN_IN, OUTRO, SWAP, AD_STOP, TEASER_ON
 from words import WORDS
 from events import E, FORECAST as FC
 
@@ -430,8 +430,8 @@ def draw_sign_text(c, t, s, a):
 
 def draw_teaser(c, t):
     """Retention before RubUp: the ad freeze frame shows what is still ahead."""
-    t0 = END[KEY['s3']] + 0.1
-    t1 = SIGN_IN[3] - SWAP - 0.2
+    t0 = TEASER_ON                                  # 42: inside Virgo, after «…порядок.»
+    t1 = AD_STOP + 0.45                             # fades only after the freeze (DECISIONS 2026-11-08)
     if not (t0 <= t < t1 + 0.3):
         return
     k = spr(t0, t, 2.4, 0.5)

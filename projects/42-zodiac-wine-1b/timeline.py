@@ -34,9 +34,16 @@ for s in range(4):
     ON[k] = cur + LAND
     END[k] = ON[k] + _len(k)
     cur = END[k] + SWAP
-    if s == 2:
-        AD_STOP = END[k] + AD_HOLD
-        cur = AD_STOP + 0.6       # Virgo + teaser stay on the RubUp freeze frame, then swap
+# RubUp in the middle of Virgo's line, in the silence inserted after «…порядок.» (select_takes.INSERT): the middle
+# frame of the video (thumbnails) is still Virgo with the teaser, the banner starts ~0.3 s later.
+_ins = HERE / 'voice' / 'L04.insert.json'
+AD_PAD = 0.95                    # into the inserted 1.4 s: the ramp (0.4 s) is centred on AD_STOP, 0.25 s left after
+if _ins.is_file():
+    import json
+    AD_STOP = ON[3] + json.loads(_ins.read_text())['at'] + AD_PAD
+else:
+    AD_STOP = ON[3] + 0.5 * (END[3] - ON[3])
+TEASER_ON = AD_STOP - AD_PAD + 0.05
 OUTRO = END[4] + 0.3
 ON[5] = OUTRO + 0.3
 END[5] = ON[5] + _len(5)

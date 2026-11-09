@@ -12,7 +12,7 @@ import wave
 import banner
 import sound
 import sfxkit
-from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, SIGN_IN, OUTRO, SWAP, AD_STOP
+from timeline import DUR, ON, END, KEY, HAS_NARRATION, TAKES, SIGN_IN, OUTRO, SWAP, AD_STOP, TEASER_ON
 from events import E, FORECAST
 
 SR = 48000
@@ -37,7 +37,7 @@ def sfx_layer(n, kit):
         add(fx, 'impact', SIGN_IN[s] - 0.08, gain_db=-23, dur=(0, 0.8), file='hit-impact', label=f'sign {s + 1}: mug lands, header')
         add(fx, 'granular-move', SIGN_IN[s] + 0.15, gain_db=-23, label=f'sign {s + 1}: constellation draws')
         add(fx, 'sparkle', FORECAST[s] + 0.05, gain_db=-21, label=f'sign {s + 1}: forecast sentence — sparkles fly out')
-    add(fx, 'popup', END[KEY['s2']] + 0.1, gain_db=-18, label='teaser «НЕ ЛИСТАЙ» before RubUp')
+    add(fx, 'popup', TEASER_ON, gain_db=-18, label='teaser «НЕ ЛИСТАЙ» before RubUp')
     add(fx, 'sparkle-whoosh', OUTRO - 0.1, gain_db=-18, label='outro: the wheel returns')
     add(fx, 'confirm', OUTRO + 0.15, gain_db=-20, label='«А КТО ТЫ ПО ЗНАКУ ЗОДИАКА?»')
     add(fx, 'pop', E['comments'], gain_db=-16, label='«ПИШИ В КОММЕНТАРИЯХ» pill')

@@ -20,7 +20,9 @@ DEFAULT_GAP = 0.16
 TEMPO = 1.03
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.
-INSERT = {}                     # no author's sound in this video
+# v2 (author, 2026-11-09: no RubUp banner on the preview): RubUp in the middle, inside Gemini after «…две личности.»:
+# (seconds into the take, inserted seconds) -> silence in the pause nearest that time; timeline.AD_STOP sits in it.
+INSERT = {'L04': (3.1, 1.4)}
 
 
 def fetch(task):
@@ -128,7 +130,7 @@ if __name__ == '__main__':
                     i = j
                 else:
                     i += 1
-            at = max(gaps)[1] * hop
+            at = min(gaps, key=lambda g: abs(g[1] * hop / SR - k))[1] * hop if k else max(gaps)[1] * hop
             y = np.concatenate([y[:at], np.zeros(int(sec * SR)), y[at:]])
             SEGMAP.append((-1.0, at / SR, sec))            # marker: inserted silence
             (HERE / 'voice' / f'{line}.insert.json').write_text(json.dumps({'at': at / SR, 'sec': sec}))

@@ -1,6 +1,6 @@
 """Content timeline from the selected takes voice/L01..L06.wav (text estimate as fallback, no narration).
 Hook (L01) -> 4 signs, one take each (character -> mug -> «Прогноз: …»), the mug lands at SIGN_IN -> outro (L06).
-RubUp right after the second sign (Leo)."""
+v2 (author, 2026-11-09): RubUp inside Gemini (sign 3) so the middle frame of the video (thumbnails) is content."""
 from pathlib import Path
 import wave
 import config
@@ -34,9 +34,16 @@ for s in range(4):
     ON[k] = cur + LAND
     END[k] = ON[k] + _len(k)
     cur = END[k] + SWAP
-    if s == 1:
-        AD_STOP = END[k] + AD_HOLD
-        cur = AD_STOP + 0.6       # Leo + teaser stay on the RubUp freeze frame, then swap
+# RubUp in the silence inserted after «…две личности.» (select_takes.INSERT), as in 42-zodiac-wine-1b: the middle
+# frame is Gemini without the banner, the banner starts ~2 s later.
+_ins = HERE / 'voice' / 'L04.insert.json'
+AD_PAD = 0.95                    # into the inserted 1.4 s: the ramp (0.4 s) is centred on AD_STOP, 0.25 s left after
+if _ins.is_file():
+    import json
+    AD_STOP = ON[3] + json.loads(_ins.read_text())['at'] + AD_PAD
+else:
+    AD_STOP = ON[3] + 0.5 * (END[3] - ON[3])
+TEASER_ON = AD_STOP - AD_PAD + 0.05
 OUTRO = END[4] + 0.3
 ON[5] = OUTRO + 0.3
 END[5] = ON[5] + _len(5)

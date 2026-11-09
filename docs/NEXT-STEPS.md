@@ -411,3 +411,10 @@ v2 (техника для TikTok: SAR 1:1, CRF 14, безопасные зоны
 внутри сцены Девы (30,83–37,35 с из 60,32 с); средний кадр (по нему делают миниатюры) и кадр 0 — без баннера.
 **`renders/42-zodiac-wine-1b/zodiac_wine_1b_v1.mp4`**, Google Drive: https://drive.google.com/file/d/1hPEOT3k4hBJi-bMD2u5niKDBaoFJFjBR/view .
 Правки — `--name zodiac_wine_1b_v2`.
+
+## 2026-11-09 · 36-zodiac-wine-2 v2 — без баннера на превью
+
+Автор: часть 1 (42) сработала; для части 2 единственная правка — RubUp не на превью. Реклама внутри сцены Близнецов
+(31,6–38,1 с из 60,32 с), средний кадр и кадр 0 без баннера; голос, музыка, SFX, графика без изменений.
+**`renders/36-zodiac-wine-2/zodiac_wine_2_v2.mp4`**, Google Drive: https://drive.google.com/file/d/120kNOCXc5MJVwy8ZtdnvgBJg1BmP-h3O/view .
+Дальше по просьбе автора — та же правка части 3 (37-zodiac-wine-3).

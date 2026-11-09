@@ -107,15 +107,32 @@ def _mmss(sec):
 
 
 class Progress:
-    """Prints a progress bar every ~3 s and keeps build/progress.json (tiny, for watch_progress.py)."""
+    """Prints a progress bar every ~3 s and keeps build/progress.json (tiny, for watch_progress.py).
+    Every 10 % it also prints one milestone line starting with `PROGRESS` (author, 2026-11-09): the agent relays these
+    lines to the chat, so the author sees the percentage and the approximate time left."""
 
     def __init__(self, total, build, stage="frames"):
         self.total, self.stage, self.t0, self.last = total, stage, time.time(), 0.0
         self.path = Path(build) / "progress.json"
         self.tty = sys.stdout.isatty()
+        self.mark = 10
+
+    def milestone(self, done, now):
+        pct = 100.0 * done / max(1, self.total)
+        if pct + 1e-9 < self.mark:
+            return
+        while self.mark <= pct + 1e-9:
+            self.mark += 10
+        el = now - self.t0
+        eta = el / done * (self.total - done) if done else 0.0
+        m = min(100, self.mark - 10)
+        tail = f"осталось ~{_mmss(eta)}" if done < self.total else "кадры готовы"
+        print(("\n" if self.tty else "") + f"PROGRESS {m}% · кадры {done}/{self.total} · прошло {_mmss(el)} · {tail}",
+              flush=True)
 
     def update(self, done, force=False):
         now = time.time()
+        self.milestone(done, now)
         gap = 3.0 if self.tty else 5.0
         if not force and now - self.last < gap:
             return

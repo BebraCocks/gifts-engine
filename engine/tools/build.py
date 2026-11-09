@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -40,9 +41,12 @@ def main():
         parser.error('Final file exists; use --name with a new version')
     out.parent.mkdir(parents=True, exist_ok=True)
     build = paths.build(project)
+    t0 = time.time()
+    print('PROGRESS 0% · сборка началась: звук, затем кадры', flush=True)
     for command in ([sys.executable, '-B', 'audio.py'],
                     [sys.executable, '-B', 'render.py', '--video', str(build / 'video_only.mp4')]):
         subprocess.run(command, cwd=project, check=True)
+    print('PROGRESS · склейка звука и проверка декодированием (меньше минуты)', flush=True)
     mix = build / 'mix.wav'
     if not mix.is_file():
         raise SystemExit('Audio missing: the banner must keep its sound')
@@ -59,6 +63,7 @@ def main():
     subprocess.run([paths.ffmpeg(), '-v', 'error', '-xerror', '-i', str(out), '-f', 'null', '-'], check=True)
     print('Created renders/' + project.name + '/' + out.name)
     print('Decoded successfully. Now review movement, transitions and full audio by eye and ear.')
+    print(f'PROGRESS готово · сборка заняла {int(time.time() - t0) // 60}:{int(time.time() - t0) % 60:02d}', flush=True)
 
 
 if __name__ == '__main__':

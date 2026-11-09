@@ -1565,11 +1565,11 @@
   ]
  },
  "37-zodiac-wine-3": {
-  "date": "2026-11-08",
+  "date": "2026-11-09",
   "sounds": [
    "botanica-v4/bg-atmosphere/atmo-bg-static-musical-24.flac#0",
    "botanica-v4/button/button-cursor-select-02.flac#0",
-   "botanica-v4/button/correct-approve-button-04.flac#0",
+   "botanica-v4/button/correct-approve-button-01.flac#0",
    "botanica-v4/button/pop-up-02.flac#0",
    "botanica-v4/button/sparkle-button.flac#0",
    "botanica-v4/cartoon/cartoon-blink-point.flac#2",

@@ -12,6 +12,9 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RAW = HERE / 'voice' / 'raw'
 URL = 'https://platform.r2.fish.audio/tasks/2026-11-08/{}.mp3'
+# v2 (2026-11-09): takes recorded that day
+DATED = {'3a50a31b9e0645a38ec093bd9caaa459', '4806694c6f724f939081062e289b5260', 'cbf5bf6fba2349df9e3c642eecb7191a',
+         '380aff69d20647c7b4fcbd0800704f9b', 'b67ac54eed414c509b13f1db176c9f22', '91073ea246394e5ea79c6bee63218509'}
 SR = 48000
 SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
@@ -29,7 +32,7 @@ def fetch(task):
         RAW.mkdir(parents=True, exist_ok=True)
         mp3 = RAW / f'{task}.mp3'
         if not mp3.exists():
-            subprocess.run(["curl", "-sSfL", "--retry", "5", "--retry-all-errors", "-m", "60", "-o", str(mp3), URL.format(task)], check=True)
+            subprocess.run(["curl", "-sSfL", "--retry", "5", "--retry-all-errors", "-m", "60", "-o", str(mp3), (URL.replace('2026-11-08', '2026-11-09') if task in DATED else URL).format(task)], check=True)
         subprocess.run(['ffmpeg', '-nostdin', '-loglevel', 'error', '-y', '-i', str(mp3), '-ar', str(SR),
                         '-ac', '1', str(wav)], check=True)
     with wave.open(str(wav)) as w:

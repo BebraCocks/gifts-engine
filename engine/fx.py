@@ -139,8 +139,20 @@ def over(canvas, placed, alpha=1.0, add=False):
     if placed is None or alpha <= 0.002:
         return
     im, x0, y0 = placed
+    iw, ih = im.size
+    if not add and im.mode == "RGBA":
+        # 2026-11-09 speed-up: only the opaque part (alpha > 0) and only what lies on the canvas is converted to float.
+        # Pixels with alpha 0 leave the canvas unchanged, so the result is bit-identical to compositing the whole image.
+        bb = im.getbbox(alpha_only=True)
+        if bb is None:
+            return
+        cx0, cy0 = max(bb[0], -x0), max(bb[1], -y0)
+        cx1, cy1 = min(bb[2], canvas.shape[1] - x0), min(bb[3], canvas.shape[0] - y0)
+        if cx1 <= cx0 or cy1 <= cy0:
+            return
+        if (cx0, cy0, cx1, cy1) != (0, 0, iw, ih):
+            im, x0, y0, iw, ih = im.crop((cx0, cy0, cx1, cy1)), x0 + cx0, y0 + cy0, cx1 - cx0, cy1 - cy0
     arr = np.asarray(im, np.float32) / 255
-    ih, iw = arr.shape[:2]
     sx0, sy0 = max(0, -x0), max(0, -y0)
     dx0, dy0 = max(0, x0), max(0, y0)
     dx1, dy1 = min(canvas.shape[1], x0 + iw), min(canvas.shape[0], y0 + ih)

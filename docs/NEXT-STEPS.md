@@ -393,3 +393,8 @@ Money Pot / копилка-свинка (телега +36%), Neko Helmet / эл�
 https://drive.google.com/file/d/1w2vnUPBE-7r6Iqy7vOWu0wEb0dhEmEB3/view . Правки — `--name price_duel_17_v2`.
 v2 (техника для TikTok: SAR 1:1, CRF 14, безопасные зоны справа/снизу): **`renders/41-price-duel-17/price_duel_17_v2.mp4`**, Google Drive: https://drive.google.com/file/d/1vIAD2m33lEbOqFH_gYPXeqezandjTbb4/view .
 Вероятные причины скрытия, которые от файла не зависят, — в ответе автору 2026-11-08 и в `docs/DECISIONS.md`.
+
+## 2026-11-09 · Ускорение сборки
+
+Движок собирает видео в ~1,5 раза быстрее при тех же пикселях и том же файле (ролик 41: 207 → 139 с на 4 ядрах),
+подробности — DECISIONS 2026-11-09. Старые параметры: `VIZ_CPU=0.75`, `VIZ_SHM=0`. Дальше: проверить скорость на ПК автора.

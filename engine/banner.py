@@ -2,6 +2,7 @@
 Speed 1.0..1.1; audio time stretching preserves pitch. No presenter or other assets are required."""
 import functools
 import math
+import os
 
 import numpy as np
 from PIL import Image, ImageFilter
@@ -54,9 +55,29 @@ def info(w=W_OUT):
     return int(n), float(fps)
 
 
+@functools.lru_cache(None)
+def _frames_raw(w=W_OUT):
+    """All banner frames as one uncompressed uint8 array (n, h, w, 4), memory-mapped from .cache (2026-11-09).
+    PNG decoding cost ~15 ms per frame in every worker; the raw file is read from the OS page cache, shared by all workers,
+    and holds exactly the same pixels (built once from the lossless PNG cache)."""
+    d = _cache_dir(w)
+    n, _ = info(w)
+    raw = d / "frames_rgba.npy"
+    if not raw.exists():
+        first = np.asarray(Image.open(d / "f0000.png").convert("RGBA"))
+        tmp = d / f"frames_rgba.{os.getpid()}.tmp.npy"
+        mm = np.lib.format.open_memmap(tmp, mode="w+", dtype=np.uint8, shape=(n,) + first.shape)
+        for k in range(n):
+            mm[k] = np.asarray(Image.open(d / f"f{k:04d}.png").convert("RGBA"))
+        mm.flush()
+        del mm
+        os.replace(tmp, raw)                            # atomic: a parallel process never sees a half-written file
+    return np.load(raw, mmap_mode="r")
+
+
 @functools.lru_cache(maxsize=4)
 def _frame(k, w=W_OUT):
-    a = np.asarray(Image.open(_cache_dir(w) / f"f{k:04d}.png"), np.float32)
+    a = np.asarray(_frames_raw(w)[k], np.float32)
     return a[..., :3], a[..., 3:4] / 255
 
 
@@ -116,6 +137,7 @@ class Breaks:
         if not 1.0 <= self.speed <= 1.1:
             raise ValueError("RubUp playback speed must be between 1.0 and 1.1")
         self.B = length() / self.speed
+        _frames_raw()                                   # build the raw frame cache once, before any render workers start
         self.hold = PRE + self.B + POST
         self.extra = RAMP + self.hold                   # output seconds added by one break
         self.stops = sorted(stops)
@@ -225,16 +247,10 @@ class Breaks:
     # -------------------------------------------------------------- picture
     def render(self, render_at, t, i=None, fps=60):
         i = round(t * fps) if i is None else i
-        frame = render_at(self.content_t(t))
         ph = self.phase(t)
         if ph is None:
-            return frame
-        c = frame.astype(np.float32)
-        d = ph["dim"]
-        if SOFT * d > 0.3:
-            im = Image.fromarray(frame).filter(ImageFilter.GaussianBlur(SOFT * d))
-            c = np.asarray(im, np.float32)
-        c *= 1 - DIM * d
+            return render_at(self.content_t(t))
+        c = self._paused(render_at, self.content_t(t), ph["dim"]).copy()
         bt = ph["bt"]
         n, bfps = info()
         if 0 <= bt < self.B:
@@ -243,6 +259,22 @@ class Breaks:
             reg = c[y0:y0 + rgb.shape[0], :rgb.shape[1]]
             reg[:] = reg * (1 - al) + rgb * al
         return np.clip(c, 0, 255).astype(np.uint8)
+
+    def _paused(self, render_at, ct, d):
+        """Dimmed, softly blurred content under the banner. While the video stands still (ct and dim unchanged, ~6 s of
+        every break) it is computed once and reused: the frame is a pure function of time, so the pixels are identical
+        (2026-11-09; before, every paused frame re-rendered and re-blurred the same picture)."""
+        key = (render_at, float(ct), float(d))
+        if self.__dict__.get("_pkey") == key:
+            return self._pval
+        frame = render_at(ct)
+        c = frame.astype(np.float32)
+        if SOFT * d > 0.3:
+            im = Image.fromarray(frame).filter(ImageFilter.GaussianBlur(SOFT * d))
+            c = np.asarray(im, np.float32)
+        c *= 1 - DIM * d
+        self._pkey, self._pval = key, c
+        return c
 
     # -------------------------------------------------------------- sound
     def audio(self, mix, sr=48000, banner=True):

@@ -394,52 +394,123 @@ def card_image(t):
     return s
 
 
-def _q_disc(r):
-    """A dark glowing disc with a big «?» (covers the wheel's prize)."""
-    n = 2 * r + 80
+def gold_text(text, size):
+    """Text filled with a vertical gold gradient, dark drop shadow and warm glow."""
+    m = fx.text_img(((text, (255, 255, 255)),), size, 'Heavy').getchannel('A')
+    w, h = m.size
+    g = np.linspace(0, 1, h)[:, None]
+    top, mid, bot = np.array([255, 248, 190]), np.array([255, 205, 70]), np.array([235, 120, 20])
+    col = np.where(g[..., None] < 0.5, top + (mid - top) * (g[..., None] / 0.5), mid + (bot - mid) * ((g[..., None] - 0.5) / 0.5))
+    col = np.broadcast_to(col, (h, w, 3))
+    face = Image.fromarray(np.dstack([col, np.asarray(m)]).astype(np.uint8), 'RGBA')
+    pad = size // 4
+    out = Image.new('RGBA', (w + 2 * pad, h + 2 * pad), (0, 0, 0, 0))
+    glow = Image.new('RGBA', out.size, (255, 170, 40, 0))
+    glow.putalpha(Image.new('L', out.size, 0))
+    ga = Image.new('L', out.size, 0)
+    ga.paste(m, (pad, pad))
+    glow = Image.merge('RGBA', (*Image.new('RGB', out.size, (255, 170, 40)).split(), ga.filter(ImageFilter.GaussianBlur(size // 9))))
+    sh = Image.merge('RGBA', (*Image.new('RGB', out.size, (20, 6, 30)).split(), ga.filter(ImageFilter.GaussianBlur(4))))
+    out.alpha_composite(glow)
+    out.alpha_composite(sh, (int(size * 0.03), int(size * 0.05)))
+    out.alpha_composite(face, (pad, pad))
+    return out
+
+
+_DISC = {}
+
+
+def q_disc(r, t):
+    """Mystery orb over the wheel prize: dark glass, rotating violet-gold swirl, gold double rim with running ticks,
+    glass highlight, twinkles, a bobbing gold «?»."""
+    n = 2 * r + 120
+    c = n / 2
+    if 'base' not in _DISC:
+        yy, xx = np.mgrid[0:n, 0:n] - c
+        rr = np.sqrt(xx ** 2 + yy ** 2) / r
+        _DISC['rr'], _DISC['ang'] = rr, np.arctan2(yy, xx)
+        halo = Image.new('L', (n, n), 0)
+        ImageDraw.Draw(halo).ellipse([40, 40, n - 40, n - 40], fill=255)
+        _DISC['halo'] = halo.filter(ImageFilter.GaussianBlur(26))
+        hl = Image.new('L', (n, n), 0)
+        ImageDraw.Draw(hl).ellipse([c - r * 0.72, c - r * 0.88, c + r * 0.38, c - r * 0.18], fill=70)
+        _DISC['hl'] = hl.filter(ImageFilter.GaussianBlur(18))
+        _DISC['q'] = gold_text('?', int(r * 1.3))
+    rr, ang = _DISC['rr'], _DISC['ang']
+    # body: radial dark glass + rotating 3-arm swirl
+    swirl = 0.5 + 0.5 * np.sin(3 * ang - 2.2 * rr * 3.0 + t * 1.6)
+    body = np.zeros((n, n, 3), np.float32)
+    base = np.clip(1 - rr, 0, 1)[..., None]
+    body += np.array([14, 8, 34]) + np.array([60, 30, 110]) * base
+    body += np.stack([150 * swirl, 60 * swirl, 255 * swirl], -1) * (0.30 * base + 0.05)
+    gold = 0.5 + 0.5 * np.sin(2 * ang + t * -1.1 + rr * 4)
+    body += np.stack([255 * gold, 180 * gold, 60 * gold], -1) * (0.10 * base)
+    alpha = np.clip((1 - rr) * r / 1.5, 0, 1)
     im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
-    glow = Image.new('RGBA', (n, n), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).ellipse([30, 30, n - 30, n - 30], fill=(150, 80, 255, 200))
-    im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(18)))
-    yy, xx = np.mgrid[0:n, 0:n] - n / 2
-    rr = np.sqrt(xx ** 2 + yy ** 2) / r
-    disc = np.zeros((n, n, 4), np.float32)
-    disc[..., 0] = 34 + 30 * (1 - rr)
-    disc[..., 1] = 22 + 18 * (1 - rr)
-    disc[..., 2] = 70 + 60 * (1 - rr)
-    disc[..., 3] = np.clip((1 - rr) * r / 1.5, 0, 1) * 255
-    im.alpha_composite(Image.fromarray(np.clip(disc, 0, 255).astype(np.uint8), 'RGBA'))
-    ImageDraw.Draw(im).ellipse([n / 2 - r, n / 2 - r, n / 2 + r, n / 2 + r], outline=(200, 160, 255, 255), width=6)
-    q = fx.text_img((('?', (255, 225, 120)),), int(r * 1.35), 'Heavy')
-    qg = q.filter(ImageFilter.GaussianBlur(14))
-    for layer in (qg, q):
-        im.alpha_composite(layer, ((n - q.width) // 2, (n - q.height) // 2 - int(r * 0.06)))
+    pulse = 0.75 + 0.25 * math.sin(t * 2 * math.pi / 1.0216)
+    halo = Image.merge('RGBA', (*Image.new('RGB', (n, n), (170, 90, 255)).split(),
+                               _DISC['halo'].point(lambda v: int(v * 0.85 * pulse))))
+    im.alpha_composite(halo)
+    im.alpha_composite(Image.fromarray(np.dstack([np.clip(body, 0, 255), alpha * 255]).astype(np.uint8), 'RGBA'))
+    d = ImageDraw.Draw(im)
+    # gold double rim + running ticks
+    for rad, wd, col in ((r + 2, 9, (255, 205, 80, 255)), (r - 12, 3, (190, 140, 255, 220)), (r + 12, 2, (255, 235, 160, 160))):
+        d.ellipse([c - rad, c - rad, c + rad, c + rad], outline=col, width=wd)
+    for k in range(36):
+        th = k * 2 * math.pi / 36 + t * 0.6
+        r0, r1 = r - 26, r - 18 if k % 3 else r - 34
+        d.line([(c + r0 * math.cos(th), c + r0 * math.sin(th)), (c + r1 * math.cos(th), c + r1 * math.sin(th))],
+               fill=(255, 220, 130, 200 if k % 3 == 0 else 110), width=3)
+    # glass highlight
+    im.alpha_composite(Image.merge('RGBA', (*Image.new('RGB', (n, n), (255, 255, 255)).split(), _DISC['hl'])))
+    # twinkles orbiting inside
+    for k in range(7):
+        th = k * 2 * math.pi / 7 + t * (0.4 + 0.1 * k)
+        rad = r * (0.45 + 0.35 * ((k * 37) % 10) / 10)
+        tw = max(0.0, math.sin(t * (3 + k) + k * 1.7))
+        if tw > 0.05:
+            fx.sparkle(d, c + rad * math.cos(th), c + rad * math.sin(th), 6 + 10 * tw, (255, 240, 200, int(230 * tw)))
+    # the «?»: bobbing and tilting with the beat
+    q = _DISC['q']
+    rot = 6 * math.sin(t * 2.0)
+    qq = q.rotate(rot, resample=Image.BICUBIC, expand=True)
+    sc = 1 + 0.04 * math.sin(t * 2 * math.pi / 1.0216) + 0.05 * hit_pulse(t)
+    qq = qq.resize((int(qq.width * sc), int(qq.height * sc)), Image.BICUBIC)
+    im.alpha_composite(qq, (int(c - qq.width / 2), int(c - qq.height / 2 - r * 0.04 + 6 * math.sin(t * 3.1))))
     return im
 
 
-def _q_plate(w, h, text, size):
-    im = fx.rounded(w, h, 26, (30, 20, 62, 250), outline=(200, 160, 255, 255), width=4)
-    q = fx.text_img(((text, (255, 225, 120)),), size, 'Heavy')
-    im.alpha_composite(q, ((w - q.width) // 2, (h - q.height) // 2))
+def q_plate(w, h, text, size, t):
+    """Same material as the orb: dark violet glass, gold rim, shimmer sweep, gold text."""
+    im = Image.new('RGBA', (w + 60, h + 60), (0, 0, 0, 0))
+    glow = Image.new('L', im.size, 0)
+    ImageDraw.Draw(glow).rounded_rectangle([22, 22, w + 38, h + 38], 34, fill=200)
+    im.alpha_composite(Image.merge('RGBA', (*Image.new('RGB', im.size, (170, 90, 255)).split(),
+                                            glow.filter(ImageFilter.GaussianBlur(14)))))
+    yy = np.linspace(0, 1, h)[:, None, None]
+    body = np.broadcast_to(np.array([46, 22, 90]) + (np.array([16, 8, 36]) - np.array([46, 22, 90])) * yy, (h, w, 3))
+    xx = np.arange(w)[None, :, None]
+    sweep = np.exp(-(((xx - ((t * 420) % (w + 300) - 150)) - (np.arange(h)[:, None, None] * 0.6)) / 40.0) ** 2)
+    body = body + 70 * sweep
+    m = Image.new('L', (w, h), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, w - 1, h - 1], 26, fill=255)
+    plate = Image.fromarray(np.dstack([np.clip(body, 0, 255), np.asarray(m)]).astype(np.uint8), 'RGBA')
+    ImageDraw.Draw(plate).rounded_rectangle([1, 1, w - 2, h - 2], 26, outline=(255, 205, 80, 255), width=5)
+    im.alpha_composite(plate, (30, 30))
+    g = gold_text(text, size)
+    im.alpha_composite(g, (30 + (w - g.width) // 2, 30 + (h - g.height) // 2))
     return im
-
-
-_Q = {}
 
 
 def hide_prize(s, t):
-    """Hook only: «?» over the wheel prize, the «Хочу получить» target and the highlighted item; all else stays sharp."""
-    if not _Q:
-        _Q['disc'] = _q_disc(228)
-        _Q['plate'] = _q_plate(450, 170, '???', 110)
-        _Q['chip'] = _q_plate(150, 140, '?', 100)
+    """Hook only: a mystery orb over the wheel prize, «???» plates over the target and the highlighted item."""
     s = s.convert('RGBA')
-    pulse = 1 + 0.03 * math.sin(t * 2 * math.pi / 1.0216) + 0.04 * hit_pulse(t)
-    d = _Q['disc']
-    dd = d.resize((int(d.width * pulse), int(d.height * pulse)), Image.BICUBIC)
-    s.alpha_composite(dd, (540 - dd.width // 2, 645 - dd.height // 2))
-    s.alpha_composite(_Q['plate'], (575, 1105))
-    s.alpha_composite(_Q['chip'], (465, 1555))
+    d = q_disc(200, t)
+    s.alpha_composite(d, (540 - d.width // 2, 645 - d.height // 2))
+    p = q_plate(450, 170, '???', 104, t)
+    s.alpha_composite(p, (575 - 30, 1105 - 30))
+    ch = q_plate(150, 140, '?', 96, t + 0.7)
+    s.alpha_composite(ch, (465 - 30, 1555 - 30))
     return s.convert('RGB')
 
 

@@ -50,7 +50,7 @@ def sfx_layer(n, kit):
         a(fx, 'granular-move', tp + 0.05, gain_db=-23, label=f'{gift} shimmer')
     a(fx, 'cartoon-hit', 21.45, align='peak', gain_db=-19, label='566?! the head jolts with rage')
     # every case is «неокуп»: a short fail + the red minus tag
-    for ta, text in E.LOSS_TAGS:
+    for ta, text, _ in E.LOSS_TAGS:
         a(fx, 'error', ta - 0.05, gain_db=-19, label=f'неокуп {text}')
         a(fx, 'glitch-text', ta, gain_db=-25, label='red minus tag')
     # upgrade 50/50 -> loss

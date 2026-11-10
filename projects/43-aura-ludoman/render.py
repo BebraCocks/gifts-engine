@@ -33,8 +33,6 @@ HEAD_ANCHOR = (378.0, 800.0)                                                    
 LIP_Y, MOUTH_X, MOUTH_HW, JAW_HW = 625.0, 405.0, 66.0, 175.0
 HAND_TIP_R = (70.0, 300.0)                                                        # fingertips in hand_r.png
 
-ROUND = Image.new('L', (E.CARD_W, E.CARD_H), 0)
-ImageDraw.Draw(ROUND).rounded_rectangle([0, 0, E.CARD_W - 1, E.CARD_H - 1], 34, fill=255)
 
 
 def src_frame(s):
@@ -274,9 +272,9 @@ def head_pose(t):
         big = fx.ease_out_back(min(1.0, (t - E.HOOK_HIDE) / 0.35)) * (1 - fx.smooth((t - (E.HOOK_END - 0.25)) / 0.25))
     if t >= DROP2:
         big = fx.ease_out_back(min(1.0, (t - DROP2) / 0.4)) * 0.75
-    mdx, mdy, mds = head_move(t)
-    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk) * (1 + mds)
-    x, y = 540.0 + mdx, 1912.0 - 40 * big + mdy
+    hxp, mdy, mds = head_move(t)
+    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk) * mds
+    x, y = hxp, 1915.0 - 40 * big + mdy
     rot = 0.03 * math.sin(t * 1.3) + 0.02 * tk * math.sin(t * 7.0)
     y += 4 * math.sin(t * 2.1) - 10 * pulse
     if st in ('rage', 'angry'):
@@ -312,8 +310,9 @@ def hand_pose(t, side):
     """-> (image, anchor, x, y, scale, rot)"""
     st = emotion_at(t)
     pulse = hit_pulse(t)
-    rest_x = 165.0 if side == 'L' else 915.0
-    x, y, s, rot = rest_x, 1745.0, 0.62, 0.0
+    hxp, hdy, hsc = head_move(t)                         # hands travel with the head
+    rest_x = hxp + (-375.0 if side == 'L' else 375.0) * hsc
+    x, y, s, rot = rest_x, 1745.0 + hdy + 900 * max(0.0, 1.0 - hsc) ** 1.2, 0.62 * hsc, 0.0   # aside -> hands sink
     ph = 0.0 if side == 'L' else 1.3
     y += 9 * math.sin(t * 1.9 + ph) - 12 * pulse
     x += 5 * math.sin(t * 1.1 + ph)
@@ -409,7 +408,7 @@ def press_ripple(canvas, t):
                                                                    outline=(255, 255, 255, int(220 * a)), width=int(5 * S))))
 
 
-HEADER = 112                        # card-local px: logo + balance strip, never zoomed
+HEADER = 160                        # card-local px: logo + balance strip, never zoomed
 
 
 def view(t):
@@ -419,8 +418,7 @@ def view(t):
         if t0 - 0.01 <= t < t1:
             u = (t - t0) / (t1 - t0)
             zin = fx.ease_out(min(1.0, (t - t0) / 0.3))
-            zout = 1 - fx.smooth(max(0.0, (t - (t1 - 0.28)) / 0.28))
-            z = 1 + ((z0 + (z1 - z0) * fx.smooth(u)) - 1) * min(zin, zout)
+            z = 1 + ((z0 + (z1 - z0) * fx.smooth(u)) - 1) * zin    # no zoom-out: it snaps back on a hit/cut
             return ox * E.CARD_S, (oy - 190) * E.CARD_S, z
     return best
 
@@ -440,35 +438,30 @@ def zoomed(im, t):
     out = im.resize((E.CARD_W, E.CARD_H), Image.BICUBIC, box=box)
     hdr = im.crop((0, 0, E.CARD_W, HEADER))
     out.paste(hdr, (0, 0))
-    sh = Image.new('RGBA', (E.CARD_W, 18), (0, 0, 0, 0))
-    ImageDraw.Draw(sh).rectangle([0, 0, E.CARD_W, 18], fill=(0, 0, 0, 90))
-    sh = sh.filter(ImageFilter.GaussianBlur(5)).crop((0, 9, E.CARD_W, 18))
+    sh = Image.new('RGBA', (E.CARD_W, 24), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rectangle([0, 0, E.CARD_W, 24], fill=(0, 0, 0, 90))
+    sh = sh.filter(ImageFilter.GaussianBlur(6)).crop((0, 12, E.CARD_W, 24))
     out = out.convert('RGBA')
     out.alpha_composite(sh, (0, HEADER))
     return out.convert('RGB')
 
 
 def place_card(canvas, t, tint):
+    """The screen recording fills the whole frame; it only ever zooms IN (beat pulse, story zooms)."""
     pulse = hit_pulse(t)
     im = zoomed(card_image(t), t)
-    rgba = im.convert('RGBA')
-    rgba.putalpha(ROUND)
     zoom = 1.0 + 0.006 * pulse
-    if E.HOOK_END <= t < E.HOOK_END + 0.35:              # the story starts: card settles in
+    if E.HOOK_END <= t < E.HOOK_END + 0.35:              # the story starts: punch-in that settles
         zoom *= 1 + 0.05 * (1 - fx.ease_out((t - E.HOOK_END) / 0.35))
-    cx, cy = E.CARD_X + E.CARD_W / 2, E.CARD_Y + E.CARD_H / 2
-    # glow frame behind the card, tinted by the eye fire
-    g = 0.35 + 0.45 * pulse
-    glow = fx.radial(256, tint, power=1.4)
-    fx.over(canvas, fx.warp(glow, cx, cy, (E.CARD_W + 260) / 256, (E.CARD_H + 260) / 256), alpha=g * 0.45, add=True)
-    fx.over(canvas, fx.warp(rgba, cx, cy, zoom))
-    fx.over(canvas, (LOGO[0],) + tuple(int(round(cx + (v - c) * zoom)) for v, c in ((LOGO[1], cx), (LOGO[2], cy))))
-    border = fx.rounded(E.CARD_W + 6, E.CARD_H + 6, 37, None, outline=(150, 170, 255, 110), width=2)
-    fx.over(canvas, fx.warp(border, cx, cy, zoom))
+    if zoom > 1.0005:
+        cw, ch = W / zoom, H / zoom
+        im = im.resize((W, H), Image.BILINEAR, box=((W - cw) / 2, (H - ch) / 2, (W + cw) / 2, (H + ch) / 2))
+    canvas[:, :, :3] = np.asarray(im, np.float32)
+    fx.over(canvas, LOGO)
 
 
 # ---------------------------------------------------------------- gift pop-outs
-HERO = {'Neko Helmet': (0.0, -10.0, 430.0)}               # offset from the popup picture, final size
+HERO = {'Neko Helmet': (0.0, -15.0, 600.0)}               # offset from the popup picture, final size
 
 
 def place_pops(canvas, t):
@@ -479,8 +472,8 @@ def place_pops(canvas, t):
         if not (0 <= u < total):
             continue
         path = gifts_api.model_file(gift, model, 'json')
-        hx, hy, size1 = HERO.get(gift, (0.0, -40.0, 430.0))
-        size0 = 150.0
+        hx, hy, size1 = HERO.get(gift, (0.0, -60.0, 600.0))
+        size0 = 215.0
         if u < 0.35:
             k = fx.ease_out_back(u / 0.35, 2.6)
             kp = fx.ease_out(u / 0.35)
@@ -582,11 +575,11 @@ def fmt(n):
 
 
 def place_loss_tags(canvas, t):
-    for ta, text in E.LOSS_TAGS:
+    for ta, text, pxy in E.LOSS_TAGS:
         u = t - ta
         if not (0 <= u < 1.9):
             continue
-        x, y = zmap(*E.PRICE_XY, t)
+        x, y = zmap(*pxy, t)
         k = fx.ease_out_back(min(1.0, u / 0.22), 2.2)
         a = min(1.0, u / 0.06) * (1 - fx.smooth((u - 1.4) / 0.5))
         im = fx.text_img(((text, (255, 70, 60) if text != 'ПОЧТИ ОКУП' else (255, 150, 60)),), 56, 'Heavy')
@@ -754,10 +747,10 @@ def shake(t):
 def render_at(t):
     canvas = background()
     tint = tuple(int(v) // 16 * 16 for v in fire_params(t)[0][1])
-    # ambient aura from the eyes
-    fx.over(canvas, fx.warp(fx.radial(256, tint, power=1.6), 540, 1660, 1500 / 256),
-            alpha=0.32 + 0.18 * hit_pulse(t), add=True)
     place_card(canvas, t, tint)
+    hxp, hdy, hsc = head_move(t)                          # aura light from the eyes spills onto the screen
+    fx.over(canvas, fx.warp(fx.radial(256, tint, power=1.8), hxp, 1640 + hdy, 1100 * hsc / 256),
+            alpha=0.22 + 0.14 * hit_pulse(t), add=True)
     summary_dim(canvas, t)
     press_ripple(canvas, t)
     place_hand(canvas, t, 'L')

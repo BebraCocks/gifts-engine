@@ -1,9 +1,10 @@
 """Shared events for picture and sound (track time, s)."""
 from timeline import DROP1, DROP2, BREAK
 
-# Screen card: recording crop x 0..720, y 190..1440 (status bar and Telegram header removed), scale 1.05.
-CARD_X, CARD_Y, CARD_S = 162, 40, 1.05
-CARD_W, CARD_H = 756, 1313
+# Screen = the whole frame (author 2026-11-10: never shrink it): recording crop x 0..720, y 190..1470
+# (status bar and Telegram header removed), scale 1.5 -> 1080 x 1920.
+CARD_X, CARD_Y, CARD_S = 0, 0, 1.5
+CARD_W, CARD_H = 1080, 1920
 
 
 def card_xy(ox, oy):
@@ -52,30 +53,35 @@ AURA_TEXT = [(LOSE + 0.1, '−1000 AURA', (255, 70, 60)), (DROP2 + 0.15, '+1000 
 
 # Screen zoom inside the card: (t0, t1, focus in ORIGINAL recording px, zoom at t0, zoom at t1); out of presses
 ZOOMS = [
-    (0.00, 4.50, (360, 560), 1.18, 1.32),            # hook: creeping into the (blurred) wheel
-    (10.13, 12.18, (360, 1010), 1.30, 1.36),         # «Ваш подарок»: Ginger Cookie 915
-    (15.24, 18.30, (360, 1010), 1.30, 1.36),         # Snow Globe 780
-    (21.37, 24.43, (360, 1010), 1.32, 1.40),         # Eternal Candle 566
-    (24.60, 29.25, (360, 640), 1.22, 1.30),          # upgrade 49,4 %
-    (33.62, 37.45, (360, 560), 1.30, 1.42),          # «Не повезло»
-    (38.10, 41.71, (360, 620), 1.12, 1.50),          # break: slow push into 19,9 %
-    (41.71, 47.20, (360, 800), 1.20, 1.26),          # «Улучшено» 6 683
+    (0.00, 4.50, (360, 560), 1.12, 1.24),            # hook: creeping into the (blurred) wheel; cut at 4.50
+    (10.13, 12.18, (360, 1214), 1.16, 1.22),         # «Ваш подарок»: Ginger Cookie; cut at 12.18
+    (15.24, 18.30, (360, 1214), 1.16, 1.22),         # Snow Globe; snaps back on the hit 18.30
+    (21.37, 24.43, (360, 1214), 1.18, 1.26),         # Eternal Candle; cut at 24.43
+    (24.43, 28.52, (360, 640), 1.14, 1.22),          # upgrade 49,4 %; snaps back on the hit 28.52
+    (33.62, 37.50, (360, 560), 1.20, 1.32),          # «Не повезло»; cut at 37.50
+    (38.10, 41.71, (360, 620), 1.06, 1.38),          # break: slow push into 19,9 %; cut at the drop
+    (41.71, 46.82, (360, 800), 1.10, 1.16),          # «Улучшено»; snaps back on the hit 46.82
 ]
 
-# Head moves with the story: (time, dx, dy, dscale)
+# Head travels with the story (author: smooth, harmonious): (arrival time, x, y offset, scale mult).
+# Between keys it glides with ease-in-out; it steps aside so prices / buttons / «Не повезло» stay visible.
 HEAD_KEYS = [
-    (0.00, 0, -30, 0.04), (3.10, 0, -70, 0.08), (3.30, 0, 0, 0.0), (4.50, 0, 0, 0.0),
-    (7.70, 0, 0, 0.0), (8.30, 0, -55, 0.05), (10.00, 0, -55, 0.05), (10.40, -45, 10, 0.0), (12.90, -45, 10, 0.0),
-    (13.40, 0, -55, 0.05), (15.10, 0, -55, 0.05), (15.50, 45, 15, 0.0), (19.00, 45, 15, 0.0),
-    (19.50, 0, -60, 0.06), (21.25, 0, -60, 0.06), (21.55, 0, -25, 0.05), (24.30, 0, 0, 0.0),
-    (26.90, 70, 10, -0.02), (29.10, 70, 10, -0.02), (29.70, 0, -60, 0.06), (33.50, 0, -75, 0.08),
-    (33.75, 0, 45, -0.03), (35.70, 0, 45, -0.03), (36.40, -30, 95, -0.07), (37.50, -30, 95, -0.07),
-    (37.90, 0, -20, 0.0), (41.60, 0, -120, 0.13), (41.80, 0, 0, 0.0), (58.10, 0, 0, 0.0),
+    (0.00, 540, -10, 1.02), (3.00, 540, -60, 1.08), (4.50, 540, 0, 1.0),
+    (9.20, 540, 0, 1.0), (10.40, 170, 60, 0.84),            # popup 1: glides left, the price is free
+    (12.18, 170, 60, 0.84), (13.10, 540, 0, 1.0),           # back to the centre for the next press
+    (14.20, 540, 0, 1.0), (15.40, 910, 60, 0.84),           # popup 2: glides right
+    (18.30, 910, 60, 0.84), (19.25, 540, 0, 1.0),
+    (20.30, 540, 0, 1.0), (21.50, 170, 60, 0.86),           # popup 3 (rage): left
+    (24.40, 170, 60, 0.86), (25.60, 225, 35, 0.90),         # upgrade page: stays left, the button is free
+    (33.60, 225, 35, 0.90), (34.80, 540, 60, 0.96),         # loss: slumps to the centre
+    (35.80, 540, 70, 0.94), (37.20, 265, 90, 0.90),         # sad, drifts aside before the last press
+    (38.20, 265, 90, 0.90), (41.55, 540, -80, 1.10),        # break: creeps up to the wheel
+    (41.80, 540, 0, 1.0), (58.10, 540, 0, 1.0),
 ]
 
 # Case results are all «неокуп» (author: no exact numbers, plain words): 915 / 780 / 566 of 999
-LOSS_TAGS = [(10.25, 'ПОЧТИ ОКУП'), (15.35, 'НЕОКУП'), (21.45, 'МИНУС ПОЛКЕЙСА')]
-PRICE_XY = card_xy(360, 1290)           # between the price and the buttons
+LOSS_TAGS = [(10.25, 'ПОЧТИ ОКУП', card_xy(430, 1290)), (15.35, 'НЕОКУП', card_xy(290, 1290)),
+             (21.45, 'МИНУС ПОЛКЕЙСА', card_xy(440, 1290))]   # between the price and the buttons, away from the head
 CONFETTI = 42.45                        # win: gold confetti from the top
 
 # Summary «чек» (author 2026-11-10): the shown chain only — 3 cases × 999 = 2 997★ -> Neko Helmet 6 683★

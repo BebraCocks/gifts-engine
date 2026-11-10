@@ -1,63 +1,81 @@
-"""Narration is optional; the complete advertisement sound is always present.
-SFX come from the default library input/sfx/ through engine/sfxkit.py (different variants every time).
-Writes build/mix.wav and, for the author to listen to, build/review/{sfx_only,mix}.mp3 + sfx_cues.txt."""
+"""43-aura-ludoman sound: the author's track «AURA – Ultra Slowed» whole (= video length), the voice on its cues
+(music ducked under speech), SFX from input/sfx/ through sfxkit. No RubUp banner (author, 2026-11-10).
+Writes build/mix.wav and build/review/{sfx_only,mix}.mp3 + sfx_cues.txt."""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import paths
 HERE = paths.enter(__file__)
-import numpy as np
 import wave
-import banner
-import sound
+import numpy as np
 import sfxkit
-from timeline import DUR, ON, END, HAS_NARRATION, TAKES
-from events import AD_STOP
+import voice_review
+import events as E
+from timeline import DUR, DROP1, DROP2, BREAK
 
 SR = 48000
-BR = banner.Breaks([AD_STOP], cy=960)
-SFX_GAIN_DB = 0.0          # whole SFX layer; individual cues set their own gain_db
 
 
 def sfx_layer(n, kit):
-    """Placeholder cues: replace with the real events of this video (see the «Звук» storyboard section).
-    One cue = one action on screen. Pick the role by what happens, not by habit."""
     fx = np.zeros((n, 2))
-    for k, t in enumerate(ON):
-        kit.add(fx, 'select-soft', t, gain_db=-16, label=f'line {k + 1} appears')
-    kit.add(fx, 'whoosh*', AD_STOP, align='peak', gain_db=-14, label='slow-down to RubUp')
-    return fx * 10 ** (SFX_GAIN_DB / 20)
+    a = kit.add
+    # hook: tension to «ДА!», hidden result
+    a(fx, 'riser', E.HOOK_HIDE, align='end', gain_db=-21, label='hook: the final spin builds')
+    a(fx, 'impact', E.HOOK_HIDE, align='peak', gain_db=-15, label='hook: «ДА!» flash')
+    a(fx, 'sparkle', E.HOOK_HIDE + 0.05, gain_db=-20, label='hook: joy sparkle')
+    a(fx, 'spinback', E.HOOK_END - 0.3, gain_db=-17, fit=0.45, fade_out=0.12, label='rewind to the start of the story')
+    # hand presses: approach + a firm click on the button
+    for k, (tp, _) in enumerate(E.PRESSES):
+        a(fx, 'whoosh-short', tp, align='peak', gain_db=-24, pan=0.25, label=f'hand {k + 1}: reach')
+        a(fx, 'click', tp, align='peak', gain_db=-11, pan=0.1, label=f'hand {k + 1}: press')
+    # case roulettes (fast)
+    for tp in E.PRESSES[:3]:
+        a(fx, 'list', tp[0] + 0.12, gain_db=-25, fit=1.8, label='roulette ticks')
+    # gifts pop out of the popup
+    for tp, gift, *_ in E.POPS[:3]:
+        a(fx, 'pop', tp, gain_db=-14, label=f'{gift} pops out')
+        a(fx, 'granular-move', tp + 0.05, gain_db=-23, label=f'{gift} shimmer')
+    a(fx, 'cartoon-hit', 21.45, align='peak', gain_db=-19, label='566?! the head jolts with rage')
+    # upgrade 50/50 -> loss
+    a(fx, 'riser', E.LOSE, align='end', gain_db=-23, label='upgrade spin builds')
+    a(fx, 'error', E.LOSE, align='peak', gain_db=-13, label='«Не повезло»')
+    a(fx, 'power-down', E.LOSE + 0.1, gain_db=-20, label='the fire collapses')
+    a(fx, 'downlifter', 35.9, gain_db=-26, fit=1.6, label='sad: «опять мимо»')
+    # break: the final upgrade
+    # second drop: win
+    a(fx, 'riser-hit', DROP2, align='peak', gain_db=-16, label='final spin 19.9 % builds (break) -> «Улучшено» on the drop')
+    a(fx, 'confirm', DROP2 + 0.05, gain_db=-15, label='win confirm')
+    a(fx, 'pop', E.POPS[3][0], gain_db=-13, label='Neko Helmet pops out')
+    a(fx, 'sparkle-whoosh', E.POPS[3][0] + 0.05, gain_db=-19, label='gold rays')
+    a(fx, 'coin', 46.0, gain_db=-20, label='6 683 stars')
+    a(fx, 'cartoon-move', E.HOVER[0], gain_db=-22, label='greedy hand creeps back to «Улучшить»')
+    return fx
 
 
-def make_mix(kit):
-    n = int(round(DUR * SR))
-    voice = np.zeros((n, 2), np.float64)
-    if HAS_NARRATION:
-        for k, take in enumerate(TAKES):
-            data = sound.load_stereo(take, SR)
-            start = round(ON[k] * SR)
-            count = min(len(data), n - start)
-            voice[start:start+count] += data[:count] * 0.85
-    else:
-        print('Дикторской озвучки нет. Добавите новый ключ Fish Audio и свой голос? Пока текст + звук баннера.')
-    fx = sfx_layer(n, kit)
-    if HAS_NARRATION:                       # SFX step back under speech
-        env = np.abs(voice).max(1)
-        env = np.convolve(env, np.ones(2400) / 2400, 'same')
-        fx *= (1 - 0.5 * np.clip(env / (np.percentile(env, 95) * 0.5 + 1e-9), 0, 1))[:, None]
-    return voice + fx, fx
-
-
-if __name__ == '__main__':
+def main():
     kit = sfxkit.Kit(HERE)
-    content, fx = make_mix(kit)
-    data = BR.audio(content, SR)
-    output = paths.build(HERE) / 'mix.wav'
-    with wave.open(str(output), 'wb') as w:
+    music = voice_review.read(voice_review.TRACK, ch=2)
+    n = int(round(DUR * SR))
+    music = np.pad(music, ((0, max(0, n - len(music))), (0, 0)))[:n]
+    v = voice_review.voice_track(n)
+    v *= 0.89 / max(1e-9, np.abs(v).max())
+    env = np.convolve(np.abs(v), np.ones(SR // 20) / (SR // 20), 'same')
+    duck = 1 - 0.45 * np.clip(env / 0.03, 0, 1)                    # music −5 dB under speech
+    duck = np.convolve(duck, np.ones(SR // 8) / (SR // 8), 'same')
+    fx = sfx_layer(n, kit)
+    fx *= (1 - 0.4 * np.clip(env / 0.03, 0, 1))[:, None]            # SFX step back under speech too
+    mix = music * 0.58 * duck[:, None] + v[:, None] * 0.92 + fx
+    mix /= max(1.0, np.abs(mix).max() / 0.97)
+    out = paths.build(HERE) / 'mix.wav'
+    with wave.open(str(out), 'wb') as w:
         w.setnchannels(2)
         w.setsampwidth(2)
         w.setframerate(SR)
-        w.writeframes((np.clip(data, -0.98, 0.98)*32767).astype('<i2').tobytes())
-    kit.save(BR)
-    rev = sfxkit.write_review(HERE, fx, data, BR, SR, kit.cues)
-    print('build/mix.wav готов; для прослушивания:', rev / 'sfx_only.mp3', rev / 'mix.mp3', rev / 'sfx_cues.txt')
+        w.writeframes((np.clip(mix, -0.98, 0.98) * 32767).astype('<i2').tobytes())
+    kit.save()
+    rev = sfxkit.write_review(HERE, fx, mix, None, SR, kit.cues)
+    print('build/mix.wav; review:', rev / 'sfx_only.mp3', rev / 'mix.mp3', rev / 'sfx_cues.txt')
+
+
+if __name__ == '__main__':
+    main()

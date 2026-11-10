@@ -1,11 +1,3 @@
-"""Neutral scaffold. Replace these choices with the new author's visual brief."""
-STYLE_READY = False
-BACKGROUND = (32, 32, 32)
-TEXT_COLOR = (245, 245, 245)
-FONT_WEIGHT = 'Semibold'
-FONT_SIZE = 68
-# None means no downloaded gift. Set both names when the script needs a gift.
-GIFT_NAME = None
-MODEL_NAME = None
-# True explicitly chooses text-only mode, even if voice takes are present.
+"""43-aura-ludoman: own visual concept (STORYBOARD.md §2) — marble head + hands over the RubUp screen card."""
+STYLE_READY = True
 WITHOUT_NARRATION = False

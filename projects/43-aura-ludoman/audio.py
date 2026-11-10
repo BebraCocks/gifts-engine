@@ -16,9 +16,25 @@ from timeline import DUR, DROP1, DROP2, BREAK
 SR = 48000
 
 
+def ticks(kit, fx, t0, t1, key, file, gain, first=0.045, last=0.32, label=''):
+    """A decelerating roulette / wheel tick train from one pack sound (a deliberate motif: key=)."""
+    t, k = t0, 0
+    while t < t1:
+        u = (t - t0) / (t1 - t0)
+        kit.add(fx, 'list', t, gain_db=gain - 4 * u, key=key, file=file, pan=0.15 * ((-1) ** k),
+                label=label if k == 0 else None)
+        t += first + (last - first) * u ** 2.2
+        k += 1
+
+
 def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
+    # spins: roulette ticks for the cases, wheel ticks for the upgrades
+    for (tp, _), stop in zip(E.PRESSES[:3], E.POPS[:3]):
+        ticks(kit, fx, tp + 0.06, stop[0] - 0.12, 'roulette', 'mini-list-one-shot-2', -15, label='case roulette spins')
+    for t0, t1 in ((0.0, E.HOOK_HIDE - 0.15), (E.PRESSES[3][0] + 0.06, E.LOSE - 0.1), (E.PRESSES[4][0] + 0.06, DROP2 - 0.1)):
+        ticks(kit, fx, t0, t1, 'wheel', 'mini-list-one-shot.flac', -13, first=0.06, last=0.42, label='upgrade wheel spins')
     # hook: tension to «ДА!», hidden result
     a(fx, 'riser', E.HOOK_HIDE, align='end', gain_db=-21, label='hook: the final spin builds')
     a(fx, 'impact', E.HOOK_HIDE, align='peak', gain_db=-15, label='hook: «ДА!» flash')
@@ -28,9 +44,6 @@ def sfx_layer(n, kit):
     for k, (tp, _) in enumerate(E.PRESSES):
         a(fx, 'whoosh-short', tp, align='peak', gain_db=-24, pan=0.25, label=f'hand {k + 1}: reach')
         a(fx, 'click', tp, align='peak', gain_db=-11, pan=0.1, label=f'hand {k + 1}: press')
-    # case roulettes (fast)
-    for tp in E.PRESSES[:3]:
-        a(fx, 'list', tp[0] + 0.12, gain_db=-25, fit=1.8, label='roulette ticks')
     # gifts pop out of the popup
     for tp, gift, *_ in E.POPS[:3]:
         a(fx, 'pop', tp, gain_db=-14, label=f'{gift} pops out')
@@ -48,7 +61,15 @@ def sfx_layer(n, kit):
     a(fx, 'pop', E.POPS[3][0], gain_db=-13, label='Neko Helmet pops out')
     a(fx, 'sparkle-whoosh', E.POPS[3][0] + 0.05, gain_db=-19, label='gold rays')
     a(fx, 'coin', 46.0, gain_db=-20, label='6 683 stars')
-    a(fx, 'cartoon-move', E.HOVER[0], gain_db=-22, label='greedy hand creeps back to «Улучшить»')
+    for ta, text, _ in E.AURA_TEXT:
+        a(fx, 'glitch-text', ta, gain_db=-21, label=text)
+    # the helmet goes on, bears fly
+    a(fx, 'whoosh-short', E.HELMET_ON, align='peak', gain_db=-18, label='helmet flies to the head')
+    a(fx, 'impact', E.HELMET_ON, align='peak', gain_db=-15, label='helmet on (bass hit)')
+    a(fx, 'transform', E.HELMET_ON + 0.05, gain_db=-22, label='helmet locks')
+    for tt, hand, bears in E.THROWS:
+        a(fx, 'cartoon-move', tt, gain_db=-20, pan=0.4 if hand == 'R' else -0.4, label=f'bears thrown ({hand})')
+        a(fx, 'boing', tt + 0.05, gain_db=-24, pan=0.4 if hand == 'R' else -0.4, label='bear boing')
     return fx
 
 

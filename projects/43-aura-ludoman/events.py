@@ -24,10 +24,19 @@ POPS = [
     (10.13, 'Ginger Cookie', 'Brand New', POPUP_GIFT, 1.75),
     (15.24, 'Snow Globe', 'Choco Waffle', POPUP_GIFT, 1.75),
     (21.37, 'Eternal Candle', 'Candyman', POPUP_GIFT, 2.4),
-    (42.41, 'Neko Helmet', 'Glitch', WIN_GIFT, 99.0),          # the win stays up to the end
+    (42.41, 'Neko Helmet', 'Glitch', WIN_GIFT, 99.0),          # the win: hero until HELMET_FLY, then onto the head
 ]
 
-HOVER = (55.30, card_xy(175, 1135))  # «а может, ещё разок?»: the hand creeps to «Улучшить» and trembles
+HELMET_FLY, HELMET_ON = 51.20, 51.93   # «…Шлем мой!»: the helmet flies from the popup onto the head (on a bass hit)
+CTA = 53.60                            # «Первым ста в комментах — по мишке!»
+BEAR_ID = '5170233102089322756'        # the plain 15 ⭐ bear (Telegram gift id; Lottie via gifts_api.original_file)
+# bear throws on bass hits: (time, hand, [(vx, vy, size, spin), ...])
+THROWS = [
+    (53.97, 'R', [(-420, -2150, 280, -2.2), (60, -2350, 250, 1.6)]),
+    (54.99, 'L', [(430, -2100, 290, 2.4), (-40, -2300, 250, -1.4)]),
+    (56.01, 'R', [(-650, -1950, 270, -2.8), (-180, -2450, 240, 2.0)]),
+    (57.04, 'L', [(640, -1950, 280, 2.6), (190, -2400, 245, -1.8)]),
+]
 LOSE = 33.62                       # «Не повезло»
 HOOK_HIDE = 3.20                   # hook: «ДА!», the result is hidden
 HOOK_END = 4.50
@@ -36,5 +45,8 @@ HOOK_END = 4.50
 EMO = [
     (0.00, 'tense'), (HOOK_HIDE, 'joy'), (HOOK_END, 'calm'),
     (10.20, 'annoyed'), (15.30, 'angry'), (21.40, 'rage'), (26.70, 'cocky'),
-    (LOSE, 'rage'), (35.90, 'sad'), (BREAK, 'tense'), (DROP2, 'joy'), (53.60, 'greedy'),
+    (LOSE, 'rage'), (35.90, 'sad'), (BREAK, 'tense'), (DROP2, 'joy'),
 ]
+
+# aura meme counters (modest: two moments)
+AURA_TEXT = [(LOSE + 0.1, '−1000 AURA', (255, 70, 60)), (DROP2 + 0.15, '+1000 AURA', (255, 210, 80))]

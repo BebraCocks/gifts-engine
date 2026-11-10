@@ -290,7 +290,7 @@ def place_head(canvas, t):
     c, sn = math.cos(rot), math.sin(rot)
     eyes = [(x + s * (c * (ex - HEAD_ANCHOR[0]) - sn * (ey - HEAD_ANCHOR[1])),
              y + s * (sn * (ex - HEAD_ANCHOR[0]) + c * (ey - HEAD_ANCHOR[1]))) for ex, ey in EYES]
-    return eyes, s
+    return eyes, s, (x, y, s, rot)
 
 
 def hand_pose(t, side):
@@ -341,15 +341,13 @@ def hand_pose(t, side):
                 touch = math.exp(-((t - tp) / 0.06) ** 2)
                 s = s * (1 + 0.15 * k) * (1 - 0.18 * touch)
                 break
-    if side == 'R' and t >= E.HOVER[0]:                    # greedy: creeps to «Улучшить» again, stops short
-        k = fx.smooth((t - E.HOVER[0]) / 1.1)
-        bx, by = E.HOVER[1]
-        rx, ry = x + (HAND_TIP_R[0] - img.width / 2) * s, y + (HAND_TIP_R[1] - img.height / 2) * s
-        anchor = HAND_TIP_R
-        x = rx + (bx + 30 - rx) * k + 3 * k * math.sin(t * 38)
-        y = ry + (by + 70 - ry) * k + 3 * k * math.sin(t * 31)
-        rot = 0.4 * k
-        s = s * (1 + 0.12 * k)
+    for tt, hand, _ in E.THROWS:                          # CTA: a quick upward fling per throw
+        if hand == side and -0.3 <= t - tt < 0.35:
+            u = t - tt
+            k = math.exp(-((u + 0.02) / 0.12) ** 2)
+            y -= 150 * k
+            rot += (0.6 if side == 'L' else -0.6) * k
+            x += (-40 if side == 'L' else 40) * k
     return img, anchor, x, y, s, rot
 
 
@@ -415,6 +413,8 @@ def place_pops(canvas, t):
     for tp, gift, model, (gx, gy), hold in E.POPS:
         u = t - tp
         total = 0.35 + hold + 0.35
+        if gift == 'Neko Helmet':
+            total = E.HELMET_FLY - tp                   # then place_helmet takes over
         if not (0 <= u < total):
             continue
         path = gifts_api.model_file(gift, model, 'json')
@@ -475,6 +475,109 @@ def burst(canvas, x, y, u, size):
     fx.over(canvas, fx.draw_rgba((x - 2 * size, y - 2 * size, x + 2 * size, y + 2 * size), fn), add=True)
 
 
+
+# ---------------------------------------------------------------- helmet on the head, bears, aura text
+HELMET_AT = (493.0, 388.0)          # helmet centre in head.png px: its eye holes land on the statue eyes
+HELMET_BOX = 820.0                  # Lottie box in head.png px (hole spacing 0.254 box = eye spacing 208 px)
+
+
+def place_helmet(canvas, t, pose):
+    if t < E.HELMET_FLY:
+        return
+    hx, hy, hs, hr = pose
+    c, sn = math.cos(hr), math.sin(hr)
+    dx, dy = HELMET_AT[0] - HEAD_ANCHOR[0], HELMET_AT[1] - HEAD_ANCHOR[1]
+    ax, ay = hx + hs * (c * dx - sn * dy), hy + hs * (sn * dx + c * dy)
+    size1, rot1 = HELMET_BOX * hs, hr
+    gx, gy = E.WIN_GIFT
+    x0, y0, size0 = gx + HERO['Neko Helmet'][0], gy + HERO['Neko Helmet'][1], HERO['Neko Helmet'][2]
+    path = gifts_api.model_file('Neko Helmet', 'Glitch', 'json')
+    u = (t - E.HELMET_FLY) / (E.HELMET_ON - E.HELMET_FLY)
+    if u < 1:
+        k = fx.ease_in(u) * 0.6 + fx.smooth(u) * 0.4
+        x = x0 + (ax - x0) * k
+        y = y0 + (ay - y0) * k - 260 * math.sin(math.pi * k)
+        size = size0 + (size1 - size0) * k
+        rot = 2 * math.pi * fx.smooth(u) + rot1
+    else:
+        v = t - E.HELMET_ON
+        sq = math.exp(-v * 8) * math.sin(v * 30) * 0.06
+        x, y, rot = ax, ay + 20 * math.exp(-v * 10), rot1
+        size = size1 * (1 + sq)
+    im = lottie.frame(str(path), t - E.POPS[3][0], size=int(size) // 2 * 2)
+    fx.over(canvas, fx.warp(im, x, y, 1.0, rot_=rot))
+
+
+BEAR = None
+
+
+def place_bears(canvas, t):
+    global BEAR
+    G = 2600.0
+    for tt, hand, bears in E.THROWS:
+        u = t - tt
+        if u < 0 or u > 2.0:
+            continue
+        if BEAR is None:
+            BEAR = str(gifts_api.original_file(E.BEAR_ID, 'json'))
+        _, _, hx, hy, _, _ = hand_pose(tt, hand)
+        for k, (vx, vy, size, spin) in enumerate(bears):
+            x = hx + vx * u
+            y = hy - 60 + vy * u + 0.5 * G * u * u
+            if y > H + 300 or x < -300 or x > W + 300:
+                continue
+            sz = size * (0.55 + 0.45 * fx.ease_out(min(1.0, u / 0.18)))
+            im = lottie.frame(BEAR, u + k * 0.7, size=int(sz) // 2 * 2)
+            fx.over(canvas, fx.warp(im, x, y, 1.0, rot_=spin * u))
+
+
+def place_aura_text(canvas, t):
+    for ta, text, col in E.AURA_TEXT:
+        u = t - ta
+        if not (0 <= u < 1.7):
+            continue
+        im = fx.text_img(((text, col),), 96, 'Heavy')
+        k = fx.ease_out_back(min(1.0, u / 0.25), 2.0)
+        a = min(1.0, u / 0.08) * (1 - fx.smooth((u - 1.2) / 0.5))
+        x, y = 540, 1280 - 110 * fx.ease_out(u / 1.7)
+        glow = im.filter(ImageFilter.GaussianBlur(14))
+        fx.over(canvas, fx.warp(glow, x, y, 1.08 * k, rot_=-0.06), alpha=a, add=True)
+        fx.over(canvas, fx.warp(im, x, y, k, rot_=-0.06), alpha=a)
+
+
+# ---------------------------------------------------------------- aura post: zoom punch, RGB split, vignette, grain
+_POST = {}
+
+
+def post(out, t):
+    pulse = hit_pulse(t)
+    z = 1 + 0.016 * pulse
+    big = 0.0
+    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2, E.HELMET_ON):
+        if 0 <= t - tf < 0.5:
+            big = max(big, math.exp(-(t - tf) * 7))
+    z += 0.035 * big
+    if z > 1.0005:
+        cw, ch = W / z, H / z
+        x0, y0 = (W - cw) / 2, (H - ch) / 2 + (ch - H) * -0.0
+        out = np.asarray(Image.fromarray(out).resize((W, H), Image.BILINEAR, box=(x0, y0, x0 + cw, y0 + ch)))
+    d = int(round(9 * big))
+    out = out.astype(np.float32)
+    if d:
+        out[:, :, 0] = np.roll(out[:, :, 0], d, 1)
+        out[:, :, 2] = np.roll(out[:, :, 2], -d, 1)
+    if 'vig' not in _POST:
+        yy, xx = np.mgrid[0:H, 0:W]
+        r = np.sqrt(((xx - W / 2) / (W * 0.62)) ** 2 + ((yy - H / 2) / (H * 0.62)) ** 2)
+        _POST['vig'] = (1 - 0.38 * np.clip(r - 0.55, 0, 1) ** 1.4)[..., None].astype(np.float32)
+        rng = np.random.default_rng(43)
+        _POST['grain'] = rng.normal(0, 5.5, (4, H // 2, W // 2)).astype(np.float32)
+    g = _POST['grain'][int(t * 24) % 4]
+    g = np.repeat(np.repeat(g, 2, 0), 2, 1)[..., None]
+    out = out * _POST['vig'] + g
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
 # ---------------------------------------------------------------- background and flashes
 _BG = None
 
@@ -491,7 +594,7 @@ def background():
 def flashes(canvas, t):
     for tf, col, dur, peak in ((E.HOOK_HIDE, (255, 230, 160), 0.35, 0.75), (E.HOOK_END, (255, 255, 255), 0.18, 0.5),
                                (DROP1, (120, 150, 255), 0.25, 0.25), (E.LOSE, (255, 30, 20), 0.5, 0.35),
-                               (DROP2, (255, 210, 80), 0.6, 0.8)):
+                               (DROP2, (255, 210, 80), 0.6, 0.8), (E.HELMET_ON, (255, 235, 170), 0.3, 0.45)):
         u = (t - tf) / dur
         if 0 <= u < 1:
             a = peak * (1 - u) ** 2
@@ -499,7 +602,7 @@ def flashes(canvas, t):
 
 
 def shake(t):
-    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12)):
+    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12), (E.HELMET_ON, 12)):
         u = t - tf
         if 0 <= u < 0.4:
             k = amp * math.exp(-u * 9)
@@ -516,13 +619,16 @@ def render_at(t):
     place_card(canvas, t, tint)
     press_ripple(canvas, t)
     place_hand(canvas, t, 'L')
-    eyes, s = place_head(canvas, t)
+    eyes, s, pose = place_head(canvas, t)
+    place_helmet(canvas, t, pose)
     draw_fire(canvas, eyes, s / 0.7, t)
     place_hand(canvas, t, 'R')
     place_pops(canvas, t)
+    place_bears(canvas, t)
+    place_aura_text(canvas, t)
     flashes(canvas, t)
     dx, dy = shake(t)
-    out = np.clip(canvas, 0, 255).astype(np.uint8)
+    out = post(np.clip(canvas, 0, 255).astype(np.uint8), t)
     if dx or dy:
         out = np.roll(out, (dy, dx), (0, 1))
     return out

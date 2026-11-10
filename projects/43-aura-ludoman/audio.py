@@ -49,6 +49,10 @@ def sfx_layer(n, kit):
         a(fx, 'pop', tp, gain_db=-14, label=f'{gift} pops out')
         a(fx, 'granular-move', tp + 0.05, gain_db=-23, label=f'{gift} shimmer')
     a(fx, 'cartoon-hit', 21.45, align='peak', gain_db=-19, label='566?! the head jolts with rage')
+    # every case is «неокуп»: a short fail + the red minus tag
+    for ta, text in E.LOSS_TAGS:
+        a(fx, 'error', ta - 0.05, gain_db=-19, label=f'неокуп {text}')
+        a(fx, 'glitch-text', ta, gain_db=-25, label='red minus tag')
     # upgrade 50/50 -> loss
     a(fx, 'riser', E.LOSE, align='end', gain_db=-23, label='upgrade spin builds')
     a(fx, 'error', E.LOSE, align='peak', gain_db=-13, label='«Не повезло»')
@@ -60,7 +64,15 @@ def sfx_layer(n, kit):
     a(fx, 'confirm', DROP2 + 0.05, gain_db=-15, label='win confirm')
     a(fx, 'pop', E.POPS[3][0], gain_db=-13, label='Neko Helmet pops out')
     a(fx, 'sparkle-whoosh', E.POPS[3][0] + 0.05, gain_db=-19, label='gold rays')
+    a(fx, 'sparkle', E.CONFETTI, gain_db=-18, label='win confetti')
     a(fx, 'coin', 46.0, gain_db=-20, label='6 683 stars')
+    # summary «чек»: slide in, three counters, the stamp on a hit
+    a(fx, 'whoosh-short', E.SUMMARY_T0 + 0.2, align='peak', gain_db=-19, label='summary slides in')
+    for k, tr in enumerate(E.SUMMARY_ROWS):
+        a(fx, 'counter', tr, gain_db=-21, fit=0.7, fade_out=0.15, label=('spent', 'received', 'profit')[k] + ' counter')
+    a(fx, 'impact', E.SUMMARY_STAMP, align='peak', gain_db=-15, label='«ОКУП ×2,23» stamp')
+    a(fx, 'coin', E.SUMMARY_STAMP + 0.1, gain_db=-20, label='stamp coins')
+    a(fx, 'whoosh-short', E.SUMMARY_T1 - 0.15, align='peak', gain_db=-22, label='summary flies away')
     for ta, text, _ in E.AURA_TEXT:
         a(fx, 'glitch-text', ta, gain_db=-21, label=text)
     # the helmet flies back into the win window (on the hit), bears fly

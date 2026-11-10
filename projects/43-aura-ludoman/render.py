@@ -575,6 +575,115 @@ def place_aura_text(canvas, t):
         fx.over(canvas, fx.warp(im, x, y, k, rot_=-0.06), alpha=a)
 
 
+
+# ---------------------------------------------------------------- outcome FX: minus tags, confetti, summary
+def fmt(n):
+    return f'{int(round(n)):,}'.replace(',', ' ')
+
+
+def place_loss_tags(canvas, t):
+    for ta, text in E.LOSS_TAGS:
+        u = t - ta
+        if not (0 <= u < 1.9):
+            continue
+        x, y = zmap(*E.PRICE_XY, t)
+        k = fx.ease_out_back(min(1.0, u / 0.22), 2.2)
+        a = min(1.0, u / 0.06) * (1 - fx.smooth((u - 1.4) / 0.5))
+        im = fx.text_img(((text, (255, 70, 60)),), 62, 'Heavy')
+        glow = im.filter(ImageFilter.GaussianBlur(10))
+        y -= 70 * fx.ease_out(u / 1.9)
+        x += 4 * math.sin(u * 40) * math.exp(-u * 6)
+        fx.over(canvas, fx.warp(glow, x, y, k), alpha=a * 0.9, add=True)
+        fx.over(canvas, fx.warp(im, x, y, k, rot_=-0.08), alpha=a)
+
+
+CONF_COLS = [(255, 205, 60), (255, 240, 170), (255, 150, 40), (255, 255, 255), (120, 200, 255)]
+
+
+def place_confetti(canvas, t):
+    u = t - E.CONFETTI
+    if not (0 <= u < 3.6):
+        return
+
+    def fn(d, m, S):
+        for i in range(110):
+            r = [((i * 7919 + k * 104729) % 1000) / 1000 for k in range(6)]
+            x0 = r[0] * W
+            vy = 380 + 520 * r[1]
+            y = -60 - 500 * r[2] + vy * u
+            x = x0 + 40 * math.sin(u * (2 + 3 * r[3]) + i)
+            if y > H + 40:
+                continue
+            w, h = 10 + 10 * r[4], 5 + 6 * r[5]
+            th = u * (3 + 6 * r[3]) + i
+            c, sn = math.cos(th), math.sin(th) * (0.4 + 0.6 * abs(math.cos(u * 5 + i)))
+            pts = [(x + c * dx - sn * dy, y + sn * dx + c * dy) for dx, dy in ((-w, -h), (w, -h), (w, h), (-w, h))]
+            col = CONF_COLS[i % len(CONF_COLS)]
+            d.polygon([m(*p) for p in pts], fill=col + (int(235 * min(1.0, (3.6 - u) / 0.6)),))
+    fx.over(canvas, fx.draw_rgba((0, 0, W, H), fn))
+
+
+def counter(t, t0, value, dur=0.65):
+    u = fx.clamp01((t - t0) / dur)
+    return value * fx.ease_out(u)
+
+
+def summary_dim(canvas, t):
+    """Dim the screen card under the summary (drawn before the head, so the head stays bright)."""
+    t0, t1 = E.SUMMARY_T0, E.SUMMARY_T1
+    if t0 <= t < t1:
+        kout = fx.ease_in(fx.clamp01((t - (t1 - 0.35)) / 0.35))
+        canvas[:, :, :3] *= 1 - 0.55 * min(1.0, (t - t0) / 0.3) * (1 - kout)
+        fx.over(canvas, LOGO)                             # the RubUp logo stays bright
+
+
+def place_summary(canvas, t):
+    t0, t1 = E.SUMMARY_T0, E.SUMMARY_T1
+    if not (t0 <= t < t1):
+        return
+    kin = fx.ease_out_back(min(1.0, (t - t0) / 0.45), 1.3)
+    kout = fx.ease_in(fx.clamp01((t - (t1 - 0.35)) / 0.35))
+    pw, ph = 860, 640
+    cx = 540
+    cy = 700 - (1 - kin) * 900 - kout * 1100
+    panel = fx.rounded(pw, ph, 40, (16, 16, 34, 238), outline=(255, 205, 80, 150), width=3)
+    fx.over(canvas, fx.warp(fx.radial(256, (255, 190, 60), power=1.6), cx, cy, 1300 / 256), alpha=0.25 * (1 - kout), add=True)
+    fx.over(canvas, fx.warp(panel, cx, cy, 1.0))
+    top = cy - ph / 2
+    title = fx.text_img((('ИТОГ ЛУДОМАНА', (255, 215, 110)),), 54, 'Heavy')
+    fx.over(canvas, fx.warp(title, cx, top + 70, 1.0))
+    rows = [('Потрачено · 3 кейса', '−' + fmt(counter(t, E.SUMMARY_ROWS[0], E.SPENT)) + ' ★', (255, 90, 80)),
+            ('Получено · Neko Helmet', '+' + fmt(counter(t, E.SUMMARY_ROWS[1], E.GOT)) + ' ★', (255, 210, 80)),
+            ('Профит', '+' + fmt(counter(t, E.SUMMARY_ROWS[2], E.GOT - E.SPENT)) + ' ★', (110, 255, 140))]
+    for k, ((label, val, col), tr) in enumerate(zip(rows, E.SUMMARY_ROWS)):
+        if t < tr:
+            continue
+        a = min(1.0, (t - tr) / 0.12)
+        y = top + 175 + k * 120 + (18 if k == 2 else 0)
+        dx = 60 * (1 - fx.ease_out(min(1.0, (t - tr) / 0.25)))
+        size = 60 if k == 2 else 50
+        lab = fx.text_img(((label, (200, 205, 230)),), 40 if k < 2 else 48, 'Semibold' if k < 2 else 'Heavy')
+        fx.over(canvas, (lab, int(cx - pw / 2 + 50 + dx) - 8, int(y - lab.height / 2)), alpha=a)
+        v = fx.text_img(((val, col),), size, 'Heavy')
+        fx.over(canvas, (v, int(cx + pw / 2 - 50 - v.width + dx) + 8, int(y - v.height / 2)), alpha=a)
+        if k == 1:
+            line_y = int(y + 62)
+            canvas[line_y:line_y + 3, int(cx - pw / 2 + 50):int(cx + pw / 2 - 50), :3] = \
+                canvas[line_y:line_y + 3, int(cx - pw / 2 + 50):int(cx + pw / 2 - 50), :3] * (1 - a * 0.6) + 120 * a * 0.6
+    ts = E.SUMMARY_STAMP
+    if t >= ts:
+        u = t - ts
+        k = 1 + 1.4 * math.exp(-u * 11) * (1 if u < 0.6 else 0)
+        a = min(1.0, u / 0.06)
+        roi = f'ОКУП ×{E.GOT / E.SPENT:.2f}'.replace('.', ',')
+        txt = fx.text_img(((roi, (255, 215, 90)),), 74, 'Heavy')
+        st = fx.rounded(txt.width + 50, txt.height + 26, 22, None, outline=(255, 215, 90, 255), width=7)
+        st.alpha_composite(txt, ((st.width - txt.width) // 2, (st.height - txt.height) // 2))
+        fx.over(canvas, fx.warp(st.filter(ImageFilter.GaussianBlur(12)), cx + 150, top + ph - 70, k), alpha=a * 0.8,
+                add=True)
+        fx.over(canvas, fx.warp(st, cx + 150, top + ph - 70, k, rot_=-0.16), alpha=a)
+
+
 # ---------------------------------------------------------------- aura post: zoom punch, RGB split, vignette, grain
 _POST = {}
 
@@ -583,7 +692,7 @@ def post(out, t):
     pulse = hit_pulse(t)
     z = 1 + 0.016 * pulse
     big = 0.0
-    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2):
+    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2, 21.40, E.SUMMARY_STAMP):
         if 0 <= t - tf < 0.5:
             big = max(big, math.exp(-(t - tf) * 7))
     z += 0.035 * big
@@ -624,6 +733,8 @@ def background():
 def flashes(canvas, t):
     for tf, col, dur, peak in ((E.HOOK_HIDE, (255, 230, 160), 0.35, 0.75), (E.HOOK_END, (255, 255, 255), 0.18, 0.5),
                                (DROP1, (120, 150, 255), 0.25, 0.25), (E.LOSE, (255, 30, 20), 0.5, 0.35),
+                               (10.20, (255, 40, 30), 0.35, 0.18), (15.30, (255, 40, 30), 0.35, 0.2),
+                               (21.40, (255, 30, 20), 0.4, 0.26), (E.SUMMARY_STAMP, (255, 220, 120), 0.3, 0.35),
                                (DROP2, (255, 210, 80), 0.6, 0.8)):
         u = (t - tf) / dur
         if 0 <= u < 1:
@@ -632,7 +743,7 @@ def flashes(canvas, t):
 
 
 def shake(t):
-    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12)):
+    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12), (21.40, 9), (E.SUMMARY_STAMP, 12)):
         u = t - tf
         if 0 <= u < 0.4:
             k = amp * math.exp(-u * 9)
@@ -647,12 +758,16 @@ def render_at(t):
     fx.over(canvas, fx.warp(fx.radial(256, tint, power=1.6), 540, 1660, 1500 / 256),
             alpha=0.32 + 0.18 * hit_pulse(t), add=True)
     place_card(canvas, t, tint)
+    summary_dim(canvas, t)
     press_ripple(canvas, t)
     place_hand(canvas, t, 'L')
     eyes, s, pose = place_head(canvas, t)
     draw_fire(canvas, eyes, s / 0.7, t)
     place_hand(canvas, t, 'R')
     place_pops(canvas, t)
+    place_loss_tags(canvas, t)
+    place_confetti(canvas, t)
+    place_summary(canvas, t)
     place_bears(canvas, t)
     place_aura_text(canvas, t)
     flashes(canvas, t)

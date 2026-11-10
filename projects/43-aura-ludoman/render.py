@@ -273,9 +273,10 @@ def head_pose(t):
     if t >= DROP2:
         big = fx.ease_out_back(min(1.0, (t - DROP2) / 0.4)) * 0.75
     hxp, mdy, mds = head_move(t)
-    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk) * mds
-    x, y = hxp, 1915.0 - 40 * big + mdy
-    rot = 0.03 * math.sin(t * 1.3) + 0.02 * tk * math.sin(t * 7.0)
+    vx = (head_move(t + 0.04)[0] - head_move(t - 0.04)[0]) / 0.08    # glide speed, px/s
+    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk) * mds * (1 + 0.00004 * abs(vx))
+    x, y = hxp, 1915.0 - 40 * big + mdy - 0.035 * abs(vx)              # a little hop while travelling
+    rot = 0.03 * math.sin(t * 1.3) + 0.02 * tk * math.sin(t * 7.0) - 0.00022 * vx   # leans into the glide
     y += 4 * math.sin(t * 2.1) - 10 * pulse
     if st in ('rage', 'angry'):
         amp = 1.0 if st == 'rage' else 0.45

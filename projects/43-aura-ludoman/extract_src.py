@@ -1,5 +1,5 @@
 """Screen-recording frames for render.py: input/rubup_screen.mp4 -> build/src/NNNNNN.jpg (NNNNNN = round(s * 60)).
-Only the source ranges used by timeline.SEG; crop y 190..1440, scale 1.05 -> 756 x 1313 (events.CARD_*).
+Only the source ranges used by timeline.SEG; crop y 190..1470, scale 1.5 -> 1080 x 1920 (v3: the screen fills the frame; events.CARD_*).
 The recording is not in Git (>100 MB): Google Drive id 1vIYnVwsDUp9DktYtv4KcpxQmDNISQ40H, downloaded if missing."""
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -15,7 +15,7 @@ DRIVE = 'https://drive.usercontent.google.com/download?id=1vIYnVwsDUp9DktYtv4Kcp
 def cut(r):
     a, b = r
     subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-ss', str(a), '-to', str(b), '-i', str(SRC),
-                    '-vf', 'fps=60,crop=720:1250:0:190,scale=756:1313:flags=lanczos', '-q:v', '2',
+                    '-vf', 'fps=60,crop=720:1280:0:190,scale=1080:1920:flags=lanczos', '-q:v', '2',
                     '-start_number', str(round(a * 60)), str(OUT / '%06d.jpg')], check=True)
 
 

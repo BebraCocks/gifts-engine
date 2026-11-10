@@ -693,7 +693,7 @@ def place_summary(canvas, t):
         txt = fx.text_img((('ОКУП ×2', (255, 215, 90)),), 80, 'Heavy')
         st = fx.rounded(txt.width + 56, txt.height + 28, 24, None, outline=(255, 215, 90, 255), width=8)
         st.alpha_composite(txt, ((st.width - txt.width) // 2, (st.height - txt.height) // 2))
-        sx, sy = cx + 170, top + ph - 40
+        sx, sy = cx + 200, top + ph + 6                 # on the panel's bottom edge, clear of «В ПЛЮСЕ»
         fx.over(canvas, fx.warp(st.filter(ImageFilter.GaussianBlur(12)), sx, sy, k), alpha=a * 0.8, add=True)
         fx.over(canvas, fx.warp(st, sx, sy, k, rot_=-0.16), alpha=a)
 

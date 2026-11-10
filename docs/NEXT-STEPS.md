@@ -423,3 +423,10 @@ v2 (техника для TikTok: SAR 1:1, CRF 14, безопасные зоны
 RubUp на стыке Стрелец → Козерог (голос молчит), начинается после середины: реплики перераспределены (хук, Весы, Стрелец длиннее;
 Козерог, Рыбы короче; новые дубли тем же голосом). 62,04 с, RubUp 32,7–39,0 с.
 **`renders/37-zodiac-wine-3/zodiac_wine_3_v2.mp4`**, Google Drive: https://drive.google.com/file/d/13tFyfoISjMAeCShJ0Ye6BgTbdMugRSgr/view .
+
+## 2026-11-10 · 43-aura-ludoman — собрано
+
+Мраморная голова-лудоман в RubUp под трек автора «AURA – Ultra Slowed» (58 с, без рекламной вставки — решение автора).
+Финал `renders/43-aura-ludoman/aura_ludoman_v1.mp4`, копия для Drive `aura_ludoman_v1_web.mp4` (32 МБ) загружена в «TikTok».
+Важно: в контейнере не было `rlottie-python` — без него Lottie тихо подменяется PNG; ставьте `requirements.txt`.
+Webhook Drive не принял 45 МБ (base64 > лимита) — держите файл ≤ ~35 МБ. Ждём отзыв автора.

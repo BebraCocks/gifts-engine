@@ -24,10 +24,9 @@ POPS = [
     (10.13, 'Ginger Cookie', 'Brand New', POPUP_GIFT, 1.75),
     (15.24, 'Snow Globe', 'Choco Waffle', POPUP_GIFT, 1.75),
     (21.37, 'Eternal Candle', 'Candyman', POPUP_GIFT, 2.4),
-    (42.41, 'Neko Helmet', 'Glitch', WIN_GIFT, 99.0),          # the win: hero until HELMET_FLY, then onto the head
+    (42.41, 'Neko Helmet', 'Glitch', WIN_GIFT, 3.71),          # the win flies out with a glow, back in on the hit 46.82
 ]
 
-HELMET_FLY, HELMET_ON = 51.20, 51.93   # «…Шлем мой!»: the helmet flies from the popup onto the head (on a bass hit)
 CTA = 53.60                            # «Первым ста в комментах — по мишке!»
 BEAR_ID = '5170233102089322756'        # the plain 15 ⭐ bear (Telegram gift id; Lottie via gifts_api.original_file)
 # bear throws on bass hits: (time, hand, [(vx, vy, size, spin), ...])
@@ -50,3 +49,26 @@ EMO = [
 
 # aura meme counters (modest: two moments)
 AURA_TEXT = [(LOSE + 0.1, '−1000 AURA', (255, 70, 60)), (DROP2 + 0.15, '+1000 AURA', (255, 210, 80))]
+
+# Screen zoom inside the card: (t0, t1, focus in ORIGINAL recording px, zoom at t0, zoom at t1); out of presses
+ZOOMS = [
+    (0.00, 4.50, (360, 560), 1.18, 1.32),            # hook: creeping into the (blurred) wheel
+    (10.13, 12.18, (360, 1010), 1.30, 1.36),         # «Ваш подарок»: Ginger Cookie 915
+    (15.24, 18.30, (360, 1010), 1.30, 1.36),         # Snow Globe 780
+    (21.37, 24.43, (360, 1010), 1.32, 1.40),         # Eternal Candle 566
+    (24.60, 29.25, (360, 640), 1.22, 1.30),          # upgrade 49,4 %
+    (33.62, 37.45, (360, 560), 1.30, 1.42),          # «Не повезло»
+    (38.10, 41.71, (360, 620), 1.12, 1.50),          # break: slow push into 19,9 %
+    (41.71, 47.20, (360, 800), 1.20, 1.26),          # «Улучшено» 6 683
+]
+
+# Head moves with the story: (time, dx, dy, dscale)
+HEAD_KEYS = [
+    (0.00, 0, -30, 0.04), (3.10, 0, -70, 0.08), (3.30, 0, 0, 0.0), (4.50, 0, 0, 0.0),
+    (7.70, 0, 0, 0.0), (8.30, 0, -55, 0.05), (10.00, 0, -55, 0.05), (10.40, -45, 10, 0.0), (12.90, -45, 10, 0.0),
+    (13.40, 0, -55, 0.05), (15.10, 0, -55, 0.05), (15.50, 45, 15, 0.0), (19.00, 45, 15, 0.0),
+    (19.50, 0, -60, 0.06), (21.25, 0, -60, 0.06), (21.55, 0, -25, 0.05), (24.30, 0, 0, 0.0),
+    (26.90, 70, 10, -0.02), (29.10, 70, 10, -0.02), (29.70, 0, -60, 0.06), (33.50, 0, -75, 0.08),
+    (33.75, 0, 45, -0.03), (35.70, 0, 45, -0.03), (36.40, -30, 95, -0.07), (37.50, -30, 95, -0.07),
+    (37.90, 0, -20, 0.0), (41.60, 0, -120, 0.13), (41.80, 0, 0, 0.0), (58.10, 0, 0, 0.0),
+]

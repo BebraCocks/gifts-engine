@@ -26,6 +26,8 @@ SRC = BUILD / 'src'
 HEAD = np.asarray(Image.open(HERE / 'assets' / 'head.png'), np.float32)          # 831 x 757 RGBA
 HAND_R = Image.open(HERE / 'assets' / 'hand_r.png').convert('RGBA')
 HAND_L = Image.open(HERE / 'assets' / 'hand_l.png').convert('RGBA')
+HAND_PT = Image.open(HERE / 'assets' / 'hand_point.png').convert('RGBA')   # generated (Fish nano-banana, 2026-11-10)
+PT_TIP = (15.0, 23.0)                                                      # index fingertip in hand_point.png
 EYES = np.array([(307.0, 410.0), (515.0, 417.0)])                                 # in head.png
 HEAD_ANCHOR = (378.0, 800.0)                                                      # neck, bottom centre
 LIP_Y, MOUTH_X, MOUTH_HW, JAW_HW = 625.0, 405.0, 66.0, 175.0
@@ -249,6 +251,18 @@ def emotion_at(t):
     return fire_params(t)[1]
 
 
+def head_move(t):
+    """Story moves of the head (dx, dy, dscale), smooth between keys."""
+    K = E.HEAD_KEYS
+    if t <= K[0][0]:
+        return K[0][1:]
+    for (t0, *a), (t1, *b) in zip(K, K[1:]):
+        if t0 <= t < t1:
+            u = fx.smooth((t - t0) / (t1 - t0))
+            return tuple(p + (q - p) * u for p, q in zip(a, b))
+    return K[-1][1:]
+
+
 def head_pose(t):
     """-> (anchor x, anchor y, scale, rotation rad)"""
     st = emotion_at(t)
@@ -260,8 +274,9 @@ def head_pose(t):
         big = fx.ease_out_back(min(1.0, (t - E.HOOK_HIDE) / 0.35)) * (1 - fx.smooth((t - (E.HOOK_END - 0.25)) / 0.25))
     if t >= DROP2:
         big = fx.ease_out_back(min(1.0, (t - DROP2) / 0.4)) * 0.75
-    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk)
-    x, y = 540.0, 1912.0 - 40 * big
+    mdx, mdy, mds = head_move(t)
+    s = base_s * (1 + 0.32 * big) * (1 + 0.025 * pulse + 0.01 * tk) * (1 + mds)
+    x, y = 540.0 + mdx, 1912.0 - 40 * big + mdy
     rot = 0.03 * math.sin(t * 1.3) + 0.02 * tk * math.sin(t * 7.0)
     y += 4 * math.sin(t * 2.1) - 10 * pulse
     if st in ('rage', 'angry'):
@@ -304,6 +319,7 @@ def hand_pose(t, side):
     x += 5 * math.sin(t * 1.1 + ph)
     img = HAND_L if side == 'L' else HAND_R
     anchor = (img.width / 2, img.height / 2)
+    gesture = 0.0
     if st == 'joy':
         lift = 1.0
         if t >= DROP2:
@@ -340,6 +356,7 @@ def hand_pose(t, side):
                 rot = 0.45 * k
                 touch = math.exp(-((t - tp) / 0.06) ** 2)
                 s = s * (1 + 0.15 * k) * (1 - 0.18 * touch)
+                gesture = fx.smooth(min(1.0, k * 2.2))         # the palm folds into a pointing finger on the way
                 break
     for tt, hand, _ in E.THROWS:                          # CTA: a quick upward fling per throw
         if hand == side and -0.3 <= t - tt < 0.35:
@@ -348,12 +365,15 @@ def hand_pose(t, side):
             y -= 150 * k
             rot += (0.6 if side == 'L' else -0.6) * k
             x += (-40 if side == 'L' else 40) * k
-    return img, anchor, x, y, s, rot
+    return img, anchor, x, y, s, rot, gesture
 
 
 def place_hand(canvas, t, side):
-    img, anchor, x, y, s, rot = hand_pose(t, side)
-    fx.over(canvas, fx.warp(img, x, y, s, rot_=rot, anchor=anchor))
+    img, anchor, x, y, s, rot, g = hand_pose(t, side)
+    if g < 0.999:
+        fx.over(canvas, fx.warp(img, x, y, s * (1 - 0.12 * g), rot_=rot, anchor=anchor), alpha=1 - g)
+    if g > 0.001:                                       # pointing hand: fingertip on the same spot
+        fx.over(canvas, fx.warp(HAND_PT, x, y, s * (0.88 + 0.12 * g), rot_=rot - 0.45, anchor=PT_TIP), alpha=g)
 
 
 # ---------------------------------------------------------------- screen card
@@ -369,9 +389,12 @@ def card_image(t):
             _CLEAN['live'] = (src_frame(141.0).crop((0, y0, E.CARD_W, y1)), y0)
         patch, y0 = _CLEAN['live']
         s.paste(patch, (0, y0))
-    if E.HOOK_HIDE <= t < E.HOOK_END:                    # the hook never shows the result
-        s = s.filter(ImageFilter.GaussianBlur(26))
-        s = Image.blend(s, Image.new('RGB', s.size, (8, 8, 20)), 0.35)
+    if t < E.HOOK_END:                                    # the hook never shows the target or the result
+        k = 1.0 if t >= E.HOOK_HIDE else 0.0
+        hdr = s.crop((0, 0, E.CARD_W, HEADER))
+        s = s.filter(ImageFilter.GaussianBlur(17 + 9 * k))
+        s = Image.blend(s, Image.new('RGB', s.size, (8, 8, 20)), 0.2 + 0.15 * k)
+        s.paste(hdr, (0, 0))                              # logo + balance stay sharp
     return s
 
 
@@ -386,9 +409,48 @@ def press_ripple(canvas, t):
                                                                    outline=(255, 255, 255, int(220 * a)), width=int(5 * S))))
 
 
+HEADER = 112                        # card-local px: logo + balance strip, never zoomed
+
+
+def view(t):
+    """Screen zoom inside the card window: (focus x, focus y in card px, zoom)."""
+    best = (E.CARD_W / 2, E.CARD_H / 2, 1.0)
+    for t0, t1, (ox, oy), z0, z1 in E.ZOOMS:
+        if t0 - 0.01 <= t < t1:
+            u = (t - t0) / (t1 - t0)
+            zin = fx.ease_out(min(1.0, (t - t0) / 0.3))
+            zout = 1 - fx.smooth(max(0.0, (t - (t1 - 0.28)) / 0.28))
+            z = 1 + ((z0 + (z1 - z0) * fx.smooth(u)) - 1) * min(zin, zout)
+            return ox * E.CARD_S, (oy - 190) * E.CARD_S, z
+    return best
+
+
+def zmap(x, y, t):
+    """Frame point of the unzoomed card -> where it is shown now."""
+    fxc, fyc, z = view(t)
+    qx, qy = x - E.CARD_X, y - E.CARD_Y
+    return E.CARD_X + fxc + (qx - fxc) * z, E.CARD_Y + fyc + (qy - fyc) * z
+
+
+def zoomed(im, t):
+    fxc, fyc, z = view(t)
+    if z <= 1.0005:
+        return im
+    box = (fxc - fxc / z, fyc - fyc / z, fxc + (E.CARD_W - fxc) / z, fyc + (E.CARD_H - fyc) / z)
+    out = im.resize((E.CARD_W, E.CARD_H), Image.BICUBIC, box=box)
+    hdr = im.crop((0, 0, E.CARD_W, HEADER))
+    out.paste(hdr, (0, 0))
+    sh = Image.new('RGBA', (E.CARD_W, 18), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rectangle([0, 0, E.CARD_W, 18], fill=(0, 0, 0, 90))
+    sh = sh.filter(ImageFilter.GaussianBlur(5)).crop((0, 9, E.CARD_W, 18))
+    out = out.convert('RGBA')
+    out.alpha_composite(sh, (0, HEADER))
+    return out.convert('RGB')
+
+
 def place_card(canvas, t, tint):
     pulse = hit_pulse(t)
-    im = card_image(t)
+    im = zoomed(card_image(t), t)
     rgba = im.convert('RGBA')
     rgba.putalpha(ROUND)
     zoom = 1.0 + 0.006 * pulse
@@ -406,15 +468,14 @@ def place_card(canvas, t, tint):
 
 
 # ---------------------------------------------------------------- gift pop-outs
-HERO = {'Neko Helmet': (0.0, 6.0, 380.0)}               # offset from the popup picture, final size
+HERO = {'Neko Helmet': (0.0, -10.0, 430.0)}               # offset from the popup picture, final size
 
 
 def place_pops(canvas, t):
-    for tp, gift, model, (gx, gy), hold in E.POPS:
+    for tp, gift, model, (gx0, gy0), hold in E.POPS:
         u = t - tp
+        gx, gy = zmap(gx0, gy0, t)
         total = 0.35 + hold + 0.35
-        if gift == 'Neko Helmet':
-            total = E.HELMET_FLY - tp                   # then place_helmet takes over
         if not (0 <= u < total):
             continue
         path = gifts_api.model_file(gift, model, 'json')
@@ -477,37 +538,6 @@ def burst(canvas, x, y, u, size):
 
 
 # ---------------------------------------------------------------- helmet on the head, bears, aura text
-HELMET_AT = (493.0, 388.0)          # helmet centre in head.png px: its eye holes land on the statue eyes
-HELMET_BOX = 820.0                  # Lottie box in head.png px (hole spacing 0.254 box = eye spacing 208 px)
-
-
-def place_helmet(canvas, t, pose):
-    if t < E.HELMET_FLY:
-        return
-    hx, hy, hs, hr = pose
-    c, sn = math.cos(hr), math.sin(hr)
-    dx, dy = HELMET_AT[0] - HEAD_ANCHOR[0], HELMET_AT[1] - HEAD_ANCHOR[1]
-    ax, ay = hx + hs * (c * dx - sn * dy), hy + hs * (sn * dx + c * dy)
-    size1, rot1 = HELMET_BOX * hs, hr
-    gx, gy = E.WIN_GIFT
-    x0, y0, size0 = gx + HERO['Neko Helmet'][0], gy + HERO['Neko Helmet'][1], HERO['Neko Helmet'][2]
-    path = gifts_api.model_file('Neko Helmet', 'Glitch', 'json')
-    u = (t - E.HELMET_FLY) / (E.HELMET_ON - E.HELMET_FLY)
-    if u < 1:
-        k = fx.ease_in(u) * 0.6 + fx.smooth(u) * 0.4
-        x = x0 + (ax - x0) * k
-        y = y0 + (ay - y0) * k - 260 * math.sin(math.pi * k)
-        size = size0 + (size1 - size0) * k
-        rot = 2 * math.pi * fx.smooth(u) + rot1
-    else:
-        v = t - E.HELMET_ON
-        sq = math.exp(-v * 8) * math.sin(v * 30) * 0.06
-        x, y, rot = ax, ay + 20 * math.exp(-v * 10), rot1
-        size = size1 * (1 + sq)
-    im = lottie.frame(str(path), t - E.POPS[3][0], size=int(size) // 2 * 2)
-    fx.over(canvas, fx.warp(im, x, y, 1.0, rot_=rot))
-
-
 BEAR = None
 
 
@@ -520,7 +550,7 @@ def place_bears(canvas, t):
             continue
         if BEAR is None:
             BEAR = str(gifts_api.original_file(E.BEAR_ID, 'json'))
-        _, _, hx, hy, _, _ = hand_pose(tt, hand)
+        _, _, hx, hy, _, _, _ = hand_pose(tt, hand)
         for k, (vx, vy, size, spin) in enumerate(bears):
             x = hx + vx * u
             y = hy - 60 + vy * u + 0.5 * G * u * u
@@ -553,7 +583,7 @@ def post(out, t):
     pulse = hit_pulse(t)
     z = 1 + 0.016 * pulse
     big = 0.0
-    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2, E.HELMET_ON):
+    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2):
         if 0 <= t - tf < 0.5:
             big = max(big, math.exp(-(t - tf) * 7))
     z += 0.035 * big
@@ -594,7 +624,7 @@ def background():
 def flashes(canvas, t):
     for tf, col, dur, peak in ((E.HOOK_HIDE, (255, 230, 160), 0.35, 0.75), (E.HOOK_END, (255, 255, 255), 0.18, 0.5),
                                (DROP1, (120, 150, 255), 0.25, 0.25), (E.LOSE, (255, 30, 20), 0.5, 0.35),
-                               (DROP2, (255, 210, 80), 0.6, 0.8), (E.HELMET_ON, (255, 235, 170), 0.3, 0.45)):
+                               (DROP2, (255, 210, 80), 0.6, 0.8)):
         u = (t - tf) / dur
         if 0 <= u < 1:
             a = peak * (1 - u) ** 2
@@ -602,7 +632,7 @@ def flashes(canvas, t):
 
 
 def shake(t):
-    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12), (E.HELMET_ON, 12)):
+    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12)):
         u = t - tf
         if 0 <= u < 0.4:
             k = amp * math.exp(-u * 9)
@@ -620,7 +650,6 @@ def render_at(t):
     press_ripple(canvas, t)
     place_hand(canvas, t, 'L')
     eyes, s, pose = place_head(canvas, t)
-    place_helmet(canvas, t, pose)
     draw_fire(canvas, eyes, s / 0.7, t)
     place_hand(canvas, t, 'R')
     place_pops(canvas, t)

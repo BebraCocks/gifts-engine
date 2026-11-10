@@ -63,10 +63,10 @@ def sfx_layer(n, kit):
     a(fx, 'coin', 46.0, gain_db=-20, label='6 683 stars')
     for ta, text, _ in E.AURA_TEXT:
         a(fx, 'glitch-text', ta, gain_db=-21, label=text)
-    # the helmet goes on, bears fly
-    a(fx, 'whoosh-short', E.HELMET_ON, align='peak', gain_db=-18, label='helmet flies to the head')
-    a(fx, 'impact', E.HELMET_ON, align='peak', gain_db=-15, label='helmet on (bass hit)')
-    a(fx, 'transform', E.HELMET_ON + 0.05, gain_db=-22, label='helmet locks')
+    # the helmet flies back into the win window (on the hit), bears fly
+    back = E.POPS[3][0] + 0.35 + E.POPS[3][4] + 0.35
+    a(fx, 'whoosh-short', back, align='peak', gain_db=-19, label='helmet flies back into the window')
+    a(fx, 'pop', back, gain_db=-16, label='helmet lands in the window (bass hit)')
     for tt, hand, bears in E.THROWS:
         a(fx, 'cartoon-move', tt, gain_db=-20, pan=0.4 if hand == 'R' else -0.4, label=f'bears thrown ({hand})')
         a(fx, 'boing', tt + 0.05, gain_db=-24, pan=0.4 if hand == 'R' else -0.4, label='bear boing')

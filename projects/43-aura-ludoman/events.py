@@ -44,8 +44,8 @@ HOOK_END = 4.50
 # Eye fire: (time, state); states blend over ~0.3 s
 EMO = [
     (0.00, 'tense'), (HOOK_HIDE, 'joy'), (HOOK_END, 'calm'),
-    (10.20, 'annoyed'), (15.30, 'angry'), (21.40, 'rage'), (26.70, 'cocky'),
-    (LOSE, 'rage'), (35.90, 'sad'), (BREAK, 'tense'), (DROP2, 'joy'),
+    (10.20, 'annoyed'), (15.30, 'sad'), (21.40, 'rage'), (26.70, 'cocky'),      # 15.30 «опять неокуп»: расстроился
+    (LOSE, 'rage'), (35.20, 'sad'), (BREAK, 'tense'), (DROP2, 'joy'),               # after the loss: расстроился
 ]
 
 # aura meme counters (modest: two moments)

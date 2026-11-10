@@ -28,6 +28,9 @@ HAND_R = Image.open(HERE / 'assets' / 'hand_r.png').convert('RGBA')
 HAND_L = Image.open(HERE / 'assets' / 'hand_l.png').convert('RGBA')
 HAND_PT = Image.open(HERE / 'assets' / 'hand_point.png').convert('RGBA')   # generated (Fish nano-banana, 2026-11-10)
 PT_TIP = (15.0, 23.0)                                                      # index fingertip in hand_point.png
+_FL, _FR = HERE / 'assets' / 'fist_l.png', HERE / 'assets' / 'fist_r.png'   # generated (Fish nano-banana, 2026-11-10)
+FIST_L = Image.open(_FL).convert('RGBA') if _FL.exists() else HAND_L
+FIST_R = Image.open(_FR).convert('RGBA') if _FR.exists() else HAND_R
 EYES = np.array([(307.0, 410.0), (515.0, 417.0)])                                 # in head.png
 HEAD_ANCHOR = (378.0, 800.0)                                                      # neck, bottom centre
 LIP_Y, MOUTH_X, MOUTH_HW, JAW_HW = 625.0, 405.0, 66.0, 175.0
@@ -245,6 +248,11 @@ def head_image(open_px):
 
 
 # ---------------------------------------------------------------- character motion
+def emo_start(t):
+    """Start time of the current emotion."""
+    return max((tk for tk, _ in E.EMO if tk <= t), default=0.0)
+
+
 def emotion_at(t):
     return fire_params(t)[1]
 
@@ -282,9 +290,11 @@ def head_pose(t):
         amp = 1.0 if st == 'rage' else 0.45
         x += amp * 7 * math.sin(t * 61) + amp * 4 * math.sin(t * 37)
         rot += amp * 0.035 * math.sin(t * 47)
-    if st == 'sad':
-        rot -= 0.07
-        y += 26
+    if st == 'sad':                                    # «расстроился»: the head bows a little
+        k = fx.smooth(min(1.0, (t - emo_start(t)) / 0.6))
+        rot -= 0.09 * k
+        y += 45 * k
+        s *= 1 - 0.03 * k
     if st == 'tense':
         s *= 1.03
     if st == 'joy':
@@ -333,9 +343,10 @@ def hand_pose(t, side):
         amp = 1.0 if st == 'rage' else 0.5
         y += amp * 10 * math.sin(t * 43 + ph)
         rot += amp * 0.08 * math.sin(t * 29 + ph)
-    elif st == 'sad':
-        y += 40
-        rot += 0.12 if side == 'L' else -0.12
+    elif st == 'sad':                                  # «расстроился»: the palms sink down
+        k = fx.smooth(min(1.0, (t - emo_start(t)) / 0.6))
+        y = min(y + 150 * k, 1700 + 160 * k)           # lowered, but still in the frame
+        rot += (0.45 if side == 'L' else -0.45) * k
     elif st == 'greedy':
         rot += 0.1 * math.sin(t * 5 + ph)
     if side == 'R':
@@ -368,10 +379,28 @@ def hand_pose(t, side):
     return img, anchor, x, y, s, rot, gesture
 
 
+def fist_weight(t, side):
+    """Clenched fists while a case or an upgrade spins (author: nervous anticipation)."""
+    w = 0.0
+    for t0, t1 in SPINS_CASE + SPINS_WHEEL:
+        a = t0 + (0.5 if side == 'R' and t0 > 0.5 else 0.0)  # the right hand presses first, then clenches
+        if a - 0.01 <= t < t1 + 0.25:
+            w = max(w, fx.smooth(min(1.0, (t - a) / 0.15)) * (1 - fx.smooth((t - t1) / 0.25)))
+    return w
+
+
 def place_hand(canvas, t, side):
     img, anchor, x, y, s, rot, g = hand_pose(t, side)
-    if g < 0.999:
-        fx.over(canvas, fx.warp(img, x, y, s * (1 - 0.12 * g), rot_=rot, anchor=anchor), alpha=1 - g)
+    f = fist_weight(t, side) * (1 - g)
+    if f > 0.001:                                       # fists: lifted a bit, pulled in, trembling
+        hxp, hdy, hsc = head_move(t)
+        fxp = x + (60 if side == 'L' else -60) * hsc
+        fyp = min(y, 1745.0 + hdy) - 150 * hsc + 4 * math.sin(t * 47 + (0 if side == 'L' else 1.3))
+        fimg = FIST_L if side == 'L' else FIST_R
+        fx.over(canvas, fx.warp(fimg, fxp + 3 * math.sin(t * 53), fyp, 0.62 * hsc,
+                                rot_=(0.08 if side == 'L' else -0.08) + 0.03 * math.sin(t * 41)), alpha=f)
+    if g < 0.999 and f < 0.999:
+        fx.over(canvas, fx.warp(img, x, y, s * (1 - 0.12 * g), rot_=rot, anchor=anchor), alpha=(1 - g) * (1 - f))
     if g > 0.001:                                       # pointing hand: fingertip on the same spot
         fx.over(canvas, fx.warp(HAND_PT, x, y, s * (0.88 + 0.12 * g), rot_=rot - 0.45, anchor=PT_TIP), alpha=g)
 
@@ -389,9 +418,19 @@ def card_image(t):
             _CLEAN['live'] = (src_frame(141.0).crop((0, y0, E.CARD_W, y1)), y0)
         patch, y0 = _CLEAN['live']
         s.paste(patch, (0, y0))
+    s = remove_balance(s)
     if t < E.HOOK_END:                                    # hook: the screen is sharp, only the prize is hidden
         s = hide_prize(s, t)
     return s
+
+
+def remove_balance(s):
+    """Author: the star balance (top right) must vanish as if it never existed: repaint its box with the header's
+    own background, row by row (the header is a flat colour, also when a popup dims it)."""
+    a = np.asarray(s).copy()
+    y0, y1, x0, x1 = 20, 158, 700, 1042
+    a[y0:y1, x0:x1] = a[y0:y1, 682:683]
+    return Image.fromarray(a)
 
 
 def gold_text(text, size):

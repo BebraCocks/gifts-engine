@@ -631,51 +631,71 @@ def summary_dim(canvas, t):
         fx.over(canvas, LOGO)                             # the RubUp logo stays bright
 
 
+def bar(canvas, x0, y, w, h, frac, col):
+    """A rounded progress bar: dark track + coloured fill with a bright tip."""
+    track = fx.rounded(int(w), int(h), int(h // 2), (255, 255, 255, 28))
+    fx.over(canvas, (track, int(x0), int(y - h / 2)))
+    fw = max(int(h), int(w * frac))
+    if frac > 0.005:
+        fill = fx.rounded(fw, int(h), int(h // 2), col + (255,))
+        fx.over(canvas, (fill.filter(ImageFilter.GaussianBlur(8)), int(x0), int(y - h / 2)), alpha=0.7, add=True)
+        fx.over(canvas, (fill, int(x0), int(y - h / 2)))
+
+
 def place_summary(canvas, t):
+    """Итог: stars spent vs received (rounded, author: no exact numbers), bars grow with the counters."""
     t0, t1 = E.SUMMARY_T0, E.SUMMARY_T1
     if not (t0 <= t < t1):
         return
     kin = fx.ease_out_back(min(1.0, (t - t0) / 0.45), 1.3)
     kout = fx.ease_in(fx.clamp01((t - (t1 - 0.35)) / 0.35))
-    pw, ph = 860, 640
+    pw, ph = 900, 650
     cx = 540
-    cy = 700 - (1 - kin) * 900 - kout * 1100
-    panel = fx.rounded(pw, ph, 40, (16, 16, 34, 238), outline=(255, 205, 80, 150), width=3)
-    fx.over(canvas, fx.warp(fx.radial(256, (255, 190, 60), power=1.6), cx, cy, 1300 / 256), alpha=0.25 * (1 - kout), add=True)
+    cy = 620 - (1 - kin) * 1000 - kout * 1200
+    fx.over(canvas, fx.warp(fx.radial(256, (255, 190, 60), power=1.6), cx, cy, 1400 / 256), alpha=0.25 * (1 - kout), add=True)
+    panel = fx.rounded(pw, ph, 44, (14, 14, 32, 240), outline=(255, 205, 80, 160), width=3)
     fx.over(canvas, fx.warp(panel, cx, cy, 1.0))
-    top = cy - ph / 2
-    title = fx.text_img((('ИТОГ ЛУДОМАНА', (255, 215, 110)),), 54, 'Heavy')
-    fx.over(canvas, fx.warp(title, cx, top + 70, 1.0))
-    rows = [('Потрачено · 3 кейса', '≈' + fmt(round(counter(t, E.SUMMARY_ROWS[0], E.SPENT), -2)) + ' ★', (255, 90, 80)),
-            ('Получено · Neko Helmet', '≈' + fmt(round(counter(t, E.SUMMARY_ROWS[1], E.GOT), -2)) + ' ★', (255, 210, 80)),
-            ('Итог', 'В ПЛЮСЕ', (110, 255, 140))]
-    for k, ((label, val, col), tr) in enumerate(zip(rows, E.SUMMARY_ROWS)):
+    top, left = cy - ph / 2, cx - pw / 2 + 56
+    inner = pw - 112
+    title = fx.text_img((('ИТОГ ЛУДОМАНА', (255, 215, 110)),), 58, 'Heavy')
+    fx.over(canvas, fx.warp(title, cx, top + 72, 1.0))
+    rows = [('Потрачено', E.SPENT, (255, 85, 75), E.SUMMARY_ROWS[0]),
+            ('Получено', E.GOT, (255, 205, 70), E.SUMMARY_ROWS[1])]
+    for k, (label, val, col, tr) in enumerate(rows):
         if t < tr:
             continue
         a = min(1.0, (t - tr) / 0.12)
-        y = top + 175 + k * 120 + (18 if k == 2 else 0)
-        dx = 60 * (1 - fx.ease_out(min(1.0, (t - tr) / 0.25)))
-        size = 60 if k == 2 else 50
-        lab = fx.text_img(((label, (200, 205, 230)),), 40 if k < 2 else 48, 'Semibold' if k < 2 else 'Heavy')
-        fx.over(canvas, (lab, int(cx - pw / 2 + 50 + dx) - 8, int(y - lab.height / 2)), alpha=a)
-        v = fx.text_img(((val, col),), size, 'Heavy')
-        fx.over(canvas, (v, int(cx + pw / 2 - 50 - v.width + dx) + 8, int(y - v.height / 2)), alpha=a)
-        if k == 1:
-            line_y = int(y + 62)
-            canvas[line_y:line_y + 3, int(cx - pw / 2 + 50):int(cx + pw / 2 - 50), :3] = \
-                canvas[line_y:line_y + 3, int(cx - pw / 2 + 50):int(cx + pw / 2 - 50), :3] * (1 - a * 0.6) + 120 * a * 0.6
+        y = top + 175 + k * 165
+        cur = counter(t, tr, val)
+        lab = fx.text_img(((label, (210, 214, 236)),), 44, 'Semibold')
+        fx.over(canvas, (lab, int(left) - 8, int(y - lab.height / 2)), alpha=a)
+        v = fx.text_img((('≈' + fmt(round(cur, -2)) + ' ', col), ('★', (255, 205, 60))), 56, 'Heavy')
+        fx.over(canvas, (v, int(left + inner - v.width) + 8, int(y - v.height / 2)), alpha=a)
+        bar(canvas, left, y + 62, inner, 26, cur / max(E.SPENT, E.GOT), col)
+    tr = E.SUMMARY_ROWS[2]
+    if t >= tr:
+        a = min(1.0, (t - tr) / 0.15)
+        y = top + 535
+        canvas[int(y - 62):int(y - 59), int(left):int(left + inner), :3] = \
+            canvas[int(y - 62):int(y - 59), int(left):int(left + inner), :3] * (1 - 0.5 * a) + 130 * 0.5 * a
+        lab = fx.text_img((('Итог', (230, 232, 250)),), 52, 'Heavy')
+        fx.over(canvas, (lab, int(left) - 8, int(y - lab.height / 2)), alpha=a)
+        k = fx.ease_out_back(min(1.0, (t - tr) / 0.3), 2.0)
+        v = fx.text_img((('В ПЛЮСЕ', (110, 255, 140)),), 66, 'Heavy')
+        fx.over(canvas, fx.warp(v.filter(ImageFilter.GaussianBlur(10)), left + inner - v.width / 2 + 8, y, k),
+                alpha=a * 0.8, add=True)
+        fx.over(canvas, fx.warp(v, left + inner - v.width / 2 + 8, y, k), alpha=a)
     ts = E.SUMMARY_STAMP
     if t >= ts:
         u = t - ts
-        k = 1 + 1.4 * math.exp(-u * 11) * (1 if u < 0.6 else 0)
+        k = 1 + 1.4 * math.exp(-u * 11)
         a = min(1.0, u / 0.06)
-        roi = 'ОКУП ×2'
-        txt = fx.text_img(((roi, (255, 215, 90)),), 74, 'Heavy')
-        st = fx.rounded(txt.width + 50, txt.height + 26, 22, None, outline=(255, 215, 90, 255), width=7)
+        txt = fx.text_img((('ОКУП ×2', (255, 215, 90)),), 80, 'Heavy')
+        st = fx.rounded(txt.width + 56, txt.height + 28, 24, None, outline=(255, 215, 90, 255), width=8)
         st.alpha_composite(txt, ((st.width - txt.width) // 2, (st.height - txt.height) // 2))
-        fx.over(canvas, fx.warp(st.filter(ImageFilter.GaussianBlur(12)), cx + 150, top + ph - 70, k), alpha=a * 0.8,
-                add=True)
-        fx.over(canvas, fx.warp(st, cx + 150, top + ph - 70, k, rot_=-0.16), alpha=a)
+        sx, sy = cx + 170, top + ph - 40
+        fx.over(canvas, fx.warp(st.filter(ImageFilter.GaussianBlur(12)), sx, sy, k), alpha=a * 0.8, add=True)
+        fx.over(canvas, fx.warp(st, sx, sy, k, rot_=-0.16), alpha=a)
 
 
 # ---------------------------------------------------------------- aura post: zoom punch, RGB split, vignette, grain

@@ -85,3 +85,7 @@
   штамп «ОКУП ×2». Собран `renders/43-aura-ludoman/aura_ludoman_v2.mp4` (58,07 с, декодирован), копия
   `aura_ludoman_v2_web.mp4` (32 МБ) в Drive: https://drive.google.com/file/d/1pRTkPSSNHCGYPkysCE-ynEB21pl8l2yh/view
   Проверены параметры, декодирование, кадры-образцы; движение и микс на слух агентом не проверены.
+- 2026-11-10, параллельная сессия: та же v2 (код 7cb5fa2) собрана ещё раз; в Drive лишние дубли — `aura_ludoman_v2_web.mp4`
+  (id 1Yary7RdF6EwEsmEZFwXIZ1J8qRO0-rZC) и ошибочный `aura_ludoman_v2.mp4` (id 1IgvMnar-O_eUTRh3VdN8j5-EDt4dB5_c, это старый v1) —
+  автору удалить. Пересборка в новом контейнере: `pip install -r requirements.txt`, `python -B extract_src.py` (скачает запись
+  с Drive, нарежет кадры в build/src), `python -B select_takes.py`, затем `engine/tools/build.py ... --approved`.

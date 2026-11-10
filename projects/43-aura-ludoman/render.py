@@ -589,7 +589,7 @@ def place_loss_tags(canvas, t):
         x, y = zmap(*E.PRICE_XY, t)
         k = fx.ease_out_back(min(1.0, u / 0.22), 2.2)
         a = min(1.0, u / 0.06) * (1 - fx.smooth((u - 1.4) / 0.5))
-        im = fx.text_img(((text, (255, 70, 60)),), 62, 'Heavy')
+        im = fx.text_img(((text, (255, 70, 60) if text != 'ПОЧТИ ОКУП' else (255, 150, 60)),), 56, 'Heavy')
         glow = im.filter(ImageFilter.GaussianBlur(10))
         y -= 70 * fx.ease_out(u / 1.9)
         x += 4 * math.sin(u * 40) * math.exp(-u * 6)
@@ -652,9 +652,9 @@ def place_summary(canvas, t):
     top = cy - ph / 2
     title = fx.text_img((('ИТОГ ЛУДОМАНА', (255, 215, 110)),), 54, 'Heavy')
     fx.over(canvas, fx.warp(title, cx, top + 70, 1.0))
-    rows = [('Потрачено · 3 кейса', '−' + fmt(counter(t, E.SUMMARY_ROWS[0], E.SPENT)) + ' ★', (255, 90, 80)),
-            ('Получено · Neko Helmet', '+' + fmt(counter(t, E.SUMMARY_ROWS[1], E.GOT)) + ' ★', (255, 210, 80)),
-            ('Профит', '+' + fmt(counter(t, E.SUMMARY_ROWS[2], E.GOT - E.SPENT)) + ' ★', (110, 255, 140))]
+    rows = [('Потрачено · 3 кейса', '≈' + fmt(round(counter(t, E.SUMMARY_ROWS[0], E.SPENT), -2)) + ' ★', (255, 90, 80)),
+            ('Получено · Neko Helmet', '≈' + fmt(round(counter(t, E.SUMMARY_ROWS[1], E.GOT), -2)) + ' ★', (255, 210, 80)),
+            ('Итог', 'В ПЛЮСЕ', (110, 255, 140))]
     for k, ((label, val, col), tr) in enumerate(zip(rows, E.SUMMARY_ROWS)):
         if t < tr:
             continue
@@ -675,7 +675,7 @@ def place_summary(canvas, t):
         u = t - ts
         k = 1 + 1.4 * math.exp(-u * 11) * (1 if u < 0.6 else 0)
         a = min(1.0, u / 0.06)
-        roi = f'ОКУП ×{E.GOT / E.SPENT:.2f}'.replace('.', ',')
+        roi = 'ОКУП ×2'
         txt = fx.text_img(((roi, (255, 215, 90)),), 74, 'Heavy')
         st = fx.rounded(txt.width + 50, txt.height + 26, 22, None, outline=(255, 215, 90, 255), width=7)
         st.alpha_composite(txt, ((st.width - txt.width) // 2, (st.height - txt.height) // 2))

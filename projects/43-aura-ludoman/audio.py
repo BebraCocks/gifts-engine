@@ -69,8 +69,8 @@ def sfx_layer(n, kit):
     # summary «чек»: slide in, three counters, the stamp on a hit
     a(fx, 'whoosh-short', E.SUMMARY_T0 + 0.2, align='peak', gain_db=-19, label='summary slides in')
     for k, tr in enumerate(E.SUMMARY_ROWS):
-        a(fx, 'counter', tr, gain_db=-21, fit=0.7, fade_out=0.15, label=('spent', 'received', 'profit')[k] + ' counter')
-    a(fx, 'impact', E.SUMMARY_STAMP, align='peak', gain_db=-15, label='«ОКУП ×2,23» stamp')
+        a(fx, 'counter', tr, gain_db=-21, fit=0.7, fade_out=0.15, label=('spent', 'received', 'in plus')[k] + ' counter')
+    a(fx, 'impact', E.SUMMARY_STAMP, align='peak', gain_db=-15, label='«ОКУП ×2» stamp')
     a(fx, 'coin', E.SUMMARY_STAMP + 0.1, gain_db=-20, label='stamp coins')
     a(fx, 'whoosh-short', E.SUMMARY_T1 - 0.15, align='peak', gain_db=-22, label='summary flies away')
     for ta, text, _ in E.AURA_TEXT:

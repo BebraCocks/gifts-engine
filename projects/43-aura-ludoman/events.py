@@ -73,13 +73,13 @@ HEAD_KEYS = [
     (37.90, 0, -20, 0.0), (41.60, 0, -120, 0.13), (41.80, 0, 0, 0.0), (58.10, 0, 0, 0.0),
 ]
 
-# Case results are all «неокуп»: red minus next to the price (999 − 915 / 780 / 566)
-LOSS_TAGS = [(10.25, '−84 ★'), (15.35, '−219 ★'), (21.45, '−433 ★')]
-PRICE_XY = card_xy(545, 1214)
+# Case results are all «неокуп» (author: no exact numbers, plain words): 915 / 780 / 566 of 999
+LOSS_TAGS = [(10.25, 'ПОЧТИ ОКУП'), (15.35, 'НЕОКУП'), (21.45, 'МИНУС ПОЛКЕЙСА')]
+PRICE_XY = card_xy(360, 1290)           # between the price and the buttons
 CONFETTI = 42.45                        # win: gold confetti from the top
 
 # Summary «чек» (author 2026-11-10): the shown chain only — 3 cases × 999 = 2 997★ -> Neko Helmet 6 683★
 SUMMARY_T0, SUMMARY_T1 = 47.00, 53.35
 SUMMARY_ROWS = [47.83, 48.85, 49.87]    # bass hits: spent, received, profit
 SUMMARY_STAMP = 50.90                   # «ОКУП ×2,23» stamp on a hit
-SPENT, GOT = 2997, 6683
+SPENT, GOT = 3000, 6700                 # rounded on purpose: «≈», «окуп ×2»

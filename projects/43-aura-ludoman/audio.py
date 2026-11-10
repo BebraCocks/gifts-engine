@@ -82,6 +82,19 @@ def sfx_layer(n, kit):
     for tt, hand, bears in E.THROWS:
         a(fx, 'cartoon-move', tt, gain_db=-20, pan=0.4 if hand == 'R' else -0.4, label=f'bears thrown ({hand})')
         a(fx, 'boing', tt + 0.05, gain_db=-24, pan=0.4 if hand == 'R' else -0.4, label='bear boing')
+    # --- extra accents (author 2026-11-10: more SFX in the right places)
+    a(fx, 'sub-drop', DROP1, align='peak', gain_db=-17, label='drop 1: sub boom under the first press')
+    a(fx, 'sub-drop', DROP2, align='peak', gain_db=-16, label='drop 2: sub boom on «Улучшено»')
+    for k, (t0, t1, *_r) in enumerate(E.ZOOMS[1:]):
+        a(fx, 'whoosh-short', t0, align='peak', gain_db=-25, label=f'camera push-in {k + 1}')
+    for tp, *_r in E.POPS[:3]:
+        a(fx, 'impact', tp, align='peak', gain_db=-21, label='popup reveal hit')
+    a(fx, 'glitch', E.LOSE + 0.05, gain_db=-19, label='loss glitch')
+    a(fx, 'cartoon', BREAK + 0.1, gain_db=-21, fit=DROP2 - BREAK - 0.2, fade_out=0.3, file='cartoon-clock',
+      label='break: the clock ticks (19,9 %)')
+    a(fx, 'power-up', E.PRESSES[4][0] + 0.05, gain_db=-24, fit=3.2, fade_out=0.4, label='final spin charges up')
+    for tg in (9.2, 14.2, 20.3, 33.6, 37.2):
+        a(fx, 'whoosh-organic', tg, gain_db=-28, fit=1.0, fade_out=0.3, label='head glides')
     return fx
 
 

@@ -389,13 +389,58 @@ def card_image(t):
             _CLEAN['live'] = (src_frame(141.0).crop((0, y0, E.CARD_W, y1)), y0)
         patch, y0 = _CLEAN['live']
         s.paste(patch, (0, y0))
-    if t < E.HOOK_END:                                    # the hook never shows the target or the result
-        k = 1.0 if t >= E.HOOK_HIDE else 0.0
-        hdr = s.crop((0, 0, E.CARD_W, HEADER))
-        s = s.filter(ImageFilter.GaussianBlur(17 + 9 * k))
-        s = Image.blend(s, Image.new('RGB', s.size, (8, 8, 20)), 0.2 + 0.15 * k)
-        s.paste(hdr, (0, 0))                              # logo + balance stay sharp
+    if t < E.HOOK_END:                                    # hook: the screen is sharp, only the prize is hidden
+        s = hide_prize(s, t)
     return s
+
+
+def _q_disc(r):
+    """A dark glowing disc with a big «?» (covers the wheel's prize)."""
+    n = 2 * r + 80
+    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    glow = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse([30, 30, n - 30, n - 30], fill=(150, 80, 255, 200))
+    im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(18)))
+    yy, xx = np.mgrid[0:n, 0:n] - n / 2
+    rr = np.sqrt(xx ** 2 + yy ** 2) / r
+    disc = np.zeros((n, n, 4), np.float32)
+    disc[..., 0] = 34 + 30 * (1 - rr)
+    disc[..., 1] = 22 + 18 * (1 - rr)
+    disc[..., 2] = 70 + 60 * (1 - rr)
+    disc[..., 3] = np.clip((1 - rr) * r / 1.5, 0, 1) * 255
+    im.alpha_composite(Image.fromarray(np.clip(disc, 0, 255).astype(np.uint8), 'RGBA'))
+    ImageDraw.Draw(im).ellipse([n / 2 - r, n / 2 - r, n / 2 + r, n / 2 + r], outline=(200, 160, 255, 255), width=6)
+    q = fx.text_img((('?', (255, 225, 120)),), int(r * 1.35), 'Heavy')
+    qg = q.filter(ImageFilter.GaussianBlur(14))
+    for layer in (qg, q):
+        im.alpha_composite(layer, ((n - q.width) // 2, (n - q.height) // 2 - int(r * 0.06)))
+    return im
+
+
+def _q_plate(w, h, text, size):
+    im = fx.rounded(w, h, 26, (30, 20, 62, 250), outline=(200, 160, 255, 255), width=4)
+    q = fx.text_img(((text, (255, 225, 120)),), size, 'Heavy')
+    im.alpha_composite(q, ((w - q.width) // 2, (h - q.height) // 2))
+    return im
+
+
+_Q = {}
+
+
+def hide_prize(s, t):
+    """Hook only: «?» over the wheel prize, the «Хочу получить» target and the highlighted item; all else stays sharp."""
+    if not _Q:
+        _Q['disc'] = _q_disc(228)
+        _Q['plate'] = _q_plate(450, 170, '???', 110)
+        _Q['chip'] = _q_plate(150, 140, '?', 100)
+    s = s.convert('RGBA')
+    pulse = 1 + 0.03 * math.sin(t * 2 * math.pi / 1.0216) + 0.04 * hit_pulse(t)
+    d = _Q['disc']
+    dd = d.resize((int(d.width * pulse), int(d.height * pulse)), Image.BICUBIC)
+    s.alpha_composite(dd, (540 - dd.width // 2, 645 - dd.height // 2))
+    s.alpha_composite(_Q['plate'], (575, 1105))
+    s.alpha_composite(_Q['chip'], (465, 1555))
+    return s.convert('RGB')
 
 
 def press_ripple(canvas, t):
@@ -706,7 +751,7 @@ def post(out, t):
     pulse = hit_pulse(t)
     z = 1 + 0.016 * pulse
     big = 0.0
-    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2, 21.40, E.SUMMARY_STAMP):
+    for tf in (E.HOOK_HIDE, DROP1, E.LOSE, DROP2, 21.40, E.SUMMARY_STAMP, *REVEALS[:3], *(z[0] for z in E.ZOOMS[1:])):
         if 0 <= t - tf < 0.5:
             big = max(big, math.exp(-(t - tf) * 7))
     z += 0.035 * big
@@ -731,6 +776,76 @@ def post(out, t):
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
+
+# ---------------------------------------------------------------- extra FX (author: more effects in the right places)
+REVEALS = [p[0] for p in E.POPS]                         # popups / win window open
+SPINS_CASE = [(E.PRESSES[k][0], E.POPS[k][0]) for k in range(3)]
+SPINS_WHEEL = [(0.0, E.HOOK_HIDE), (E.PRESSES[3][0], E.LOSE), (E.PRESSES[4][0], DROP2)]
+
+
+def press_sparks(canvas, t):
+    for tp, (bx, by) in E.PRESSES:
+        u = t - tp
+        if 0 <= u < 0.45:
+            k = u / 0.45
+
+            def fn(d, m, S, bx=bx, by=by, k=k, tp=tp):
+                for i in range(12):
+                    th = i * 2 * math.pi / 12 + tp
+                    r0, r1 = 20 + 120 * fx.ease_out(k), 40 + 170 * fx.ease_out(k)
+                    d.line([m(bx + r0 * math.cos(th), by + r0 * math.sin(th)),
+                            m(bx + r1 * math.cos(th), by + r1 * math.sin(th))],
+                           fill=(255, 240, 200, int(255 * (1 - k))), width=int(5 * S * (1 - k) + S))
+            fx.over(canvas, fx.draw_rgba((bx - 230, by - 230, bx + 230, by + 230), fn), add=True)
+
+
+def roulette_streaks(canvas, t):
+    """Case spins: fast light streaks over the roulette band, fading as it slows."""
+    for t0, t1 in SPINS_CASE:
+        if not (t0 <= t < t1):
+            continue
+        u = (t - t0) / (t1 - t0)
+        a = (1 - u) ** 1.5
+        y0, y1 = 615, 1075
+
+        def fn(d, m, S):
+            for i in range(14):
+                yy = y0 + (i * 37 % (y1 - y0))
+                x = (W + 400) - ((t * 3200 + i * 517) % (W + 800))
+                ln = 180 + 120 * ((i * 13) % 5) / 4
+                d.line([m(x, yy), m(x + ln, yy)], fill=(220, 230, 255, int(150 * a)), width=int(3 * S))
+        fx.over(canvas, fx.draw_rgba((0, y0 - 10, W, y1 + 10), fn), add=True)
+
+
+def wheel_tension(canvas, t):
+    """Upgrade spins: the wheel's ring glows and breathes with the tension."""
+    for t0, t1 in SPINS_WHEEL:
+        if not (t0 <= t < t1):
+            continue
+        u = (t - t0) / (t1 - t0)
+        x, y = zmap(540.0, 645.0, t)
+        _, _, z = view(t)
+        a = (0.25 + 0.5 * u) * (0.75 + 0.25 * math.sin(t * 2 * math.pi * (1.2 + 1.8 * u)))
+        ring = fx.radial(256, (190, 120, 255), power=1.0, peak=0.0, ring=(0.82, 0.07, 1.0))
+        fx.over(canvas, fx.warp(ring, x, y, 640 * z / 256), alpha=a, add=True)
+
+
+def heartbeat(canvas, t):
+    """Break (19,9 %): a heartbeat vignette — the edges darken and flush with each beat."""
+    if not (BREAK <= t < DROP2):
+        return
+    u = t - BREAK
+    rate = 1.15 + 0.9 * (u / (DROP2 - BREAK))
+    ph = (u * rate) % 1.0
+    beat = math.exp(-((ph - 0.05) / 0.06) ** 2) + 0.6 * math.exp(-((ph - 0.25) / 0.06) ** 2)
+    if 'hb' not in _POST:
+        yy, xx = np.mgrid[0:H, 0:W]
+        r = np.sqrt(((xx - W / 2) / (W * 0.55)) ** 2 + ((yy - H / 2) / (H * 0.55)) ** 2)
+        _POST['hb'] = np.clip(r - 0.55, 0, 1)[..., None].astype(np.float32)
+    m = _POST['hb'] * (0.35 + 0.45 * beat)
+    canvas[..., :3] = canvas[..., :3] * (1 - m) + np.array([90, 0, 40], np.float32) * m
+
+
 # ---------------------------------------------------------------- background and flashes
 _BG = None
 
@@ -749,7 +864,8 @@ def flashes(canvas, t):
                                (DROP1, (120, 150, 255), 0.25, 0.25), (E.LOSE, (255, 30, 20), 0.5, 0.35),
                                (10.20, (255, 40, 30), 0.35, 0.18), (15.30, (255, 40, 30), 0.35, 0.2),
                                (21.40, (255, 30, 20), 0.4, 0.26), (E.SUMMARY_STAMP, (255, 220, 120), 0.3, 0.35),
-                               (DROP2, (255, 210, 80), 0.6, 0.8)):
+                               (DROP2, (255, 210, 80), 0.6, 0.8),
+                               *((tr, (255, 255, 255), 0.16, 0.22) for tr in REVEALS[:3])):
         u = (t - tf) / dur
         if 0 <= u < 1:
             a = peak * (1 - u) ** 2
@@ -757,7 +873,8 @@ def flashes(canvas, t):
 
 
 def shake(t):
-    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12), (21.40, 9), (E.SUMMARY_STAMP, 12)):
+    for tf, amp in ((DROP1, 10), (E.LOSE, 16), (DROP2, 18), (E.HOOK_HIDE, 12), (21.40, 9), (E.SUMMARY_STAMP, 12),
+                    *((p[0], 5) for p in E.PRESSES[1:])):
         u = t - tf
         if 0 <= u < 0.4:
             k = amp * math.exp(-u * 9)
@@ -769,11 +886,15 @@ def render_at(t):
     canvas = background()
     tint = tuple(int(v) // 16 * 16 for v in fire_params(t)[0][1])
     place_card(canvas, t, tint)
+    roulette_streaks(canvas, t)
+    wheel_tension(canvas, t)
+    heartbeat(canvas, t)
     hxp, hdy, hsc = head_move(t)                          # aura light from the eyes spills onto the screen
     fx.over(canvas, fx.warp(fx.radial(256, tint, power=1.8), hxp, 1640 + hdy, 1100 * hsc / 256),
             alpha=0.22 + 0.14 * hit_pulse(t), add=True)
     summary_dim(canvas, t)
     press_ripple(canvas, t)
+    press_sparks(canvas, t)
     place_hand(canvas, t, 'L')
     eyes, s, pose = place_head(canvas, t)
     draw_fire(canvas, eyes, s / 0.7, t)

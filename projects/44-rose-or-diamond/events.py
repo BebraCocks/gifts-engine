@@ -33,10 +33,11 @@ RAGE = 20.70                                    # «Ах ты мразь!»
 PRESS2 = RESUME                                 # «Крутить ещё за 100» = the track comes back
 POP2 = 24.55                                    # «Ваш подарок»: Алмаз
 GRAB2 = 24.85
-WINDUP = 27.40
-THROW2 = 27.85                                  # the diamond is released to the right
-HIT2 = DROP                                     # off-screen hit + «А-ай!» on the drop
-SHADES = DROP + 0.40                            # pixel shades drop onto the eyes (the flex)
+WINDUP = 27.95
+THROW2 = 28.30                                  # the diamond is released: a high arc, ~1,3 s
+HIT2 = DROP                                     # off-screen hit + «А-ай!» on the drop (29.60)
+SHADES = DROP + 0.40                            # pixel shades drop onto the eyes (the dance)
+EMO_P = [(0.00, 'p_pout'), (17.45, 'p_puzzled'), (18.85, 'p_angry')]   # her smaller eye fire
 
 # Eye fire of the white head: (time, state)
 EMO = [
@@ -54,12 +55,13 @@ W_KEYS = [
     (17.40, 360, 10, 0.80), (17.90, 300, 20, 0.80),
     (ROSE_HIT, 300, 20, 0.80), (20.40, 330, 10, 0.86),
     (24.40, 330, 10, 0.86), (25.20, 330, 0, 0.88),
-    (DROP, 330, 0, 0.88), (DROP + 0.55, 540, -10, 1.05), (31.0, 540, -10, 1.05),
+    (THROW2, 330, 0, 0.88), (DROP - 0.1, 400, -10, 0.90),   # follows the flight
+    (DROP + 0.55, 540, -10, 1.05), (40.0, 540, -10, 1.05),
 ]
 P_KEYS = [
     (0.00, 1500, 0, 1.0), (PINK_IN[0], 1500, 0, 1.0), (PINK_IN[1], 800, 0, 1.0),
     (16.80, 800, 0, 1.0), (17.30, 760, -10, 1.0), (17.70, 800, 0, 1.02),
-    (PINK_OUT[0], 800, 0, 1.0), (PINK_OUT[1], 1560, 30, 1.0), (31.0, 1560, 30, 1.0),
+    (PINK_OUT[0], 800, 0, 1.0), (PINK_OUT[1], 1560, 30, 1.0), (40.0, 1560, 30, 1.0),
 ]
 
 # Screen zoom (focus in ORIGINAL recording px, zoom at t0 -> t1); out of a zoom = a snap on a cut/hit
@@ -70,6 +72,7 @@ ZOOMS = [
     (POP1, GRAB1 + 0.6, (360, 880), 1.10, 1.18),     # rose popup
     (17.45, 18.85, (360, 900), 1.05, 1.12),          # stare: slow push
     (POP2, WINDUP, (360, 880), 1.10, 1.20),          # diamond popup
+    (THROW2 + 0.05, DROP, (420, 760), 1.04, 1.12),   # the diamond flies: slow push
 ]
 
 AURA_TEXT = [(ROSE_HIT + 0.05, '−1000 AURA', (255, 70, 60), (330, 1080)),

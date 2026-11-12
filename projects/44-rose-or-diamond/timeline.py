@@ -1,19 +1,20 @@
 """Video time (s) -> screen-recording time and the track layout. Measured on the author's files (2026-11-12):
 recording input/rubup_screen.mp4 (58,5 s, 720x1600, VFR) and track input/track.m4a (30,8 s, ~96 BPM, beat 0,627 s,
 drop at 10,04 s; chopped intro with stop gaps 0,35 / 1,78 / 2,89 / 4,30 / 5,41 / 6,54 s)."""
-DUR = 30.75
+DUR = 33.05
 BEAT = 0.627
 TRACK_DROP = 10.04
 # Music (author): plays under the intro, fades out before the drop, silence for the dialogue, comes back right after
 # «Ах ты мразь!» and continues so that the drop lands on the diamond hit.
 FADE0, FADE1 = 3.30, 4.30            # intro fade (video time = track time)
 RESUME = 22.55                       # video time when the track continues ...
-RESUME_SRC = 4.42                    # ... from this track time (just after the stop gap 4,30)
-DROP = RESUME + (TRACK_DROP - RESUME_SRC)    # 28.17: diamond hits, «А-ай!», the flex starts
+RESUME_SRC = 2.99                    # ... from this track time (just after the stop gap 2,89): the drop comes
+                                     # 7 s later, so the diamond flies ~1,3 s (author 2026-11-12)
+DROP = RESUME + (TRACK_DROP - RESUME_SRC)    # 29.60: diamond hits, «А-ай!», the dance starts
 
 HITS = [k * BEAT * 2 for k in range(4)] + \
        [RESUME + (k * BEAT * 2 - (RESUME_SRC % (2 * BEAT))) for k in range(1, 5)] + \
-       [DROP + k * BEAT for k in range(6)]
+       [DROP + k * BEAT for k in range(8)]
 HITS = sorted(h for h in HITS if 0 <= h < DUR and not (FADE1 <= h < RESUME))
 
 # (t0, t1, src s0, src s1): linear inside, a cut between segments.

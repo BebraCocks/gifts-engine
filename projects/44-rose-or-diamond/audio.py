@@ -63,7 +63,9 @@ def sfx_layer(n, kit):
     a(fx, 'confirm', E.POP2 + 0.05, gain_db=-20, label='diamond chime')
     a(fx, 'granular-move', E.GRAB2 - 0.05, gain_db=-22, label='diamond taken')
     a(fx, 'riser', E.THROW2, align='end', gain_db=-22, fit=1.6, label='wind-up builds')
-    a(fx, 'whoosh-short', E.THROW2, align='peak', gain_db=-15, pan=0.5, label='diamond thrown')
+    a(fx, 'whoosh-short', E.THROW2, align='peak', gain_db=-15, pan=0.2, label='diamond thrown')
+    a(fx, 'sparkle-whoosh', E.THROW2 + 0.05, gain_db=-19, pan=0.4, fit=E.HIT2 - E.THROW2, fade_out=0.2, label='diamond flies (arc)')
+    a(fx, 'riser', E.HIT2, align='end', gain_db=-21, fit=1.2, label='flight builds to the drop')
     # the drop: hit + flex
     a(fx, 'cartoon-hit', E.HIT2, align='peak', gain_db=-12, pan=0.8, label='diamond hits her (off-screen)')
     a(fx, 'sub-drop', E.HIT2, align='peak', gain_db=-16, label='drop boom')
@@ -71,7 +73,13 @@ def sfx_layer(n, kit):
     a(fx, 'whoosh-short', E.SHADES, align='end', gain_db=-22, label='shades fall')
     a(fx, 'click', E.SHADES, align='peak', gain_db=-16, label='shades on')
     a(fx, 'sparkle', DROP + 0.2, gain_db=-20, label='confetti')
-    a(fx, 'coin', DROP + 1.3, gain_db=-22, label='flex')
+    a(fx, 'coin', DROP + 1.3, gain_db=-22, label='dance')
+    a(fx, 'impact', DROP, align='peak', gain_db=-17, label='drop impact flash')
+    # pink: her eye fire lights up, «?» pops, anger
+    a(fx, 'power-up', E.PINK_IN[1] - 0.2, gain_db=-27, pan=0.5, fit=0.8, fade_out=0.2, label='her eye fire lights up')
+    a(fx, 'pop', E.STARE[0] + 0.55, gain_db=-25, pan=0.5, label='? 2')
+    a(fx, 'glitch-text', 18.90, gain_db=-24, pan=0.5, label='anger mark')
+    a(fx, 'whoosh-short', 9.60, align='peak', gain_db=-25, label='head steps aside')
     return fx
 
 
@@ -82,11 +90,11 @@ def main():
     v = voice_review.voice_track(n, stereo=True)
     v *= 0.89 / max(1e-9, np.abs(v).max())
     env = np.convolve(np.abs(v).max(1), np.ones(SR // 20) / (SR // 20), 'same')
-    duck = 1 - 0.45 * np.clip(env / 0.03, 0, 1)
+    duck = 1 - 0.62 * np.clip(env / 0.03, 0, 1)                    # music −8 dB under speech (author: lines got lost)
     duck = np.convolve(duck, np.ones(SR // 8) / (SR // 8), 'same')
     fx = sfx_layer(n, kit)
     fx *= (1 - 0.4 * np.clip(env / 0.03, 0, 1))[:, None]
-    mix = music * 0.58 * duck[:, None] + v * 0.92 + fx
+    mix = music * 0.40 * duck[:, None] + v * 0.95 + fx              # music quieter overall (author 2026-11-12)
     mix /= max(1.0, np.abs(mix).max() / 0.97)
     out = paths.build(HERE) / 'mix.wav'
     with wave.open(str(out), 'wb') as w:

@@ -18,7 +18,7 @@ import lottie
 import config
 import events as E
 import script
-from timeline import DUR, HITS, DROP, RESUME, src_at
+from timeline import DUR, HITS, DROP, RESUME, BEAT, src_at
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -37,7 +37,7 @@ CH = {
               lip=(625.0, 405.0, 66.0, 175.0), jaw=15.0, eyes=np.array([(307.0, 410.0), (515.0, 417.0)]),
               hand_off=330.0, hand_y=1760.0, hand_s=0.60),
     'P': dict(head=np.asarray(rgba('pink_head'), np.float32), anchor=(350.0, 734.0), base=0.62,
-              lip=(582.0, 375.0, 62.0, 165.0), jaw=12.0, eyes=np.array([(259.0, 369.0), (459.0, 369.0)]),
+              lip=(582.0, 375.0, 62.0, 165.0), jaw=12.0, eyes=np.array([(265.0, 374.0), (469.0, 374.0)]),
               hand_off=285.0, hand_y=1770.0, hand_s=0.55),
 }
 HANDS = {
@@ -118,12 +118,17 @@ FIRE = {   # core, mid, outer, height, width, intensity, turbulence, size
     'love':    ((255, 230, 245), (255, 90, 190), (170, 20, 110), 175, 40, 1.10, 0.9, 18),
     'evil':    ((255, 190, 160), (190, 0, 30), (50, 0, 30), 250, 46, 1.30, 1.5, 20),
     'joy':     ((255, 255, 230), (255, 200, 40), (255, 90, 0), 340, 58, 1.55, 1.3, 25),
+    # pink statue: smaller fire, her own colours (author 2026-11-12)
+    'p_pout':    ((255, 235, 250), (255, 80, 190), (160, 0, 110), 105, 24, 0.95, 0.7, 11),
+    'p_puzzled': ((225, 255, 250), (60, 235, 205), (0, 110, 120), 95, 22, 0.90, 0.5, 10),
+    'p_angry':   ((255, 240, 210), (255, 45, 140), (130, 0, 70), 165, 30, 1.20, 1.5, 13),
 }
 
 
-def fire_params(t):
-    prev, cur, t_cur = None, E.EMO[0][1], E.EMO[0][0]
-    for tk, st in E.EMO:
+def fire_params(t, emo=None):
+    emo = emo or E.EMO
+    prev, cur, t_cur = None, emo[0][1], emo[0][0]
+    for tk, st in emo:
         if t >= tk:
             prev, cur, t_cur = cur, st, tk
     a = FIRE[cur]
@@ -172,8 +177,8 @@ def sprite(r):
 RATE = 170.0
 
 
-def draw_fire(canvas, eyes_xy, scale, t):
-    p, state = fire_params(t)
+def draw_fire(canvas, eyes_xy, scale, t, emo=None, seed=0):
+    p, state = fire_params(t, emo)
     core, mid, outer, h, w, inten, turb, size = p
     pulse = hit_pulse(t)
     h = h * scale * (1 + 0.18 * pulse)
@@ -204,6 +209,7 @@ def draw_fire(canvas, eyes_xy, scale, t):
         splat(ex, ey, 9 * scale, core, 0.9 * inten)
         i0, i1 = int((t - 1.0) * RATE), int(t * RATE)
         idx = np.arange(i0, i1 + 1)
+        k = k + seed
         life = 0.55 + 0.35 * _hash(idx, 1 + k * 7)
         age = (t - idx / RATE) / life
         keep = (age >= 0) & (age < 1) & (_hash(idx, 3 + k * 7) < 0.55 + 0.45 * min(1.0, inten / 1.2))
@@ -318,9 +324,12 @@ def head_pose(who, t):
             rot += 0.22 * k
             x -= 40 * k
             y += 15 * abs(k)
-        if st == 'joy':
-            y -= 26 * abs(math.sin(t * math.pi / 0.627))
-            rot += 0.05 * math.sin(t * math.pi / 1.254)
+        if st == 'joy':                                # the dance on the beat (author: after the hit)
+            k = fx.smooth((t - DROP) / 0.3)
+            b = (t - DROP) / BEAT
+            x += dance_dx(t)
+            y -= k * (40 * abs(math.sin(math.pi * b)) + 18 * hit_pulse(t))
+            rot += k * (0.13 * math.sin(math.pi * b) + 0.04 * math.sin(2 * math.pi * b))
     else:
         ps = pink_state(t)
         if ps == 'pout':
@@ -352,9 +361,17 @@ def place_head(canvas, who, t):
 
 
 # ---------------------------------------------------------------- hands: shape by action
+def dance_dx(t):
+    if t < DROP:
+        return 0.0
+    return fx.smooth((t - DROP) / 0.3) * 70 * math.sin(math.pi * (t - DROP) / BEAT)
+
+
 def rest(who, side, t):
     c = CH[who]
     hx, hdy, hsc = head_move(who, t)
+    if who == 'W':
+        hx += dance_dx(t)
     ph = (0.0 if side == 'L' else 1.3) + (0 if who == 'W' else 0.7)
     x = hx + (-1 if side == 'L' else 1) * c['hand_off'] * hsc + 5 * math.sin(t * 1.1 + ph)
     y = c['hand_y'] + hdy + 9 * math.sin(t * 1.9 + ph) - 10 * hit_pulse(t)
@@ -369,9 +386,10 @@ def lift(who, side, t):
 
 def raised(who, side, t):
     x, y, r, s = rest(who, side, t)
-    ph = 0.0 if side == 'L' else 1.0
-    b = abs(math.sin(t * math.pi / 0.627 + ph))
-    return x + (-70 if side == 'L' else 70), y - 340 - 40 * b, (0.35 if side == 'L' else -0.35) + 0.12 * math.sin(t * 10 + ph), s
+    b = (t - DROP) / BEAT + (0.0 if side == 'L' else 1.0)      # hands pump in turn on the beat
+    up = math.sin(math.pi * b)
+    return (x + (-80 if side == 'L' else 80) + 25 * up, y - 330 - 90 * up,
+            (0.35 if side == 'L' else -0.35) + 0.25 * up * (1 if side == 'L' else -1), s)
 
 
 def popup_xy(t):
@@ -407,14 +425,15 @@ PATHS = {
         (22.10, 'open', None), (22.30, 'point', T(780, 1800)), (E.PRESS2, 'point', T(712, 1868)),
         (22.75, 'point', T(780, 1780)), (22.95, 'fist', LIFT), (24.35, 'fist', LIFT),
         (24.45, 'open', None), (E.GRAB2 - 0.08, 'open', POPUP), (E.GRAB2, 'fist', POPUP),
-        (25.30, 'fist', C(600, 1440, -0.05)), (26.40, 'fist', C(610, 1420, 0.05)), (E.WINDUP, 'fist', C(600, 1440, 0.0)),
-        (27.72, 'fist', C(260, 1330, 0.7, 1.05)), (E.THROW2, 'open', C(930, 1120, -0.6, 1.1)),
-        (28.15, 'open', C(820, 1300, -0.2)), (28.55, 'open', None), (28.85, 'open', RAISED),
+        (25.30, 'fist', C(600, 1440, -0.05)), (26.60, 'fist', C(610, 1420, 0.05)), (E.WINDUP, 'fist', C(600, 1440, 0.0)),
+        (E.THROW2 - 0.13, 'fist', C(260, 1330, 0.7, 1.05)), (E.THROW2, 'open', C(860, 1050, -0.7, 1.1)),
+        (E.THROW2 + 0.30, 'open', C(820, 1300, -0.2)), (E.THROW2 + 0.70, 'open', None),
+        (DROP + 0.05, 'open', None), (DROP + 0.35, 'open', RAISED),
     ],
     ('W', 'L'): [
         (0.00, 'open', None), (13.80, 'open', None), (13.95, 'fist', LIFT), (15.40, 'fist', LIFT), (15.60, 'open', None),
         (22.65, 'open', None), (22.80, 'fist', LIFT), (24.35, 'fist', LIFT), (24.55, 'open', None),
-        (DROP + 0.25, 'open', None), (28.75, 'open', RAISED),
+        (DROP + 0.05, 'open', None), (DROP + 0.35, 'open', RAISED),
     ],
     ('P', 'L'): [
         (0.00, 'open', None), (16.90, 'open', None), (E.GIVE - 0.06, 'open', C(640, 1450, 0.1)),
@@ -578,20 +597,36 @@ def rose_fly(it, canvas, t):
 
 
 def diamond_fly(it, canvas, t):
-    if not (E.THROW2 <= t < E.HIT2 + 0.05):
+    """A high arc over the screen (~1,3 s, author): up from the fist, over the popup, down off the right edge on the drop."""
+    if not (E.THROW2 <= t < E.HIT2 + 0.03):
         return
     _, _, _, st = hand_state('W', 'R', E.THROW2)
-    x0, y0 = fist_top(st, 'W')
+    p0 = np.array(fist_top(st, 'W')) - (0, 80)
+    p1, p2 = np.array([560.0, -260.0]), np.array([1190.0, 980.0])
+
+    def at(u):
+        return (1 - u) ** 2 * p0 + 2 * u * (1 - u) * p1 + u * u * p2
+
     u = (t - E.THROW2) / (E.HIT2 - E.THROW2)
-    x = x0 + (1300 - x0) * u
-    y = y0 - 80 + (1060 - y0 + 80) * u - 160 * math.sin(math.pi * u)
-    sz = it.size_held * (1 + 0.5 * u)
-    for k in range(4):                                 # motion trail
-        uu = max(0.0, u - 0.06 * (k + 1))
-        xx = x0 + (1300 - x0) * uu
-        yy = y0 - 80 + (1060 - y0 + 80) * uu - 160 * math.sin(math.pi * uu)
-        fx.over(canvas, fx.warp(fx.radial(128, (140, 210, 255), power=1.6), xx, yy, sz * 0.8 / 128), alpha=0.35 * (1 - k / 4), add=True)
-    fx.over(canvas, fx.warp(it.lottie(t, sz), x, y, 1.0, rot_=-9 * u))
+    x, y = at(u)
+    sz = it.size_held * (1 + 0.35 * math.sin(math.pi * u) + 0.2 * u)
+    for k in range(7):                                 # light trail + sparkles
+        uu = u - 0.025 * (k + 1)
+        if uu < 0:
+            break
+        xx, yy = at(uu)
+        fx.over(canvas, fx.warp(fx.radial(128, (140, 210, 255), power=1.6), xx, yy, sz * (0.9 - 0.08 * k) / 128),
+                alpha=0.45 * (1 - k / 7), add=True)
+    def fn(d, m, S):
+        for i in range(10):
+            uu = u - 0.02 * i - 0.01
+            if uu < 0:
+                break
+            xx, yy = at(uu)
+            j = (i * 37 + int(t * 60)) % 7 - 3
+            fx.sparkle(d, *m(xx + 9 * j, yy + 7 * ((i * 5) % 7 - 3)), (12 - i) * S, (230, 245, 255, int(240 * (1 - i / 10))))
+    fx.over(canvas, fx.draw_rgba((x - 400, y - 400, x + 400, y + 400), fn), add=True)
+    fx.over(canvas, fx.warp(it.lottie(t, sz), x, y, 1.0, rot_=-10 * u))
 
 
 ROSE = Item(E.ROSE_ID, E.POP1, E.GRAB1, [(E.GRAB1, 'W', 'R'), (E.GIVE, 'P', 'L')], E.THROW1, rose_fly, 250)
@@ -815,6 +850,15 @@ def place_shades(canvas, pose, t):
     fx.over(canvas, fx.warp(im, cx, yy, s * 1.05, rot_=rot, anchor=(im.width / 2, 2.5 * 16)))
 
 
+def beat_rings(canvas, t, x, y):
+    """Dance: an aura ring flies out from the head on every beat."""
+    for k in range(0, 6):
+        u = t - (DROP + k * BEAT)
+        if 0 <= u < 0.55:
+            ring = fx.radial(256, (255, 210, 110) if k % 2 else (255, 130, 210), power=1.0, peak=0.0, ring=(0.8, 0.06, 1.0))
+            fx.over(canvas, fx.warp(ring, x, y, (420 + 1100 * fx.ease_out(u / 0.55)) / 256), alpha=0.8 * (1 - u / 0.55), add=True)
+
+
 def flex_glow(canvas, t):
     u = t - E.HIT2
     if u < 0:
@@ -833,6 +877,7 @@ def flex_glow(canvas, t):
                        m(x + r * math.cos(th + w), y + r * math.sin(th + w))], fill=(255, 220, 120, int(30 * a)))
     placed = fx.draw_rgba((x - r, y - r, x + r, y + r), fn)
     fx.over(canvas, (placed[0].filter(ImageFilter.GaussianBlur(6)),) + placed[1:], add=True)
+    beat_rings(canvas, t, x, y)
 
 
 CONF_COLS = [(255, 205, 60), (255, 240, 170), (255, 150, 40), (255, 255, 255), (120, 200, 255)]
@@ -899,7 +944,9 @@ def flashes(canvas, t):
                                (E.POP1, (255, 255, 255), 0.18, 0.25), (E.ROSE_HIT, (255, 40, 60), 0.4, 0.3),
                                (E.RAGE, (255, 20, 10), 0.45, 0.3), (E.PRESS2, (255, 60, 40), 0.25, 0.2),
                                (E.POP2, (200, 235, 255), 0.2, 0.3), (E.HIT2, (255, 215, 110), 0.6, 0.8),
-                               (9.55, (255, 255, 255), 0.15, 0.2)):
+                               (9.55, (255, 255, 255), 0.15, 0.2),
+                               *((DROP + k * BEAT, (255, 200, 90) if k % 2 else (255, 120, 200), 0.22, 0.16)
+                                 for k in range(1, 6))):                       # dance: a strobe on every beat
         u = (t - tf) / dur
         if 0 <= u < 1:
             a = peak * (1 - u) ** 2
@@ -907,7 +954,8 @@ def flashes(canvas, t):
 
 
 def shake(t):
-    for tf, amp in ((E.ROSE_HIT, 14), (E.RAGE, 12), (E.HIT2, 22), (E.PRESS1, 5), (E.PRESS2, 7), (E.PINK_IN[1] - 0.1, 6)):
+    for tf, amp in ((E.ROSE_HIT, 14), (E.RAGE, 12), (E.HIT2, 22), (E.PRESS1, 5), (E.PRESS2, 7), (E.PINK_IN[1] - 0.1, 6),
+                    *((DROP + k * BEAT, 7) for k in range(1, 6))):
         u = t - tf
         if 0 <= u < 0.45:
             k = amp * math.exp(-u * 8)
@@ -916,7 +964,8 @@ def shake(t):
 
 
 _POST = {}
-PUNCH = (E.PINK_IN[1] - 0.1, 9.55, E.PRESS1, E.POP1, E.ROSE_HIT, E.RAGE, E.PRESS2, E.POP2, E.HIT2, 2.40, 6.70)
+PUNCH = (E.PINK_IN[1] - 0.1, 9.55, E.PRESS1, E.POP1, E.ROSE_HIT, E.RAGE, E.PRESS2, E.POP2, E.HIT2, 2.40, 6.70,
+         *(DROP + k * BEAT for k in range(1, 6)))
 
 
 def post(out, t):
@@ -966,7 +1015,8 @@ def render_at(t):
     # pink (behind the white one: she stands at the right edge)
     if t >= E.PINK_IN[0] - 0.05 and t < E.PINK_OUT[1] + 0.1:
         place_hand(canvas, 'P', 'R', t)
-        place_head(canvas, 'P', t)
+        peyes, ppose = place_head(canvas, 'P', t)
+        draw_fire(canvas, peyes, ppose[2] / 0.7 * 0.62, t, E.EMO_P, seed=3)
         place_hand(canvas, 'P', 'L', t)
     place_hand(canvas, 'W', 'L', t)
     eyes, pose = place_head(canvas, 'W', t)

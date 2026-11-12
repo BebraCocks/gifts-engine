@@ -84,9 +84,9 @@ def main():
     v = voice_track(n, stereo=True)
     v *= 0.89 / max(1e-9, np.abs(v).max())
     env = np.convolve(np.abs(v).max(1), np.ones(SR // 20) / (SR // 20), 'same')
-    duck = 1 - 0.45 * np.clip(env / 0.03, 0, 1)
+    duck = 1 - 0.62 * np.clip(env / 0.03, 0, 1)
     duck = np.convolve(duck, np.ones(SR // 8) / (SR // 8), 'same')
-    mix = music * 0.55 * duck[:, None] + v * 0.95
+    mix = music * 0.40 * duck[:, None] + v * 0.95
     mix /= max(1.0, np.abs(mix).max() / 0.95)
     out = HERE / 'build' / 'review'
     out.mkdir(parents=True, exist_ok=True)

@@ -310,7 +310,7 @@ def head_pose(t):
         rot += -0.10 * k
         y += 26 * k
     if st == 'shock':                                  # jolts back, then stares after the cat
-        u = t - TL.SCARE
+        u = t - (TL.BOO if t >= TL.BOO else TL.SCARE)
         k = math.exp(-u * 5) * math.cos(u * 16)
         rot += -0.12 * k + 0.06 * fx.smooth(u / 0.5)
         y -= 30 * abs(k)
@@ -476,7 +476,7 @@ def hand_state(side, t):
         r += 0.06 * math.sin(t * 29 + ph)
     if em == 'sad' and a is None:
         y += 30 * fx.smooth((t - emo_start(t)) / 0.5)
-    if em == 'shock' and t > E.RUN + 0.3 and side == 'R':
+    if em == 'shock' and E.RUN + 0.3 < t < TL.BOO and side == 'R':
         y += 8 * math.sin(t * 31)
     if pose == 'fist' and spinning(t):                 # clenched and trembling while it spins
         x += 3 * math.sin(t * 53 + ph)
@@ -567,6 +567,13 @@ def draw_cat(canvas, t):
             fx.over(canvas, fx.warp(cat_frame(0.3, sz), x0 + (x1 - x0) * ee, y0 + (y1 - y0) * uu * uu - 330 * math.sin(math.pi * uu) * (1 - 0.3 * uu),
                                     1.0, rot_=-6.283 * ee), alpha=0.14 * a * (1 - k / 5))
         fx.over(canvas, fx.warp(cat_frame(0.3, sz), x, y, 1.0, rot_=-6.283 * ue), alpha=a)   # one full flip in the air
+        return
+    if t >= TL.BOO:                                    # the pumpkin again: arches and hops on the palms (does not run)
+        u = t - TL.BOO
+        x, y = cat_seat(t)
+        hop = 150 * abs(math.sin(math.pi * min(1.0, u / 0.42))) * (1 if u < 0.42 else 0)
+        fx.over(canvas, fx.warp(cat_frame(0.44 * (1 - fx.ease_out(min(1.0, u / 0.1))), CAT_SIZE * 1.15), x + 7 * math.sin(t * 90),
+                                y - hop, 1.0, rot_=0.10, anchor=(CAT_SIZE * 0.575, CAT_SIZE * 1.035)))
         return
     if t >= TL.LAND:                                   # home: squashes on landing, settles, purrs
         u = t - TL.LAND
@@ -855,14 +862,79 @@ def scare_fx(canvas, t):
             fx.over(canvas, fx.draw_rgba((0, y0 - 420, W, y0 + 20), fn), add=True)
 
 
+def star(d, m, x, y, r, fill):
+    pts = []
+    for i in range(10):
+        rr = r if i % 2 == 0 else r * 0.42
+        th = -math.pi / 2 + i * math.pi / 5
+        pts.append(m(x + rr * math.cos(th), y + rr * math.sin(th)))
+    d.polygon(pts, fill=fill)
+
+
+def hook_fx(canvas, t):
+    """The hook: a price tag over the cat on the first two beats — «NFT-КОТ», «22 975 ★»."""
+    if t >= E.RUN + 0.1:
+        return
+    x, y = cat_seat(t)
+    out = 1 - fx.smooth((t - TL.SCARE) / 0.15)
+    for k, (t0, s, col) in enumerate(E.HOOK):
+        u = t - t0
+        if u < 0:
+            continue
+        kk = fx.ease_out_back(min(1.0, u / 0.2), 2.4) * out * (1 + 0.04 * hit_pulse(t))
+        im = txt(s, 104 if k else 80, col)
+        yy = y - 560 + 118 * k
+        xx = x - 60 - (34 if k else 0)
+        fx.over(canvas, fx.warp(im.filter(ImageFilter.GaussianBlur(12)), xx, yy, 1.06 * kk, rot_=-0.05), alpha=0.9, add=True)
+        fx.over(canvas, fx.warp(im, xx, yy, kk, rot_=-0.05))
+        if k:
+            sx = xx + im.width * kk / 2 + 36
+            fx.over(canvas, fx.draw_rgba((sx - 60, yy - 60, sx + 60, yy + 60),
+                                         lambda d, m, S: star(d, m, sx, yy - 4, 44 * kk, (255, 205, 60, 255))))
+
+
+_BOO = {}
+
+
+def boo_fx(canvas, t, front):
+    """The pumpkin: jumps out of the case tile and scares the cat (start); peeks in again at the very end."""
+    if 'p' not in _BOO:
+        _BOO['p'] = str(gifts_api.model_file('Mad Pumpkin', 'Let It Snow', 'json'))
+    u = t - (TL.SCARE - 0.10)
+    if 0 <= u < 0.95 and not front:
+        k = fx.ease_out_back(min(1.0, u / 0.16), 2.6) * (1 - fx.smooth((u - 0.6) / 0.35))
+        x0, y0 = E.BOO_FROM
+        x, y = x0 + 190 * min(1.0, u / 0.16), y0 + 240 * min(1.0, u / 0.16)
+        sz = 640 * max(0.05, k)
+        fx.over(canvas, fx.warp(fx.radial(256, (255, 80, 40), power=1.6), x, y, sz * 1.9 / 256), alpha=0.6 * k, add=True)
+        fx.over(canvas, fx.warp(lottie.frame(_BOO['p'], u, size=int(sz) // 2 * 2), x, y, 1.0, rot_=0.12 * math.sin(u * 30) * (1 - u)))
+        if u > 0.06:
+            im = txt('БУ!', 150, (255, 255, 255))
+            fx.over(canvas, fx.warp(im, x + 200, y - 260, k, rot_=0.12))
+    v = t - (TL.BOO - 0.08)
+    if v >= 0 and front:
+        k = fx.ease_out_back(min(1.0, v / 0.16), 2.4)
+        x1, y1 = E.BOO_END_XY
+        x = -260 + (x1 + 260) * k
+        fx.over(canvas, fx.warp(fx.radial(256, (255, 80, 40), power=1.6), x, y1, 1000 / 256), alpha=0.5 * k, add=True)
+        fx.over(canvas, fx.warp(lottie.frame(_BOO['p'], v, size=560), x, y1 + 10 * math.sin(v * 9), 1.0, rot_=0.25 - 0.1 * math.sin(v * 12)))
+        if v > 0.08:
+            fx.over(canvas, fx.warp(txt('БУ!', 150, (255, 255, 255)), x + 150, y1 - 330, min(1.0, k), rot_=0.14))
+        cx, cy = cat_seat(t)
+        for i, (dx, ang) in enumerate(((-95, -0.3), (0, 0.0), (95, 0.3))):
+            uu = v - 0.08 - 0.04 * i
+            if uu >= 0:
+                fx.over(canvas, fx.warp(txt('!', 150, (255, 225, 60)), cx + dx * 1.3, cy - 560, fx.ease_out_back(min(1.0, uu / 0.14), 2.6), rot_=ang))
+
+
 def purr_fx(canvas, t):
     """Home again: hearts and «мрр» float up from the purring cat; sparkles on the landing."""
     u = t - TL.LAND
-    if u < 0:
+    if u < 0 or t >= TL.BOO:
         return
     x, y = cat_seat(t)
     burst(canvas, x, y - 100, u, 300, col=(255, 200, 230), n=14, dur=0.6)
-    fade = 1 - fx.smooth((t - (DUR - 0.5)) / 0.4)
+    fade = 1 - fx.smooth((t - (TL.BOO - 0.3)) / 0.25)
 
     def fn(d, m, S):
         for i in range(7):
@@ -940,7 +1012,7 @@ FLASH = [(TL.SCARE, (255, 255, 255), 0.30, 0.45), (TL.TAP_TILE, (255, 255, 255),
          (TL.POP[0], (255, 150, 60), 0.3, 0.28), (TL.POP[1], (255, 60, 50), 0.35, 0.3), (TL.POP[2], (255, 20, 10), 0.45, 0.36),
          (TL.TO_UP, (255, 255, 255), 0.18, 0.28), (TL.TAP_WANT, (150, 170, 255), 0.2, 0.15),
          (TL.RESULTS, (255, 215, 110), 0.3, 0.3), (TL.TAP_CAT, (255, 255, 255), 0.18, 0.28),
-         (TL.PRESS_UP, (255, 200, 60), 0.25, 0.25), (TL.WIN, (255, 225, 140), 0.6, 0.85), (TL.LAND, (255, 190, 220), 0.3, 0.25)]
+         (TL.PRESS_UP, (255, 200, 60), 0.25, 0.25), (TL.WIN, (255, 225, 140), 0.6, 0.85), (TL.LAND, (255, 190, 220), 0.3, 0.25), (TL.BOO, (255, 255, 255), 0.3, 0.45)]
 
 
 def flashes(canvas, t):
@@ -951,7 +1023,7 @@ def flashes(canvas, t):
             canvas[..., :3] = canvas[..., :3] * (1 - a) + np.array(col, np.float32) * a
 
 
-SHAKES = [(TL.SCARE, 16), (TL.POP[0], 8), (TL.POP[1], 9), (TL.POP[2], 14), (TL.WIN, 22), (TL.LAND, 9), (TL.TAP_TILE, 5),
+SHAKES = [(TL.SCARE, 16), (TL.POP[0], 8), (TL.POP[1], 9), (TL.POP[2], 14), (TL.WIN, 22), (TL.LAND, 9), (TL.BOO, 16), (TL.TAP_TILE, 5),
           (TL.TO_UP, 6), (TL.RESULTS, 7), (TL.PRESS_UP, 7), *((p, 5) for p in TL.PRESS)]
 
 
@@ -965,7 +1037,7 @@ def shake(t):
 
 
 _POST = {}
-PUNCH = (TL.SCARE, TL.TAP_TILE, *TL.PRESS, *TL.POP, TL.TO_UP, TL.TAP_WANT, TL.RESULTS, TL.TAP_CAT, TL.PRESS_UP, TL.WIN, TL.LAND)
+PUNCH = (TL.SCARE, TL.TAP_TILE, *TL.PRESS, *TL.POP, TL.TO_UP, TL.TAP_WANT, TL.RESULTS, TL.TAP_CAT, TL.PRESS_UP, TL.WIN, TL.LAND, TL.BOO)
 
 
 def post(out, t):
@@ -1016,20 +1088,23 @@ def render_at(t):
         a = 1.0 if t < E.RUN else fx.smooth((t - TL.LAND + 0.2) / 0.3)
         fx.over(canvas, fx.warp(fx.radial(256, (190, 110, 255), power=1.7), E.HOLD[0], E.HOLD[1] - 120, 760 / 256), alpha=0.30 * a, add=True)
     press_fx(canvas, t)
+    boo_fx(canvas, t, False)
     place_hand(canvas, 'L', t)
     eyes, pose = place_head(canvas, t)
     draw_fire(canvas, eyes, pose[2] / 0.7, t)
     place_hand(canvas, 'R', t)
     draw_cat(canvas, t)
     scare_fx(canvas, t)
+    hook_fx(canvas, t)
     purr_fx(canvas, t)
+    boo_fx(canvas, t, True)
     qmark_fx(canvas, t)
     confetti(canvas, t)
     place_aura_text(canvas, t)
     fx.over(canvas, LOGO)
     flashes(canvas, t)
-    if t > DUR - 0.35:                                 # short fade to black with the track's tail
-        canvas *= 1 - fx.smooth((t - (DUR - 0.35)) / 0.35)
+    if t > DUR - 0.18:                                 # freeze on the scare, a quick dip to black: loops into the start
+        canvas *= 1 - fx.smooth((t - (DUR - 0.18)) / 0.18)
     dx, dy = shake(t)
     out = post(np.clip(canvas, 0, 255).astype(np.uint8), t)
     if dx or dy:

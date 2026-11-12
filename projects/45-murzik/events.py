@@ -1,7 +1,7 @@
 """Shared events for picture and sound (video time, s). Beat-locked times live in timeline; voice starts — script.VOICE_CUES.
 Screen = the whole frame: recording crop x 0..720, y 230..1510, scale 1.5 -> 1080 x 1920. Points below are FRAME px."""
 from timeline import (SCARE, TAP_TILE, PRESS, POP, CLOSE, TO_UP, TAP_WANT, TYPE, RESULTS, TAP_CAT, PRESS_UP, WIN,
-                      JUMP, LAND, DUR)
+                      JUMP, LAND, BOO, DUR)
 
 CARD_W, CARD_H = 1080, 1920
 TILE = (281, 518)            # «Тыква или лампа» in the case list
@@ -25,7 +25,7 @@ RUN = SCARE + 0.22           # after the hop he bolts to the right
 EMO = [
     (0.00, 'love'), (SCARE, 'shock'), (4.10, 'cocky'), (PRESS[0], 'tense'), (POP[0] + 0.1, 'annoyed'),
     (PRESS[1], 'tense'), (POP[1] + 0.1, 'sad'), (PRESS[2], 'tense'), (POP[2] + 0.1, 'rage'),
-    (16.50, 'cocky'), (RESULTS, 'joy'), (PRESS_UP, 'tense'), (WIN, 'joy'), (LAND + 0.25, 'love'),
+    (16.50, 'cocky'), (RESULTS, 'joy'), (PRESS_UP, 'tense'), (WIN, 'joy'), (LAND + 0.25, 'love'), (BOO, 'shock'),
 ]
 
 # Head travels: (arrival time, x, y offset, scale mult). Smooth ease-in-out between keys.
@@ -50,7 +50,14 @@ ZOOMS = [
     (WIN, JUMP + 0.25, (540, 860), 1.10, 1.16),
 ]
 
-AURA_TEXT = [(POP[0] + 0.25, 'НЕ МУРЗИК', (255, 70, 60), (540, 430)),
+AURA_TEXT = [(RUN + 0.12, 'СБЕЖАЛ!', (255, 70, 60), (620, 1010)),
+             (POP[0] + 0.25, 'НЕ МУРЗИК', (255, 70, 60), (540, 430)),
              (POP[1] + 0.25, 'ОПЯТЬ НЕ МУРЗИК', (255, 70, 60), (540, 430)),
              (POP[2] + 0.25, 'ГДЕ МУРЗИК?!', (255, 40, 30), (540, 430)),
              (WIN + 0.08, 'МУРЗИК!', (255, 210, 80), (600, 235))]
+
+# Hook (author 2026-11-12): what is at stake is on screen from the first beat — the price tag of the cat on the palms
+# (the price is the one on the recording); the pumpkin from the case tile is what scares him, and it comes back at the end.
+HOOK = [(0.27, 'NFT-КОТ', (255, 255, 255)), (0.798, '22 975', (255, 210, 80))]
+BOO_FROM = TILE              # the pumpkin jumps out of the «Тыква или лампа» tile
+BOO_END_XY = (215, 1150)     # ... and peeks in from the left at the end

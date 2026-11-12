@@ -27,6 +27,7 @@ PRESS_UP = B(43)    # 22.974 «Улучшить»
 WIN = B(47)         # 25.086 «Улучшено»
 JUMP = B(48)        # 25.614 the cat jumps out of the window ...
 LAND = B(49)        # 26.142 ... onto the palms
+BOO = B(54)         # 28.782 the pumpkin peeks in again: the cat arches — the gag that loops to the start
 
 HITS = [B(n) for n in range(0, 56) if B(n) < DUR - 0.6]
 

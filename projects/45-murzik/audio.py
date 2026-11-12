@@ -136,7 +136,16 @@ def sfx_layer(n, kit):
     a(fx, 'boing', TL.JUMP, gain_db=-23, pan=0.2, label='jump')
     a(fx, 'pop', TL.LAND, gain_db=-17, pan=0.3, label='lands on the palms')
     a(fx, 'sparkle', TL.LAND + 0.05, gain_db=-22, pan=0.3, label='landing sparkles')
-    put(fx, purr(DUR - TL.LAND - 0.15, seed=9), TL.LAND + 0.12, -14, 0.3)
+    put(fx, purr(TL.BOO - TL.LAND - 0.10, seed=9), TL.LAND + 0.12, -14, 0.3)
+    # hook tags, the pumpkin «БУ!» at the start and again at the end
+    a(fx, 'pop', TL.B(0), gain_db=-20, pan=0.3, label='hook tag «NFT-КОТ»')
+    a(fx, 'coin', TL.B(1), gain_db=-21, pan=0.3, label='hook tag «22 975 ★»')
+    a(fx, 'cartoon-hit', TL.SCARE - 0.02, align='peak', gain_db=-17, pan=-0.4, label='pumpkin «БУ!»')
+    a(fx, 'glitch-text', E.RUN + 0.12, gain_db=-22, label='stamp «СБЕЖАЛ!»')
+    a(fx, 'cartoon-hit', TL.BOO, align='peak', gain_db=-14, pan=-0.5, label='pumpkin «БУ!» again')
+    a(fx, 'impact', TL.BOO, align='peak', gain_db=-17, label='final scare')
+    put(fx, meow(0.5, seed=5), TL.BOO + 0.03, -14, 0.3)
+    cues.append((TL.BOO + 0.03, 'synth: startled «мяу!» (final gag)'))
     cues.append((TL.LAND + 0.12, 'synth: purr (home again)'))
     return fx, cues
 

@@ -18,7 +18,7 @@ import lottie
 import config
 import events as E
 import script
-from timeline import DUR, HITS, DROP, RESUME, BEAT, src_at
+from timeline import DUR, HITS, DROP, RESUME, BEAT, src_at, spin_window, spin_ease
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -731,8 +731,32 @@ def scroll_image(t):
     return out
 
 
+_SPINX = {}
+
+
+def src_time(t):
+    """Recording time for video time t: the case spins run on one smooth curve by the measured reel offset."""
+    k, sp = spin_window(t)
+    if sp is None:
+        return src_at(t)
+    if k not in _SPINX:
+        _SPINX[k] = np.load(BUILD / sp['file'])
+    ts, X = _SPINX[k]
+    if t < sp['ta']:
+        u = (t - sp['t0']) / (sp['ta'] - sp['t0'])
+        return sp['pre'][0] + (sp['pre'][1] - sp['pre'][0]) * u
+    if t < sp['tb']:
+        target = X[-1] * spin_ease((t - sp['ta']) / (sp['tb'] - sp['ta']))
+        i = int(np.searchsorted(X, target, 'right') - 1)
+        if target > X[i] + 0.5 and i + 1 < len(X) and X[i + 1] - target < target - X[i]:
+            i += 1
+        return float(ts[max(0, i)])
+    u = (t - sp['tb']) / (sp['t1'] - sp['tb'])
+    return sp['rest'][0] + (sp['rest'][1] - sp['rest'][0]) * u
+
+
 def card_image(t):
-    st = src_at(t)
+    st = src_time(t)
     a = scroll_image(t) if t < 9.55 else np.asarray(src_frame(st)).copy()
     a[0:HEADER] = a[0:HEADER, 540:541]                 # the star balance (and the half-cut logo) vanish
     for it, name, s0, s1 in ((ROSE, 'rose', 39.9, 44.06), (DIAMOND, 'diamond', 52.7, 99)):

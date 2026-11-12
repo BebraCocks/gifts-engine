@@ -32,6 +32,28 @@ SEG = [
 ]
 
 
+# Case spins (author: the recording has jerks and a 2,5 s wait before spin 2): the reel offset measured per source
+# frame (build/spin1X.npy, spin2X.npy by extract_src) is replayed on one smooth curve — instant start, soft stop.
+# pre: source span while the button is pressed (spin 2: the popup slides away); rest: the stopped reel until the popup.
+SPINS = [
+    dict(t0=13.65, ta=13.70, tb=14.95, t1=15.20, pre=(33.60, 33.60), rest=(38.95, 39.95), file='spin1X.npy'),
+    dict(t0=22.55, ta=22.62, tb=23.95, t1=24.20, pre=(44.35, 44.35), rest=(51.85, 52.75), file='spin2X.npy'),
+]
+CARD_PITCH = 240.0                   # orig px between reel cards: one roulette tick per card
+
+
+def spin_ease(u):
+    u = min(1.0, max(0.0, u))
+    return 1 - (1 - u) ** 3
+
+
+def spin_window(t):
+    for k, sp in enumerate(SPINS):
+        if sp['t0'] <= t < sp['t1']:
+            return k, sp
+    return None, None
+
+
 def seg_index(t):
     for k, (t0, t1, _, _) in enumerate(SEG):
         if t < t1:

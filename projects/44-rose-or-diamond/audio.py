@@ -26,6 +26,22 @@ def ticks(kit, fx, t0, t1, key, file, gain, first=0.045, last=0.30, label=''):
         k += 1
 
 
+def reel_ticks(kit, fx, k, gain):
+    """One tick per reel card passing the pointer, on the same smooth spin curve as the picture."""
+    from timeline import SPINS, CARD_PITCH, spin_ease
+    sp = SPINS[k]
+    total = np.load(paths.build(HERE) / sp['file'])[1][-1]
+    last, prev, n = -1.0, 0, 0
+    for t in np.arange(sp['ta'], sp['tb'], 0.001):
+        c = int(total * spin_ease((t - sp['ta']) / (sp['tb'] - sp['ta'])) // CARD_PITCH)
+        if c > prev and t - last >= 0.035:
+            u = (t - sp['ta']) / (sp['tb'] - sp['ta'])
+            kit.add(fx, 'list', t, gain_db=gain - 3 * u + (2 if u > 0.7 else 0), key='roulette', file='mini-list-one-shot-2',
+                    pan=0.15 * ((-1) ** n), label=f'reel {k + 1}' if n == 0 else None)
+            last, n = t, n + 1
+        prev = max(prev, c)
+
+
 def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
@@ -41,7 +57,7 @@ def sfx_layer(n, kit):
     # case 1
     a(fx, 'whoosh-short', E.PRESS1, align='peak', gain_db=-24, pan=0.2, label='hand reach 1')
     a(fx, 'click', E.PRESS1, align='peak', gain_db=-11, label='«Открыть за 100»')
-    ticks(kit, fx, E.PRESS1 + 0.06, E.POP1 - 0.1, 'roulette', 'mini-list-one-shot-2', -15, label='reel 1')
+    reel_ticks(kit, fx, 0, -15)
     a(fx, 'impact', E.POP1, align='peak', gain_db=-21, label='rose popup')
     a(fx, 'popup', E.POP1 + 0.02, gain_db=-17, label='«Ваш подарок»')
     a(fx, 'sparkle', E.POP1 + E.HALO, gain_db=-19, label='rose pops out glowing (halo, rays)')
@@ -59,7 +75,7 @@ def sfx_layer(n, kit):
     a(fx, 'glitch', E.RAGE + 0.05, gain_db=-22, label='rage glitch')
     # case 2
     a(fx, 'click', E.PRESS2, align='peak', gain_db=-11, label='«Крутить ещё»')
-    ticks(kit, fx, E.PRESS2 + 0.06, E.POP2 - 0.1, 'roulette', 'mini-list-one-shot-2', -16, label='reel 2')
+    reel_ticks(kit, fx, 1, -16)
     a(fx, 'impact', E.POP2, align='peak', gain_db=-20, label='diamond popup')
     a(fx, 'confirm', E.POP2 + 0.05, gain_db=-20, label='diamond chime')
     a(fx, 'sparkle-whoosh', E.POP2 + E.HALO, gain_db=-20, fit=1.2, fade_out=0.3, label='diamond pops out glowing')

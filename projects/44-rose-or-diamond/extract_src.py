@@ -9,7 +9,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SRC = HERE / 'input' / 'rubup_screen.mp4'
 OUT = HERE / 'build' / 'src'
-RANGES = [(0.0, 8.2), (24.0, 34.0), (34.0, 44.2), (44.0, 52.0), (52.0, 58.52)]
+RANGES = [(0.0, 8.2), (29.8, 34.0), (34.0, 44.2), (44.0, 52.0), (52.0, 58.52)]
 DRIVE = 'https://drive.usercontent.google.com/download?id=1vjGlk1za-mmJhg03_Y-pJB2t-e1ek8Tw&export=download&confirm=t'
 Y0 = 230
 
@@ -21,6 +21,21 @@ def cut(r):
                     '-start_number', str(round(a * 60)), str(OUT / '%06d.jpg')], check=True)
 
 
+def scroll_measure():
+    """List offset of the recording's own scroll (orig px, 30 fps, s 0–18.5) -> build/scrollP.npy for the smooth scroll."""
+    import numpy as np
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-to', '18.5', '-i', str(SRC), '-vf',
+                          'fps=30,crop=360:1000:180:420,scale=180:500,format=gray', '-f', 'rawvideo', '-'],
+                         capture_output=True, check=True).stdout
+    f = np.frombuffer(raw, np.uint8).reshape(-1, 500, 180).astype(np.float32)
+    P = [0.0]
+    for a, b in zip(f, f[1:]):
+        best = min((np.mean(np.abs(a[dy + 20:480] - b[20:480 - dy])) if dy >= 0 else
+                    np.mean(np.abs(a[20:480 + dy] - b[20 - dy:480])), dy) for dy in range(-10, 120))
+        P.append(P[-1] + best[1])
+    np.save(HERE / 'build' / 'scrollP.npy', np.array(P) * 2)
+
+
 if __name__ == '__main__':
     if not SRC.exists():
         subprocess.run(['curl', '-sSfL', '--retry', '5', '-o', str(SRC), DRIVE], check=True)
@@ -28,3 +43,4 @@ if __name__ == '__main__':
     with ThreadPoolExecutor(len(RANGES)) as ex:
         list(ex.map(cut, RANGES))
     print(len(list(OUT.glob('*.jpg'))), 'frames ->', OUT)
+    scroll_measure()

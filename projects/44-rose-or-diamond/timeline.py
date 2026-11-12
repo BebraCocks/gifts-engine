@@ -18,18 +18,17 @@ HITS = [k * BEAT * 2 for k in range(4)] + \
 HITS = sorted(h for h in HITS if 0 <= h < DUR and not (FADE1 <= h < RESUME))
 
 # (t0, t1, src s0, src s1): linear inside, a cut between segments.
-# Recording: list scroll 0–18; 50/50 shelf 24.0–26.9; case «Роза или алмаз» 30.0–33.6, press 33.6;
+# Recording: list scroll 2.4–13.4 in jerky flicks (measured: build/scrollP.npy via extract_src); 50/50 shelf 24.0–26.9; case «Роза или алмаз» 30.0–33.6, press 33.6;
 # rose popup 39.95–44.2 (press «Крутить ещё» ~44.1); diamond popup from 52.75.
 SEG = [
-    (0.00, 2.40, 0.50, 8.00),        # flicking through the cases
-    (2.40, 9.55, 24.30, 26.85),      # 50/50 shelf (slow), pink enters and complains
+    (0.00, 9.55, 7.90, 7.90),        # list: own smooth scroll (render.scroll_image), stops on the 50/50 shelf
     (9.55, 13.65, 30.00, 33.60),     # case «Роза или алмаз», press
-    (13.65, 14.60, 33.60, 37.60),    # spin 1 (fast)
-    (14.60, 15.60, 37.60, 39.95),    # spin 1 slows down
-    (15.60, 22.55, 39.95, 44.05),    # popup: Роза 40★
-    (22.55, 23.55, 44.05, 50.20),    # «Крутить ещё», spin 2 (fast)
-    (23.55, 24.55, 50.20, 52.75),    # spin 2 slows down
-    (24.55, DUR, 52.75, 58.45),      # popup: Алмаз 160★
+    (13.65, 14.45, 33.60, 37.60),    # spin 1 (fast)
+    (14.45, 15.20, 37.60, 39.95),    # spin 1 slows down
+    (15.20, 22.55, 39.95, 44.05),    # popup: Роза 40★ (glows, then taken)
+    (22.55, 23.40, 44.05, 50.20),    # «Крутить ещё», spin 2 (fast)
+    (23.40, 24.20, 50.20, 52.75),    # spin 2 slows down
+    (24.20, DUR, 52.75, 58.45),      # popup: Алмаз 160★
 ]
 
 

@@ -31,8 +31,8 @@ def sfx_layer(n, kit):
     a = kit.add
     # intro: the white hand flicks the list
     for k, (t0, t1) in enumerate(E.SWIPES):
-        a(fx, 'whoosh-short', t0 + 0.2, align='peak', gain_db=-22, pan=0.3, label=f'swipe {k + 1}')
-    a(fx, 'select-soft', 2.40, gain_db=-22, label='stops on 50/50')
+        a(fx, 'whoosh-short', t1, align='peak', gain_db=-23, pan=0.3, label=f'swipe {k + 1}')
+        a(fx, 'select-soft', t0, gain_db=-28, pan=0.3, label=f'finger touch {k + 1}')
     # pink enters
     a(fx, 'whoosh-organic', E.PINK_IN[0], gain_db=-20, pan=0.6, fit=1.0, fade_out=0.3, label='pink slides in')
     a(fx, 'sparkle', E.PINK_IN[1] - 0.1, gain_db=-24, pan=0.5, label='pink lands')
@@ -44,6 +44,7 @@ def sfx_layer(n, kit):
     ticks(kit, fx, E.PRESS1 + 0.06, E.POP1 - 0.1, 'roulette', 'mini-list-one-shot-2', -15, label='reel 1')
     a(fx, 'impact', E.POP1, align='peak', gain_db=-21, label='rose popup')
     a(fx, 'popup', E.POP1 + 0.02, gain_db=-17, label='«Ваш подарок»')
+    a(fx, 'sparkle', E.POP1 + E.HALO, gain_db=-19, label='rose pops out glowing (halo, rays)')
     a(fx, 'granular-move', E.GRAB1 - 0.05, gain_db=-22, label='rose taken out of the window')
     a(fx, 'sparkle-whoosh', 16.70, gain_db=-24, fit=1.0, fade_out=0.3, label='«Вот, держи» — he offers it')
     a(fx, 'select', E.GIVE, gain_db=-20, pan=0.3, label='she takes it')
@@ -61,10 +62,11 @@ def sfx_layer(n, kit):
     ticks(kit, fx, E.PRESS2 + 0.06, E.POP2 - 0.1, 'roulette', 'mini-list-one-shot-2', -16, label='reel 2')
     a(fx, 'impact', E.POP2, align='peak', gain_db=-20, label='diamond popup')
     a(fx, 'confirm', E.POP2 + 0.05, gain_db=-20, label='diamond chime')
+    a(fx, 'sparkle-whoosh', E.POP2 + E.HALO, gain_db=-20, fit=1.2, fade_out=0.3, label='diamond pops out glowing')
     a(fx, 'granular-move', E.GRAB2 - 0.05, gain_db=-22, label='diamond taken')
     a(fx, 'riser', E.THROW2, align='end', gain_db=-22, fit=1.6, label='wind-up builds')
     a(fx, 'whoosh-short', E.THROW2, align='peak', gain_db=-15, pan=0.2, label='diamond thrown')
-    a(fx, 'sparkle-whoosh', E.THROW2 + 0.05, gain_db=-19, pan=0.4, fit=E.HIT2 - E.THROW2, fade_out=0.2, label='diamond flies (arc)')
+    a(fx, 'whoosh-deep', E.THROW2 - 0.05, gain_db=-19, pan=0.6, fit=1.0, fade_out=0.4, label='diamond flies off hard')
     a(fx, 'riser', E.HIT2, align='end', gain_db=-21, fit=1.2, label='flight builds to the drop')
     # the drop: hit + flex
     a(fx, 'cartoon-hit', E.HIT2, align='peak', gain_db=-12, pan=0.8, label='diamond hits her (off-screen)')

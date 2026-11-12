@@ -414,25 +414,27 @@ RAISED = ('raised',)
 # None = rest beside the head; C(...) = hand centre; T(...) = fingertip of the pointing hand.
 PATHS = {
     ('W', 'R'): [
-        (0.00, 'open', None), (0.15, 'point', T(770, 1420)), (0.30, 'point', T(770, 1380)),
-        (0.75, 'point', T(800, 880)), (1.05, 'point', T(770, 1400)), (1.20, 'point', T(770, 1380)),
-        (1.65, 'point', T(800, 880)), (2.25, 'open', None),
+        (0.00, 'point', T(770, 1440)),
+        *[w for a, b in E.SWIPES for w in ((a, 'point', T(770, 1420)), (b, 'point', T(790, 860)),
+                                            (b + 0.17, 'point', T(780, 1100)), (b + 0.30, 'point', T(770, 1440)))],
+        (E.SWIPES[-1][1] + 0.70, 'open', None),
         (13.20, 'open', None), (13.35, 'point', T(640, 1330)), (E.PRESS1, 'point', T(548, 1172)),
-        (13.85, 'point', T(610, 1280)), (14.05, 'fist', LIFT), (15.40, 'fist', LIFT),
-        (15.50, 'open', None), (E.GRAB1 - 0.08, 'open', POPUP), (E.GRAB1, 'fist', POPUP),
+        (13.85, 'point', T(610, 1280)), (14.05, 'fist', LIFT), (E.POP1 - 0.15, 'fist', LIFT),
+        (E.POP1 + 0.05, 'open', None), (E.GRAB1 - 0.40, 'open', None), (E.GRAB1 - 0.08, 'open', POPUP), (E.GRAB1, 'fist', POPUP),
         (16.40, 'fist', C(430, 1430, 0.1)), (16.60, 'fist', C(430, 1430, 0.1)),
         (E.GIVE - 0.12, 'fist', C(590, 1440, -0.15)), (E.GIVE, 'open', C(590, 1450, -0.1)), (17.75, 'open', None),
         (22.10, 'open', None), (22.30, 'point', T(780, 1800)), (E.PRESS2, 'point', T(712, 1868)),
-        (22.75, 'point', T(780, 1780)), (22.95, 'fist', LIFT), (24.35, 'fist', LIFT),
-        (24.45, 'open', None), (E.GRAB2 - 0.08, 'open', POPUP), (E.GRAB2, 'fist', POPUP),
+        (22.75, 'point', T(780, 1780)), (22.95, 'fist', LIFT), (E.POP2 - 0.15, 'fist', LIFT),
+        (E.POP2 + 0.05, 'open', None), (E.GRAB2 - 0.40, 'open', None), (E.GRAB2 - 0.08, 'open', POPUP), (E.GRAB2, 'fist', POPUP),
         (25.30, 'fist', C(600, 1440, -0.05)), (26.60, 'fist', C(610, 1420, 0.05)), (E.WINDUP, 'fist', C(600, 1440, 0.0)),
-        (E.THROW2 - 0.13, 'fist', C(260, 1330, 0.7, 1.05)), (E.THROW2, 'open', C(860, 1050, -0.7, 1.1)),
-        (E.THROW2 + 0.30, 'open', C(820, 1300, -0.2)), (E.THROW2 + 0.70, 'open', None),
+        (E.THROW2 - 0.15, 'fist', C(150, 1400, 0.95, 1.05)),                 # wind-up: far back
+        (E.THROW2, 'open', C(960, 1235, -0.25, 1.15)),                        # a hard swing straight forward
+        (E.THROW2 + 0.30, 'open', C(880, 1320, -0.1)), (E.THROW2 + 0.75, 'open', None),
         (DROP + 0.05, 'open', None), (DROP + 0.35, 'open', RAISED),
     ],
     ('W', 'L'): [
-        (0.00, 'open', None), (13.80, 'open', None), (13.95, 'fist', LIFT), (15.40, 'fist', LIFT), (15.60, 'open', None),
-        (22.65, 'open', None), (22.80, 'fist', LIFT), (24.35, 'fist', LIFT), (24.55, 'open', None),
+        (0.00, 'open', None), (13.80, 'open', None), (13.95, 'fist', LIFT), (E.POP1 - 0.15, 'fist', LIFT), (E.POP1 + 0.10, 'open', None),
+        (22.65, 'open', None), (22.80, 'fist', LIFT), (E.POP2 - 0.15, 'fist', LIFT), (E.POP2 + 0.10, 'open', None),
         (DROP + 0.05, 'open', None), (DROP + 0.35, 'open', RAISED),
     ],
     ('P', 'L'): [
@@ -496,7 +498,7 @@ def hand_state(who, side, t):
         u = t - E.ROSE_HIT
         if 0 <= u < 0.6:
             y -= 60 * math.exp(-u * 6)
-        if pose == 'fist' and (13.9 < t < 15.5 or 22.8 < t < 24.45):
+        if pose == 'fist' and (13.9 < t < E.POP1 or 22.8 < t < E.POP2):
             x += 3 * math.sin(t * 53 + (0 if side == 'L' else 1))
             y += 4 * math.sin(t * 47)
     if who == 'P' and pink_state(t) == 'pout' and side == 'R':  # she gestures while complaining
@@ -546,7 +548,7 @@ class Item:
     def lottie(self, t, size):
         if self.path is None:
             self.path = str(gifts_api.original_file(self.gid, 'json'))
-        return lottie.frame(self.path, max(0.0, t - self.grab), size=int(size) // 2 * 2)
+        return lottie.frame(self.path, max(0.0, t - self.popup_t), size=int(size) // 2 * 2)
 
     def holder(self, t):
         if not (self.grab <= t < self.release):
@@ -560,7 +562,7 @@ class Item:
     def size(self, t):
         u = fx.smooth(min(1.0, (t - self.grab) / 0.45))
         _, _, z = view(t)
-        return 470 * z * (1 - u) + self.size_held * u
+        return 520 * z * (1 - u) + self.size_held * u
 
     def draw_held(self, canvas, t, st):
         who = self.holder(t)[0]
@@ -571,6 +573,52 @@ class Item:
 
     def draw_free(self, canvas, t):
         self.fly(self, canvas, t)
+
+    def draw_popup(self, canvas, t, col):
+        """Out of the popup window: the gift pops out, glowing, with rays and twinkles, until the hand takes it."""
+        t0 = self.popup_t + E.HALO
+        u = t - t0
+        x, y = zmap(*E.POPUP_GIFT, t)
+        _, _, z = view(t)
+        fade = 1 - fx.smooth((t - self.grab) / 0.3)
+        if u < 0 or fade <= 0:
+            return
+        pulse = 0.85 + 0.15 * math.sin(u * 6.0) + 0.2 * hit_pulse(t)
+        a = min(1.0, u / 0.15) * fade
+        fx.over(canvas, fx.warp(fx.radial(256, col, power=1.6), x, y, 950 * z * pulse / 256), alpha=0.75 * a, add=True)
+        draw_rays(canvas, x, y, 560 * z, u, a, col)
+        if u < 0.6:                                      # one ring flies out on the pop
+            ring = fx.radial(256, col, power=1.0, peak=0.0, ring=(0.8, 0.06, 1.0))
+            fx.over(canvas, fx.warp(ring, x, y, (300 + 900 * fx.ease_out(u / 0.6)) * z / 256), alpha=0.9 * (1 - u / 0.6), add=True)
+
+        def fn(d, m, S):                                 # twinkles orbiting the gift
+            for k in range(8):
+                th = k * 2 * math.pi / 8 + u * 0.9
+                rr = (230 + 40 * math.sin(u * 2 + k)) * z
+                tw = max(0.0, math.sin(u * (4 + k * 0.7) + k * 1.9))
+                if tw > 0.05:
+                    fx.sparkle(d, *m(x + rr * math.cos(th), y + rr * math.sin(th) * 0.9), (8 + 14 * tw) * S,
+                               (255, 250, 235, int(240 * tw * a)))
+        fx.over(canvas, fx.draw_rgba((x - 340 * z, y - 340 * z, x + 340 * z, y + 340 * z), fn), add=True)
+        if t < self.grab:                                # the gift itself (in the hand after the grab)
+            k = fx.ease_out_back(min(1.0, u / 0.35), 2.2)
+            sz = 520 * z * (0.6 + 0.4 * k)
+            fx.over(canvas, fx.warp(self.lottie(t, sz), x, y + 8 * math.sin(u * 3.2), 1.0, rot_=0.05 * math.sin(u * 2.1)))
+
+
+def draw_rays(canvas, x, y, r, u, a, col):
+    if a < 0.02:
+        return
+    n = 16
+
+    def fn(d, m, S):
+        for k in range(n):
+            th = u * 0.5 + k * 2 * math.pi / n
+            w = 0.085
+            d.polygon([m(x, y), m(x + r * math.cos(th - w), y + r * math.sin(th - w)),
+                       m(x + r * math.cos(th + w), y + r * math.sin(th + w))], fill=col + (int(46 * a),))
+    placed = fx.draw_rgba((x - r, y - r, x + r, y + r), fn)
+    fx.over(canvas, (placed[0].filter(ImageFilter.GaussianBlur(7)),) + placed[1:], add=True)
 
 
 def rose_fly(it, canvas, t):
@@ -597,36 +645,34 @@ def rose_fly(it, canvas, t):
 
 
 def diamond_fly(it, canvas, t):
-    """A high arc over the screen (~1,3 s, author): up from the fist, over the popup, down off the right edge on the drop."""
-    if not (E.THROW2 <= t < E.HIT2 + 0.03):
+    """A hard straight throw to the right (author): out of the frame in ~0.3 s; she is hit off-screen on the drop."""
+    if not (E.THROW2 <= t < E.THROW2 + 0.40):
         return
     _, _, _, st = hand_state('W', 'R', E.THROW2)
-    p0 = np.array(fist_top(st, 'W')) - (0, 80)
-    p1, p2 = np.array([560.0, -260.0]), np.array([1190.0, 980.0])
+    x0, y0 = fist_top(st, 'W')
+    y0 -= 60
+    V = 4200.0                                       # px/s
 
     def at(u):
-        return (1 - u) ** 2 * p0 + 2 * u * (1 - u) * p1 + u * u * p2
-
-    u = (t - E.THROW2) / (E.HIT2 - E.THROW2)
+        return x0 + V * u, y0 + 120 * u * u
+    u = t - E.THROW2
     x, y = at(u)
-    sz = it.size_held * (1 + 0.35 * math.sin(math.pi * u) + 0.2 * u)
-    for k in range(7):                                 # light trail + sparkles
-        uu = u - 0.025 * (k + 1)
-        if uu < 0:
-            break
-        xx, yy = at(uu)
-        fx.over(canvas, fx.warp(fx.radial(128, (140, 210, 255), power=1.6), xx, yy, sz * (0.9 - 0.08 * k) / 128),
-                alpha=0.45 * (1 - k / 7), add=True)
-    def fn(d, m, S):
-        for i in range(10):
-            uu = u - 0.02 * i - 0.01
-            if uu < 0:
-                break
-            xx, yy = at(uu)
-            j = (i * 37 + int(t * 60)) % 7 - 3
-            fx.sparkle(d, *m(xx + 9 * j, yy + 7 * ((i * 5) % 7 - 3)), (12 - i) * S, (230, 245, 255, int(240 * (1 - i / 10))))
-    fx.over(canvas, fx.draw_rgba((x - 400, y - 400, x + 400, y + 400), fn), add=True)
-    fx.over(canvas, fx.warp(it.lottie(t, sz), x, y, 1.0, rot_=-10 * u))
+    sz = it.size_held * 1.1
+
+    def fn(d, m, S):                                 # speed lines behind it
+        for i in range(9):
+            yy = y + (i - 4) * 22
+            ln = (260 + 90 * ((i * 7) % 4)) * min(1.0, u / 0.06)
+            d.line([m(x - 60, yy), m(x - 60 - ln, yy)], fill=(210, 240, 255, 210 - 18 * abs(i - 4)), width=int((6 - 0.8 * abs(i - 4)) * S))
+    fx.over(canvas, fx.draw_rgba((x - 800, y - 200, x + 50, y + 200), fn), add=True)
+    for k in range(6):
+        xx, yy = at(max(0.0, u - 0.018 * (k + 1)))
+        fx.over(canvas, fx.warp(fx.radial(128, (140, 210, 255), power=1.6), xx, yy, sz * (1.0 - 0.1 * k) / 128),
+                alpha=0.5 * (1 - k / 6), add=True)
+    fx.over(canvas, fx.warp(it.lottie(t, sz), x, y, 1.0, rot_=-14 * u))
+    ue = (1080 - x0) / V                             # a twinkle where it leaves the frame
+    if 0 <= u - ue < 0.3:
+        burst(canvas, 1060, y0 + 120 * ue * ue, u - ue, 160, col=(210, 240, 255), n=10, dur=0.3)
 
 
 ROSE = Item(E.ROSE_ID, E.POP1, E.GRAB1, [(E.GRAB1, 'W', 'R'), (E.GIVE, 'P', 'L')], E.THROW1, rose_fly, 250)
@@ -638,17 +684,64 @@ ITEMS = [ROSE, DIAMOND]
 HEADER = 105                        # frame rows of the RubUp header kept in the crop (balance painted over)
 
 
+SCROLL_P = None
+
+
+def scroll_offset(t):
+    """Own smooth scroll: the list moves with the fingertip while it touches, then glides out (inertia)."""
+    n = len(E.SWIPES)
+    d = E.SCROLL_END / n                                  # orig px per flick
+    s = 0.0
+    for a, b in E.SWIPES:
+        c = 0.42 * d                                      # moves with the finger
+        g = d - c                                         # glides after the release
+        if t <= a:
+            continue
+        if t < b:
+            s += c * (t - a) / (b - a)
+            continue
+        tau = min(1.0, (t - b) / E.GLIDE)
+        s += c + g * (1 - (1 - tau) ** 3)
+    return min(s, E.SCROLL_END)
+
+
+def scroll_image(t):
+    """Recording frames picked by their measured list offset (build/scrollP.npy, 30 fps) + the residual shift,
+    so the jerky recorded flicks become one smooth motion. Sticky header / chip row stay."""
+    global SCROLL_P
+    if SCROLL_P is None:
+        SCROLL_P = np.load(BUILD / 'scrollP.npy')
+    S = scroll_offset(t)
+    i = int(np.searchsorted(SCROLL_P, S, 'right') - 1)
+    i = max(0, min(i, len(SCROLL_P) - 2))
+    if S >= E.SCROLL_END - 0.5:
+        return np.asarray(src_frame(7.9)).copy()
+    A = np.asarray(src_frame(i / 30.0))
+    r = (S - SCROLL_P[i]) * E.CARD_S
+    out = A.copy()
+    if r >= 1:
+        B = np.asarray(src_frame((i + 1) / 30.0))
+        dd = (SCROLL_P[i + 1] - SCROLL_P[i]) * E.CARD_S
+        y0, y1 = int((395 - E.CARD_Y0) * E.CARD_S), int((1440 - E.CARD_Y0) * E.CARD_S)
+        ri = int(round(r))
+        cut = y1 - ri
+        out[y0:cut] = A[y0 + ri:y1]
+        rb = int(round(r - dd))
+        out[cut:y1] = B[cut + rb:y1 + rb]
+    return out
+
+
 def card_image(t):
     st = src_at(t)
-    a = np.asarray(src_frame(st)).copy()
+    a = scroll_image(t) if t < 9.55 else np.asarray(src_frame(st)).copy()
     a[0:HEADER] = a[0:HEADER, 540:541]                 # the star balance (and the half-cut logo) vanish
     for it, name, s0, s1 in ((ROSE, 'rose', 39.9, 44.06), (DIAMOND, 'diamond', 52.7, 99)):
-        if t >= it.grab and s0 <= st < s1:              # taken out of the window: the picture is empty
+        if t >= it.popup_t + E.HALO and s0 <= st < s1:   # the gift pops out of the window: the picture is empty
             x0, y0, x1, y1 = E.GIFT_BOX[name]
             fx0, fy0 = E.card_xy(x0, y0)
             fx1, fy1 = E.card_xy(x1, y1)
             fx0, fy0, fx1, fy1 = int(fx0), int(fy0), int(fx1), int(fy1)
-            k = fx.smooth(min(1.0, (t - it.grab) / 0.12))
+            k = fx.smooth(min(1.0, (t - it.popup_t - E.HALO) / 0.08))
             left = a[fy0:fy1, fx0 - 4:fx0 - 3].astype(np.float32)
             right = a[fy0:fy1, fx1 + 3:fx1 + 4].astype(np.float32)
             u = np.linspace(0, 1, fx1 - fx0)[None, :, None]
@@ -1002,6 +1095,8 @@ def render_at(t):
     place_card(canvas, t)
     roulette_streaks(canvas, t)
     reveal_glow(canvas, t)
+    ROSE.draw_popup(canvas, t, (255, 120, 150))
+    DIAMOND.draw_popup(canvas, t, (130, 210, 255))
     tint = tuple(int(v) for v in fire_params(t)[0][1])
     hx, hdy, hsc = head_move('W', t)
     fx.over(canvas, fx.warp(fx.radial(256, tint, power=1.8), hx, 1640 + hdy, 1000 * hsc / 256),

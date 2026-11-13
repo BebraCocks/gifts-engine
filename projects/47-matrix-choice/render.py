@@ -497,7 +497,15 @@ def gift_h(r):
     return bb[3] - bb[1], (bb[1] + bb[3]) / 2 - GIFT_PX / 2     # visible height, centre offset of the visible part
 
 
-GIFT_H = {r: gift_h(r)[0] for r in range(5)}
+class _GiftH(dict):
+    """Visible gift heights, computed lazily in the worker: rendering Lottie at import time (before the render pool
+    forks) deadlocks rlottie's internal threads in the children (v3 build hang, 2026-11-13)."""
+    def __missing__(self, r):
+        self[r] = gift_h(r)[0]
+        return self[r]
+
+
+GIFT_H = _GiftH()
 
 
 def thing_im(r):

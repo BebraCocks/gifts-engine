@@ -1,22 +1,32 @@
-"""Estimated word timing; correct anchors against real speech before delivery."""
+"""Word times in content seconds, estimated from the voice envelope (captions.estimate_word_times); captions show
+script.CAPTIONS (digits, «3:2»)."""
+import re
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import captions
-from script import LINES
-from timeline import ON, END, HAS_NARRATION, TAKES
+from script import LINES, CAPTIONS
+from timeline import ON, END, HAS_NARRATION, TAKES, KEY
 
-WORDS = []
-for k, (spoken, screen, style, pause) in enumerate(LINES):
+
+def _norm(w):
+    return re.sub(r'[^0-9a-zа-яё]', '', w.casefold().replace('ё', 'е'))
+
+
+SPOKEN, WORDS = [], []
+for k, (spoken, key) in enumerate(LINES):
     if HAS_NARRATION:
-        words = captions.estimate_word_times(str(TAKES[k]), spoken, offset=ON[k])
+        sp = captions.estimate_word_times(str(TAKES[k]), spoken, offset=ON[k])
     else:
         split = spoken.split()
-        words = [(word, ON[k] + j * (END[k]-ON[k]) / max(1, len(split))) for j, word in enumerate(split)]
-    WORDS.append(words)
+        sp = [(w, ON[k] + j * (END[k] - ON[k]) / len(split)) for j, w in enumerate(split)]
+    SPOKEN.append(sp)
+    WORDS.append(captions.align(sp, CAPTIONS[k]) if CAPTIONS[k] else [])
 
 
 def wt(line, word, occurrence=0):
-    """line is zero-based; occurrence disambiguates repeated words."""
-    matches = [t for text, t in WORDS[line] if text.strip('.,!?—:;').casefold() == word.casefold()]
-    return matches[occurrence]
+    k = KEY[line] if isinstance(line, str) else line
+    m = [t for w, t in SPOKEN[k] if _norm(w) == _norm(word)]
+    if not m:
+        raise KeyError(f'{word!r} not in line {k + 1}: {[w for w, _ in SPOKEN[k]]}')
+    return m[occurrence]

@@ -13,6 +13,7 @@ SHEETS = {
     'hand_sheet_v1.png': ('hand', ['fist', 'half', 'cup', 'hold', 'down', 'point']),
     'hand_sheet_v2.png': ('hand', ['point_up', 'flick', 'pinch', 'grip', 'squeeze', 'catch']),
     'head_sheet_v2.png': ('head', ['blow', 'look_left', 'look_right', 'look_up', 'talk_a', 'talk_o']),
+    'agent_sheet_v1.png': ('agent', ['front', 'left', 'right', 'down', 'down_left', 'down_right']),
 }
 
 
@@ -52,8 +53,8 @@ if __name__ == '__main__':
         for k, name in enumerate(names):
             c, r = k % 3, k // 3
             sp = cut(sheet.crop((round(c * cw), round(r * ch), round((c + 1) * cw), round((r + 1) * ch))))
-            if kind == 'head':
-                sp.save(OUT / f'head_{name}.png')
+            if kind in ('head', 'agent'):
+                sp.save(OUT / f'{kind}_{name}.png')
             else:
                 sp.save(OUT / f'hand_L_{name}.png')
                 ImageOps.mirror(sp).save(OUT / f'hand_R_{name}.png')

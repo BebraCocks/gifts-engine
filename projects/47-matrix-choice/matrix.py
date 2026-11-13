@@ -161,3 +161,57 @@ def assemble(t, key, t0, dur=2.0, seed=1):
     out = pad * ph + code * (1 - ph)
     out[..., 3] = pad[..., 3] * ph[..., 0] + code[..., 3] * (1 - ph[..., 0])
     return out, float(np.clip(u, 0, 1))
+
+
+# ------------------------------------------------------------------ code ⇄ picture for any sprite (items, agents, finale)
+def code_mix(im, k, t, seed=1, cell=12, band=0.22, fall=0.0):
+    """RGBA PIL image -> RGBA PIL image where a fraction k (0..1) of cells shows the picture, the cells at the front
+    show green 0/1 (colour from the picture's brightness), the rest is empty. The front runs top → bottom with
+    per-cell noise, so the picture «pours in» (k rising) or «drains» (k falling). fall > 0: glyph cells slide down by
+    up to `fall` px (dissolving into falling code)."""
+    if k >= 0.999:
+        return im
+    a = np.asarray(im, np.float32) / 255
+    h, w = a.shape[:2]
+    gw, gh = math.ceil(w / cell), math.ceil(h / cell)
+    pad = np.zeros((gh * cell, gw * cell, 4), np.float32)
+    pad[:h, :w] = a
+    cov = pad[..., 3].reshape(gh, cell, gw, cell).mean((1, 3))
+    lum = (pad[..., :3] * (0.3, 0.59, 0.11)).sum(-1).reshape(gh, cell, gw, cell).mean((1, 3))
+    rows = np.arange(gh)[:, None].astype(np.float32)
+    cols = np.arange(gw)[None, :]
+    ri = np.arange(gh)[:, None]
+    th = 0.72 * rows / max(1, gh - 1) + 0.28 * _hash(ri, cols, seed)        # 0..1 per cell
+    th = th * (1 - band) + band * 0.5
+    show = k * (1 + band) - band                                            # picture where th < show
+    pic = (th < show) & (cov > 0.05)
+    glyph = (th >= show) & (th < show + band) & (cov > 0.05)
+    tick = int(t * 16)
+    idx = (_hash(ri, cols, seed + 7, tick) > 0.5).astype(np.int64)
+    shade = np.clip(lum / max(1e-3, lum.max()), 0, 1)
+    col = GREEN_DARK[None, None] + (GREEN - GREEN_DARK)[None, None] * (0.15 + 0.85 * shade)[..., None]
+    hot = np.clip(1 - (th - show) / (band * 0.35), 0, 1) * glyph                # the front glows
+    col = col * (1 - hot[..., None]) + np.array((60, 255, 120), np.float32) * hot[..., None]
+    m = tile(idx, cell) if cell in (12, 15, 26, 22) else tile(idx, cell)
+    up = lambda x: np.repeat(np.repeat(x, cell, 0), cell, 1)
+    out = np.zeros_like(pad)
+    picm = up(pic.astype(np.float32))
+    out[..., :3] = pad[..., :3] * picm[..., None] + up(col / 255) * (1 - picm[..., None])
+    out[..., 3] = pad[..., 3] * picm + m * up(glyph * (0.55 + 0.45 * hot))
+    if fall > 0:                                   # code slides down where the picture has gone
+        gone = np.clip((show + band - th) * 0 + (1 - k), 0, 1)
+        shift = (fall * _hash(np.arange(gw), seed + 3) * (1 - k)).astype(int)
+        res = np.zeros_like(out)
+        for c in range(gw):
+            s = shift[c]
+            x0, x1 = c * cell, (c + 1) * cell
+            if s <= 0:
+                res[:, x0:x1] = out[:, x0:x1]
+            else:
+                res[s:, x0:x1] = out[:-s, x0:x1]
+                res[s:, x0:x1, 3] *= 1
+        res[..., 3] = np.where(up(pic.astype(np.float32)) > 0, out[..., 3], res[..., 3])
+        res[..., :3] = np.where(up(pic.astype(np.float32))[..., None] > 0, out[..., :3], res[..., :3])
+        out = res
+    o = Image.fromarray((np.clip(out[:h, :w], 0, 1) * 255).astype(np.uint8), 'RGBA')
+    return o

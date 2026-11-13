@@ -26,15 +26,26 @@ POSES = ['open', 'fist', 'half', 'cup', 'hold', 'down', 'point']
 
 HEAD_W = 430.0                  # on-screen head width, px
 HAND_W = 400.0                  # on-screen width of the open palm, px
-HEAD_POS = (540.0, 690.0)
-HAND_POS = ((268.0, 1205.0), (812.0, 1205.0))      # screen-left = NFT (blue), screen-right = real thing (red)
+HEAD_POS = (540.0, 600.0)
+HAND_POS = ((268.0, 1262.0), (812.0, 1262.0))      # screen-left = NFT (blue), screen-right = real thing (red)
+
+
+SHEET2 = {'blow', 'look_left', 'look_right', 'look_up', 'talk_a', 'talk_o'}
 
 
 @functools.lru_cache(None)
 def head(name):
-    """All heads normalised to the same on-screen width (the author's photo is wider: it keeps more ear)."""
-    im = Image.open(SP / ('head.png' if name == 'calm_photo' else f'head_{name}.png')).convert('RGBA')
-    return im, HEAD_W / im.width
+    """One scale per Fish sheet (heads inside a sheet share their size): sheet 1 by its calm head, sheet 2 by its
+    frontal talking head, so turned heads keep their real (narrower) width."""
+    im = Image.open(SP / f'head_{name}.png').convert('RGBA')
+    ref = 434.0 if name in SHEET2 else 454.0
+    return im, HEAD_W / ref
+
+
+@functools.lru_cache(None)
+def agent(name):
+    im = Image.open(SP / f'agent_{name}.png').convert('RGBA')
+    return im
 
 
 @functools.lru_cache(None)

@@ -22,8 +22,8 @@ import music
 
 SR = 48000
 BR = banner.Breaks([AD_STOP], cy=960)
-MUSIC_DB = -9.0            # under the voice; ducks a further 8 dB while Morpheus speaks
-CONTENT_GAIN_DB = 5.5      # → ≈ −14 LUFS with the soft limiter below
+MUSIC_DB = -16.0           # author: the music was too loud; ducks a further 8 dB under the voice
+CONTENT_GAIN_DB = 8.0      # → ≈ −14 LUFS with the soft limiter below
 EXT = HERE / 'input' / 'ext'
 SIDE_PAN = (-0.4, 0.4)     # gift on the left (blue), thing on the right (red)
 

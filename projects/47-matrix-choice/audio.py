@@ -79,9 +79,19 @@ def sfx_layer(n, kit):
     add(fx, 'power-up', 0.22, gain_db=-17, fit=1.7, fade_out=0.3, label='intro: the figure charges up')
     add(fx, 'glitch', 1.15, gain_db=-18, label='intro: code → photo')
     add(fx, 'impact', E['formed'], gain_db=-14, align='peak', label='intro: Morpheus formed, fists')
+    # hook: fists open on a blue and a red pill, the pills glitch into the final pair, the bet slams in
+    add(fx, '*', 2.05, gain_db=-19, file='friction-movement-transform-01', vary=False, label='hook: fists open')
+    add(fx, 'sparkle', 2.18, gain_db=-17, label='hook: blue and red pills on the palms')
+    add(fx, 'glitch', 2.50, gain_db=-16, label='hook: the pills glitch')
+    add(fx, 'transform', 2.62, gain_db=-17, label='hook: pills turn into the cap and the chainsaw')
+    add(fx, 'impact', 2.95, gain_db=-13, align='peak', label='hook: «ОДНА ДОРОЖЕ ВДВОЕ» slams in')
+    add(fx, 'pop', 3.18, gain_db=-19, pan=-0.4, label='hook: «? ₽» blue')
+    add(fx, 'pop', 3.28, gain_db=-19, pan=0.4, label='hook: «? ₽» red')
+    add(fx, 'glitch-text', 4.40, gain_db=-19, label='hook: the pair drains into code')
     for r in range(5):
-        # fists open (skin/cloth friction), the pair assembles from code, auras flash on
-        add(fx, '*', ROUND_IN[r], gain_db=-20, file='friction-movement-transform-02', vary=False, label=f'R{r + 1}: fists open')
+        # fists open (skin/cloth friction), the pair assembles from code, auras flash on (round 1: palms already open)
+        if r:
+            add(fx, '*', ROUND_IN[r], gain_db=-20, file='friction-movement-transform-02', vary=False, label=f'R{r + 1}: fists open')
         add(fx, 'glitch-text', ROUND_IN[r] + 0.08, gain_db=-21, pan=L, label=f'R{r + 1}: NFT assembles (blue)')
         add(fx, 'glitch-text', ROUND_IN[r] + 0.18, gain_db=-21, pan=R, label=f'R{r + 1}: thing assembles (red)')
         add(fx, 'power-up', ROUND_IN[r] + 0.30, gain_db=-22, fit=0.9, fade_out=0.3, label=f'R{r + 1}: auras flash on')

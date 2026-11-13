@@ -153,8 +153,8 @@ def star4(r=34, col=(255, 236, 120)):
 
 
 # ------------------------------------------------------------------ background: bright green code + round motifs
-RAIN_DARK = np.array((0, 150, 60), np.float32)
-RAIN_HEAD = np.array((20, 225, 95), np.float32)
+RAIN_DARK = np.array((0, 135, 50), np.float32)
+RAIN_HEAD = np.array((0, 215, 80), np.float32)
 
 
 def rain_speed(t):
@@ -172,13 +172,13 @@ def _rain_time(t):
 
 def page(t):
     tr = _rain_time(t)
-    g, hd = matrix.rain_bg(tr, cell=28, seed=0, speed_px=(170, 260), with_head=True)
+    g, hd = matrix.rain_bg(tr, cell=36, seed=0, speed_px=(190, 280), with_head=True, gaps=0.08, period=16.0)
     c = np.empty((H, W, 3), np.float32)
     c[:] = 255
     # keep the title band and the caption band calmer so the text reads (still green, just lighter)
     yy = np.arange(H, dtype=np.float32)[:, None]
-    band = 1 - 0.45 * (np.clip(1 - np.abs(yy - 150) / 150, 0, 1) + np.clip(1 - np.abs(yy - 1640) / 110, 0, 1))
-    a = (0.80 * g * band)[..., None]
+    band = 1 - 0.25 * (np.clip(1 - np.abs(yy - 150) / 150, 0, 1) + np.clip(1 - np.abs(yy - 1640) / 110, 0, 1))
+    a = (np.clip(0.58 + 0.5 * g, 0, 1) * (g > 0.02) * band)[..., None]
     c[:] = c * (1 - a) + RAIN_DARK * a
     hh = (0.95 * hd * band)[..., None]
     c[:] = c * (1 - hh) + RAIN_HEAD * hh
@@ -322,9 +322,10 @@ def pose_im(side, name):
 def strip_p(side, t):
     """Strip position 0 (open palm) … 5 (fist, knuckles to camera) from the round events."""
     p = 5.0
-    keys = []
+    keys = [(HOOK_OPEN, 0.30, 5, 0)]
     for r in range(5):
-        keys.append((ROUND_IN[r], OPEN_DUR, 5, 0))
+        if r:
+            keys.append((ROUND_IN[r], OPEN_DUR, 5, 0))
         if side == 0 and r == 1:                                     # the watch is crushed in the left hand
             t0 = LOSE_T[1]
             keys.append((t0 + CRUSH['close'][0], CRUSH['close'][1] - CRUSH['close'][0], 0, 5))
@@ -444,7 +445,7 @@ def _intro_sprites():
 
 def draw_morpheus(c, t):
     _intro_sprites()
-    if t < 2.12:
+    if t < 2.04:
         for key, (px, py), t0, dur in INTRO:
             if t < t0 + dur:
                 arr, _ = matrix.assemble(t, key, t0, dur, seed={'head': 1, 'fist0': 2, 'fist1': 3}[key])
@@ -468,7 +469,7 @@ def draw_morpheus(c, t):
 
 
 def draw_hands(c, t):
-    if t < 2.12 and t < INTRO[1][2] + INTRO[1][3]:
+    if t < 2.04:
         return
     k = 1.0 if t < E['dissolve'] else max(0.0, 1 - (t - E['dissolve']) / 1.1)
     if k >= 0.999:
@@ -797,8 +798,29 @@ def draw_items(c, t):
                 draw_extra(c, kind, v, cx, cy, im, t)
 
 
+def hook_halos(c, t):
+    kp = sm(HOOK_OPEN + 0.1, HOOK_OPEN + 0.3, t) * (1 - sm(HOOK_MORPH, HOOK_MORPH + 0.35, t))
+    k = sm(HOOK_MORPH + 0.05, HOOK_MORPH + 0.6, t) * (1 - sm(HOOK_GONE, HOOK_GONE + 0.4, t))
+    for side in (0, 1):
+        x, y = palm_point(side, t)
+        if kp > 0.004:
+            put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0 + 0.2 * kp, kp)
+        if k > 0.004:
+            h = gift_h(4)[0] if side == 0 else thing_im(4).height
+            flash = 1 + 0.7 * fx.bump(t - HOOK_MORPH - 0.3, 2.0, 4.0)
+            put(c, halo(SIDE_COL[side]), *item_anchor(side, h, t), 1.0, cl(k * flash))
+
+
 def draw_halos(c, t):
     """Auras sit behind the items AND the hands (the hands are lit by them, not painted over)."""
+    if HOOK_OPEN <= t < ROUND_IN[0]:
+        return hook_halos(c, t)
+    if t > OUTRO + 0.3:
+        k = sm(OUTRO + 0.5, OUTRO + 1.1, t) * (1 - sm(E['dissolve'] - 0.55, E['dissolve'] - 0.42, t))
+        for side in (0, 1):
+            x, y = palm_point(side, t)
+            put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0, k)
+        return
     if t < ROUND_IN[0] or t > OUTRO:
         return
     r = round_at(t)
@@ -820,33 +842,61 @@ def draw_halos(c, t):
         put(c, halo(SIDE_COL[side]), hx, hy, pulse * k ** 0.5 * (1.12 if win and t > REVEAL[r] else 1.0), cl(hal * flash) * k)
 
 
+HOOK_OPEN = 2.05          # fists open → a blue and a red pill on the palms (the film's choice)
+HOOK_MORPH = 2.55         # the pills glitch and turn into the final pair (cap / chainsaw)
+HOOK_SLAM = 2.95          # «ОДНА ДОРОЖЕ ВДВОЕ» slams in
+HOOK_GONE = 4.40          # the pair drains back into code; round 1 assembles on the same open palms
+
+
 def draw_hook_pair(c, t):
-    """Hook: the final pair already hovers over the fists with hidden prices (pills under the hands)."""
-    a = 1 - sm(ROUND_IN[0] - 0.35, ROUND_IN[0], t)
-    if a <= 0.004:
+    if t < HOOK_OPEN + 0.05 or t >= ROUND_IN[0] + 0.05:
         return
-    k = sm(0.45, 1.3, t) * a
+    # pills lying on the palms, then glitching into code
+    kp = sm(HOOK_OPEN + 0.1, HOOK_OPEN + 0.3, t) * (1 - sm(HOOK_MORPH, HOOK_MORPH + 0.35, t))
+    for side in (0, 1):
+        x, y = palm_point(side, t)
+        if kp > 0.004:
+            jit = 6 * math.sin(t * 90 + side) * sm(HOOK_MORPH - 0.15, HOOK_MORPH, t)
+            put(c, matrix.code_mix(capsule(SIDE_COL[side]), kp, t, seed=61 + side, cell=8), x + jit, y - 26,
+                1.15, 1.0, rot=0.35 if side == 0 else -0.35)
+    # the final pair assembles out of the pills' code, hovers with hidden prices, then drains
+    k = sm(HOOK_MORPH + 0.05, HOOK_MORPH + 0.6, t) * (1 - sm(HOOK_GONE, HOOK_GONE + 0.4, t))
+    if k <= 0.004:
+        return
     for side in (0, 1):
         im = gift_im(4, t) if side == 0 else thing_im(4)
         h = gift_h(4)[0] if side == 0 else im.height
-        px, py = palm_point(side, t)
-        py = py - 80 - h / 2 - (gift_h(4)[1] if side == 0 else 0) - 6 * math.sin(t * 2.6 + side)
-        put(c, halo(SIDE_COL[side]), px, py, 0.95, k)
-        put(c, matrix.code_mix(im, k, t, seed=5 + side, cell=12), px, py, 0.9, 1.0)
-        kp = spr(1.2 + 0.1 * side, t, 2.4, 0.5)
-        put(c, pill('? ₽', 44, SIDE_COL[side], (255, 255, 255)), ch.HAND_POS[side][0], 1468, max(0.01, kp), a * cl(kp * 2))
+        px, py = item_anchor(side, h, t)
+        if side == 0:
+            py -= gift_h(4)[1]
+        py += 6 * math.sin(t * 2.6 + side)
+        put(c, matrix.code_mix(im, k, t, seed=5 + side, cell=12), px, py, 1.0, 1.0)
+        kq = spr(HOOK_MORPH + 0.6 + 0.1 * side, t, 2.4, 0.5)
+        put(c, pill('? ₽', 44, SIDE_COL[side], (255, 255, 255)), ch.HAND_POS[side][0], 1468, max(0.01, kq), k * cl(kq * 2))
 
 
 # ------------------------------------------------------------------ texts: hook, header, prices, timer
+@functools.lru_cache(8)
+def hook_line2():
+    a_, b_ = label('ИЛИ ', 80, 'Heavy', INK), label('БЕНЗОПИЛА?', 80, 'Heavy', RED)
+    plate = Image.new('RGBA', (a_.width + b_.width + 28, max(a_.height, b_.height) + 12), (255, 255, 255, 236))
+    plate.alpha_composite(a_, (14, (plate.height - a_.height) // 2))
+    plate.alpha_composite(b_, (14 + a_.width, (plate.height - b_.height) // 2))
+    return plate
+
+
 def draw_hook(c, t):
     a = 1 - sm(END[0] - 0.05, END[0] + 0.25, t)
     if a <= 0.004:
         return
-    k1 = 0.85 + 0.15 * spr(-0.05, t, 2.2, 0.5)
-    text(c, HOOK[0], 84, 'Heavy', INK, 540, 104, a, k1, maxw=980)
-    text(c, HOOK[1], 84, 'Heavy', INK, 540, 196, a, k1, maxw=980)
-    kp = spr(1.6, t, 2.4, 0.5)
-    put(c, pill(HOOK[2], 40, GREEN, (255, 255, 255), mono=True), 540, 286, max(0.01, kp), a * cl(kp * 2))
+    k1 = 0.9 + 0.1 * spr(-0.05, t, 2.2, 0.5)
+    k2 = 0.9 + 0.1 * spr(0.35, t, 2.2, 0.5)
+    text(c, 'КЕПКА ДУРОВА', 84, 'Heavy', BLUE, 540, 100, a, k1, maxw=980)          # the question from frame 0
+    put(c, hook_line2(), 540, 192, min(k2, 980 / hook_line2().width), a)
+    if t >= HOOK_SLAM:
+        ks = spr(HOOK_SLAM, t, 2.6, 0.45)
+        sc = lerp(2.2, 1.0, cl(ks)) if ks < 1 else 1 + 0.04 * fx.bump(t - HOOK_SLAM - 0.2, 3, 6)
+        put(c, pill(HOOK[2], 44, GREEN, (255, 255, 255), mono=True), 540, 288, sc, a * cl(ks * 3), rot=-0.03)
 
 
 def score_at(t):
@@ -965,7 +1015,6 @@ def draw_outro(c, t):
     k = sm(OUTRO + 0.5, OUTRO + 1.1, t) * (1 - sm(E['dissolve'] - 0.55, E['dissolve'] - 0.42, t))
     for side in (0, 1):
         x, y = palm_point(side, t)
-        put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0, k)
         put(c, matrix.code_mix(capsule(SIDE_COL[side]), k, t, seed=41 + side, cell=8), x, y - 26, 1.0, 1.0,
             rot=0.35 if side == 0 else -0.35)
     kc = spr(OUTRO + 2.2, t, 2.0, 0.5)

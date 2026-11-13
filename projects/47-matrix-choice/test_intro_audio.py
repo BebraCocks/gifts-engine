@@ -26,7 +26,7 @@ add(buf, 'click', 2.0, gain_db=-20, label='glasses glint')
 add(buf, 'whoosh-short', 2.52, gain_db=-17, label='fists open')
 add(buf, 'pop', 2.68, gain_db=-19, label='palms open')
 peak = np.abs(buf).max()
-buf *= 10 ** (-1.5 / 20) / max(peak, 1e-6) if peak > 0.84 else 1.0
+buf *= 10 ** (-2.0 / 20) / max(peak, 1e-6)          # preview: peak at -2 dBFS
 rev = paths.build(HERE) / 'review'
 with wave.open(str(rev / 'intro_sfx.wav'), 'wb') as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)

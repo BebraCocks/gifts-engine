@@ -11,6 +11,8 @@ OUT = HERE / 'assets' / 'sprites'
 SHEETS = {
     'head_sheet_v1.png': ('head', ['calm', 'smirk', 'brow', 'over_glasses', 'wince', 'surprise']),
     'hand_sheet_v1.png': ('hand', ['fist', 'half', 'cup', 'hold', 'down', 'point']),
+    'hand_sheet_v2.png': ('hand', ['point_up', 'flick', 'pinch', 'grip', 'squeeze', 'catch']),
+    'head_sheet_v2.png': ('head', ['blow', 'look_left', 'look_right', 'look_up', 'talk_a', 'talk_o']),
 }
 
 
@@ -43,6 +45,8 @@ def cut(cell):
 if __name__ == '__main__':
     OUT.mkdir(parents=True, exist_ok=True)
     for f, (kind, names) in SHEETS.items():
+        if not (HERE / 'assets' / 'gen' / f).exists():
+            continue
         sheet = Image.open(HERE / 'assets' / 'gen' / f).convert('RGB')
         cw, ch = sheet.width / 3, sheet.height / 2
         for k, name in enumerate(names):

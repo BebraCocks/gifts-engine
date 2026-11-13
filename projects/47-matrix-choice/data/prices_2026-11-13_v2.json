@@ -1,0 +1,17 @@
+{
+ "_note": "Пары v2 для 47-matrix-choice: вещи — выбор автора (телескоп, дрель, кактус, шахматы, бензопила), NFT — «серьёзные», под трюк во время таймера. Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот, 2026-11-13 20:00–20:45 UTC. Курс 92 ₽ за TON (tonapi.io 91,91 ₽). Вещи: holodilnik.ru (поиск, цена в карточке), кактус — bazacvetov24.ru (СПб, цена в заголовке), 2026-11-13 20:40–20:50 UTC. Перед записью голоса и сборкой перепроверить; раунд 4 близкий (разница ~430 ₽) — чувствителен к цене TON.",
+ "ton_rub": 92.0,
+ "rounds": [
+  {"gift": "Signet Ring", "model": "Green Rose", "ton": 38, "rub": 3496, "lot": "https://fragment.com/gift/signetring-14373",
+   "thing": "Шахматы деревянные «Золотая сказка», доска 40×40 см (664671)", "thing_rub": 2588, "src": "https://www.holodilnik.ru/ (поиск «шахматы»)"},
+  {"gift": "Swiss Watch", "model": "Pip-Boy", "ton": 73, "rub": 6716, "lot": "https://fragment.com/gift/swisswatch-23671",
+   "thing": "Дрель-шуруповёрт Anycons AC-ID65L, бесщёточная, 2 АКБ", "thing_rub": 14900, "src": "https://www.holodilnik.ru/ (поиск «дрель»)"},
+  {"gift": "Bonded Ring", "model": "Black Hole", "ton": 49, "rub": 4508, "lot": "https://fragment.com/gift/bondedring-3212",
+   "thing": "Кактус эхинокактус Грузони в горшке 10 см", "thing_rub": 889, "src": "https://spb.bazacvetov24.ru/flowers/ekhinokaktus-gruzoni-v-gorshke-10-005/"},
+  {"gift": "Durov's Glasses", "model": "Crystal Sight", "ton": 150, "rub": 13800, "lot": "https://fragment.com/gift/durovsglasses-2508",
+   "thing": "Телескоп Praktica Antares 70/700AZ", "thing_rub": 14226, "src": "https://www.holodilnik.ru/ (поиск «телескоп»)"},
+  {"gift": "Durov's Cap", "model": "Autumn", "ton": 495, "rub": 45540, "lot": "https://fragment.com/gift/durovscap-3253",
+   "thing": "Бензопила Champion 254-18\"", "thing_rub": 21458, "src": "https://www.holodilnik.ru/ (поиск «бензопила»)"}
+ ],
+ "replaced": "Пары v1 (леденец, кролик, шар, лампа, очки против детских товаров) и промежуточные (цилиндр/чайник, кофемашина…) — автор: нужны серьёзные NFT и не игрушки; вещи дал автор."
+}

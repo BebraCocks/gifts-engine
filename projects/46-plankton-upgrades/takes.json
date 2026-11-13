@@ -1,0 +1,10 @@
+{
+ "_note": "Оплаченные дубли Fish Audio drama-3 (2026-11-13). build/ в Git не хранится — восстановить: curl -o build/voice/<имя>.mp3 <url>",
+ "narrator": {"voice": "7312c38557eb4fb384e3874e8e9cea67", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/7ff74e167a514d38986bfde652b3b79d.mp3"},
+ "plankton1": {"voice": "8f64c92647f04a33b6756ab94105be05", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/ab5c949708d04dbab31f76289f8241f8.mp3"},
+ "plankton2": {"voice": "8f64c92647f04a33b6756ab94105be05", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/b8fe5f1ebb7049b59fedfa4a13c1af76.mp3"},
+ "sponge2": {"voice": "47f378a6cd964b82bd21ebe860e744fa", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/061130c743b84432b0db2b0b7ecdb95c.mp3"},
+ "squid": {"voice": "0a98030471bc4240a85f3693ef07b841", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/2a62ee300c1c4ab1bd191f6440ec4097.mp3"},
+ "krabs_beast": {"voice": "0ca2d9ac6de3487aa725d3c94f28dc8e (мистер бист — ссылка автора)", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/7d321392777a444ca0ed0df2e2aad32c.mp3"},
+ "krabs2": {"voice": "e1df91c6f20340be92322ef05d201e07 (Мистер Крабс, запасной)", "url": "https://platform.r2.fish.audio/tasks/2026-11-13/72eb56de66c74ab5ad8ac9c322f4199a.mp3"}
+}

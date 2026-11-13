@@ -1,21 +1,31 @@
-"""Use selected takes when complete, otherwise estimate a text-only timeline."""
+"""Таймлайн содержания (без RubUp): дубли нарезаются в voice/Lxx.wav командой prep_voice.py."""
 from pathlib import Path
 import wave
-import config
-from script import LINES
+from script import SEQ, TIMER
 
 HERE = Path(__file__).resolve().parent
-TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
-HAS_NARRATION = not config.WITHOUT_NARRATION and all(p.is_file() for p in TAKES)
-ON, END = [], []
-cursor = 0.3
-for k, (spoken, screen, style, pause) in enumerate(LINES):
+ITEMS = [s for s in SEQ if s[1]]
+TAKES = [HERE / 'voice' / f'L{k:02d}_{s[0]}.wav' for k, s in enumerate(ITEMS, 1)]
+HAS_NARRATION = all(p.is_file() for p in TAKES)
+AT, ON, END, IDS = {}, [], [], []
+cursor, k, question_end = 0.3, 0, None
+for cid, src, a, b, pause, text, speed in SEQ:
+    if src is None:                     # переход-пузыри: только пауза в речи
+        AT[cid] = cursor
+        cursor += pause
+        continue
     if HAS_NARRATION:
         with wave.open(str(TAKES[k])) as w:
-            duration = w.getnframes() / w.getframerate()
+            d = w.getnframes() / w.getframerate()
     else:
-        duration = max(2.5, len(spoken.split()) / 2.5)
-    ON.append(cursor)
-    END.append(cursor + duration)
-    cursor += duration + pause
-DUR = cursor + 0.3
+        d = (b - a) / speed
+    AT[cid] = cursor
+    ON.append(cursor); END.append(cursor + d); IDS.append(cid)
+    if cid in ('N2', 'N6'):
+        question_end = cursor + d
+    if pause == 'timer':
+        pause = max(0.25, question_end + TIMER - (cursor + d))
+    cursor += d + pause
+    k += 1
+END_OF = dict(zip(IDS, END))
+DUR = cursor + 0.6

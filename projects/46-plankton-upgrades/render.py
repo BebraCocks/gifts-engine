@@ -328,9 +328,9 @@ def karen_img(t):
     d.line(pts, fill=(110, 255, 150, 255), width=4 * S, joint='curve')
     d.ellipse([*P(222, 244), *P(232, 254)], fill=(255, 90, 80, 255) if math.sin(t * 9) > 0 else (120, 40, 36, 255))
     im = im.resize((300, 360), Image.LANCZOS)
-    cap = lottie.frame(CAP_FILE, t, size=190)
+    cap = lottie.frame(CAP_FILE, t, size=250)
     cap = cap.rotate(-7, Image.BICUBIC)
-    im.alpha_composite(cap, (55, -18 + int(round(math.sin(t * 12) * 2))))
+    im.alpha_composite(cap, (25, -52 + int(round(math.sin(t * 12) * 2))))
     return im
 
 
@@ -339,10 +339,11 @@ def draw_karen(c, t):
     if not a <= t <= b:
         return
     u = (t - a) / (b - a)
-    x = -170 + u * (W + 340)
-    y = FLOOR_Y + 22 + math.sin(t * 12) * 2.5
-    fx.over(c, fx.warp(fx.radial(320, (0, 0, 0), 1.6, 0.5), x, FLOOR_Y + 24, 1.0, 0.16), 0.8)
-    put(c, karen_img(t), x, y, 1.0, rot=0.045 + math.sin(t * 6) * 0.012, anchor=(150, 356), alpha=0.93)
+    x = -230 + u * (W + 460)
+    y = FLOOR_Y + 40 + math.sin(t * 12) * 2.5
+    fx.over(c, fx.warp(fx.radial(420, (0, 0, 0), 1.6, 0.5), x, FLOOR_Y + 42, 1.0, 0.16), 0.8)
+    put(c, fx.radial(620, (120, 230, 255), 2.0, 0.34), x, y - 250, 1.0, add=True)          # контровой свет: кепка читается
+    put(c, karen_img(t), x, y, 1.42, rot=0.045 + math.sin(t * 6) * 0.012, anchor=(150, 356))
 
 
 # ------------------------------------------------------------------ карточки и модель

@@ -8,12 +8,12 @@ def lufs(p):
     r = subprocess.run(['ffmpeg', '-i', str(p), '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
     return float(re.findall(r'I:\s+(-?[\d.]+) LUFS', r)[-1])
 k = 0
-for cid, src, a, b, pause, text, speed in SEQ:
+for cid, src, a, b, pause, text, speed, *extra in SEQ:
     if not src:
         continue
     k += 1
     p = HERE / (src + '.mp3')
-    g = -16 - lufs(p)
+    g = -16 - lufs(p) + (extra[0] if extra else 0.0)   # смех тише речи (автор, 2026-11-13)
     d = (b - a) / speed
     af = (f'atrim={a}:{b},asetpts=N/SR/TB,aformat=sample_rates=48000:channel_layouts=stereo,'
           + (f'atempo={speed},' if speed != 1 else '')

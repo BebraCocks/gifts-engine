@@ -9,7 +9,7 @@ TAKES = [HERE / 'voice' / f'L{k:02d}_{s[0]}.wav' for k, s in enumerate(ITEMS, 1)
 HAS_NARRATION = all(p.is_file() for p in TAKES)
 AT, ON, END, IDS = {}, [], [], []
 cursor, k, question_end = 0.3, 0, None
-for cid, src, a, b, pause, text, speed in SEQ:
+for cid, src, a, b, pause, text, speed, *_ in SEQ:
     if src is None:                     # переход-пузыри: только пауза в речи
         AT[cid] = cursor
         cursor += pause

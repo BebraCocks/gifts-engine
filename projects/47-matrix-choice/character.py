@@ -20,7 +20,8 @@ import fx
 
 HERE = Path(__file__).resolve().parent
 SP = HERE / 'assets' / 'sprites'
-HEADS = ['calm', 'smirk', 'brow', 'over_glasses', 'wince', 'surprise']
+HEADS = ['calm', 'smirk', 'brow', 'over_glasses', 'surprise']   # 'wince' есть в assets, но не используется:
+# автор (2026-11-13) — персонаж серьёзный, прилёты предметов в голову оскорбительны; гэги референса не копировать
 POSES = ['open', 'fist', 'half', 'cup', 'hold', 'down', 'point']
 
 HEAD_W = 430.0                  # on-screen head width, px
@@ -94,10 +95,6 @@ def head_motion(t, gestures):
         elif kind == 'shake':                  # «нет»
             dx += 16 * fx.bump(u, 3.2, 3.5)
             rot += 0.02 * fx.bump(u, 3.2, 3.5)
-        elif kind == 'hit':                    # struck by a flying item: jolt back + squash
-            dx += 26 * fx.bump(u, 2.4, 5.0)
-            rot += 0.12 * fx.bump(u, 2.4, 5.0)
-            sc *= 1 - 0.05 * fx.bump(u, 3.0, 6.0)
         elif kind == 'lean':                   # leans in to look closer
             sc *= 1 + 0.06 * (fx.spring(u, 1.2, 0.6) - fx.spring(u - 1.2, 1.2, 0.6))
             dy += 18 * (fx.spring(u, 1.2, 0.6) - fx.spring(u - 1.2, 1.2, 0.6))

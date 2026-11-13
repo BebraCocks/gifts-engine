@@ -21,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 W, H = 1080, 1920
 GREEN = np.array((20, 225, 90), np.float32)        # highlights of the picture
 GREEN_DARK = np.array((0, 70, 30), np.float32)     # shadows (glasses) — dark, so the figure reads on white
-MONO = ['/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Bold.ttf',
+MONO = ['/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-ExtraBold.ttf',
         '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf']
 CHARS = '01'
 
@@ -64,14 +64,14 @@ def _hash(*a):
 BG_CELL = 26
 
 
-def rain_bg(t, strength=1.0, cell=BG_CELL, speed_px=(90, 160), seed=0, period=22.0, gaps=0.18):
+def rain_bg(t, strength=1.0, cell=BG_CELL, speed_px=(90, 160), seed=0, period=22.0, gaps=0.18, with_head=False, speed_k=1.0):
     """0/1 columns falling down: returns (H, W) glyph intensity 0..1. Background: gray on white (multiply in);
     the intro uses the same function with green, faster and denser."""
     BG_CELL = cell
     gw, gh = W // BG_CELL + 1, H // BG_CELL + 2
     cols = np.arange(gw) + 1000 * seed
     speed = speed_px[0] + speed_px[1] * _hash(cols, 7)      # px/s, each column its own pace
-    off = (t * speed + 2000 * _hash(cols, 3)) / BG_CELL     # cells scrolled
+    off = (speed_k * t * speed + 2000 * _hash(cols, 3)) / BG_CELL     # cells scrolled (speed_k may be an array-free scalar)
     rows = np.arange(gh)[:, None]
     src = rows - np.floor(off)[None, :]                     # glyph identity moves with the column
     flip = np.floor(t * 3 + _hash(cols, 9)[None, :] * 3)    # digits change slowly
@@ -79,7 +79,7 @@ def rain_bg(t, strength=1.0, cell=BG_CELL, speed_px=(90, 160), seed=0, period=22
     # brightness: long soft streaks along the column (a «tail» every ~22 cells)
     phase = (rows - off[None, :] * 1.0) / period + _hash(cols, 11)[None, :]
     streak = (phase - np.floor(phase))                      # 0..1 saw
-    lum = np.clip(streak ** 2.2, 0, 1) * (0.35 + 0.65 * _hash(cols, 5))[None, :]
+    lum = np.clip(streak ** 1.5, 0, 1) * (0.55 + 0.45 * _hash(cols, 5))[None, :]
     lum *= (_hash(src.astype(np.int64) & 0xFFFF, cols[None, :] + 999) > gaps)   # gaps
     frac = (off - np.floor(off)) * BG_CELL                  # sub-cell scroll
     m = tile(idx, BG_CELL) * np.repeat(np.repeat(lum, BG_CELL, 0), BG_CELL, 1)
@@ -91,7 +91,18 @@ def rain_bg(t, strength=1.0, cell=BG_CELL, speed_px=(90, 160), seed=0, period=22
             break
         s = int(frac[c])
         out[:, x0:x1] = m[BG_CELL - s:BG_CELL - s + H, x0:x1]
-    return out * strength
+    if not with_head:
+        return out * strength
+    head = np.clip((streak - 0.86) / 0.14, 0, 1) * (lum > 0)            # the leading glyph of each streak
+    hm = tile(idx, BG_CELL) * np.repeat(np.repeat(head, BG_CELL, 0), BG_CELL, 1)
+    hout = np.zeros((H, W), np.float32)
+    for c in range(gw):
+        x0, x1 = c * BG_CELL, min(W, (c + 1) * BG_CELL)
+        if x0 >= W:
+            break
+        s = int(frac[c])
+        hout[:, x0:x1] = hm[BG_CELL - s:BG_CELL - s + H, x0:x1]
+    return out * strength, hout
 
 
 # ------------------------------------------------------------------ assembling a sprite from code

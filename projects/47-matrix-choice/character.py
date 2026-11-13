@@ -31,6 +31,7 @@ HAND_POS = ((268.0, 1262.0), (812.0, 1262.0))      # screen-left = NFT (blue), s
 
 
 SHEET2 = {'blow', 'look_left', 'look_right', 'look_up', 'talk_a', 'talk_o'}
+SHEET3 = {'blow_right', 'after_blow_right', 'look_left_down', 'calm3', 'knowing', 'brows_up'}
 
 
 @functools.lru_cache(None)
@@ -38,7 +39,7 @@ def head(name):
     """One scale per Fish sheet (heads inside a sheet share their size): sheet 1 by its calm head, sheet 2 by its
     frontal talking head, so turned heads keep their real (narrower) width."""
     im = Image.open(SP / f'head_{name}.png').convert('RGBA')
-    ref = 434.0 if name in SHEET2 else 454.0
+    ref = 434.0 if name in SHEET2 else (424.0 if name in SHEET3 else 454.0)
     return im, HEAD_W / ref
 
 

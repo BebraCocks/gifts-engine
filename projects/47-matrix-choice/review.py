@@ -5,7 +5,7 @@ from PIL import Image
 import render as R
 import sfxkit
 from timeline import ROUND_IN, TIMER0, REVEAL, OUTRO, DUR
-from events import E, TRICK_NFT, TRICK_THING, LOSE_T, WIN_GONE, FISTS, AD_STOP
+from events import E, TRICK, LOSE_T, WIN_GONE, FISTS, AD_STOP
 
 def out(ct):
     return sfxkit.out_time(R.BR, ct)
@@ -16,8 +16,8 @@ if len(sys.argv) > 1 and sys.argv[1].startswith('ad:'):
 elif len(sys.argv) > 1:
     TS = [out(float(x)) for x in sys.argv[1].split(',')]
 else:
-    TS = [out(x) for x in (0.05, 0.6, 1.2, 1.9, 3.0, ROUND_IN[0] + 0.3, TRICK_NFT[0][0] + 0.5, TRICK_THING[0][0] + 0.9,
-                           REVEAL[0] + 0.5, LOSE_T[0] + 0.4, TRICK_THING[1][0] + 0.4, LOSE_T[1] + 0.5)]
+    TS = [out(x) for x in (0.05, 1.2, 3.0, ROUND_IN[0] + 0.12, ROUND_IN[0] + 0.5, TRICK[0][0] + 0.9,
+                           TRICK[0][0] + 2.3, REVEAL[0] + 0.5, LOSE_T[0] + 0.2, LOSE_T[0] + 0.5, TRICK[1][0] + 0.4, TRICK[1][0] + 1.6)]
 ims = []
 for k, t in enumerate(TS):
     im = Image.fromarray(R.BR.render(R.render_at, t))

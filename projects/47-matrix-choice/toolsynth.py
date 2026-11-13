@@ -44,3 +44,16 @@ def chainsaw(seed=2):
     y = _bp(y, 60, 10000)
     y /= np.abs(y).max() + 1e-9
     return np.stack([y, y * 0.95], 1) * 0.8
+
+
+def blow(dur=0.55, seed=4):
+    """A strong human blow «ффф»: breathy band-passed noise, fast attack, lips-shaped resonance."""
+    rng = np.random.default_rng(seed)
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    env = np.clip(t / 0.035, 0, 1) * np.clip((dur - t) / 0.28, 0, 1) ** 1.5
+    x = rng.standard_normal(n)
+    y = _bp(x, 350, 2600) * 0.8 + _bp(x, 2600, 6500) * 0.35
+    y *= env * (1 + 0.15 * np.sin(2 * np.pi * 9 * t))
+    y /= np.abs(y).max() + 1e-9
+    return np.stack([y, y * 0.92], 1) * 0.8

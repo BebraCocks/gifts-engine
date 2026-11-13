@@ -1,7 +1,8 @@
-"""47-matrix-choice «Синяя или красная» — Морфеус (голова + ладони) на белом, едва видимые бегущие 0/1.
-NFT в левой ладони (синий ореол), вещь в правой (красный). Content time t -> RGB frame; RubUp via AdBreaks:
-during the ad Morpheus moves below the banner and agents assemble above it from code, look around, then look down at
-him; he looks up at them; they dissolve as the banner ends (author, 2026-11-13). STORYBOARD.md §2–3."""
+"""47-matrix-choice «Синяя или красная» v3 — Морфеус (голова + ладони) на белом, ярко-зелёные бегущие 0/1.
+NFT над левой ладонью (синий ореол), вещь над правой (красный). Content time t -> RGB frame; RubUp via AdBreaks
+(agents above the banner, Morpheus below). Author's v3 notes: bright green rain; one trick per round, alternating;
+realistic fists (6-frame strip); no flat 2D flips; physical defeats; halos on appearance; a background motif per round.
+STORYBOARD.md §2–3, events.py."""
 import functools
 import math
 import sys
@@ -23,21 +24,21 @@ import photos
 from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TEASER, TIMER
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
-from events import AD_STOP, E, WIN, TRICK_NFT, TRICK_THING, LOSE_T, WIN_GONE, FISTS
+from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH)
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
 INK = (22, 24, 28)
-MUTED = (120, 126, 132)
-GREEN = (0, 166, 81)
-BLUE = (40, 110, 255)
-RED = (235, 45, 45)
+MUTED = (110, 116, 122)
+GREEN = (0, 160, 70)
+BLUE = (30, 105, 255)
+RED = (235, 40, 40)
 SIDE_COL = (BLUE, RED)
-ITEM_POS = ((268.0, 1030.0), (812.0, 1030.0))
 GIFTS = [str(gifts_api.model_file(g, m, 'json')) for g, m, *_ in ROUNDS]
-GIFT_PX = 330
-MONO = '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Bold.ttf'
+GIFT_PX = 300
+MONO = '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-ExtraBold.ttf'
 SYMB = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+G = 2600.0                     # px/s² — gravity for everything that falls (one value for the whole video)
 
 
 def cl(x):
@@ -56,17 +57,16 @@ def lerp(a, b, k):
     return a + (b - a) * k
 
 
-def put(c, im, cx, cy, sc=1.0, a=1.0, rot=0.0, sx=None, anchor=None, add=False):
+def put(c, im, cx, cy, sc=1.0, a=1.0, rot=0.0, anchor=None, add=False, sy=None):
     if im is None or a <= 0.004 or sc <= 0.01:
         return
-    sy = sc
-    sxv = sc if sx is None else sx
-    if abs(sxv) < 0.01:
-        return
-    if sxv < 0:
-        im = im.transpose(Image.FLIP_LEFT_RIGHT)
-        sxv = -sxv
-    fx.over(c, fx.warp(im, cx, cy, sxv, sy, rot, anchor=anchor), a, add=add)
+    fx.over(c, fx.warp(im, cx, cy, sc, sc if sy is None else sy, rot, anchor=anchor), a, add=add)
+
+
+def dot(c, x, y, r, col, a=1.0):
+    if a > 0.004 and r > 0.3:
+        fx.over(c, fx.draw_rgba((x - r - 2, y - r - 2, x + r + 2, y + r + 2),
+                                lambda d, m, S: d.ellipse([*m(x - r, y - r), *m(x + r, y + r)], fill=col + (255,))), a)
 
 
 # ------------------------------------------------------------------ text sprites
@@ -80,10 +80,24 @@ def label(s, size, weight, color, mono=False):
     return im
 
 
-def text(c, s, size, weight, color, cx, cy, a=1.0, sc=1.0, mono=False, maxw=None):
+@functools.lru_cache(512)
+def backed(s, size, weight, color, mono=False):
+    """Text on a soft white plate so it stays readable over the bright green rain."""
+    im = label(s, size, weight, color, mono)
+    pad = 14
+    S = 2
+    w, h = im.width + 2 * pad, im.height + pad
+    base = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    ImageDraw.Draw(base).rounded_rectangle([0, 0, w * S - 1, h * S - 1], 18 * S, fill=(255, 255, 255, 236))
+    base = base.resize((w, h), Image.LANCZOS)
+    base.alpha_composite(im, (pad, pad // 2))
+    return base
+
+
+def text(c, s, size, weight, color, cx, cy, a=1.0, sc=1.0, mono=False, maxw=None, plate=True):
     if a <= 0.004:
         return
-    im = label(s, size, weight, color, mono)
+    im = backed(s, size, weight, color, mono) if plate else label(s, size, weight, color, mono)
     if maxw and im.width * sc > maxw:
         sc = maxw / im.width
     put(c, im, cx, cy, sc, a)
@@ -104,127 +118,317 @@ def pill(s, size, fill_, tcol, mono=False, padx=28):
 
 
 @functools.lru_cache(16)
-def halo(color, r=230):
-    """Soft coloured glow + a thin pill-coloured rim, on white."""
+def halo(color, r=220):
+    """Bright coloured aura: saturated glow + a crisp pill-coloured ring (author: «красный и синий ореол»)."""
     n = 2 * r
     yy, xx = np.mgrid[:n, :n]
     d = np.hypot(xx - r + 0.5, yy - r + 0.5) / r
-    a = np.clip(1 - d, 0, 1) ** 1.6 * 0.55
-    rim = np.clip(1 - np.abs(d - 0.78) / 0.025, 0, 1) * 0.35
+    glow = np.clip(1 - d, 0, 1) ** 1.25 * 0.78
+    rim = np.clip(1 - np.abs(d - 0.80) / 0.03, 0, 1) * 0.95
+    outer = np.clip(1 - np.abs(d - 0.80) / 0.12, 0, 1) ** 2 * 0.45
     im = np.zeros((n, n, 4), np.uint8)
     im[..., :3] = color
-    im[..., 3] = (np.clip(a + rim, 0, 1) * 255).astype(np.uint8)
-    return Image.fromarray(im).filter(ImageFilter.GaussianBlur(3))
+    im[..., 3] = (np.clip(glow + rim + outer, 0, 1) * 255).astype(np.uint8)
+    return Image.fromarray(im).filter(ImageFilter.GaussianBlur(2))
 
 
-@functools.lru_cache(4)
-def knight():
-    f = ImageFont.truetype(SYMB, 92)
-    im = Image.new('RGBA', (110, 120), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    d.text((55, 62), '♞', font=f, fill=(48, 34, 22, 255), anchor='mm', stroke_width=2, stroke_fill=(245, 225, 190, 255))
+@functools.lru_cache(16)
+def piece(ch_, dark):
+    f = ImageFont.truetype(SYMB, 64)
+    im = Image.new('RGBA', (80, 86), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((40, 46), ch_, font=f, fill=((40, 28, 18) if dark else (232, 205, 160)) + (255,),
+                            anchor='mm', stroke_width=2, stroke_fill=((235, 215, 180) if dark else (90, 60, 30)) + (255,))
     return im
 
 
 @functools.lru_cache(4)
-def flower():
-    S = 4
-    n = 90 * S
-    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    c = n / 2
-    for k in range(10):
-        a = 2 * math.pi * k / 10
-        x, y = c + math.cos(a) * 24 * S, c + math.sin(a) * 24 * S
-        d.ellipse([x - 16 * S, y - 10 * S, x + 16 * S, y + 10 * S], fill=(255, 92 + 8 * (k % 2), 170, 255))
-    rot = im.rotate(18, resample=Image.BICUBIC)
-    d = ImageDraw.Draw(rot)
-    d.ellipse([c - 13 * S, c - 13 * S, c + 13 * S, c + 13 * S], fill=(255, 214, 60, 255))
-    return rot.resize((90, 90), Image.LANCZOS)
-
-
-@functools.lru_cache(4)
-def star4(r=34):
+def star4(r=34, col=(255, 236, 120)):
     n = 2 * r
     yy, xx = np.mgrid[:n, :n] - r + 0.5
     a = np.clip(1 - (np.abs(xx) * np.abs(yy)) ** 0.5 / (r * 0.18), 0, 1) * np.clip(1 - np.hypot(xx, yy) / r, 0, 1)
     im = np.zeros((n, n, 4), np.uint8)
-    im[..., :3] = (255, 236, 120)
+    im[..., :3] = col
     im[..., 3] = (a * 255).astype(np.uint8)
     return Image.fromarray(im)
 
 
-# ------------------------------------------------------------------ background
-def page(t, dim=0.0):
-    bg = matrix.rain_bg(t, cell=26, seed=0)
+# ------------------------------------------------------------------ background: bright green code + round motifs
+RAIN_DARK = np.array((0, 150, 60), np.float32)
+RAIN_HEAD = np.array((20, 225, 95), np.float32)
+
+
+def rain_speed(t):
+    """Bullet time in the final round: the rain nearly stops during the countdown and starts again on the answer."""
+    k = sm(TIMER0[4] - 0.3, TIMER0[4] + 0.6, t) * (1 - sm(REVEAL[4] - 0.1, REVEAL[4] + 0.4, t))
+    return 1 - 0.85 * k
+
+
+def _rain_time(t):
+    """Integrated time so a speed change never makes the rain jump."""
+    a0, a1, b0, b1 = TIMER0[4] - 0.3, TIMER0[4] + 0.6, REVEAL[4] - 0.1, REVEAL[4] + 0.4
+    ts = np.linspace(0, t, max(2, int(t * 30)))
+    return float(np.trapezoid([rain_speed(x) for x in ts], ts)) if t > a0 else t
+
+
+def page(t):
+    tr = _rain_time(t)
+    g, hd = matrix.rain_bg(tr, cell=28, seed=0, speed_px=(170, 260), with_head=True)
     c = np.empty((H, W, 3), np.float32)
     c[:] = 255
-    c *= (1 - 0.075 * bg)[..., None]
+    # keep the title band and the caption band calmer so the text reads (still green, just lighter)
+    yy = np.arange(H, dtype=np.float32)[:, None]
+    band = 1 - 0.45 * (np.clip(1 - np.abs(yy - 150) / 150, 0, 1) + np.clip(1 - np.abs(yy - 1640) / 110, 0, 1))
+    a = (0.80 * g * band)[..., None]
+    c[:] = c * (1 - a) + RAIN_DARK * a
+    hh = (0.95 * hd * band)[..., None]
+    c[:] = c * (1 - hh) + RAIN_HEAD * hh
     return c
 
 
-def green_rain(c, t, env):
+def green_flood(c, t, env):
     if env <= 0.003:
         return
     g = matrix.rain_bg(t, cell=22, seed=3, speed_px=(700, 600), period=14.0, gaps=0.35)
-    k = (g * env * 0.85)[..., None]
+    k = (g * env * 0.9)[..., None]
     c[:] = c * (1 - k) + np.array((0, 175, 70), np.float32) * k
 
 
-def rain_env(t):
-    """Green code: the intro pour, a short burst before RubUp, the finale."""
+def flood_env(t):
     e = fx.smooth(t / 0.18) * (1 - fx.smooth((t - 1.05) / 0.85))
-    e = max(e, 0.45 * sm(E['dissolve'] - 0.2, E['dissolve'] + 0.6, t))
-    return e
+    return max(e, 0.5 * sm(E['dissolve'] - 0.2, E['dissolve'] + 0.6, t))
 
 
-# ------------------------------------------------------------------ the timeline of poses / faces
-def _faces():
-    f = [(0.0, 'calm')]
+def round_live(r, t):
+    """0..1 visibility of round r's background motif."""
+    t1 = FISTS[r] + 0.2 if r < 4 else OUTRO + 0.2
+    return sm(ROUND_IN[r] - 0.1, ROUND_IN[r] + 0.5, t) * (1 - sm(t1 - 0.3, t1, t))
+
+
+def bg_motif(c, t):
     for r in range(5):
-        f.append((ON[1 + 3 * r], 'calm'))
-        f.append((TRICK_NFT[r][0], 'look_left'))
-        f.append((TRICK_THING[r][0], 'look_up' if r == 3 else 'look_right'))
-        f.append((REVEAL[r] - 0.05, 'calm'))
-        f.append((REVEAL[r] + 0.15, 'over_glasses' if r == 4 else ('smirk' if WIN[r] == 0 else 'brow')))
-        if r == 0:
-            f.append((LOSE_T[0] - 0.05, 'blow'))
-            f.append((LOSE_T[0] + 0.75, 'calm'))
+        a = round_live(r, t)
+        if a <= 0.004:
+            continue
+        [motif_chess, motif_clock, motif_gravity, motif_stars, motif_ripples][r](c, t, a)
+
+
+def motif_chess(c, t, a):
+    """R1: a big chessboard of green squares fades in behind everything, squares lighting up one by one."""
+    n, s = 8, 120
+    x0, y0 = 540 - n * s / 2, 760 - n * s / 2
+    def draw(d, m, S):
+        for i in range(n):
+            for j in range(n):
+                if (i + j) % 2:
+                    k = cl((t - ROUND_IN[0] - 0.05 * ((i * 3 + j * 5) % 11)) / 0.4)
+                    if k > 0:
+                        d.rectangle([*m(x0 + i * s, y0 + j * s), *m(x0 + (i + 1) * s, y0 + (j + 1) * s)],
+                                    fill=(0, 170, 75, int(60 * k)))
+        d.rectangle([*m(x0, y0), *m(x0 + n * s, y0 + n * s)], outline=(0, 150, 60, 140), width=round(3 * S))
+    fx.over(c, fx.draw_rgba((x0 - 4, y0 - 4, x0 + n * s + 4, y0 + n * s + 4), draw), a)
+
+
+def motif_clock(c, t, a):
+    """R2: a huge clock face of green ticks; the second hand jumps with every timer second."""
+    cx, cy, R = 540, 760, 470
+    r = 1
+    secs = 0 if t < TIMER0[r] else min(5, int(t - TIMER0[r]) + 1)
+    kick = fx.bump(t - (TIMER0[r] + secs - 1), 3.0, 8.0) if secs else 0
+    ang = -math.pi / 2 + 2 * math.pi * (secs / 60 * 5) + 0.05 * kick
+    def draw(d, m, S):
+        for k in range(60):
+            q = 2 * math.pi * k / 60
+            r0 = R - (40 if k % 5 == 0 else 18)
+            d.line([m(cx + math.cos(q) * r0, cy + math.sin(q) * r0), m(cx + math.cos(q) * R, cy + math.sin(q) * R)],
+                   fill=(0, 160, 70, 150 if k % 5 == 0 else 90), width=round((6 if k % 5 == 0 else 3) * S))
+        d.ellipse([*m(cx - R, cy - R), *m(cx + R, cy + R)], outline=(0, 150, 60, 110), width=round(3 * S))
+        d.line([m(cx, cy), m(cx + math.cos(ang) * (R - 60), cy + math.sin(ang) * (R - 60))], fill=(220, 40, 40, 170),
+               width=round(5 * S))
+        d.ellipse([*m(cx - 12, cy - 12), *m(cx + 12, cy + 12)], fill=(220, 40, 40, 200))
+    fx.over(c, fx.draw_rgba((cx - R - 6, cy - R - 6, cx + R + 6, cy + R + 6), draw), a)
+
+
+def ring_pos():
+    return item_anchor(0, GIFT_H[2])
+
+
+def motif_gravity(c, t, a):
+    """R3: the Black Hole ring pulls the code: 0/1 glyphs spiral into it while it levitates and when it eats the cactus."""
+    cx, cy = ring_pos()
+    w0, w1 = TRICK[2]
+    k = max(sm(w0, w0 + 0.5, t) * (1 - sm(w1 - 0.3, w1 + 0.2, t)), sm(LOSE_T[2] - 0.1, LOSE_T[2] + 0.3, t) * (1 - sm(LOSE_T[2] + 1.2, LOSE_T[2] + 1.5, t)))
+    if k <= 0.004:
+        return
+    for j in range(46):
+        base = (j * 0.618) % 1
+        life = (t * 0.55 + base) % 1
+        rr = 520 * (1 - life) ** 1.3 + 30
+        q = 2 * math.pi * base * 7 + life * 5.0
+        x, y = cx + math.cos(q) * rr, cy + math.sin(q) * rr * 0.85
+        text(c, '01'[j % 2], 30, 'Heavy', (0, 150, 60), x, y, a * k * cl(life * 4) * (0.4 + 0.6 * life), mono=True,
+             plate=False, sc=0.6 + 0.6 * (1 - life))
+
+
+def motif_stars(c, t, a):
+    """R4: a constellation fades in over the code; a shooting star crosses where the telescope points."""
+    pts = [(150, 330), (300, 260), (430, 380), (650, 300), (820, 230), (960, 360), (880, 520), (180, 560)]
+    def draw(d, m, S):
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            d.line([m(x0, y0), m(x1, y1)], fill=(0, 150, 60, 110), width=round(2 * S))
+    fx.over(c, fx.draw_rgba((0, 150, W, 660), draw), a)
+    for k, (x, y) in enumerate(pts):
+        tw = 0.6 + 0.4 * math.sin(t * 3.3 + k * 1.7)
+        put(c, star4(), x, y, 0.45 * tw + 0.15, a)
+    w0, w1 = TRICK[3]
+    u = (t - (w0 + 1.2)) / 0.9
+    if 0 <= u <= 1:
+        x, y = lerp(980, 560, u), lerp(200, 430, u)
+        for j in range(12):
+            dot(c, x + j * 14, y - j * 7.4, 6 - j * 0.45, (255, 220, 90), (1 - j / 12) * math.sin(math.pi * u))
+        put(c, star4(), x, y, 0.9, math.sin(math.pi * u))
+
+
+def motif_ripples(c, t, a):
+    """R5 (bullet time): concentric ripples spread from the centre while the rain almost stops."""
+    k = sm(TIMER0[4] - 0.2, TIMER0[4] + 0.4, t) * (1 - sm(REVEAL[4], REVEAL[4] + 0.4, t))
+    if k <= 0.004:
+        return
+    cx, cy = 540, 820
+    def draw(d, m, S):
+        for j in range(4):
+            ph = ((t - TIMER0[4]) * 0.45 + j / 4) % 1
+            r = 80 + ph * 760
+            al = int(150 * (1 - ph))
+            d.ellipse([*m(cx - r, cy - r * 0.9), *m(cx + r, cy + r * 0.9)], outline=(0, 150, 60, al), width=round(4 * S))
+    fx.over(c, fx.draw_rgba((0, 0, W, H), draw), a * k)
+
+
+# ------------------------------------------------------------------ hands (realistic 6-frame fist strip)
+STRIP = 6
+HAND_SC = 400.0 / 576.0        # open palm (strip frame 0) ≈ 400 px wide on screen
+PALM = (51.0, -35.0)           # palm surface point relative to the hand centre (left hand; mirrored for the right)
+
+
+@functools.lru_cache(None)
+def strip_im(side, k):
+    return Image.open(ch.SP / f'hand_{"L" if side == 0 else "R"}_close_{k}.png').convert('RGBA')
+
+
+@functools.lru_cache(None)
+def pose_im(side, name):
+    return Image.open(ch.SP / f'hand_{"L" if side == 0 else "R"}_{name}.png').convert('RGBA')
+
+
+def strip_p(side, t):
+    """Strip position 0 (open palm) … 5 (fist, knuckles to camera) from the round events."""
+    p = 5.0
+    keys = []
+    for r in range(5):
+        keys.append((ROUND_IN[r], OPEN_DUR, 5, 0))
+        if side == 0 and r == 1:                                     # the watch is crushed in the left hand
+            t0 = LOSE_T[1]
+            keys.append((t0 + CRUSH['close'][0], CRUSH['close'][1] - CRUSH['close'][0], 0, 5))
+            keys.append((t0 + CRUSH['open'][0], CRUSH['open'][1] - CRUSH['open'][0], 5, 0))
+        keys.append((FISTS[r], 0.28, 0, 5))
+    keys.append((OUTRO + 0.35, OPEN_DUR, 5, 0))
+    keys.append((E['dissolve'] - 0.5, 0.28, 0, 5))
+    for t0, d, a, b in sorted(keys):
+        if t >= t0:
+            p = lerp(a, b, fx.smooth((t - t0) / d)) if t < t0 + d else b
+    return p
+
+
+def hand_extra(side, t):
+    """(dx, dy, rot, override pose name or None) for tricks and the crush sequence."""
+    ph = 0.0 if side == 0 else math.pi
+    dx, dy, rot = 0.0, 5.0 * math.sin(t * 2 * math.pi / 3.2 + ph + 1.6), 0.015 * math.sin(t * 2 * math.pi / 3.9 + ph)
+    pose = None
+    if side == 0:                                                     # R2 crush: shake, then tilt to drop crumbs
+        u = t - LOSE_T[1]
+        a0, a1 = CRUSH['shake']
+        if a0 <= u < a1:
+            dx += 7 * math.sin(u * 2 * math.pi * 14) * (1 - (u - a0) / (a1 - a0) * 0.4)
+            dy += 3 * math.cos(u * 2 * math.pi * 11)
+            rot += 0.035 * math.sin(u * 2 * math.pi * 9)
+        tl = sm(LOSE_T[1] + CRUSH['tilt'][0], LOSE_T[1] + CRUSH['tilt'][1], t) * (1 - sm(LOSE_T[1] + CRUSH['level'][0], LOSE_T[1] + CRUSH['level'][1], t))
+        rot += 0.42 * tl                                             # fingers (screen-left) go down
+        w0, w1 = TRICK[4]                                            # R5: index finger up for the cap
+        if w0 + 0.30 <= t < w1 - 0.25:
+            pose = 'point_up'
+    if side == 1:
+        w0, w1 = TRICK[1]                                            # R2 drill: the palm gives under the catch
+        dy += 18 * fx.bump(t - (w0 + 1.15), 2.2, 5.0)
+    for r in range(5):                                               # palms present the new pair
+        dy -= 10 * fx.bump(t - ROUND_IN[r] - 0.25, 1.6, 3.5)
+    if t >= REVEAL[0]:                                               # the winner's palm lifts a little on the reveal
+        for r in range(5):
+            if REVEAL[r] <= t < FISTS[r]:
+                dy += (-14 if WIN[r] == side else 10) * spr(REVEAL[r], t, 1.8, 0.6)
+    return dx, dy, rot, pose
+
+
+def hand_xy(side):
+    return ch.HAND_POS[side]
+
+
+def draw_hand(c, t, side, pos=None, sc=1.0, a=1.0, force_fist=False):
+    px, py = pos or hand_xy(side)
+    dx, dy, rot, pose = hand_extra(side, t) if pos is None else (0.0, 0.0, 0.0, None)
+    rot = rot if side == 0 else -rot
+    if pose == 'point_up':
+        im = pose_im(side, 'point_up')
+        put(c, im, px + dx + (10 if side == 0 else -10), py + dy - 60, 400 / 522 * sc, a, rot)
+        return
+    p = 5.0 if force_fist else strip_p(side, t)
+    k0 = int(math.floor(p))
+    f = p - k0
+    put(c, strip_im(side, k0), px + dx, py + dy, HAND_SC * sc, a, rot)
+    if f > 0.02 and k0 + 1 < STRIP:                               # next frame fades in over an opaque base (no ghost)
+        put(c, strip_im(side, k0 + 1), px + dx, py + dy, HAND_SC * sc, a * f, rot)
+
+
+def palm_point(side, t=None):
+    px, py = hand_xy(side)
+    dx, dy = (0.0, 0.0) if t is None else hand_extra(side, t)[:2]
+    return (px + (PALM[0] if side == 0 else -PALM[0]) + dx, py + PALM[1] + dy)
+
+
+# ------------------------------------------------------------------ head
+def _faces():
+    f = [(0.0, 'calm3')]
+    for r in range(5):
+        f.append((ON[1 + 3 * r], 'calm3'))
+        w0, w1 = TRICK[r]
+        side = TRICK_SIDE[r]
+        if r == 3:
+            f.append((w0, 'look_up'))                                # the telescope: he looks at the star
+        elif r == 4:
+            f.append((w0 + 0.2, 'look_left_down'))                   # balancing the cap on his finger
         else:
-            f.append((LOSE_T[r] + 0.9, 'calm'))
-    f.append((OUTRO, 'calm'))
+            f.append((w0, 'look_left_down' if side == 0 else 'look_right'))
+        f.append((w1, 'calm3'))
+        f.append((REVEAL[r] + 0.12, 'over_glasses' if r == 4 else ('knowing' if WIN[r] == 0 else 'brows_up')))
+        if r == 0:                                                   # turns to the chess and blows it away
+            f += [(LOSE_T[0] - 0.22, 'after_blow_right'), (LOSE_T[0] - 0.05, 'blow_right'),
+                  (LOSE_T[0] + 0.55, 'after_blow_right'), (LOSE_T[0] + 1.0, 'calm3')]
+        elif r == 1:
+            f += [(LOSE_T[1] - 0.1, 'look_left_down'), (LOSE_T[1] + CRUSH['level'][1], 'calm3')]
+        elif r == 2:
+            f += [(LOSE_T[2], 'brows_up'), (LOSE_T[2] + 1.3, 'calm3')]
+        else:
+            f.append((LOSE_T[r] + 0.9, 'calm3'))
+    f.append((OUTRO, 'calm3'))
+    f.append((OUTRO + 1.6, 'knowing'))
     f.append((E['dissolve'] - 0.9, 'over_glasses'))
     return sorted(f)
 
 
 FACES = _faces()
 HEAD_G = [('nod', rv + 0.05) for rv in REVEAL] + [('tilt', ON[1 + 3 * r] + 0.1) for r in range(5)]
-GLINTS = (E['formed'] + 0.05, TRICK_NFT[3][0] + 0.3, OUTRO + 1.0)
+GLINTS = (E['formed'] + 0.05, OUTRO + 1.0)
 
 
-def _poses(side):
-    p = [(0.0, 'fist')]
-    for r in range(5):
-        p += [(ROUND_IN[r], 'half'), (ROUND_IN[r] + 0.11, 'open')]
-        if side == 0 and r == 4:                                     # the cap spins on the index finger
-            p += [(TRICK_NFT[4][0], 'point_up'), (TRICK_NFT[4][1], 'open')]
-        if side == 0 and r == 1:                                     # the watch is crushed in the fist
-            p += [(LOSE_T[1] + 0.05, 'squeeze')]
-        if side == 1 and r == 1:                                     # catches the tossed drill
-            p += [(TRICK_THING[1][0] + 0.5, 'catch'), (TRICK_THING[1][0] + 0.75, 'open')]
-        p += [(FISTS[r], 'half'), (FISTS[r] + 0.1, 'fist')]
-    p += [(OUTRO + 0.35, 'half'), (OUTRO + 0.46, 'open')]          # the outro: a blue and a red pill
-    p += [(E['dissolve'] - 0.5, 'half'), (E['dissolve'] - 0.4, 'fist')]
-    return sorted(p)
-
-
-POSES = (_poses(0), _poses(1))
-HAND_G = [('offer', ROUND_IN[r] + 0.12, 'both') for r in range(5)] + \
-         [('shake', LOSE_T[1] + 0.1, 0), ('weigh', REVEAL[0], 0)] + \
-         [('shake', TRICK_THING[1][0] + 0.75, 1), ('shake', TRICK_THING[4][0] + 0.3, 1)]
-
-
-# ------------------------------------------------------------------ Morpheus
+# ------------------------------------------------------------------ Morpheus (intro from code, rig, finale into code)
 INTRO = [('head', ch.HEAD_POS, 0.12, 1.75), ('fist0', ch.HAND_POS[0], 0.28, 1.6), ('fist1', ch.HAND_POS[1], 0.36, 1.55)]
 
 
@@ -232,47 +436,79 @@ INTRO = [('head', ch.HEAD_POS, 0.12, 1.75), ('fist0', ch.HAND_POS[0], 0.28, 1.6)
 def _intro_sprites():
     def sc(im, s):
         return im.resize((round(im.width * s), round(im.height * s)), Image.LANCZOS)
-    matrix.register('head', sc(*ch.head('calm')))
+    matrix.register('head', sc(*ch.head('calm3')))
     for side in (0, 1):
-        matrix.register(f'fist{side}', sc(*ch.hand(side, 'fist')))
+        matrix.register(f'fist{side}', sc(strip_im(side, 5), HAND_SC))
     return True
 
 
-def draw_morpheus(c, t, pos_head=None, pos_hands=None, scale=1.0, faces=None, alpha=1.0):
-    """Intro assembly from code, then the photo rig; at the end he drains into code."""
+def draw_morpheus(c, t):
     _intro_sprites()
-    if t < 2.12 and pos_head is None:
+    if t < 2.12:
         for key, (px, py), t0, dur in INTRO:
             if t < t0 + dur:
                 arr, _ = matrix.assemble(t, key, t0, dur, seed={'head': 1, 'fist0': 2, 'fist1': 3}[key])
                 if key == 'head':
                     dx, dy, rot, _ = ch.head_motion(t, ())
                 else:
-                    dx, dy, rot, _ = ch.hand_motion(t, 0 if key == 'fist0' else 1, ())
+                    dx, dy, rot, _ = hand_extra(int(key[-1]), t)
                 im = Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8))
                 fx.over(c, fx.warp(im, px + dx, py + dy, 1.0))
             elif key == 'head':
                 ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS)
             else:
-                ch.draw_hand(c, t, int(key[-1]), POSES[int(key[-1])], HAND_G)
+                draw_hand(c, t, int(key[-1]))
         return
     k = 1.0 if t < E['dissolve'] else max(0.0, 1 - (t - E['dissolve']) / 1.1)
     if k >= 0.999:
-        ch.draw_head(c, t, faces or FACES, HEAD_G, glints=GLINTS, pos=pos_head or ch.HEAD_POS, extra_sc=scale, a=alpha)
-        for side in (0, 1):
-            ch.draw_hand(c, t, side, POSES[side], HAND_G, pos=None if pos_hands is None else pos_hands[side],
-                         extra_sc=scale, a=alpha)
+        ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS)
         return
-    # finale: drains into green code (cells → glyphs → gone), the same language as the intro
-    name = 'over_glasses'
-    im, s = ch.head(name)
-    put(c, matrix.code_mix(im, k, t, seed=11, cell=14, fall=120), ch.HEAD_POS[0], ch.HEAD_POS[1], s)
+    im, s = ch.head('over_glasses')
+    put(c, matrix.code_mix(im, k, t, seed=11, cell=14, fall=140), ch.HEAD_POS[0], ch.HEAD_POS[1], s)
+
+
+def draw_hands(c, t):
+    if t < 2.12 and t < INTRO[1][2] + INTRO[1][3]:
+        return
+    k = 1.0 if t < E['dissolve'] else max(0.0, 1 - (t - E['dissolve']) / 1.1)
+    if k >= 0.999:
+        for side in (0, 1):
+            draw_hand(c, t, side)
+        return
     for side in (0, 1):
-        him, hs = ch.hand(side, 'fist')
-        put(c, matrix.code_mix(him, k, t, seed=12 + side, cell=14, fall=120), *ch.HAND_POS[side], hs)
+        put(c, matrix.code_mix(strip_im(side, 5), k, t, seed=12 + side, cell=14, fall=140), *ch.HAND_POS[side], HAND_SC)
 
 
 # ------------------------------------------------------------------ items
+def gift_im(r, t):
+    return lottie.frame(GIFTS[r], t + 0.41 * r, size=GIFT_PX)
+
+
+@functools.lru_cache(None)
+def _gift_box(r):
+    bb = gift_im(r, 0.0).getbbox()
+    return bb
+
+
+@functools.lru_cache(None)
+def gift_h(r):
+    bb = _gift_box(r)
+    return bb[3] - bb[1], (bb[1] + bb[3]) / 2 - GIFT_PX / 2     # visible height, centre offset of the visible part
+
+
+GIFT_H = {r: gift_h(r)[0] for r in range(5)}
+
+
+def thing_im(r):
+    return photos.sprite(ROUNDS[r][3])
+
+
+def item_anchor(side, h, t=None, float_gap=26.0):
+    """Centre for an item of visible height h hovering just above the palm (author: «чуть парят»)."""
+    x, y = palm_point(side, t)
+    return x, y - float_gap - h / 2
+
+
 def round_at(t):
     r = 0
     for k in range(5):
@@ -281,228 +517,250 @@ def round_at(t):
     return r
 
 
-def gift_im(r, t):
-    return lottie.frame(GIFTS[r], t + 0.41 * r, size=GIFT_PX)
-
-
-def thing_im(r):
-    return photos.sprite(ROUNDS[r][3])
-
-
-def item_base(r, side, t):
-    """Float above the palm: (cx, cy, sc, rot, sx, alpha_code_k). k: 0..1 how much of the picture is assembled."""
-    px, py = ITEM_POS[side]
-    bob = 6 * math.sin(2 * math.pi * (t / 2.4) + side * 1.7 + r)
-    k_in = sm(ROUND_IN[r] + 0.05 + 0.08 * side, ROUND_IN[r] + 0.6 + 0.08 * side, t)
-    up = 0.0
-    if t >= REVEAL[r] and WIN[r] == side:
-        up = -36 * spr(REVEAL[r], t, 1.8, 0.6)
-    return px, py + bob + up, k_in
-
-
-def trick(r, side, t, im, cx, cy):
-    """Returns (im, cx, cy, sc, rot, sx, anchor, extra_draw) for the timer tricks (one after another)."""
-    sc, rot, sx, anchor, extra = 1.0, 0.0, None, None, []
-    w0, w1 = (TRICK_NFT if side == 0 else TRICK_THING)[r]
-    u = (t - w0) / (w1 - w0)
-    if not 0 <= u <= 1:
-        if side == 1 and r == 2 and t > w0:                     # the cactus flower stays after blooming
-            extra.append(('flower', 1.0))
-        return im, cx, cy, sc, rot, sx, anchor, extra
+def item_state(r, side, t):
+    """Where the item is and how it is drawn: (im, cx, cy, sc, rot, k_code, extra list, anchor)."""
     if side == 0:
-        if r == 0:      # signet ring flipped like a coin
-            v = cl(u / 0.8)
-            cy -= 270 * 4 * v * (1 - v)
-            sx = math.cos(2 * math.pi * 2 * v)
-            if abs(sx) < 0.06:
-                sx = 0.06 if sx >= 0 else -0.06
-        elif r == 1:    # watch swings like a pendulum from a point above
-            ang = 0.5 * math.sin(2 * math.pi * 1.4 * u) * (1 - 0.4 * u) * math.sin(math.pi * u) ** 0.5
-            anchor = (im.width / 2, 0)
-            cy -= im.height / 2 + 40 * math.sin(math.pi * u)
-            rot = ang
-        elif r == 2:    # ring spins like a top
-            sx = math.cos(2 * math.pi * 3.2 * u) * (0.35 + 0.65 * (1 - math.sin(math.pi * u) * 0.5))
-            if abs(sx) < 0.06:
-                sx = 0.06
-            cx += 26 * math.sin(2 * math.pi * u)
-            rot = 0.08 * math.sin(2 * math.pi * 3.2 * u)
-        elif r == 3:    # glint across the glasses
-            extra.append(('glint', u))
-            sc = 1 + 0.05 * math.sin(math.pi * u)
-        elif r == 4:    # cap spins on the fingertip
-            hand_top = ch.HAND_POS[0][1] - 205
-            cy = lerp(cy, hand_top - 70, sm(0, 0.12, u)) if u < 0.88 else lerp(hand_top - 70, cy, sm(0.88, 1, u))
-            sx = math.cos(2 * math.pi * 3.0 * u)
-            if abs(sx) < 0.06:
-                sx = 0.06
-            rot = 0.1 * math.sin(2 * math.pi * 3.0 * u + 1)
-            sc = 0.82
+        im = gift_im(r, t)
+        h, off = gift_h(r)
+        cx, cy = item_anchor(0, h, t)
+        cy -= off                                        # Lottie frames have padding: align the visible part
     else:
-        if r == 0:      # a knight hops over the board twice
-            extra.append(('knight', u))
-            for land in (0.29, 0.79):
-                cy += 8 * fx.bump(u - land, 3.0, 9.0)
-        elif r == 1:    # drill tossed, spins, caught, two short bursts
-            v = cl(u / 0.37)
-            cy -= 300 * 4 * v * (1 - v)
-            rot = -2 * math.pi * fx.smooth(v)
-            for b0, b1 in ((0.395, 0.63), (0.684, 0.895)):
-                if b0 <= u <= b1:
-                    cx += 5 * math.sin(u * 900)
-                    cy += 3 * math.cos(u * 1100)
-                    rot += 0.03 * math.sin(u * 700)
-                    extra.append(('buzz', (u - b0) / (b1 - b0)))
-        elif r == 2:    # cactus flower blooms
-            extra.append(('flower', fx.ease_out_back(cl(u / 0.45), 1.6)))
-        elif r == 3:    # telescope extends, a star twinkles where it points
-            sc = 1 + 0.07 * sm(0, 0.4, u)
-            anchor = (im.width / 2, im.height)
-            cy += im.height / 2
-            extra.append(('star', u))
-        elif r == 4:    # chainsaw: pull-start jerk, then the engine runs
-            if u < 0.12:
-                cx -= 18 * math.sin(math.pi * u / 0.12)
-            elif u < 0.88:
-                cx += 3 * math.sin(u * 1300)
-                cy += 2.5 * math.cos(u * 1700)
-                extra.append(('smoke', (u - 0.12) / 0.76))
-    return im, cx, cy, sc, rot, sx, anchor, extra
+        im = thing_im(r)
+        cx, cy = item_anchor(1, im.height, t)
+    cy += 6 * math.sin(2 * math.pi * t / 2.4 + side * 1.7 + r)          # hovering
+    k = sm(ROUND_IN[r] + 0.08 + 0.10 * side, ROUND_IN[r] + 0.62 + 0.10 * side, t)
+    sc, rot, extra, anchor = 1.0, 0.0, [], None
+    if t >= REVEAL[r] and WIN[r] == side:
+        cy -= 30 * spr(REVEAL[r], t, 1.8, 0.6)
+    if TRICK_SIDE[r] == side:
+        cx, cy, sc, rot, extra, anchor = trick(r, t, im, cx, cy)
+    return im, cx, cy, sc, rot, k, extra, anchor
+
+
+def toss(u, h_up, turns, land_u):
+    """Parabolic toss from rest (u=0) back to the same height (u=land_u), tumbling `turns` full turns in-plane."""
+    v = cl(u / land_u)
+    return -h_up * 4 * v * (1 - v), -2 * math.pi * turns * v
+
+
+def trick(r, t, im, cx, cy):
+    w0, w1 = TRICK[r]
+    u = (t - w0) / (w1 - w0)
+    sc, rot, extra, anchor = 1.0, 0.0, [], None
+    if not 0 <= u <= 1:
+        return cx, cy, sc, rot, extra, anchor
+    if r == 0:                     # signet ring: tossed, tumbles twice in the air, caught on the palm, settles
+        dy, rot = toss(u, 330, 2, 0.62)
+        cy += dy
+        if u > 0.62:
+            q = (u - 0.62) * (w1 - w0)
+            cy += 26 * fx.bump(q, 2.6, 5.5)                   # lands: small bounce
+            rot = 0.18 * fx.bump(q, 2.0, 4.0)                 # and rocks to rest
+        extra.append(('motion', (u, dy, rot)))
+    elif r == 1:                   # drill: tossed, one tumble, caught, two short bursts (chuck spins)
+        dy, rot = toss(u, 300, 1, 0.34)
+        cy += dy
+        for b0, b1 in ((0.40, 0.55), (0.66, 0.80)):
+            if b0 <= u <= b1:
+                q = (u - b0) / (b1 - b0)
+                cx += 4 * math.sin(t * 2 * math.pi * 45)
+                cy += 2 * math.cos(t * 2 * math.pi * 52)
+                rot += 0.025 * math.sin(t * 2 * math.pi * 31)
+                extra.append(('chuck', q))
+    elif r == 2:                   # black hole ring: rises, turns slowly in-plane, the code spirals into it
+        lift = sm(0.0, 0.25, u) * (1 - sm(0.8, 1.0, u))
+        cy -= 70 * lift
+        rot = 0.6 * math.sin(math.pi * u) * lift
+        extra.append(('lens', lift))
+    elif r == 3:                   # telescope: a small adjustment towards the star (pivot at the tripod head)
+        rot = -0.035 * math.sin(math.pi * cl((u - 0.1) / 0.5))
+        anchor = (im.width * 0.55, im.height * 0.42)
+        cx += (anchor[0] - im.width / 2)
+        cy += (anchor[1] - im.height / 2)
+    elif r == 4:                   # cap: tossed tumbling, lands on the raised index finger and balances on it
+        hx, hy = ch.HAND_POS[0]
+        tip = (hx + 25.0, hy - 60 - 605 * (400 / 522) / 2 + 4)
+        bb = _gift_box(4)
+        ax, ay = (bb[0] + bb[2]) / 2, bb[3] - 14            # the cap's underside rests on the fingertip
+        at_tip = (tip[0] - (ax - im.width / 2), tip[1] - (ay - im.height / 2))
+        if u < 0.42:
+            v = u / 0.42
+            dy, rr = toss(u, 300, 1.5, 0.42)
+            cx, cy = lerp(cx, at_tip[0], fx.smooth(v)), lerp(cy, at_tip[1], fx.smooth(v)) + dy
+            rot = rr
+        elif u < 0.86:
+            q = (u - 0.42) * (w1 - w0)
+            anchor = (ax, ay)
+            cx, cy = tip[0] + 3 * math.sin(q * 9), tip[1]
+            rot = 0.22 * math.sin(q * 6.0) * math.exp(-q * 0.5) + 0.05 * math.sin(q * 17)
+            extra.append(('balance', q))
+        else:
+            v = (u - 0.86) / 0.14
+            hx0, hy0 = cx, cy
+            cx, cy = lerp(at_tip[0], hx0, fx.smooth(v)), lerp(at_tip[1], hy0, fx.smooth(v)) - 120 * 4 * v * (1 - v)
+            rot = -2 * math.pi * 0.5 * v
+    return cx, cy, sc, rot, extra, anchor
 
 
 def draw_extra(c, kind, v, cx, cy, im, t):
-    if kind == 'knight':
-        pts = [(-95, 10), (-15, -20), (85, 15)]
-        seg = 0 if v < 0.5 else 1
-        w = (v - 0.5 * seg) / 0.5
-        x0, y0 = pts[seg]
-        x1, y1 = pts[seg + 1]
-        x, y = lerp(x0, x1, w), lerp(y0, y1, w) - 120 * 4 * w * (1 - w)
-        put(c, knight(), cx + x, cy + y - 45, 0.9, cl(v * 8) * cl((1 - v) * 8 + 0.3))
-    elif kind == 'flower':
-        put(c, flower(), cx + 4, cy - im.height / 2 + 18, 0.9 * v, 1.0, rot=0.3 * v)
-    elif kind == 'glint':
-        hh, ww = im.height, im.width
-        yy, xx = np.mgrid[:hh, :ww]
-        x = -0.3 * ww + v * 1.6 * ww
-        band = np.clip(1 - np.abs((xx - x) + 0.6 * (yy - hh / 2)) / 26.0, 0, 1)
-        g = np.zeros((hh, ww, 4), np.uint8)
-        g[..., :3] = 255
-        g[..., 3] = (band * np.asarray(im)[..., 3] / 255 * 230 * math.sin(math.pi * v)).astype(np.uint8)
-        put(c, Image.fromarray(g), cx, cy, 1.0, 1.0, add=True)
-        if v > 0.6:
-            put(c, star4(), cx + ww * 0.32, cy - hh * 0.18, 0.6 + 0.6 * math.sin(math.pi * (v - 0.6) / 0.4), 1.0)
-    elif kind == 'star':
-        k = math.sin(math.pi * cl((v - 0.35) / 0.65))
-        put(c, star4(), cx + 170, cy - 330, 0.4 + 0.9 * k, k, rot=v * 1.5)
-    elif kind == 'buzz':
+    if kind == 'chuck':                                 # spinning chuck blur at the drill's nose (left in the photo)
+        x, y = cx - im.width * 0.42, cy - im.height * 0.34
         for j in range(3):
-            a = 0.5 * (1 - v)
-            x0 = cx - 175 - 18 * j
-            fx.over(c, fx.draw_rgba((x0 - 30, cy - 70 + 25 * j - 6, x0 + 4, cy - 70 + 25 * j + 6), lambda d, m, S, x0=x0, j=j:
-                    d.line([m(x0 - 26, cy - 70 + 25 * j), m(x0, cy - 70 + 25 * j)], fill=MUTED + (255,), width=round(3 * S))), a)
-    elif kind == 'smoke':
-        for j in range(5):
-            age = (v * 1.4 - j * 0.18)
-            if 0 < age < 1:
-                r = 10 + 34 * age
-                x = cx - 150 - 30 * age + 8 * j
-                y = cy - 30 - 90 * age
-                fx.over(c, fx.draw_rgba((x - r - 2, y - r - 2, x + r + 2, y + r + 2), lambda d, m, S, x=x, y=y, r=r:
-                        d.ellipse([*m(x - r, y - r), *m(x + r, y + r)], fill=(170, 172, 176, 255))), 0.45 * (1 - age))
+            q = t * 60 + j * 2.1
+            fx.over(c, fx.draw_rgba((x - 40, y - 40, x + 40, y + 40), lambda d, m, S, q=q:
+                    d.arc([*m(x - 34, y - 30), *m(x + 34, y + 30)], math.degrees(q), math.degrees(q) + 70,
+                          fill=(90, 96, 104, 255), width=round(4 * S))), 0.7)
+    elif kind == 'lens':                                # gravitational lensing ring around the black hole
+        def draw(d, m, S):
+            for j in range(3):
+                r = 175 + 22 * j + 6 * math.sin(t * 4 + j)
+                d.ellipse([*m(cx - r, cy - r), *m(cx + r, cy + r)], outline=(10, 12, 16, int(120 - 35 * j)), width=round(3 * S))
+        fx.over(c, fx.draw_rgba((cx - 250, cy - 250, cx + 250, cy + 250), draw), v)
+    elif kind == 'balance':                             # spin streaks around the cap balanced on the finger
+        for j in range(2):
+            a0 = math.degrees(t * 9 + j * math.pi)
+            fx.over(c, fx.draw_rgba((cx - 170, cy - 210, cx + 170, cy - 40), lambda d, m, S, a0=a0:
+                    d.arc([*m(cx - 160, cy - 200), *m(cx + 160, cy - 60)], a0, a0 + 50, fill=(70, 74, 80, 255),
+                          width=round(3 * S))), 0.45)
+
+
+# --- defeats -------------------------------------------------------------------------------------------------
+CHESS = [('♟', 1), ('♞', 1), ('♜', 0), ('♝', 1), ('♛', 0), ('♟', 0), ('♚', 1), ('♜', 1), ('♟', 1), ('♝', 0)]
 
 
 def defeat(c, r, side, t, im, cx, cy):
-    """The loser's own defeat (events.DEFEAT). Returns True while it draws the item itself."""
     u = t - LOSE_T[r]
     if u < 0:
         return False
-    if r == 0:          # Morpheus blows the chess away
-        v = cl(u / 0.9)
-        k = 1 - cl((u - 0.25) / 0.6)
-        put(c, matrix.code_mix(im, k, t, seed=21, cell=12), cx + 520 * v ** 1.6, cy - 160 * v, 1 - 0.3 * v, 1.0,
-            rot=-0.7 * v)
-    elif r == 1:        # the watch is crushed in the fist
-        v = cl(u / 0.35)
-        sy = 1 - 0.85 * v
-        put(c, im, cx, lerp(cy, ch.HAND_POS[0][1] - 40, v), 1.0, 1 - cl((u - 0.3) / 0.12), sx=1 + 0.35 * v)
-        if 0.3 < u < 0.9:
-            w = (u - 0.3) / 0.6
-            for j in range(9):
-                a = 2 * math.pi * j / 9 + 0.4
-                x = cx + math.cos(a) * 160 * w
-                y = ch.HAND_POS[0][1] - 40 + math.sin(a) * 110 * w + 260 * w * w
-                fx.over(c, fx.draw_rgba((x - 9, y - 9, x + 9, y + 9), lambda d, m, S, x=x, y=y, j=j:
-                        d.rectangle([*m(x - 6, y - 4), *m(x + 6, y + 4)], fill=(90, 98, 104, 255) if j % 2 else (60, 200, 90, 255))), 1 - w)
-    elif r == 2:        # a black hole opens and pulls the cactus in
-        v = cl(u / 1.0)
-        hr = 150 * math.sin(math.pi * cl(u / 1.25)) ** 0.7
+    if r == 0:          # Morpheus turns to the chess and blows: gust lines, the board slides off, pieces tumble away
+        gust = sm(0.0, 0.12, u) * (1 - sm(0.45, 0.7, u))
+        if gust > 0:                                     # a visible cone of air from the lips to the board
+            mx, my = ch.HEAD_POS[0] + 60, ch.HEAD_POS[1] + 155
+            for j in range(11):
+                ph = (u * 2.6 + j / 11) % 1
+                spread = (j - 5) * 13
+                x0 = lerp(mx, cx + 40, ph)
+                y0 = lerp(my, cy - 30, ph) + spread * ph * 1.6
+                ln = 46 + 70 * ph
+                def draw(d, m, S, x0=x0, y0=y0, ln=ln, spread=spread):
+                    d.arc([*m(x0 - ln, y0 - 22), *m(x0 + ln * 0.3, y0 + 22)], 300, 350 if spread < 0 else 20,
+                          fill=(120, 150, 170, 255), width=round(5 * S))
+                    d.line([m(x0 - ln, y0), m(x0, y0 + spread * 0.05)], fill=(150, 175, 195, 255), width=round(4 * S))
+                fx.over(c, fx.draw_rgba((x0 - ln - 6, y0 - 30, x0 + ln * 0.4 + 6, y0 + 30), draw),
+                        0.9 * gust * math.sin(math.pi * ph))
+        v = max(0.0, u - 0.12)
+        bx = cx + 300 * v + 0.5 * 1800 * v * v
+        by = cy - 120 * v + 0.5 * G * 0.25 * v * v
+        if bx < W + 400:
+            put(c, im, bx, by, 1.0, 1.0, rot=-0.9 * v)
+        for j, (sym, dark) in enumerate(CHESS):          # pieces fly off: own speed, spin, gravity
+            seed = (j * 37 % 11) / 11
+            vx = 700 + 600 * seed
+            vy = -700 - 500 * ((j * 53 % 7) / 7)
+            x = cx - 120 + 26 * j + vx * v
+            y = cy - 40 + vy * v + 0.5 * G * v * v
+            if y < H + 100 and v > 0:
+                put(c, piece(sym, dark), x, y, 0.75, 1.0, rot=(4 + 3 * seed) * v * (1 if j % 2 else -1))
+    elif r == 1:        # watch: sinks into the palm, the fist closes and shakes, opens, palm tilts, crumbs fall
+        px, py = palm_point(0, t)
+        c0, c1 = CRUSH['close']
+        if u < c1:
+            v = u / c1
+            put(c, im, lerp(cx, px, v), lerp(cy, py - 30, v), 1 - 0.35 * v, 1.0, sy=(1 - 0.35 * v) * (1 - 0.3 * v))
+        # crumbs: appear when the fist opens, slide to the fingers when the palm tilts, then fall
+        o0 = CRUSH['open'][1]
+        if u >= o0:
+            tilt_t = LOSE_T[1] + CRUSH['tilt'][0]
+            for j in range(16):
+                sd = ((j * 41) % 17) / 17
+                x = px - 60 + 120 * sd
+                y = py - 8 - 10 * ((j * 13) % 5) / 5
+                q = t - tilt_t - 0.03 * (j % 5)
+                if q > 0:                                    # slide toward the fingertips (screen-left), then fall
+                    x -= 260 * q + 400 * q * q
+                    if x < px - 200:
+                        fall = (px - 200 - x) / 300
+                        y += 0.5 * G * fall * fall + 40 * fall
+                    else:
+                        y += 70 * q
+                if y > H:
+                    continue
+                col = (70, 76, 82) if j % 3 else ((40, 190, 90) if j % 2 else (150, 156, 162))
+                rr = 5 + 4 * sd
+                fx.over(c, fx.draw_rgba((x - rr - 2, y - rr - 2, x + rr + 2, y + rr + 2), lambda d, m, S, x=x, y=y, rr=rr, col=col:
+                        d.polygon([m(x - rr, y), m(x, y - rr * 0.8), m(x + rr, y + rr * 0.3), m(x - rr * 0.3, y + rr)],
+                                  fill=col + (255,))))
+    elif r == 2:        # the ring's black hole pulls the cactus across: spiral path, stretched toward the hole, gone
+        hx, hy = ring_pos()
+        v = cl(u / 1.15)
+        hr = 85 * math.sin(math.pi * cl(u / 1.45)) ** 0.6
         if hr > 1:
-            hole = Image.new('RGBA', (int(2 * hr) + 8, int(2 * hr) + 8), (0, 0, 0, 0))
-            d = ImageDraw.Draw(hole)
-            o = hr + 4
-            d.ellipse([o - hr, o - hr, o + hr, o + hr], fill=(8, 10, 12, 255))
-            hole = hole.filter(ImageFilter.GaussianBlur(hr * 0.12))
-            put(c, hole, cx, cy, 1.0, 0.92)
-            for j in range(26):                          # glyphs spiralling in
-                a0 = 2 * math.pi * j / 26 + u * (3 + j % 3)
-                rr = (hr * 2.1) * (1 - ((u * 1.2 + j * 0.037) % 1))
-                x, y = cx + math.cos(a0) * rr, cy + math.sin(a0) * rr * 0.8
-                text(c, '01'[j % 2], 26, 'Heavy', GREEN, x, y, 0.8, mono=True)
-        k = cl(1 - v)
-        put(c, im, cx, cy, max(0.02, k), k ** 0.5, rot=6 * v * v)
-    elif r == 3:        # lenses crack, then crumble into falling pixels
+            hole = Image.new('RGBA', (int(2 * hr) + 10, int(2 * hr) + 10), (0, 0, 0, 0))
+            o = hr + 5
+            ImageDraw.Draw(hole).ellipse([o - hr, o - hr, o + hr, o + hr], fill=(6, 8, 10, 255))
+            put(c, hole.filter(ImageFilter.GaussianBlur(hr * 0.15)), hx, hy, 1.0, 0.9)
+        e = v ** 1.8
+        ang = math.atan2(hy - cy, hx - cx)
+        q = e * 2.2 * math.pi
+        rr = math.hypot(hx - cx, hy - cy) * (1 - e)
+        x = hx + math.cos(ang + math.pi + q) * rr
+        y = hy + math.sin(ang + math.pi + q) * rr * 0.8
+        s = max(0.02, 1 - e)
+        if v < 1:
+            put(c, im, x, y, s, 1.0, rot=q, sy=s * (1 - 0.5 * e))
+    elif r == 3:        # lenses crack, then the glasses break into pieces that fall with gravity
         a = np.asarray(im)
-        if u < 0.35:
+        if u < 0.38:
             put(c, im, cx, cy, 1.0)
-            k = cl(u / 0.15)
-            pts = [(0, 0), (-40, -18), (-70, 10), (-110, -6)], [(0, 0), (35, 22), (80, 8), (120, 30)], [(0, 0), (8, -36), (30, -60)]
+            k = cl(u / 0.16)
+            pts = ([(0, 0), (-40, -16), (-74, 10), (-112, -6)], [(0, 0), (36, 22), (82, 8), (118, 30)],
+                   [(0, 0), (8, -34), (30, -58)])
             for p in pts:
-                q = [(cx + x * k, cy - 20 + y * k) for x, y in p]
-                fx.over(c, fx.draw_rgba((cx - 130, cy - 90, cx + 130, cy + 60), lambda d, m, S, q=q:
-                        d.line([m(*pt) for pt in q], fill=(255, 255, 255, 255), width=round(3 * S))), 0.95)
+                qq = [(cx + x * k, cy - 18 + y * k) for x, y in p]
+                fx.over(c, fx.draw_rgba((cx - 130, cy - 90, cx + 130, cy + 60), lambda d, m, S, qq=qq:
+                        d.line([m(*pt) for pt in qq], fill=(255, 255, 255, 255), width=round(3 * S))), 0.95)
         else:
-            w = u - 0.35
-            cell = 14
+            w = u - 0.38
+            cell = 16
             hh, ww = a.shape[:2]
             for y0 in range(0, hh, cell):
                 for x0 in range(0, ww, cell):
                     blk = a[y0:y0 + cell, x0:x0 + cell]
                     if blk[..., 3].mean() < 60:
                         continue
-                    seed = (x0 * 31 + y0 * 17) % 97 / 97
-                    yy = cy - hh / 2 + y0 + 900 * max(0, w - 0.1 * seed) ** 2
-                    xx = cx - ww / 2 + x0 + (seed - 0.5) * 140 * w
+                    sd = (x0 * 31 + y0 * 17) % 97 / 97
+                    yy = cy - hh / 2 + y0 + 0.5 * G * max(0, w - 0.08 * sd) ** 2
+                    xx = cx - ww / 2 + x0 + (sd - 0.5) * 160 * w
                     if yy > H:
                         continue
                     col = tuple(int(v) for v in blk[..., :3].reshape(-1, 3).mean(0))
-                    fx.over(c, fx.draw_rgba((xx - 1, yy - 1, xx + cell + 1, yy + cell + 1), lambda d, m, S, xx=xx, yy=yy, col=col:
-                            d.rectangle([*m(xx, yy), *m(xx + cell - 2, yy + cell - 2)], fill=col + (255,))), cl(1 - w / 0.9))
-    elif r == 4:        # chainsaw glitches like a broken signal and is squeezed into a pixel cube
+                    rot_ = (sd - 0.5) * 6 * w
+                    piece_im = Image.fromarray(np.ascontiguousarray(blk))
+                    put(c, piece_im, xx + cell / 2, yy + cell / 2, 1.0, 1.0, rot=rot_)
+    elif r == 4:        # chainsaw glitches like a broken signal, squeezed into a green pixel cube that falls
         if u < 0.55:
             a = np.asarray(im).copy()
             rng = np.random.default_rng(int(t * 60))
-            for _ in range(7):
-                y0 = rng.integers(0, a.shape[0] - 10)
-                hgt = rng.integers(4, 26)
-                a[y0:y0 + hgt] = np.roll(a[y0:y0 + hgt], rng.integers(-40, 40), axis=1)
+            for _ in range(8):
+                y0 = int(rng.integers(0, a.shape[0] - 10))
+                hgt = int(rng.integers(4, 26))
+                a[y0:y0 + hgt] = np.roll(a[y0:y0 + hgt], int(rng.integers(-40, 40)), axis=1)
             g = Image.fromarray(a)
-            put(c, g, cx + 6, cy, 1.0, 0.5)
             rr = np.asarray(g).copy()
             rr[..., 1:3] = 0
             put(c, Image.fromarray(rr), cx - 8, cy, 1.0, 0.35, add=True)
-            put(c, g, cx, cy, 1.0, 0.7)
+            put(c, g, cx, cy, 1.0, 1.0)
         else:
-            w = cl((u - 0.55) / 0.35)
+            w = cl((u - 0.55) / 0.3)
             s = lerp(1.0, 0.0, w)
-            put(c, im, cx, cy, max(0.02, s), 1 - w * 0.3, sx=max(0.02, s * (1 - 0.6 * w)))
-            side_px = 40
-            if w >= 1:
-                fall = (u - 0.9)
-                y = cy + 1400 * fall * fall
-                fx.over(c, fx.draw_rgba((cx - 26, y - 26, cx + 26, y + 26), lambda d, m, S, y=y:
-                        d.rectangle([*m(cx - side_px / 2, y - side_px / 2), *m(cx + side_px / 2, y + side_px / 2)], fill=(0, 166, 81, 255))),
-                        cl(1 - fall / 0.6))
+            if w < 1:
+                put(c, im, cx, cy, max(0.02, s), 1.0, sy=max(0.02, s * (1 - 0.5 * w)))
+            fall = max(0.0, u - 0.85)
+            y = cy + 0.5 * G * fall * fall
+            if y < H + 40:
+                box = (cx - 24, y - 24, cx + 24, y + 24)
+                fx.over(c, fx.draw_rgba(box, lambda d, m, S, y=y:
+                        d.rectangle([*m(cx - 20, y - 20), *m(cx + 20, y + 20)], fill=(0, 166, 81, 255))), cl(w * 3))
     return True
 
 
@@ -513,44 +771,70 @@ def draw_items(c, t):
         return
     r = round_at(t)
     for side in (0, 1):
-        im = gift_im(r, t) if side == 0 else thing_im(r)
-        cx, cy, k = item_base(r, side, t)
-        # winner dissolves into code, loser plays its defeat
+        im, cx, cy, sc, rot, k, extra, anchor = item_state(r, side, t)
         win = WIN[r] == side
         if win and t >= WIN_GONE[r]:
             k = 1 - cl((t - WIN_GONE[r]) / 0.4)
         if k <= 0.003:
             continue
+        # aura: flashes on when the item assembles, brighter for the winner, dims for the loser
+        flash = 1 + 0.6 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
         hal = 1.0
         if t >= REVEAL[r]:
-            hal = lerp(1.0, 1.7 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
+            hal = lerp(1.0, 1.35 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
         if not win and t >= LOSE_T[r]:
-            hal *= 1 - cl((t - LOSE_T[r]) / 0.4)
+            hal *= 1 - cl((t - LOSE_T[r]) / 0.35)
         pulse = 1 + 0.03 * math.sin(t * 3.1 + side)
-        put(c, halo(SIDE_COL[side]), cx, cy, pulse * (1.1 if win and t > REVEAL[r] else 1.0), cl(hal) * k)
+        hx, hy = (cx, cy) if anchor is None else (cx - (anchor[0] - im.width / 2), cy - (anchor[1] - im.height / 2))
+        if TRICK_SIDE[r] == side and r in (0, 1, 4):         # the aura stays where the item hovers during a toss
+            hx, hy = item_anchor(side, GIFT_H[r] if side == 0 else im.height)
         if not win and defeat(c, r, side, t, im, cx, cy):
             continue
-        im2, x, y, sc, rot, sx, anchor, extra = trick(r, side, t, im, cx, cy)
-        shown = matrix.code_mix(im2, k, t, seed=31 + r * 2 + side, cell=12) if k < 0.999 else im2
-        put(c, shown, x, y, sc, 1.0, rot, sx=None if sx is None else sx * sc, anchor=anchor)
+        shown = matrix.code_mix(im, k, t, seed=31 + r * 2 + side, cell=12) if k < 0.999 else im
+        put(c, shown, cx, cy, sc, 1.0, rot, anchor=anchor)
         for kind, v in extra:
-            draw_extra(c, kind, v, x, y, im2, t)
+            if kind != 'motion':
+                draw_extra(c, kind, v, cx, cy, im, t)
+
+
+def draw_halos(c, t):
+    """Auras sit behind the items AND the hands (the hands are lit by them, not painted over)."""
+    if t < ROUND_IN[0] or t > OUTRO:
+        return
+    r = round_at(t)
+    for side in (0, 1):
+        im, cx, cy, sc, rot, k, extra, anchor = item_state(r, side, t)
+        win = WIN[r] == side
+        if win and t >= WIN_GONE[r]:
+            k = 1 - cl((t - WIN_GONE[r]) / 0.4)
+        if k <= 0.003:
+            continue
+        flash = 1 + 0.6 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
+        hal = 1.0
+        if t >= REVEAL[r]:
+            hal = lerp(1.0, 1.35 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
+        if not win and t >= LOSE_T[r]:
+            hal *= 1 - cl((t - LOSE_T[r]) / 0.35)
+        pulse = 1 + 0.03 * math.sin(t * 3.1 + side)
+        hx, hy = item_anchor(side, GIFT_H[r] if side == 0 else im.height, t)
+        put(c, halo(SIDE_COL[side]), hx, hy, pulse * k ** 0.5 * (1.12 if win and t > REVEAL[r] else 1.0), cl(hal * flash) * k)
 
 
 def draw_hook_pair(c, t):
-    """Hook: the final pair already floats over the fists with hidden prices."""
+    """Hook: the final pair already hovers over the fists with hidden prices (pills under the hands)."""
     a = 1 - sm(ROUND_IN[0] - 0.35, ROUND_IN[0], t)
     if a <= 0.004:
         return
     k = sm(0.45, 1.3, t) * a
     for side in (0, 1):
         im = gift_im(4, t) if side == 0 else thing_im(4)
-        px, py = ITEM_POS[side]
-        py -= 30 - 6 * math.sin(t * 2.6 + side)
+        h = gift_h(4)[0] if side == 0 else im.height
+        px, py = palm_point(side, t)
+        py = py - 80 - h / 2 - (gift_h(4)[1] if side == 0 else 0) - 6 * math.sin(t * 2.6 + side)
         put(c, halo(SIDE_COL[side]), px, py, 0.95, k)
-        put(c, matrix.code_mix(im, k, t, seed=5 + side, cell=12), px, py, 0.82, 1.0)
+        put(c, matrix.code_mix(im, k, t, seed=5 + side, cell=12), px, py, 0.9, 1.0)
         kp = spr(1.2 + 0.1 * side, t, 2.4, 0.5)
-        put(c, pill('? ₽', 46, SIDE_COL[side], (255, 255, 255)), px, py + 200, max(0.01, kp), a * cl(kp * 2))
+        put(c, pill('? ₽', 44, SIDE_COL[side], (255, 255, 255)), ch.HAND_POS[side][0], 1468, max(0.01, kp), a * cl(kp * 2))
 
 
 # ------------------------------------------------------------------ texts: hook, header, prices, timer
@@ -559,10 +843,10 @@ def draw_hook(c, t):
     if a <= 0.004:
         return
     k1 = 0.85 + 0.15 * spr(-0.05, t, 2.2, 0.5)
-    text(c, HOOK[0], 84, 'Heavy', INK, 540, 118, a, k1, maxw=980)
-    text(c, HOOK[1], 84, 'Heavy', INK, 540, 210, a, k1, maxw=980)
+    text(c, HOOK[0], 84, 'Heavy', INK, 540, 104, a, k1, maxw=980)
+    text(c, HOOK[1], 84, 'Heavy', INK, 540, 196, a, k1, maxw=980)
     kp = spr(1.6, t, 2.4, 0.5)
-    put(c, pill(HOOK[2], 40, GREEN, (255, 255, 255), mono=True), 540, 300, max(0.01, kp), a * cl(kp * 2))
+    put(c, pill(HOOK[2], 40, GREEN, (255, 255, 255), mono=True), 540, 286, max(0.01, kp), a * cl(kp * 2))
 
 
 def score_at(t):
@@ -579,34 +863,39 @@ def draw_header(c, t):
         return
     if t < OUTRO:
         r = round_at(t)
-        text(c, 'ЧТО ДОРОЖЕ?', 74, 'Heavy', INK, 540, 104, a)
+        text(c, 'ЧТО ДОРОЖЕ?', 72, 'Heavy', INK, 540, 96, a)
         g, th = SUBTITLE[r]
         ga = a * sm(ROUND_IN[r], ROUND_IN[r] + 0.3, t) * (1 - sm(FISTS[r], FISTS[r] + 0.2, t) if r < 4 else 1)
-        lg, lt = label(g, 36, 'Heavy', BLUE), label(th, 36, 'Heavy', RED)
-        vs = label('vs', 30, 'Semibold', MUTED)
-        tw = lg.width + vs.width + lt.width
-        x = 540 - tw / 2
-        put(c, lg, x + lg.width / 2, 172, 1.0, ga)
-        put(c, vs, x + lg.width + vs.width / 2, 172, 1.0, ga)
-        put(c, lt, x + lg.width + vs.width + lt.width / 2, 172, 1.0, ga)
+        if ga > 0.004:
+            lg, lt = label(g, 36, 'Heavy', BLUE), label(th, 36, 'Heavy', RED)
+            vs = label('vs', 30, 'Semibold', MUTED)
+            tw = lg.width + vs.width + lt.width
+            plate = Image.new('RGBA', (tw + 30, max(lg.height, lt.height) + 10), (255, 255, 255, 236))
+            x0 = 15
+            for im in (lg, vs, lt):
+                plate.alpha_composite(im, (x0, (plate.height - im.height) // 2))
+                x0 += im.width
+            put(c, plate, 540, 166, 1.0, ga)
         lab_ = 'ФИНАЛ' if r == 4 else f'РАУНД {r + 1}/5'
     else:
         ko = sm(OUTRO, OUTRO + 0.3, t)
-        text(c, 'ТЕЛЕГА ПОБЕДИЛА 3:2', 66, 'Heavy', INK, 540, 104, ko)
-        b, rr = label('СИНЯЯ', 52, 'Heavy', BLUE), label('КРАСНАЯ?', 52, 'Heavy', RED)
-        mid = label('ИЛИ', 44, 'Heavy', INK)
+        text(c, 'ТЕЛЕГА ПОБЕДИЛА 3:2', 66, 'Heavy', INK, 540, 96, ko)
         kk = sm(OUTRO + 0.9, OUTRO + 1.2, t)
-        tw = b.width + mid.width + rr.width
-        x = 540 - tw / 2
-        put(c, b, x + b.width / 2, 178, 1.0, kk)
-        put(c, mid, x + b.width + mid.width / 2, 178, 1.0, kk)
-        put(c, rr, x + b.width + mid.width + rr.width / 2, 178, 1.0, kk)
+        if kk > 0.004:
+            b, rr = label('СИНЯЯ', 52, 'Heavy', BLUE), label('КРАСНАЯ?', 52, 'Heavy', RED)
+            mid = label(' ИЛИ ', 44, 'Heavy', INK)
+            plate = Image.new('RGBA', (b.width + mid.width + rr.width + 30, b.height + 10), (255, 255, 255, 236))
+            x0 = 15
+            for im in (b, mid, rr):
+                plate.alpha_composite(im, (x0, (plate.height - im.height) // 2))
+                x0 += im.width
+            put(c, plate, 540, 170, 1.0, kk)
         lab_ = None
     s = score_at(t)
-    log = f'> ТЕЛЕГА {s[0]} : {s[1]} ЖИЗНЬ' + (f'   · {lab_}' if lab_ else '')
+    log = f'> ТЕЛЕГА {s[0]} : {s[1]} ЖИЗНЬ' + (f'  · {lab_}' if lab_ else '')
     last = max([REVEAL[r] + 0.3 for r in range(5) if t >= REVEAL[r] + 0.3] or [-9])
     kb = 1 + 0.18 * fx.bump(t - last, 3.0, 6.0) if last > 0 else 1.0
-    text(c, log, 28, 'Heavy', GREEN, 540, 236, a, kb, mono=True)
+    text(c, log, 28, 'Heavy', GREEN, 540, 232, a, kb, mono=True)
 
 
 def draw_prices(c, t):
@@ -621,17 +910,17 @@ def draw_prices(c, t):
         win = WIN[r] == side
         s = GIFT_RUB[r] if side == 0 else THING_RUB[r]
         im = pill(s, 40 if win else 34, SIDE_COL[side], (255, 255, 255))
-        put(c, im, ITEM_POS[side][0], 1468, max(0.01, k), a * (1.0 if win else 0.7))
+        put(c, im, ch.HAND_POS[side][0], 1468, max(0.01, k), a * (1.0 if win else 0.75))
         sub = 'в телеге' if side == 0 else ROUNDS[r][6]
-        text(c, sub, 26, 'Semibold', MUTED, ITEM_POS[side][0], 1524, a * cl(k))
+        text(c, sub, 26, 'Semibold', MUTED, ch.HAND_POS[side][0], 1524, a * cl(k))
         if win:
             kb = spr(REVEAL[r] + 0.2, t, 2.2, 0.45)
-            put(c, pill(BADGE[r], 44, INK, (255, 255, 255)), ITEM_POS[side][0] + (110 if side == 0 else -110), 850,
+            put(c, pill(BADGE[r], 44, INK, (255, 255, 255)), ch.HAND_POS[side][0] + (120 if side == 0 else -120), 860,
                 max(0.01, kb), a * cl(kb * 2), rot=-0.08 if side == 0 else 0.08)
 
 
 def draw_timer(c, t):
-    """Terminal countdown under the hands: > 00:05 … 00:01, a tick a second; the last second red."""
+    """Terminal countdown under the hands: > ВРЕМЯ 00:05 … 00:01, a tick a second; the last second red."""
     for r in range(5):
         t0 = TIMER0[r]
         if t0 - 0.2 <= t < REVEAL[r] + 0.35:
@@ -641,12 +930,12 @@ def draw_timer(c, t):
             tick = REVEAL[r] - n
             kk = 1 + 0.16 * fx.bump(t - tick, 3.0, 8.0) if t >= tick else 1.0
             cur = '_' if int(t * 3) % 2 else ' '
-            text(c, f'> ВРЕМЯ 00:0{min(5, n)}{cur}', 40, 'Heavy', col, 540, 1600, a, kk, mono=True)
+            text(c, f'> ВРЕМЯ 00:0{min(5, n)}{cur}', 40, 'Heavy', col, 540, 1596, a, kk, mono=True)
             frac = cl((REVEAL[r] - t) / TIMER)
             x0, x1 = 300, 780
-            fx.over(c, fx.draw_rgba((x0 - 4, 1628, x1 + 4, 1642), lambda d, m, S: (
-                d.rectangle([*m(x0, 1632), *m(x1, 1638)], fill=(220, 226, 222, 255)),
-                d.rectangle([*m(x0, 1632), *m(x0 + (x1 - x0) * frac, 1638)], fill=col + (255,)))), a)
+            fx.over(c, fx.draw_rgba((x0 - 4, 1630, x1 + 4, 1646), lambda d, m, S: (
+                d.rectangle([*m(x0, 1634), *m(x1, 1640)], fill=(220, 226, 222, 255)),
+                d.rectangle([*m(x0, 1634), *m(x0 + (x1 - x0) * frac, 1640)], fill=col + (255,)))), a)
 
 
 def draw_teaser(c, t, ad=False, ad_a=1.0):
@@ -655,49 +944,72 @@ def draw_teaser(c, t, ad=False, ad_a=1.0):
         return
     k = 1.0 if ad else spr(t0, t, 2.4, 0.5)
     a = ad_a if ad else cl(k * 2) * (1 - sm(ROUND_IN[3], ROUND_IN[3] + 0.3, t))
-    put(c, pill(TEASER, 34, RED, (255, 255, 255), mono=True), 540, 108 if ad else 1600, max(0.01, k), a)
+    put(c, pill(TEASER, 34, RED, (255, 255, 255), mono=True), 540, 108 if ad else 1596, max(0.01, k), a)
+
+
+@functools.lru_cache(4)
+def capsule(color):
+    """A pill like in the film: two-tone glossy capsule."""
+    w, h, S = 120, 54, 3
+    im = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([2, 2, w * S - 3, h * S - 3], h * S // 2, fill=color + (255,))
+    d.rounded_rectangle([14 * S, 8 * S, w * S - 22 * S, 18 * S], 6 * S, fill=(255, 255, 255, 120))
+    return im.resize((w, h), Image.LANCZOS)
 
 
 def draw_outro(c, t):
     if t < OUTRO + 0.3:
         return
-    # a blue and a red pill in the open palms — the choice
-    k = sm(OUTRO + 0.5, OUTRO + 1.1, t) * (1 - sm(E['dissolve'] - 0.55, E['dissolve'] - 0.4, t))
+    # the choice: a blue and a red pill appear on the open palms, lying on them (not floating)
+    k = sm(OUTRO + 0.5, OUTRO + 1.1, t) * (1 - sm(E['dissolve'] - 0.55, E['dissolve'] - 0.42, t))
     for side in (0, 1):
-        x, y = ch.HAND_POS[side][0], ch.HAND_POS[side][1] - 40
-        im = pill('    ', 30, SIDE_COL[side], SIDE_COL[side], padx=34)
-        put(c, halo(SIDE_COL[side], 120), x, y, 1.0, k)
-        put(c, matrix.code_mix(im, k, t, seed=41 + side, cell=10), x, y, 1.0, 1.0, rot=0.5 if side == 0 else -0.5)
+        x, y = palm_point(side, t)
+        put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0, k)
+        put(c, matrix.code_mix(capsule(SIDE_COL[side]), k, t, seed=41 + side, cell=8), x, y - 26, 1.0, 1.0,
+            rot=0.35 if side == 0 else -0.35)
     kc = spr(OUTRO + 2.2, t, 2.0, 0.5)
-    put(c, pill('ПИШИ В КОММЕНТАРИЯХ ↓', 38, INK, (255, 255, 255)), 540, 1600, max(0.01, kc), cl(kc * 2))
+    put(c, pill('ПИШИ В КОММЕНТАРИЯХ ↓', 38, INK, (255, 255, 255)), 540, 1596, max(0.01, kc), cl(kc * 2))
 
 
 # ------------------------------------------------------------------ captions
 CAP = captions.Captions([captions.phrase(WORDS[k], accent=(), end=END[k] + 0.25) for k in range(1, len(LINES)) if WORDS[k]],
-                        width=780, top=1680, size=44, weight='Semibold', max_lines=2, color=INK,
+                        width=820, top=1680, size=46, weight='Bold', max_lines=2, color=INK,
                         accent_color=GREEN, shadow=False, fade_out=0.2, rise=8)
 
 
-# ------------------------------------------------------------------ the ad scene (author: agents above, Morpheus below)
+def caption_layer(c, t):
+    lay = CAP.layer(t)
+    if lay is None:
+        return
+    im, x0, y0 = lay
+    bb = im.getbbox()
+    if bb is None:
+        return
+    pad = 16
+    x1, y1, x2, y2 = x0 + bb[0] - pad, y0 + bb[1] - pad // 2, x0 + bb[2] + pad, y0 + bb[3] + pad // 2
+    al = np.asarray(im)[..., 3].max() / 255
+    fx.over(c, fx.draw_rgba((x1, y1, x2, y2), lambda d, m, S: d.rounded_rectangle([*m(x1, y1), *m(x2, y2)], 18 * S,
+            fill=(255, 255, 255, 236))), al)
+    fx.over(c, lay)
+
+
+# ------------------------------------------------------------------ the ad scene (agents above, Morpheus below)
 AGENTS = [(200.0, 425.0, 'down_right'), (540.0, 400.0, 'down'), (880.0, 425.0, 'down_left')]
 AGENT_SC = 0.5
 
 
 def draw_ad_scene(c, t_content, u, bt, B, header_a=0.0):
-    """u: seconds since the break began (output), bt: banner time. Morpheus slides below the banner and looks up;
-    agents assemble above it from code, look around, then all look down at him; they dissolve as the banner ends."""
     total = 2 * banner.RAMP + banner.PRE + B + banner.POST
     m = fx.smooth((u - 0.05) / 0.75) * (1 - fx.smooth((u - (total - 0.85)) / 0.75))
     head_pos = (540.0, lerp(ch.HEAD_POS[1], 1445.0, m))
     hands = ((lerp(ch.HAND_POS[0][0], 372.0, m), lerp(ch.HAND_POS[0][1], 1712.0, m)),
              (lerp(ch.HAND_POS[1][0], 708.0, m), lerp(ch.HAND_POS[1][1], 1712.0, m)))
     sc = lerp(1.0, 0.6, m)
-    faces = [(0.0, 'calm'), (t_content + 0.001, 'calm')]
-    if bt > 0.9 and bt < B + 0.2:
-        faces = [(0.0, 'look_up')]
+    faces = [(0.0, 'look_up')] if 0.9 < bt < B + 0.2 else [(0.0, 'calm3')]
     ch.draw_head(c, t_content + u, faces, (), pos=head_pos, extra_sc=sc)
     for side in (0, 1):
-        ch.draw_hand(c, t_content + u, side, [(0.0, 'fist')], (), pos=hands[side], extra_sc=sc)
+        draw_hand(c, t_content + u, side, pos=hands[side], sc=sc, force_fist=True)
     for j, (x, y, look) in enumerate(AGENTS):
         k = cl((bt - 0.25 - 0.3 * j) / 0.6) * (1 - cl((bt - (B - 0.55 + 0.15 * j)) / 0.5))
         if k <= 0.003:
@@ -736,9 +1048,12 @@ BR = AdBreaks([AD_STOP], cy=H / 2)
 
 def render_at(t, ad=None, raw=False):
     c = page(t)
-    green_rain(c, t, rain_env(t))
+    green_flood(c, t, flood_env(t))
     if ad is None:
+        bg_motif(c, t)
         draw_morpheus(c, t)
+        draw_halos(c, t)
+        draw_hands(c, t)
         draw_items(c, t)
         draw_header(c, t)
         draw_hook(c, t)
@@ -746,11 +1061,11 @@ def render_at(t, ad=None, raw=False):
         draw_timer(c, t)
         draw_teaser(c, t)
         draw_outro(c, t)
-        fx.over(c, CAP.layer(t))
+        caption_layer(c, t)
     else:
         u, bt, B = ad
         fade = 1 - fx.smooth(u / 0.4) * (1 - fx.smooth((u - (2 * banner.RAMP + banner.PRE + B + banner.POST - 0.4)) / 0.4))
-        if fade > 0.01:                     # the header and score fade out under the ad and come back
+        if fade > 0.01:
             tmp = c.copy()
             draw_header(tmp, t)
             c[:] = c * (1 - fade) + tmp * fade

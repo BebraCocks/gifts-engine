@@ -55,14 +55,21 @@ def ambience_layer(n, kit):
     return a
 
 
+MUSIC = 'tomfoolery-1-spongebob-squarepants'   # одна музыка на весь ролик (автор, 2026-11-13)
+MUSIC_LEN = 20.448
+
+
 def music_layer(n):
+    """Один трек. Клип короткий (20,4 с), поэтому он начинается заново на переходах-пузырях раундов 2 и 3 —
+    стык прячется в пузырях; внутри длинной части — повтор с перекрытием 0,8 с."""
     m = np.zeros((n, 2))
-    ext(m, 'tomfoolery-1-spongebob-squarepants', 0.0, MUSIC_LUFS, dur=TRANSITIONS[1] + 0.4, fade_in=0.01, fade_out=0.8)
-    ext(m, 'hawaiian-cocktail-spongebob-squarepants', TRANSITIONS[1] - 0.2, MUSIC_LUFS,
-        dur=TRANSITIONS[2] - TRANSITIONS[1] + 0.6, fade_in=0.4, fade_out=0.8)
-    ext(m, 'rakehornpipe-spongebob-squarepants', TRANSITIONS[2] - 0.2, MUSIC_LUFS,
-        dur=AT['P7'] - TRANSITIONS[2] + 0.4, fade_in=0.4, fade_out=0.5)
-    ext(m, 'krusty-krab-theme-song', AT['N8'] - 0.2, MUSIC_LUFS - 1, dur=DUR - AT['N8'] + 0.2, fade_in=0.6, fade_out=0.6)
+    starts = [0.0, TRANSITIONS[1] - 0.2, TRANSITIONS[2] - 0.2, DUR]
+    for k in range(3):
+        t, end = starts[k], starts[k + 1] + (0.6 if k < 2 else 0.0)
+        while t < end - 0.1:
+            d = min(MUSIC_LEN, end - t)
+            ext(m, MUSIC, t, MUSIC_LUFS, dur=d, fade_in=0.01 if t == 0 else 0.4, fade_out=0.8 if d < MUSIC_LEN else 0.8)
+            t += MUSIC_LEN - 0.8
     return m
 
 

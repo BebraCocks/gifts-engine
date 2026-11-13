@@ -21,7 +21,7 @@ EXT = HERE / 'input' / 'ext'
 # Интегральная громкость файлов (ffmpeg ebur128, 2026-11-13) — чтобы задавать уровень в LUFS, а не «на глаз».
 LUFS = {'tomfoolery-1-spongebob-squarepants': -14.1, 'hawaiian-cocktail-spongebob-squarepants': -11.6,
         'rakehornpipe-spongebob-squarepants': -11.8, 'krusty-krab-theme-song': -15.2, 'dramatic-cue-a': -20.0,
-        'spongebob-bubble-transition': -28.7, 'crowd-talking': -17.2, 'crowd-murmur-loop': -33.7}
+        'spongebob-bubble-transition': -28.7, 'tomfoolery-full': -23.0, 'crowd-talking': -17.2, 'crowd-murmur-loop': -33.7}
 MUSIC_LUFS = -29.0
 AMB_LUFS = -33.0         # фон посетителей до фильтра
 MASTER_DB = 1.5          # итог около −16 LUFS, пик ниже −0,5 dBFS
@@ -55,30 +55,14 @@ def ambience_layer(n, kit):
     return a
 
 
-MUSIC = 'tomfoolery-1-spongebob-squarepants'   # только начальная мелодия клипа (автор, 2026-11-13)
-LOOP = (0.0, 2.92)        # первый такт (4 доли по 0,73 с); дальше в клипе другие мелодии — их не берём
-TAIL = (2.92, 3.50)       # завершающий удар этой мелодии — в самом конце ролика
+MUSIC = 'tomfoolery-full'   # Tomfoolery (APM, David Snell) целиком, archive.org tvtunes_19892 (автор, 2026-11-13)
+MUSIC_START = 0.46          # с этого места трек совпадает с началом клипа myinstants (корреляция 0,32 при фоне 0,005)
 
 
 def music_layer(n):
-    """Одна мелодия: первый такт клипа повторяется встык (кроссфейд 20 мс) до конца, в финале — её удар."""
+    """Одна мелодия на весь ролик, без зацикливания: полная версия трека от начала, в конце — затухание."""
     m = np.zeros((n, 2))
-    g = 10 ** ((MUSIC_LUFS - LUFS[MUSIC]) / 20)
-    x = sound.load_stereo(EXT / f'{MUSIC}.mp3', SR, start=LOOP[0], dur=LOOP[1] - LOOP[0]) * g
-    tail = sound.load_stereo(EXT / f'{MUSIC}.mp3', SR, start=TAIL[0], dur=TAIL[1] - TAIL[0]) * g
-    xf = int(0.02 * SR)
-    ramp = np.linspace(0, 1, xf)[:, None]
-    end = n - len(tail)
-    i = 0
-    while i < end:
-        seg = x[:min(len(x), end - i)].copy()
-        if i:
-            seg[:xf] *= ramp
-        if len(seg) == len(x):
-            seg[-xf:] *= 1 - ramp
-        m[i:i + len(seg)] += seg
-        i += len(x) - xf
-    m[end:end + len(tail)] += tail
+    ext(m, MUSIC, 0.0, MUSIC_LUFS, start=MUSIC_START, dur=DUR, fade_in=0.01, fade_out=1.2)
     return m
 
 

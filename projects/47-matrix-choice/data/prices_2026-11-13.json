@@ -1,0 +1,23 @@
+{
+ "_note": "Цены для 47-matrix-choice. Подарки: Fragment, коллекция, «в продаже», сортировка по цене, нижний лот (модель с анимацией в api.changes.tg; для Jelly Bunny и Hypno Lollipop — нижний по цене лот с зелёной моделью, цена та же), проверено 2026-11-13 20:00–20:25 UTC. Курс 92 ₽ за TON (tonapi.io 91,91 ₽ в 20:15 UTC). Вещи: страницы товаров «Детский мир» 2026-11-13 20:15–20:25 UTC, цена в заголовке страницы. Перед сборкой перепроверить: цены подарков меняются.",
+ "ton_rub": 92.0,
+ "gifts": [
+  {"gift": "Hypno Lollipop", "model": "Greenwich", "rarity": "1.3%", "ton": 6, "rub": 552, "lot": "https://fragment.com/gift/hypnolollipop-51103"},
+  {"gift": "Jelly Bunny", "model": "Avocado Awe", "rarity": "0.5%", "ton": 11, "rub": 1012, "lot": "https://fragment.com/gift/jellybunny-70879"},
+  {"gift": "Crystal Ball", "model": "Fatal Error", "rarity": "3%", "ton": 15, "rub": 1380, "lot": "https://fragment.com/gift/crystalball-23699"},
+  {"gift": "Genie Lamp", "model": "Lime Art", "rarity": "3%", "ton": 44, "rub": 4048, "lot": "https://fragment.com/gift/genielamp-5003"},
+  {"gift": "Durov's Glasses", "model": "Crystal Sight", "rarity": "3%", "ton": 150, "rub": 13800, "lot": "https://fragment.com/gift/durovsglasses-2508"}
+ ],
+ "things": [
+  {"name": "Футбольный мяч Yofun, 21 см", "rub": 399, "src": "https://www.detmir.ru/product/index/id/6639500/"},
+  {"name": "Санки NiKA kids «Ветерок»", "rub": 1789, "src": "https://www.detmir.ru/product/index/id/6549667/"},
+  {"name": "Палатка BabyGo «Для малышей»", "rub": 699, "src": "https://www.detmir.ru/product/index/id/6631375/"},
+  {"name": "Ель искусственная «Лесная» 120 см, Зимнее волшебство", "rub": 4165, "src": "https://www.detmir.ru/product/index/id/6579513/"},
+  {"name": "Трёхколёсный велосипед Kreiss 10\", жёлтый", "rub": 1499, "src": "https://www.detmir.ru/product/index/id/7034975/"}
+ ],
+ "rejected": [
+  "Jelly Bunny Spreadable (тоже 11 TON) — розовое желе не читается как кролик; Avocado Awe — зелёный, в тон «Матрице».",
+  "Durov's Glasses против электромобиля Kreiss 16 999 ₽ — разница всего ×1,2, слабый финал.",
+  "Spy Agaric (8 TON) — третий подарок дешевле 1 000 ₽ подряд; Genie Lamp даёт раунд «почти поровну»."
+ ]
+}

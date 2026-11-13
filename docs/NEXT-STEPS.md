@@ -488,6 +488,6 @@ Webhook Drive не принял 45 МБ (base64 > лимита) — держит
 
 ## 2026-11-13 · 47-matrix-choice — собрано (v1/v2)
 
-`renders/47-matrix-choice/matrix_choice_v2.mp4` (69,97 с с RubUp, загружен в Drive «TikTok»;
+`renders/47-matrix-choice/matrix_choice_v4.mp4` — актуальная (v3 в облегчённом виде, Drive «TikTok»); ранее v2 (69,97 с с RubUp;
 v1 — тот же ролик крупнее, 78 МБ). Пары: перстень/шахматы, часы/дрель, кольцо/кактус, очки Дурова/телескоп,
 кепка Дурова/бензопила (3:2). Ждём отзыв автора. Трек автора в Git нет (`input/track_full.wav`, авторская музыка).

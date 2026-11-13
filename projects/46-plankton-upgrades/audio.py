@@ -12,7 +12,7 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, TAKES, HAS_NARRATION, AT, END_OF
-from events import AD_STOP, SLIDE, TRANSITIONS, ROUNDS, PLANKTON_PICK, FAIL
+from events import AD_STOP, SLIDE, TRANSITIONS, ROUNDS, PLANKTON_PICK, FAIL, KAREN
 from script import TIMER
 
 SR = 48000
@@ -23,7 +23,7 @@ LUFS = {'tomfoolery-1-spongebob-squarepants': -14.1, 'hawaiian-cocktail-spongebo
         'rakehornpipe-spongebob-squarepants': -11.8, 'krusty-krab-theme-song': -15.2, 'dramatic-cue-a': -20.0,
         'spongebob-bubble-transition': -28.7, 'tomfoolery-full': -23.0, 'crowd-talking': -17.2, 'crowd-murmur-loop': -33.7}
 MUSIC_LUFS = -29.0
-AMB_LUFS = -33.0         # фон посетителей до фильтра
+AMB_DB = -44.0           # гул лампы
 MASTER_DB = 1.5          # итог около −16 LUFS, пик ниже −0,5 dBFS
 
 
@@ -39,20 +39,15 @@ def ext(buf, name, t, level_lufs, start=0.0, dur=None, fade_in=0.05, fade_out=0.
 
 
 def ambience_layer(n, kit):
-    """Фон Красти Крабс: гул посетителей. Через «подводный» фильтр (низы до 700 Гц) —
-    слов не разобрать (автор, 2026-11-13). Изредка касса справа."""
-    a = np.zeros((n, 2))
-    t, k = 0.0, 0
-    while t < DUR:                                   # два клипа по очереди, стыки 0,8 с
-        name = ('crowd-talking', 'crowd-murmur-loop')[k % 2]
-        ext(a, name, max(0.0, t - 0.8), AMB_LUFS, fade_in=0.8, fade_out=0.8)
-        t += (10.03, 7.31)[k % 2] - 0.8
-        k += 1
-    a = sound.underwater(a, SR, fc=700.0)
-    a[:, 0] *= 0.8                                   # чуть правее: касса справа
-    for t in (3.6, 17.2, 29.5, 45.5):
-        kit.add(a, 'coin', t, gain_db=-30, pan=0.6, label='фон: касса')
-    return a
+    """«Помойное ведро» пустое: вместо посетителей — тихий гул лампы (автор, 2026-11-13). В паке Botanica гула
+    электрики нет, поэтому он синтезирован: 100 Гц с гармониками и лёгкой дрожью."""
+    t = np.arange(n) / SR
+    hum = (np.sin(2 * np.pi * 100 * t) + 0.5 * np.sin(2 * np.pi * 200 * t + 0.4) + 0.25 * np.sin(2 * np.pi * 300 * t + 1.1))
+    hum *= (1 + 0.15 * np.sin(2 * np.pi * 0.7 * t)) * 10 ** (AMB_DB / 20)
+    fade = int(0.5 * SR)
+    hum[:fade] *= np.linspace(0, 1, fade)
+    hum[-fade:] *= np.linspace(1, 0, fade)
+    return np.repeat(hum[:, None], 2, 1)
 
 
 MUSIC = 'tomfoolery-full'   # Tomfoolery (APM, David Snell) целиком, archive.org tvtunes_19892 (автор, 2026-11-13)
@@ -97,7 +92,11 @@ def sfx_layer(n, kit):
         kit.add(fx, 'cartoon-hit', t, gain_db=-17, label=f'Планктон трясётся от злости ({k + 1})')
     ext(fx, 'dramatic-cue-a', AT['P7'] + 0.9, -28.0, start=0.19, dur=4.6, fade_out=0.6)   # «дан-дан-дан» под «Я ещё вернусь»
     kit.add(fx, 'impact', AT['N8'] - 0.05, gain_db=-17, label='итоговый счёт крупно')
-    kit.add(fx, 'whoosh-short', DUR - 0.9, gain_db=-17, label='Планктон уходит за край')
+    kit.add(fx, 'whoosh-short', END_OF['P7'] + 0.1, gain_db=-17, label='Планктон убегает за край')
+    # Карен в кепке Дурова проезжает на заднем плане: тихо, слева направо
+    kit.add(fx, 'whoosh-organic', KAREN[0] + 0.3, gain_db=-24, pan=-0.6, label='Карен едет (слева)')
+    kit.add(fx, 'scan', KAREN[0] + 1.6, gain_db=-27, pan=0.0, label='Карен: бип')
+    kit.add(fx, 'scan', KAREN[0] + 2.7, gain_db=-28, pan=0.6, label='Карен: бип (справа)')
     return fx
 
 
@@ -117,7 +116,6 @@ def make_mix(kit):
     duck = np.clip(env / (np.percentile(env, 95) * 0.5 + 1e-9), 0, 1)
     fx *= (1 - 0.45 * duck)[:, None]
     music *= (1 - 0.5 * duck)[:, None]
-    amb *= (1 - 0.35 * duck)[:, None]
     i7 = int((AT['P7'] + 0.9) * SR)                    # под «дан-дан-дан» музыка уходит
     music[i7:int(AT['N8'] * SR) - int(0.2 * SR)] *= 0.15
     return voice + fx + music + amb, fx, voice

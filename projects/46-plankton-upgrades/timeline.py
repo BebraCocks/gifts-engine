@@ -21,7 +21,7 @@ for cid, src, a, b, pause, text, speed, *_ in SEQ:
         d = (b - a) / speed
     AT[cid] = cursor
     ON.append(cursor); END.append(cursor + d); IDS.append(cid)
-    if cid in ('N2', 'N6'):
+    if cid in ('N2', 'N4'):
         question_end = cursor + d
     if pause == 'timer':
         pause = max(0.25, question_end + TIMER - (cursor + d))

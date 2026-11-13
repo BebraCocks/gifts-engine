@@ -12,7 +12,7 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, TAKES, HAS_NARRATION, AT, END_OF
-from events import AD_STOP, SLIDE, TRANSITIONS, ROUNDS, PLANKTON_PICK
+from events import AD_STOP, SLIDE, TRANSITIONS, ROUNDS, PLANKTON_PICK, FAIL
 from script import TIMER
 
 SR = 48000
@@ -39,8 +39,8 @@ def ext(buf, name, t, level_lufs, start=0.0, dur=None, fade_in=0.05, fade_out=0.
 
 
 def ambience_layer(n, kit):
-    """Фон Красти Крабс: гул посетителей у кассы Сквидварда. Через «подводный» фильтр (низы до 700 Гц) —
-    слов не разобрать (автор, 2026-11-13). Изредка касса — справа, где лодка Сквидварда."""
+    """Фон Красти Крабс: гул посетителей. Через «подводный» фильтр (низы до 700 Гц) —
+    слов не разобрать (автор, 2026-11-13). Изредка касса справа."""
     a = np.zeros((n, 2))
     t, k = 0.0, 0
     while t < DUR:                                   # два клипа по очереди, стыки 0,8 с
@@ -51,7 +51,7 @@ def ambience_layer(n, kit):
     a = sound.underwater(a, SR, fc=700.0)
     a[:, 0] *= 0.8                                   # чуть правее: касса справа
     for t in (3.6, 17.2, 29.5, 45.5):
-        kit.add(a, 'coin', t, gain_db=-30, pan=0.6, label='фон: касса Сквидварда')
+        kit.add(a, 'coin', t, gain_db=-30, pan=0.6, label='фон: касса')
     return a
 
 
@@ -93,7 +93,8 @@ def sfx_layer(n, kit):
     kit.add(fx, 'cartoon-move', AD_STOP - SLIDE, gain_db=-17, label='Планктон уезжает вниз (перед RubUp)')
     kit.add(fx, 'cartoon-move', AD_STOP + 0.02, gain_db=-17, label='Планктон возвращается (после RubUp)')
     # Реакции
-    kit.add(fx, 'cartoon-hit', AT['P3'], gain_db=-17, label='Планктон трясётся от злости')
+    for k, t in enumerate(FAIL[:2]):
+        kit.add(fx, 'cartoon-hit', t, gain_db=-17, label=f'Планктон трясётся от злости ({k + 1})')
     ext(fx, 'dramatic-cue-a', AT['P7'] + 0.9, -28.0, start=0.19, dur=4.6, fade_out=0.6)   # «дан-дан-дан» под «Я ещё вернусь»
     kit.add(fx, 'impact', AT['N8'] - 0.05, gain_db=-17, label='итоговый счёт крупно')
     kit.add(fx, 'whoosh-short', DUR - 0.9, gain_db=-17, label='Планктон уходит за край')

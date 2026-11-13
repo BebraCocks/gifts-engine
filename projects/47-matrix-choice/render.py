@@ -21,6 +21,7 @@ import lottie
 import matrix
 import character as ch
 import photos
+import lipsync
 from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TEASER, TIMER
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
@@ -118,18 +119,45 @@ def pill(s, size, fill_, tcol, mono=False, padx=28):
 
 
 @functools.lru_cache(16)
-def halo(color, r=220):
-    """Bright coloured aura: saturated glow + a crisp pill-coloured ring (author: «красный и синий ореол»)."""
+def halo(color, r=200):
+    """A soft, quiet glow behind the item (author: «не такой яркий… просто небольшое сияние, свечение»)."""
     n = 2 * r
     yy, xx = np.mgrid[:n, :n]
     d = np.hypot(xx - r + 0.5, yy - r + 0.5) / r
-    glow = np.clip(1 - d, 0, 1) ** 1.25 * 0.78
-    rim = np.clip(1 - np.abs(d - 0.80) / 0.03, 0, 1) * 0.95
-    outer = np.clip(1 - np.abs(d - 0.80) / 0.12, 0, 1) ** 2 * 0.45
+    a = np.clip(1 - d, 0, 1) ** 2.2 * 0.42
     im = np.zeros((n, n, 4), np.uint8)
     im[..., :3] = color
-    im[..., 3] = (np.clip(glow + rim + outer, 0, 1) * 255).astype(np.uint8)
-    return Image.fromarray(im).filter(ImageFilter.GaussianBlur(2))
+    im[..., 3] = (np.clip(a, 0, 1) * 255).astype(np.uint8)
+    return Image.fromarray(im).filter(ImageFilter.GaussianBlur(8))
+
+
+@functools.lru_cache(8)
+def glow_glyph(ch_, size=34):
+    """A white 0/1 with a bright lime glow — stands out from the green rain (smoke, sparks, gravity)."""
+    f = ImageFont.truetype(MONO, size)
+    n = size * 2
+    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((n / 2, n / 2), ch_, font=f, fill=(150, 255, 90, 255), anchor='mm')
+    glow = im.filter(ImageFilter.GaussianBlur(size * 0.22))
+    g = np.asarray(glow).astype(np.float32)
+    g[..., 3] = np.clip(g[..., 3] * 2.2, 0, 255)
+    out = Image.fromarray(g.astype(np.uint8))
+    core = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    ImageDraw.Draw(core).text((n / 2, n / 2), ch_, font=f, fill=(255, 255, 255, 255), anchor='mm',
+                              stroke_width=3, stroke_fill=(0, 90, 40, 255))
+    out.alpha_composite(core)
+    return out
+
+
+@functools.lru_cache(8)
+def wisp(r=46, col=(20, 150, 70)):
+    n = 2 * r
+    yy, xx = np.mgrid[:n, :n]
+    d = np.hypot(xx - r + 0.5, yy - r + 0.5) / r
+    im = np.zeros((n, n, 4), np.uint8)
+    im[..., :3] = col
+    im[..., 3] = (np.clip(1 - d, 0, 1) ** 1.6 * 230).astype(np.uint8)
+    return Image.fromarray(im).filter(ImageFilter.GaussianBlur(4))
 
 
 @functools.lru_cache(16)
@@ -265,8 +293,7 @@ def motif_gravity(c, t, a):
         rr = 520 * (1 - life) ** 1.3 + 30
         q = 2 * math.pi * base * 7 + life * 5.0
         x, y = cx + math.cos(q) * rr, cy + math.sin(q) * rr * 0.85
-        text(c, '01'[j % 2], 30, 'Heavy', (0, 150, 60), x, y, a * k * cl(life * 4) * (0.4 + 0.6 * life), mono=True,
-             plate=False, sc=0.6 + 0.6 * (1 - life))
+        put(c, glow_glyph('01'[j % 2]), x, y, 0.5 + 0.6 * (1 - life), a * k * cl(life * 4) * (0.4 + 0.6 * life))
 
 
 def motif_stars(c, t, a):
@@ -408,10 +435,13 @@ def _faces():
         else:
             f.append((w0, 'look_left_down' if side == 0 else 'look_right'))
         f.append((w1, 'calm3'))
-        f.append((REVEAL[r] + 0.12, 'over_glasses' if r == 4 else ('knowing' if WIN[r] == 0 else 'brows_up')))
+        if r == 0:
+            f.append((ON[3] - 0.1, 'knowing'))
+        else:
+            f.append((REVEAL[r] + 0.12, 'over_glasses' if r == 4 else ('knowing' if WIN[r] == 0 else 'brows_up')))
         if r == 0:                                                   # turns to the chess and blows it away
-            f += [(LOSE_T[0] - 0.22, 'after_blow_right'), (LOSE_T[0] - 0.05, 'blow_right'),
-                  (LOSE_T[0] + 0.55, 'after_blow_right'), (LOSE_T[0] + 1.0, 'calm3')]
+            f += [(LOSE_T[0] - 0.12, 'after_blow_right'), (LOSE_T[0] - 0.02, 'blow_right'),
+                  (LOSE_T[0] + 0.55, 'after_blow_right')]
         elif r == 1:
             f += [(LOSE_T[1] - 0.1, 'look_left_down'), (LOSE_T[1] + CRUSH['level'][1], 'calm3')]
         elif r == 2:
@@ -421,7 +451,65 @@ def _faces():
     f.append((OUTRO, 'calm3'))
     f.append((OUTRO + 1.6, 'knowing'))
     f.append((E['dissolve'] - 0.9, 'over_glasses'))
-    return sorted(f)
+    out = []
+    for t0, name in sorted(f):                      # a turned head while speaking would freeze the lips: wait
+        if name not in FRONTAL:
+            for k in range(len(LINES)):
+                if ON[k] - 0.05 <= t0 < END[k]:
+                    t0 = END[k] + 0.05
+        out.append((t0, name))
+    out.sort()
+    for k in range(len(LINES)):                     # every line starts on a frontal face
+        cur = [n for t0, n in out if t0 <= ON[k] - 0.1]
+        if cur and cur[-1] not in FRONTAL:
+            out.append((ON[k] - 0.12, 'calm3'))
+    return sorted(out)
+
+
+FRONTAL = {'calm3', 'knowing', 'brows_up', 'over_glasses'}
+MOUTH_C = (0.5, 0.775)        # mouth centre in a frontal head (fractions of the sprite)
+
+
+@functools.lru_cache(64)
+def mouth_patch(face, vis):
+    """The viseme's mouth + jaw, scaled onto `face` (same width, tops aligned), colour-matched, feathered ellipse."""
+    F, _ = ch.head(face)
+    V, _ = ch.head(vis)
+    s_ = F.width / V.width
+    V2 = V.resize((F.width, round(V.height * s_)), Image.LANCZOS)
+    can = Image.new('RGBA', F.size, (0, 0, 0, 0))
+    can.alpha_composite(V2.crop((0, 0, F.width, min(F.height + 30, V2.height))), (0, 0))
+    a = np.asarray(can).astype(np.float32)
+    f = np.asarray(F).astype(np.float32)
+    h, w = F.height, F.width
+    yy, xx = np.mgrid[:h, :w]
+    e = ((xx - MOUTH_C[0] * w) / (0.21 * w)) ** 2 + ((yy - MOUTH_C[1] * h) / (0.13 * h)) ** 2
+    m = np.clip((1.0 - e) / 0.45, 0, 1)
+    ring = (e > 0.6) & (e < 1.0) & (a[..., 3] > 200) & (f[..., 3] > 200)
+    if ring.sum() > 50:                                   # match skin tone at the seam
+        gain = f[ring][:, :3].mean(0) / (a[ring][:, :3].mean(0) + 1e-6)
+        a[..., :3] = np.clip(a[..., :3] * gain, 0, 255)
+    a[..., 3] = a[..., 3] / 255 * m * (f[..., 3] / 255) * 255
+    return Image.fromarray(a.astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6))
+
+
+def draw_head_ls(c, t, pos=None, extra_sc=1.0):
+    """Morpheus' head with lip sync: the face rig (ch.draw_head) + the viseme's mouth on frontal faces."""
+    vis, openness = lipsync.mouth(t)
+    pos = pos or ch.HEAD_POS
+    p2 = (pos[0], pos[1] + 3.0 * openness)               # the jaw moves the head a hair
+    ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS, pos=p2, extra_sc=extra_sc)
+    if not vis:
+        return
+    dx, dy, rot, sc = ch.head_motion(t, HEAD_G)
+    items, t_sw = ch._mix(FACES, t)
+    pop = 1 + 0.025 * fx.bump(t - t_sw, 2.6, 6.0)
+    for face, fw in items:
+        if face not in FRONTAL or fw <= 0.01:
+            continue
+        _, s = ch.head(face)
+        for v, vw in vis:
+            put(c, mouth_patch(face, 'v_' + v), p2[0] + dx, p2[1] + dy, s * sc * pop * extra_sc, fw * vw, rot)
 
 
 FACES = _faces()
@@ -456,13 +544,13 @@ def draw_morpheus(c, t):
                 im = Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8))
                 fx.over(c, fx.warp(im, px + dx, py + dy, 1.0))
             elif key == 'head':
-                ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS)
+                draw_head_ls(c, t)
             else:
                 draw_hand(c, t, int(key[-1]))
         return
     k = 1.0 if t < E['dissolve'] else max(0.0, 1 - (t - E['dissolve']) / 1.1)
     if k >= 0.999:
-        ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS)
+        draw_head_ls(c, t)
         return
     im, s = ch.head('over_glasses')
     put(c, matrix.code_mix(im, k, t, seed=11, cell=14, fall=140), ch.HEAD_POS[0], ch.HEAD_POS[1], s)
@@ -558,14 +646,12 @@ def trick(r, t, im, cx, cy):
     sc, rot, extra, anchor = 1.0, 0.0, [], None
     if not 0 <= u <= 1:
         return cx, cy, sc, rot, extra, anchor
-    if r == 0:                     # signet ring: tossed, tumbles twice in the air, caught on the palm, settles
-        dy, rot = toss(u, 330, 2, 0.62)
-        cy += dy
-        if u > 0.62:
-            q = (u - 0.62) * (w1 - w0)
-            cy += 26 * fx.bump(q, 2.6, 5.5)                   # lands: small bounce
-            rot = 0.18 * fx.bump(q, 2.0, 4.0)                 # and rocks to rest
-        extra.append(('motion', (u, dy, rot)))
+    if r == 0:                     # genie lamp: rubbed — it sways, then green code smoke curls up from the spout
+        sway = math.sin(math.pi * cl(u / 0.45))
+        rot = 0.10 * math.sin(u * 2 * math.pi * 3.2) * sway
+        cx += 8 * math.sin(u * 2 * math.pi * 3.2) * sway
+        cy -= 10 * sm(0.4, 0.55, u) * (1 - sm(0.9, 1.0, u))
+        extra.append(('smoke', u))
     elif r == 1:                   # drill: tossed, one tumble, caught, two short bursts (chuck spins)
         dy, rot = toss(u, 300, 1, 0.34)
         cy += dy
@@ -612,6 +698,22 @@ def trick(r, t, im, cx, cy):
 
 
 def draw_extra(c, kind, v, cx, cy, im, t):
+    if kind == 'smoke':                                 # code smoke from the lamp's spout (left in the model)
+        sx, sy = cx - im.width * 0.36, cy - im.height * 0.06
+        k = sm(0.35, 0.5, v) * (1 - sm(0.88, 1.0, v))
+        if v < 0.35:
+            return
+        for j in range(18):                          # soft lime smoke curling up
+            life = ((v - 0.35) * 1.8 + j / 18) % 1
+            x = sx - 40 * life + 55 * math.sin(life * 6 + j * 0.7) * life
+            y = sy - 380 * life
+            put(c, wisp(), x, y, 0.5 + 1.4 * life, k * 0.75 * (1 - life) * cl(life * 5))
+        for j in range(22):                          # glowing code inside the smoke
+            life = ((v - 0.35) * 2.2 + j / 22) % 1
+            x = sx - 30 * life + 45 * math.sin(life * 7 + j) * life
+            y = sy - 380 * life
+            put(c, glow_glyph('01'[j % 2]), x, y, 0.6 + 0.7 * life, k * (1 - life) * cl(life * 6))
+        return
     if kind == 'chuck':                                 # spinning chuck blur at the drill's nose (left in the photo)
         x, y = cx - im.width * 0.42, cy - im.height * 0.34
         for j in range(3):
@@ -787,10 +889,10 @@ def draw_items(c, t):
         if k <= 0.003:
             continue
         # aura: flashes on when the item assembles, brighter for the winner, dims for the loser
-        flash = 1 + 0.6 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
+        flash = 1 + 0.35 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
         hal = 1.0
         if t >= REVEAL[r]:
-            hal = lerp(1.0, 1.35 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
+            hal = lerp(1.0, 1.25 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
         if not win and t >= LOSE_T[r]:
             hal *= 1 - cl((t - LOSE_T[r]) / 0.35)
         pulse = 1 + 0.03 * math.sin(t * 3.1 + side)
@@ -815,7 +917,7 @@ def hook_halos(c, t):
             put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0 + 0.2 * kp, kp)
         if k > 0.004:
             h = gift_h(4)[0] if side == 0 else thing_im(4).height
-            flash = 1 + 0.7 * fx.bump(t - HOOK_MORPH - 0.3, 2.0, 4.0)
+            flash = 1 + 0.35 * fx.bump(t - HOOK_MORPH - 0.3, 2.0, 4.0)
             put(c, halo(SIDE_COL[side]), *item_anchor(side, h, t), 1.0, cl(k * flash))
 
 
@@ -839,10 +941,10 @@ def draw_halos(c, t):
             k = 1 - cl((t - WIN_GONE[r]) / 0.4)
         if k <= 0.003:
             continue
-        flash = 1 + 0.6 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
+        flash = 1 + 0.35 * fx.bump(t - ROUND_IN[r] - 0.35 - 0.1 * side, 2.0, 4.0)
         hal = 1.0
         if t >= REVEAL[r]:
-            hal = lerp(1.0, 1.35 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
+            hal = lerp(1.0, 1.25 if win else 0.35, sm(REVEAL[r], REVEAL[r] + 0.35, t))
         if not win and t >= LOSE_T[r]:
             hal *= 1 - cl((t - LOSE_T[r]) / 0.35)
         pulse = 1 + 0.03 * math.sin(t * 3.1 + side)
@@ -1051,6 +1153,82 @@ def caption_layer(c, t):
     fx.over(c, lay)
 
 
+# ------------------------------------------------------------------ camera / screen effects (one place, pure functions of t)
+def _shakes():
+    ev = [(E['formed'], 10.0), (HOOK_SLAM, 12.0)]
+    ev += [(rv, 9.0) for rv in REVEAL]
+    ev += [(LOSE_T[1] + CRUSH['shake'][0], 4.0), (LOSE_T[2] + 1.0, 7.0), (LOSE_T[4] + 0.55, 6.0)]
+    return ev
+
+
+SHAKES = _shakes()
+GLITCHES = [f + 0.12 for f in FISTS[:4]] + [END[KEY['a3']] - 0.2, OUTRO - 0.05]
+
+
+def post_fx(frame, t):
+    """Screen shake on impacts, a punch-in + side-coloured flash on every reveal, an RGB-split glitch on round changes."""
+    dx = dy = 0.0
+    for t0, amp in SHAKES:
+        u = t - t0
+        if 0 <= u < 0.5:
+            e = amp * math.exp(-u * 9)
+            dx += e * math.sin(u * 2 * math.pi * 17 + t0)
+            dy += e * 0.7 * math.cos(u * 2 * math.pi * 13 + t0)
+    zoom = 1.0
+    for rv in REVEAL:
+        u = t - rv
+        if 0 <= u < 0.45:
+            zoom += 0.035 * math.exp(-u * 8)
+    if zoom > 1.0005:
+        im = Image.fromarray(frame)
+        w2, h2 = W / zoom, H / zoom
+        im = im.crop((int((W - w2) / 2), int((H - h2) / 2), int((W + w2) / 2), int((H + h2) / 2))).resize((W, H), Image.BILINEAR)
+        frame = np.asarray(im).copy()
+    if abs(dx) >= 1 or abs(dy) >= 1:
+        frame = np.roll(frame, (int(round(dy)), int(round(dx))), axis=(0, 1))
+    for r, rv in enumerate(REVEAL):                              # winner-side tinted flash
+        u = t - rv
+        if 0 <= u < 0.3:
+            a = 0.16 * (1 - u / 0.3)
+            col = np.array(SIDE_COL[WIN[r]], np.float32)
+            frame = (frame * (1 - a) + col * a).astype(np.uint8)
+    if t >= HOOK_SLAM and t - HOOK_SLAM < 0.22:
+        a = 0.35 * (1 - (t - HOOK_SLAM) / 0.22)
+        frame = (frame * (1 - a) + 255 * a).astype(np.uint8)
+    for g0 in GLITCHES:                                          # RGB split + slices for ~0.2 s
+        u = t - g0
+        if 0 <= u < 0.2:
+            k = math.sin(math.pi * u / 0.2)
+            f = frame.copy()
+            sh = int(10 * k)
+            f[..., 0] = np.roll(frame[..., 0], sh, axis=1)
+            f[..., 2] = np.roll(frame[..., 2], -sh, axis=1)
+            rng = np.random.default_rng(int(t * 60))
+            for _ in range(6):
+                y0 = int(rng.integers(0, H - 40))
+                hh = int(rng.integers(8, 60))
+                f[y0:y0 + hh] = np.roll(f[y0:y0 + hh], int(rng.integers(-60, 60) * k), axis=1)
+            frame = f
+    return frame
+
+
+def draw_sparks(c, t):
+    """Green code sparks burst out of each item as it assembles (and out of the pills in the hook)."""
+    bursts = [(ROUND_IN[r] + 0.32 + 0.1 * side, r, side) for r in range(5) for side in (0, 1)]
+    for t0, r, side in bursts:
+        u = t - t0
+        if not 0 <= u < 0.7:
+            continue
+        x0, y0 = palm_point(side, t)
+        y0 -= 170
+        for j in range(14):
+            a = 2 * math.pi * j / 14 + r
+            sp = 380 + 160 * ((j * 7) % 5) / 5
+            x = x0 + math.cos(a) * sp * u
+            y = y0 + math.sin(a) * sp * u + 0.5 * G * 0.35 * u * u
+            put(c, glow_glyph('01'[j % 2]), x, y, 0.75, (1 - u / 0.7))
+
+
 # ------------------------------------------------------------------ the ad scene (agents above, Morpheus below)
 AGENTS = [(200.0, 425.0, 'down_right'), (540.0, 400.0, 'down'), (880.0, 425.0, 'down_left')]
 AGENT_SC = 0.5
@@ -1112,6 +1290,7 @@ def render_at(t, ad=None, raw=False):
         draw_halos(c, t)
         draw_hands(c, t)
         draw_items(c, t)
+        draw_sparks(c, t)
         draw_header(c, t)
         draw_hook(c, t)
         draw_prices(c, t)
@@ -1127,7 +1306,10 @@ def render_at(t, ad=None, raw=False):
             draw_header(tmp, t)
             c[:] = c * (1 - fade) + tmp * fade
         draw_ad_scene(c, t, u, bt, B, header_a=fade)
-    return c if raw else np.clip(c, 0, 255).astype(np.uint8)
+    if raw:
+        return c
+    out = np.clip(c, 0, 255).astype(np.uint8)
+    return post_fx(out, t) if ad is None else out
 
 
 def frame_bytes(i):

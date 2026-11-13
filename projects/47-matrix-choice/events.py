@@ -18,7 +18,7 @@ TRICK = [(t0 + 1.0, t0 + 4.35) for t0 in TIMER0]          # one trick window per
 TRICK_KIND = ['ring_toss', 'drill_toss_burst', 'black_hole_levitate', 'telescope_star', 'cap_toss_balance']
 DEFEAT = ['blow_away', 'crush', 'black_hole', 'lens_crack', 'glitch_cube']
 
-LOSE_T = [rv + 0.5 for rv in REVEAL]        # the loser's defeat starts once the prices are up
+LOSE_T = [rv + (0.10 if r == 0 else 0.5) for r, rv in enumerate(REVEAL)]   # R1: the blow comes before the answer line
 # R2 crush: watch into the palm → fist closes → shakes → opens → palm tilts → crumbs fall → palm level again
 CRUSH = dict(close=(0.0, 0.26), shake=(0.26, 0.72), open=(0.72, 0.98), tilt=(0.98, 1.22), drop=(1.05, 1.75),
              level=(1.45, 1.70))
@@ -29,6 +29,6 @@ OPEN_DUR = 0.26                                          # fist → open palm at
 E = {
     'formed': 1.95,                # Morpheus assembled from code (intro)
     'outro': OUTRO,
-    'dissolve': DUR - 1.35,        # Morpheus drains into code under the last words
+    'dissolve': DUR - 1.15,        # Morpheus drains into code under the last words
     'end': DUR,
 }

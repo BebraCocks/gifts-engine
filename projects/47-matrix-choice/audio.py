@@ -107,8 +107,9 @@ def sfx_layer(n, kit):
     def at(r, u):
         w0, w1 = TRICK[r]
         return w0 + u * (w1 - w0)
-    add(fx, 'whoosh-short', at(0, 0.0), gain_db=-17, pan=L, label='R1: signet ring tossed, tumbling')
-    add(fx, '*', at(0, 0.62), gain_db=-15, pan=L, file='coin-flip-spin-rotation-01', vary=False, label='R1: ring lands on the palm')
+    add(fx, '*', at(0, 0.0), gain_db=-17, pan=L, file='friction.flac', vary=False, label='R1: the genie lamp is rubbed, sways')
+    add(fx, 'sparkle-whoosh', at(0, 0.33), gain_db=-17, pan=L, label='R1: magic stirs in the lamp')
+    add(fx, 'transform', at(0, 0.40), gain_db=-18, pan=-0.2, label='R1: green code smoke curls up from the spout')
     add(fx, 'whoosh-short', at(1, 0.0), gain_db=-17, pan=R, label='R2: drill tossed, one tumble')
     add(fx, 'cartoon-hit', at(1, 0.34), gain_db=-19, pan=R, label='R2: drill caught')
     synth(fx, kit.cues, toolsynth.drill(0.15 * (TRICK[1][1] - TRICK[1][0]), 1), at(1, 0.40), -14, R, 'R2: drill burst 1 (synth)')
@@ -121,6 +122,15 @@ def sfx_layer(n, kit):
     add(fx, 'pop', at(4, 0.42), gain_db=-17, pan=L, label='R5: cap lands on the fingertip')
     add(fx, 'spinback', at(4, 0.5), gain_db=-21, pan=L, label='R5: cap balances, spinning')
     add(fx, 'whoosh-short', at(4, 0.86), gain_db=-19, pan=L, label='R5: cap flicked back to the palm')
+    # more sound design: a riser into every reveal, a sub hit on it, glitches on round changes, keys on the score
+    for r in range(5):
+        add(fx, 'riser', REVEAL[r] - 1.25, gain_db=-23, fit=1.25, fade_out=0.05, label=f'R{r + 1}: tension rises into the reveal')
+        add(fx, 'sub-drop', REVEAL[r] + 0.02, gain_db=-19, label=f'R{r + 1}: sub hit on the reveal (screen punch)')
+        add(fx, 'key-enter', REVEAL[r] + 0.32, gain_db=-22, label=f'R{r + 1}: the score line updates')
+        for side in (0, 1):
+            add(fx, 'sparkle', ROUND_IN[r] + 0.32 + 0.1 * side, gain_db=-25, pan=SIDE_PAN[side], label=f'R{r + 1}: code sparks burst ({"NFT" if side == 0 else "thing"})')
+    for g0 in [f + 0.12 for f in FISTS[:4]] + [OUTRO - 0.05]:
+        add(fx, 'glitch', g0, gain_db=-21, label='RGB glitch between rounds')
     # bullet time in the final countdown
     add(fx, 'downlifter', TIMER0[4] - 0.2, gain_db=-19, label='R5: bullet time — the code slows down')
     add(fx, 'riser', REVEAL[4] - 0.9, gain_db=-20, fit=0.9, fade_out=0.1, label='R5: time resumes on the answer')

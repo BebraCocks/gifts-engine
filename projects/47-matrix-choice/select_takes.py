@@ -18,7 +18,7 @@ KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.10
 TEMPO = 1.24
-TEMPO_LINE = {'L14': 1.28, 'L17': 1.27}   # long lines pushed a little (content must fit 70 s with RubUp)
+TEMPO_LINE = {'L14': 1.28, 'L17': 1.30, 'L04': 1.30, 'L07': 1.32, 'L13': 1.32}   # long lines pushed a little (≤ 70 s with RubUp)
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.
 INSERT = {}                     # no author's sound in this video

@@ -14,6 +14,7 @@ SHEETS = {
     'hand_sheet_v2.png': ('hand', ['point_up', 'flick', 'pinch', 'grip', 'squeeze', 'catch']),
     'head_sheet_v2.png': ('head', ['blow', 'look_left', 'look_right', 'look_up', 'talk_a', 'talk_o']),
     'head_sheet_v3.png': ('head', ['blow_right', 'after_blow_right', 'look_left_down', 'calm3', 'knowing', 'brows_up']),
+    'visemes_v1.png': ('head', ['v_closed', 'v_slight', 'v_aa', 'v_oo', 'v_ee', 'v_mbp']),
     'agent_sheet_v1.png': ('agent', ['front', 'left', 'right', 'down', 'down_left', 'down_right']),
 }
 

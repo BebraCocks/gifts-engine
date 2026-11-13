@@ -12,5 +12,6 @@ ROUNDS = [  # (вопрос, начало таймера, ответ)
     (AT['N6'], END_OF['N6'], AT['N7']),
 ]
 PLANKTON_PICK = [AT['P2'], AT['P4'], AT['P6']]
-FAIL = [AT['P3'], AT['SQ'], AT['P7']]
+FAIL = [AT['P3'], AT['N5'], AT['P7']]
+SQUIDWARD = [AT['SQ1'], AT['SQ2'], AT['SQ3']]   # Сквидвард поворачивается от кассы и язвит
 FINAL = AT['P7']

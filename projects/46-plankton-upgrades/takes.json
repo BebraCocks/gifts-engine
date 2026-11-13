@@ -31,5 +31,9 @@
  "narrator2": {
   "voice": "7312c38557eb4fb384e3874e8e9cea67 (спокойнее, правка автора)",
   "url": "https://platform.r2.fish.audio/tasks/2026-11-13/7f00db83847e4cae8439f5cb53f4e3a8.mp3"
+ },
+ "squid3": {
+  "voice": "0a98030471bc4240a85f3693ef07b841 (три реплики Сквидварда)",
+  "url": "https://platform.r2.fish.audio/tasks/2026-11-13/db3acf1b23ac4f4ebebd0bf22537622b.mp3"
  }
 }

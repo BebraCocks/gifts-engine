@@ -21,8 +21,9 @@ EXT = HERE / 'input' / 'ext'
 # Интегральная громкость файлов (ffmpeg ebur128, 2026-11-13) — чтобы задавать уровень в LUFS, а не «на глаз».
 LUFS = {'tomfoolery-1-spongebob-squarepants': -14.1, 'hawaiian-cocktail-spongebob-squarepants': -11.6,
         'rakehornpipe-spongebob-squarepants': -11.8, 'krusty-krab-theme-song': -15.2, 'dramatic-cue-a': -20.0,
-        'spongebob-bubble-transition': -28.7}
+        'spongebob-bubble-transition': -28.7, 'crowd-talking': -17.2, 'crowd-murmur-loop': -33.7}
 MUSIC_LUFS = -29.0
+AMB_LUFS = -33.0         # фон посетителей до фильтра
 MASTER_DB = 1.5          # итог около −16 LUFS, пик ниже −0,5 dBFS
 
 
@@ -35,6 +36,23 @@ def ext(buf, name, t, level_lufs, start=0.0, dur=None, fade_in=0.05, fade_out=0.
     i0 = int(round(t * SR))
     n = min(len(x), len(buf) - i0)
     buf[i0:i0 + n] += x[:n]
+
+
+def ambience_layer(n, kit):
+    """Фон Красти Крабс: гул посетителей у кассы Сквидварда. Через «подводный» фильтр (низы до 700 Гц) —
+    слов не разобрать (автор, 2026-11-13). Изредка касса — справа, где лодка Сквидварда."""
+    a = np.zeros((n, 2))
+    t, k = 0.0, 0
+    while t < DUR:                                   # два клипа по очереди, стыки 0,8 с
+        name = ('crowd-talking', 'crowd-murmur-loop')[k % 2]
+        ext(a, name, max(0.0, t - 0.8), AMB_LUFS, fade_in=0.8, fade_out=0.8)
+        t += (10.03, 7.31)[k % 2] - 0.8
+        k += 1
+    a = sound.underwater(a, SR, fc=700.0)
+    a[:, 0] *= 0.8                                   # чуть правее: касса справа
+    for t in (3.6, 17.2, 29.5, 45.5):
+        kit.add(a, 'coin', t, gain_db=-30, pan=0.6, label='фон: касса Сквидварда')
+    return a
 
 
 def music_layer(n):
@@ -76,8 +94,7 @@ def sfx_layer(n, kit):
     kit.add(fx, 'cartoon-move', AD_STOP + 0.02, gain_db=-17, label='Планктон возвращается (после RubUp)')
     # Реакции
     kit.add(fx, 'cartoon-hit', AT['P3'], gain_db=-17, label='Планктон трясётся от злости')
-    kit.add(fx, 'coin', AT['KR'] + 0.1, gain_db=-17, label='Крабс: денежки')
-    ext(fx, 'dramatic-cue-a', AT['P7'] + 0.9, -20.0, start=0.19, dur=4.6, fade_out=0.6)   # «дан-дан-дан» под «Я ещё вернусь»
+    ext(fx, 'dramatic-cue-a', AT['P7'] + 0.9, -28.0, start=0.19, dur=4.6, fade_out=0.6)   # «дан-дан-дан» под «Я ещё вернусь»
     kit.add(fx, 'impact', AT['N8'] - 0.05, gain_db=-17, label='итоговый счёт крупно')
     kit.add(fx, 'whoosh-short', DUR - 0.9, gain_db=-17, label='Планктон уходит за край')
     return fx
@@ -94,13 +111,15 @@ def make_mix(kit):
             voice[i0:i0 + c] += d[:c] * 0.85
     fx = sfx_layer(n, kit)
     music = music_layer(n)
+    amb = ambience_layer(n, kit)
     env = np.convolve(np.abs(voice).max(1), np.ones(2400) / 2400, 'same')
     duck = np.clip(env / (np.percentile(env, 95) * 0.5 + 1e-9), 0, 1)
     fx *= (1 - 0.45 * duck)[:, None]
     music *= (1 - 0.5 * duck)[:, None]
+    amb *= (1 - 0.35 * duck)[:, None]
     i7 = int((AT['P7'] + 0.9) * SR)                    # под «дан-дан-дан» музыка уходит
     music[i7:int(AT['N8'] * SR) - int(0.2 * SR)] *= 0.15
-    return voice + fx + music, fx, voice
+    return voice + fx + music + amb, fx, voice
 
 
 if __name__ == '__main__':

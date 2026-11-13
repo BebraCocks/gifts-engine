@@ -55,21 +55,30 @@ def ambience_layer(n, kit):
     return a
 
 
-MUSIC = 'tomfoolery-1-spongebob-squarepants'   # одна музыка на весь ролик (автор, 2026-11-13)
-MUSIC_LEN = 20.448
+MUSIC = 'tomfoolery-1-spongebob-squarepants'   # только начальная мелодия клипа (автор, 2026-11-13)
+LOOP = (0.0, 2.92)        # первый такт (4 доли по 0,73 с); дальше в клипе другие мелодии — их не берём
+TAIL = (2.92, 3.50)       # завершающий удар этой мелодии — в самом конце ролика
 
 
 def music_layer(n):
-    """Один трек. Клип короткий (20,4 с), поэтому он начинается заново на переходах-пузырях раундов 2 и 3 —
-    стык прячется в пузырях; внутри длинной части — повтор с перекрытием 0,8 с."""
+    """Одна мелодия: первый такт клипа повторяется встык (кроссфейд 20 мс) до конца, в финале — её удар."""
     m = np.zeros((n, 2))
-    starts = [0.0, TRANSITIONS[1] - 0.2, TRANSITIONS[2] - 0.2, DUR]
-    for k in range(3):
-        t, end = starts[k], starts[k + 1] + (0.6 if k < 2 else 0.0)
-        while t < end - 0.1:
-            d = min(MUSIC_LEN, end - t)
-            ext(m, MUSIC, t, MUSIC_LUFS, dur=d, fade_in=0.01 if t == 0 else 0.4, fade_out=0.8 if d < MUSIC_LEN else 0.8)
-            t += MUSIC_LEN - 0.8
+    g = 10 ** ((MUSIC_LUFS - LUFS[MUSIC]) / 20)
+    x = sound.load_stereo(EXT / f'{MUSIC}.mp3', SR, start=LOOP[0], dur=LOOP[1] - LOOP[0]) * g
+    tail = sound.load_stereo(EXT / f'{MUSIC}.mp3', SR, start=TAIL[0], dur=TAIL[1] - TAIL[0]) * g
+    xf = int(0.02 * SR)
+    ramp = np.linspace(0, 1, xf)[:, None]
+    end = n - len(tail)
+    i = 0
+    while i < end:
+        seg = x[:min(len(x), end - i)].copy()
+        if i:
+            seg[:xf] *= ramp
+        if len(seg) == len(x):
+            seg[-xf:] *= 1 - ramp
+        m[i:i + len(seg)] += seg
+        i += len(x) - xf
+    m[end:end + len(tail)] += tail
     return m
 
 

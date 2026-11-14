@@ -73,21 +73,21 @@ def sfx_layer(n, kit):
     add = kit.add
     L, R = SIDE_PAN
     # ---- intro: Morpheus assembled from falling green code (≈ 2 s, fists)
-    add(fx, 'scan', 0.0, gain_db=-15, fit=1.9, fade_out=0.4, label='intro: green code pours down')
+    add(fx, 'scan', 0.0, gain_db=-15, fit=1.3, fade_out=0.4, label='intro: green code pours down')
     add(fx, 'glitch-text', 0.12, gain_db=-19, pan=-0.3, label='intro: data chatter L')
-    add(fx, 'glitch-text', 0.50, gain_db=-20, pan=0.3, label='intro: data chatter R')
-    add(fx, 'power-up', 0.22, gain_db=-17, fit=1.7, fade_out=0.3, label='intro: the figure charges up')
-    add(fx, 'glitch', 1.15, gain_db=-18, label='intro: code → photo')
+    add(fx, 'glitch-text', 0.40, gain_db=-20, pan=0.3, label='intro: data chatter R')
+    add(fx, 'power-up', 0.15, gain_db=-17, fit=1.15, fade_out=0.3, label='intro: the figure charges up')
+    add(fx, 'glitch', 0.80, gain_db=-18, label='intro: code → photo')
     add(fx, 'impact', E['formed'], gain_db=-14, align='peak', label='intro: Morpheus formed, fists')
     # hook: fists open on a blue and a red pill, the pills glitch into the final pair, the bet slams in
-    add(fx, '*', 2.05, gain_db=-19, file='friction-movement-transform-01', vary=False, label='hook: fists open')
-    add(fx, 'sparkle', 2.18, gain_db=-17, label='hook: blue and red pills on the palms')
-    add(fx, 'glitch', 2.50, gain_db=-16, label='hook: the pills glitch')
-    add(fx, 'transform', 2.62, gain_db=-17, label='hook: pills turn into the cap and the chainsaw')
-    add(fx, 'impact', 2.95, gain_db=-13, align='peak', label='hook: «ОДНА ДОРОЖЕ ВДВОЕ» slams in')
-    add(fx, 'pop', 3.18, gain_db=-19, pan=-0.4, label='hook: «? ₽» blue')
-    add(fx, 'pop', 3.28, gain_db=-19, pan=0.4, label='hook: «? ₽» red')
-    add(fx, 'glitch-text', 4.40, gain_db=-19, label='hook: the pair drains into code')
+    add(fx, '*', 1.32, gain_db=-19, file='friction-movement-transform-01', vary=False, label='hook: fists open')
+    add(fx, 'sparkle', 1.42, gain_db=-17, label='hook: blue and red pills on the palms')
+    add(fx, 'glitch', 1.60, gain_db=-16, label='hook: the pills glitch')
+    add(fx, 'transform', 1.70, gain_db=-17, label='hook: pills turn into the cap and the chainsaw')
+    add(fx, 'impact', 2.00, gain_db=-13, align='peak', label='hook: «ОДНА ДОРОЖЕ ВДВОЕ» slams in')
+    add(fx, 'pop', 2.25, gain_db=-19, pan=-0.4, label='hook: «? ₽» blue')
+    add(fx, 'pop', 2.35, gain_db=-19, pan=0.4, label='hook: «? ₽» red')
+    add(fx, 'glitch-text', 2.60, gain_db=-19, label='hook: the pair drains into code')
     for r in range(5):
         # fists open (skin/cloth friction), the pair assembles from code, auras flash on (round 1: palms already open)
         if r:

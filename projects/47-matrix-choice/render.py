@@ -222,7 +222,7 @@ def green_flood(c, t, env):
 
 
 def flood_env(t):
-    e = fx.smooth(t / 0.18) * (1 - fx.smooth((t - 1.05) / 0.85))
+    e = fx.smooth(t / 0.15) * (1 - fx.smooth((t - 0.75) / 0.6))
     return max(e, 0.5 * sm(E['dissolve'] - 0.2, E['dissolve'] + 0.6, t))
 
 
@@ -518,7 +518,7 @@ GLINTS = (E['formed'] + 0.05, OUTRO + 1.0)
 
 
 # ------------------------------------------------------------------ Morpheus (intro from code, rig, finale into code)
-INTRO = [('head', ch.HEAD_POS, 0.12, 1.75), ('fist0', ch.HAND_POS[0], 0.28, 1.6), ('fist1', ch.HAND_POS[1], 0.36, 1.55)]
+INTRO = [('head', ch.HEAD_POS, 0.06, 1.18), ('fist0', ch.HAND_POS[0], 0.16, 1.08), ('fist1', ch.HAND_POS[1], 0.22, 1.04)]
 
 
 @functools.lru_cache(None)
@@ -533,7 +533,7 @@ def _intro_sprites():
 
 def draw_morpheus(c, t):
     _intro_sprites()
-    if t < 2.04:
+    if t < HOOK_OPEN - 0.01:
         for key, (px, py), t0, dur in INTRO:
             if t < t0 + dur:
                 arr, _ = matrix.assemble(t, key, t0, dur, seed={'head': 1, 'fist0': 2, 'fist1': 3}[key])
@@ -557,7 +557,7 @@ def draw_morpheus(c, t):
 
 
 def draw_hands(c, t):
-    if t < 2.04:
+    if t < HOOK_OPEN - 0.01:
         return
     k = 1.0 if t < E['dissolve'] else max(0.0, 1 - (t - E['dissolve']) / 1.1)
     if k >= 0.999:
@@ -952,10 +952,10 @@ def draw_halos(c, t):
         put(c, halo(SIDE_COL[side]), hx, hy, pulse * k ** 0.5 * (1.12 if win and t > REVEAL[r] else 1.0), cl(hal * flash) * k)
 
 
-HOOK_OPEN = 2.05          # fists open → a blue and a red pill on the palms (the film's choice)
-HOOK_MORPH = 2.55         # the pills glitch and turn into the final pair (cap / chainsaw)
-HOOK_SLAM = 2.95          # «ОДНА ДОРОЖЕ ВДВОЕ» slams in
-HOOK_GONE = 4.40          # the pair drains back into code; round 1 assembles on the same open palms
+HOOK_OPEN = 1.32          # fists open → a blue and a red pill on the palms (the film's choice)
+HOOK_MORPH = 1.66         # the pills glitch and turn into the final pair (cap / chainsaw)
+HOOK_SLAM = 2.00          # «ОДНА ДОРОЖЕ ВДВОЕ» slams in
+HOOK_GONE = 2.60          # the pair drains back into code; round 1 assembles on the same open palms
 
 
 def draw_hook_pair(c, t):

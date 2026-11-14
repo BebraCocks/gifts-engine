@@ -26,26 +26,26 @@ HOOK_ON = 0.30             # the code rain is already falling at frame 0; the vo
 ON[0] = HOOK_ON
 END[0] = ON[0] + _len(0)
 OPEN = 0.26                # fists → open palms, the pair assembles
-CLOSE = 0.20               # after the answer: palms empty, close into fists (then OPEN again)
-AD_HOLD = 0.14
+CLOSE = 0.17               # after the answer: palms empty, close into fists (then OPEN again)
+AD_HOLD = 0.10
 ROUND_IN, TIMER0, REVEAL = [], [], []
 cur = END[0] + 0.05
 for r in range(5):
     q, t, a = 1 + 3 * r, 2 + 3 * r, 3 + 3 * r
     ROUND_IN.append(cur)
-    ON[q] = cur + 0.06                       # the pair assembles while the question is asked
+    ON[q] = cur + 0.04                       # the pair assembles while the question is asked
     END[q] = ON[q] + _len(q)
-    TIMER0.append(END[q] + 0.06)             # author: a real 5 s countdown AFTER the question (5…1, a tick a second)
+    TIMER0.append(END[q] + 0.04)             # author: a real 5 s countdown AFTER the question (5…1, a tick a second)
     REVEAL.append(TIMER0[-1] + TIMER)
     ON[t] = TIMER0[-1] + 0.35                # Morpheus' short line right after «5», the tricks follow it
     END[t] = ON[t] + _len(t)
-    ON[a] = REVEAL[-1] + (0.80 if r == 0 else 0.06)    # R1: he blows the chess away first, THEN speaks
+    ON[a] = REVEAL[-1] + (0.66 if r == 0 else 0.04)    # R1: he blows the chess away first, THEN speaks
     END[a] = ON[a] + _len(a)
     cur = END[a] + CLOSE + (AD_HOLD if LINES[a][1] == 'a3' else 0.0)
 OUTRO = cur - CLOSE + 0.05
 ON[16] = OUTRO
 END[16] = ON[16] + _len(16)
-DUR = END[16] + 0.52         # Morpheus dissolves into code after the last word
+DUR = END[16] + 0.42         # Morpheus dissolves into code after the last word
 SLACK = MAX_TOTAL - AD_EXTRA - DUR
 assert SLACK >= 0, f'content too long by {-SLACK:.2f} s'
 for k in range(len(LINES) - 1):

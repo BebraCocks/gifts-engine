@@ -27,7 +27,7 @@ FISTS = [END[3 + 3 * r] - 0.02 for r in range(5)]       # empty palms close into
 OPEN_DUR = 0.26                                          # fist → open palm at ROUND_IN
 
 E = {
-    'formed': 1.95,                # Morpheus assembled from code (intro)
+    'formed': 1.28,                # Morpheus assembled from code (intro)
     'outro': OUTRO,
     'dissolve': DUR - 1.15,        # Morpheus drains into code under the last words
     'end': DUR,

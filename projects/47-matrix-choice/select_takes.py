@@ -17,8 +17,8 @@ SEGMAP = []
 KEEP_LEAD, KEEP_TAIL = 0.03, 0.10
 MAX_GAP = {}
 DEFAULT_GAP = 0.10
-TEMPO = 1.24
-TEMPO_LINE = {'L14': 1.28, 'L17': 1.30, 'L04': 1.30, 'L07': 1.32, 'L13': 1.32}   # long lines pushed a little (≤ 70 s with RubUp)
+TEMPO = 1.0
+TEMPO_LINE = {}   # author: no speed-up — it makes the voice robotic
 # 11-price-duel-3: a pause inside the hook for the author's sound (sfx/fart-ripper.mp3, ~3rd second):
 # line -> (unused, inserted seconds); the silence goes into the longest pause inside the line.
 INSERT = {}                     # no author's sound in this video
@@ -30,7 +30,13 @@ def fetch(task):
         RAW.mkdir(parents=True, exist_ok=True)
         mp3 = RAW / f'{task}.mp3'
         if not mp3.exists():
-            subprocess.run(["curl", "-sSfL", "--retry", "5", "--retry-all-errors", "-m", "60", "-o", str(mp3), URL.format(task)], check=True)
+            for day in ('2026-11-13', '2026-11-14'):          # takes were recorded on two days
+                r = subprocess.run(["curl", "-sSfL", "--retry", "3", "-m", "60", "-o", str(mp3),
+                                    URL.replace('2026-11-13', day).format(task)])
+                if r.returncode == 0:
+                    break
+            else:
+                raise SystemExit(f'take {task} not found')
         subprocess.run(['ffmpeg', '-nostdin', '-loglevel', 'error', '-y', '-i', str(mp3), '-ar', str(SR),
                         '-ac', '1', str(wav)], check=True)
     with wave.open(str(wav)) as w:

@@ -241,40 +241,87 @@ def bg_motif(c, t):
         [motif_chess, motif_clock, motif_gravity, motif_stars, motif_ripples][r](c, t, a)
 
 
+def plate_layer(box, draw, a):
+    """Motifs sit on a soft white veil so they read over the bright code rain."""
+    return fx.draw_rgba(box, draw), a
+
+
 def motif_chess(c, t, a):
-    """R1: a big chessboard of green squares fades in behind everything, squares lighting up one by one."""
-    n, s = 8, 120
-    x0, y0 = 540 - n * s / 2, 760 - n * s / 2
+    """R1: a big chessboard rises behind Morpheus (white veil + green squares lighting up), large chess pieces drift."""
+    n, s = 8, 118
+    x0, y0 = 540 - n * s / 2, 740 - n * s / 2
     def draw(d, m, S):
+        d.rectangle([*m(x0 - 10, y0 - 10), *m(x0 + n * s + 10, y0 + n * s + 10)], fill=(255, 255, 255, 120))
         for i in range(n):
             for j in range(n):
-                if (i + j) % 2:
-                    k = cl((t - ROUND_IN[0] - 0.05 * ((i * 3 + j * 5) % 11)) / 0.4)
-                    if k > 0:
-                        d.rectangle([*m(x0 + i * s, y0 + j * s), *m(x0 + (i + 1) * s, y0 + (j + 1) * s)],
-                                    fill=(0, 170, 75, int(60 * k)))
-        d.rectangle([*m(x0, y0), *m(x0 + n * s, y0 + n * s)], outline=(0, 150, 60, 140), width=round(3 * S))
-    fx.over(c, fx.draw_rgba((x0 - 4, y0 - 4, x0 + n * s + 4, y0 + n * s + 4), draw), a)
+                k = cl((t - ROUND_IN[0] - 0.04 * ((i * 3 + j * 5) % 11)) / 0.35)
+                if k > 0 and (i + j) % 2:
+                    d.rectangle([*m(x0 + i * s, y0 + j * s), *m(x0 + (i + 1) * s, y0 + (j + 1) * s)],
+                                fill=(0, 165, 72, int(105 * k)))
+        d.rectangle([*m(x0, y0), *m(x0 + n * s, y0 + n * s)], outline=(0, 120, 50, 200), width=round(5 * S))
+        for i in range(n):                                     # coordinates a–h / 1–8 like a real board
+            d.text(m(x0 + i * s + s / 2, y0 + n * s + 22), 'abcdefgh'[i], fill=(0, 110, 45, 220),
+                   font=ImageFont.truetype(MONO, int(26 * S)), anchor='mm')
+            d.text(m(x0 - 22, y0 + i * s + s / 2), str(8 - i), fill=(0, 110, 45, 220),
+                   font=ImageFont.truetype(MONO, int(26 * S)), anchor='mm')
+    fx.over(c, fx.draw_rgba((x0 - 50, y0 - 14, x0 + n * s + 14, y0 + n * s + 50), draw), a)
+    for j, (sym, x, y) in enumerate((('♞', 120, 1500), ('♜', 960, 1430), ('♝', 160, 300), ('♛', 930, 330))):
+        dy = 26 * math.sin(t * 0.9 + j * 1.3)
+        put(c, piece(sym, j % 2 == 0), x, y + dy, 2.4, a * 0.55, rot=0.12 * math.sin(t * 0.7 + j))
+
+
+@functools.lru_cache(4)
+def gear(r=120, teeth=14):
+    S = 3
+    n = int(2 * r * 1.25 * S)
+    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    c0 = n / 2
+    pts = []
+    for k in range(teeth * 4):
+        q = 2 * math.pi * k / (teeth * 4)
+        rr = r * S * (1.18 if (k % 4) in (1, 2) else 1.0)
+        pts.append((c0 + math.cos(q) * rr, c0 + math.sin(q) * rr))
+    d.polygon(pts, fill=(0, 150, 62, 150), outline=(0, 110, 45, 230))
+    d.ellipse([c0 - r * 0.55 * S, c0 - r * 0.55 * S, c0 + r * 0.55 * S, c0 + r * 0.55 * S], fill=(0, 0, 0, 0))
+    d.ellipse([c0 - r * 0.25 * S, c0 - r * 0.25 * S, c0 + r * 0.25 * S, c0 + r * 0.25 * S], fill=(0, 110, 45, 230))
+    im2 = Image.new('RGBA', im.size, (0, 0, 0, 0))
+    im2.paste(im, (0, 0), im)
+    hole = Image.new('L', im.size, 0)
+    ImageDraw.Draw(hole).ellipse([c0 - r * 0.55 * S, c0 - r * 0.55 * S, c0 + r * 0.55 * S, c0 + r * 0.55 * S], fill=255)
+    ImageDraw.Draw(hole).ellipse([c0 - r * 0.25 * S, c0 - r * 0.25 * S, c0 + r * 0.25 * S, c0 + r * 0.25 * S], fill=0)
+    al = np.asarray(im2)[..., 3].astype(np.int16) - np.asarray(hole).astype(np.int16)
+    arr = np.asarray(im2).copy()
+    arr[..., 3] = np.clip(al, 0, 255).astype(np.uint8)
+    return Image.fromarray(arr).resize((n // S, n // S), Image.LANCZOS)
 
 
 def motif_clock(c, t, a):
-    """R2: a huge clock face of green ticks; the second hand jumps with every timer second."""
-    cx, cy, R = 540, 760, 470
+    """R2: a huge clock face on a white veil; the second hand jumps with every timer second; two gears turn."""
+    cx, cy, R = 540, 740, 470
     r = 1
     secs = 0 if t < TIMER0[r] else min(5, int(t - TIMER0[r]) + 1)
     kick = fx.bump(t - (TIMER0[r] + secs - 1), 3.0, 8.0) if secs else 0
     ang = -math.pi / 2 + 2 * math.pi * (secs / 60 * 5) + 0.05 * kick
     def draw(d, m, S):
+        d.ellipse([*m(cx - R - 14, cy - R - 14), *m(cx + R + 14, cy + R + 14)], fill=(255, 255, 255, 115))
         for k in range(60):
             q = 2 * math.pi * k / 60
-            r0 = R - (40 if k % 5 == 0 else 18)
+            r0 = R - (46 if k % 5 == 0 else 20)
             d.line([m(cx + math.cos(q) * r0, cy + math.sin(q) * r0), m(cx + math.cos(q) * R, cy + math.sin(q) * R)],
-                   fill=(0, 160, 70, 150 if k % 5 == 0 else 90), width=round((6 if k % 5 == 0 else 3) * S))
-        d.ellipse([*m(cx - R, cy - R), *m(cx + R, cy + R)], outline=(0, 150, 60, 110), width=round(3 * S))
-        d.line([m(cx, cy), m(cx + math.cos(ang) * (R - 60), cy + math.sin(ang) * (R - 60))], fill=(220, 40, 40, 170),
-               width=round(5 * S))
-        d.ellipse([*m(cx - 12, cy - 12), *m(cx + 12, cy + 12)], fill=(220, 40, 40, 200))
-    fx.over(c, fx.draw_rgba((cx - R - 6, cy - R - 6, cx + R + 6, cy + R + 6), draw), a)
+                   fill=(0, 140, 60, 230 if k % 5 == 0 else 150), width=round((8 if k % 5 == 0 else 3) * S))
+        for k in range(12):
+            q = 2 * math.pi * k / 12 - math.pi / 2
+            d.text(m(cx + math.cos(q) * (R - 90), cy + math.sin(q) * (R - 90)), str(12 if k == 0 else k),
+                   fill=(0, 120, 50, 200), font=ImageFont.truetype(MONO, int(40 * S)), anchor='mm')
+        d.ellipse([*m(cx - R, cy - R), *m(cx + R, cy + R)], outline=(0, 120, 50, 200), width=round(5 * S))
+        d.line([m(cx, cy), m(cx + math.cos(ang) * (R - 70), cy + math.sin(ang) * (R - 70))], fill=(220, 40, 40, 220),
+               width=round(6 * S))
+        d.ellipse([*m(cx - 14, cy - 14), *m(cx + 14, cy + 14)], fill=(220, 40, 40, 230))
+    fx.over(c, fx.draw_rgba((cx - R - 20, cy - R - 20, cx + R + 20, cy + R + 20), draw), a)
+    put(c, gear(130, 14), 110, 1530, 1.0, a * 0.8, rot=t * 0.9)
+    put(c, gear(90, 10), 250, 1640, 1.0, a * 0.8, rot=-t * 0.9 * 130 / 90 + 0.2)
+    put(c, gear(110, 12), 980, 330, 1.0, a * 0.7, rot=-t * 0.7)
 
 
 def ring_pos():
@@ -282,53 +329,127 @@ def ring_pos():
 
 
 def motif_gravity(c, t, a):
-    """R3: the Black Hole ring pulls the code: 0/1 glyphs spiral into it while it levitates and when it eats the cactus."""
+    """R3: a grid bends toward the Black Hole ring; 0/1 glyphs spiral into it while it levitates and when it eats."""
     cx, cy = ring_pos()
     w0, w1 = TRICK[2]
-    k = max(sm(w0, w0 + 0.5, t) * (1 - sm(w1 - 0.3, w1 + 0.2, t)), sm(LOSE_T[2] - 0.1, LOSE_T[2] + 0.3, t) * (1 - sm(LOSE_T[2] + 1.2, LOSE_T[2] + 1.5, t)))
-    if k <= 0.004:
-        return
-    for j in range(46):
-        base = (j * 0.618) % 1
-        life = (t * 0.55 + base) % 1
-        rr = 520 * (1 - life) ** 1.3 + 30
-        q = 2 * math.pi * base * 7 + life * 5.0
-        x, y = cx + math.cos(q) * rr, cy + math.sin(q) * rr * 0.85
-        put(c, glow_glyph('01'[j % 2]), x, y, 0.5 + 0.6 * (1 - life), a * k * cl(life * 4) * (0.4 + 0.6 * life))
+    k = max(sm(w0, w0 + 0.5, t) * (1 - sm(w1 - 0.3, w1 + 0.2, t)),
+            sm(LOSE_T[2] - 0.1, LOSE_T[2] + 0.3, t) * (1 - sm(LOSE_T[2] + 1.2, LOSE_T[2] + 1.5, t)))
+    pull = 0.35 + 0.65 * k
+    def warp_pt(x, y):
+        dx, dy = x - cx, y - cy
+        dist = math.hypot(dx, dy) + 1e-6
+        f = pull * 9000 / (dist + 120)
+        return x - dx / dist * min(f, dist * 0.8), y - dy / dist * min(f, dist * 0.8)
+    def draw(d, m, S):
+        for gx in range(-60, W + 120, 120):
+            pts = [m(*warp_pt(gx, gy)) for gy in range(-40, H + 80, 40)]
+            d.line(pts, fill=(0, 130, 55, 150), width=round(3 * S))
+        for gy in range(-60, H + 120, 120):
+            pts = [m(*warp_pt(gx, gy)) for gx in range(-40, W + 80, 40)]
+            d.line(pts, fill=(0, 130, 55, 150), width=round(3 * S))
+    fx.over(c, fx.draw_rgba((0, 0, W, H), draw), a * 0.8)
+    if k > 0.004:
+        for j in range(46):
+            base = (j * 0.618) % 1
+            life = (t * 0.55 + base) % 1
+            rr = 520 * (1 - life) ** 1.3 + 30
+            q = 2 * math.pi * base * 7 + life * 5.0
+            x, y = cx + math.cos(q) * rr, cy + math.sin(q) * rr * 0.85
+            put(c, glow_glyph('01'[j % 2]), x, y, 0.5 + 0.6 * (1 - life), a * k * cl(life * 4) * (0.4 + 0.6 * life))
+
+
+@functools.lru_cache(4)
+def planet():
+    S = 3
+    w, h = 300 * S, 170 * S
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse([w / 2 - 62 * S, h / 2 - 62 * S, w / 2 + 62 * S, h / 2 + 62 * S], fill=(0, 150, 62, 210))
+    d.ellipse([w / 2 - 140 * S, h / 2 - 22 * S, w / 2 + 140 * S, h / 2 + 22 * S], outline=(0, 110, 45, 230), width=7 * S)
+    d.chord([w / 2 - 62 * S, h / 2 - 62 * S, w / 2 + 62 * S, h / 2 + 62 * S], 180, 360, fill=(0, 150, 62, 210))
+    return im.resize((w // S, h // S), Image.LANCZOS)
+
+
+@functools.lru_cache(4)
+def moon():
+    S = 3
+    n = 150 * S
+    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse([0, 0, n, n], fill=(255, 220, 90, 235))
+    d.ellipse([n * 0.28, -n * 0.08, n * 1.15, n * 0.9], fill=(0, 0, 0, 0))
+    m_ = Image.new('L', (n, n), 0)
+    ImageDraw.Draw(m_).ellipse([0, 0, n, n], fill=255)
+    ImageDraw.Draw(m_).ellipse([n * 0.28, -n * 0.08, n * 1.15, n * 0.9], fill=0)
+    im.putalpha(m_)
+    return im.resize((n // S, n // S), Image.LANCZOS)
 
 
 def motif_stars(c, t, a):
-    """R4: a constellation fades in over the code; a shooting star crosses where the telescope points."""
+    """R4: night comes to the code: a constellation, a crescent moon and a ringed planet; a shooting star crosses."""
+    k = (np.clip(1 - np.arange(760, dtype=np.float32) / 760, 0, 1) ** 1.5 * 0.30 * a)[:, None, None]
+    c[:760] = c[:760] * (1 - k) + np.array((8, 40, 28), np.float32) * k          # dusk falls from the top
     pts = [(150, 330), (300, 260), (430, 380), (650, 300), (820, 230), (960, 360), (880, 520), (180, 560)]
     def draw(d, m, S):
         for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-            d.line([m(x0, y0), m(x1, y1)], fill=(0, 150, 60, 110), width=round(2 * S))
+            d.line([m(x0, y0), m(x1, y1)], fill=(0, 140, 60, 200), width=round(3 * S))
     fx.over(c, fx.draw_rgba((0, 150, W, 660), draw), a)
     for k, (x, y) in enumerate(pts):
         tw = 0.6 + 0.4 * math.sin(t * 3.3 + k * 1.7)
-        put(c, star4(), x, y, 0.45 * tw + 0.15, a)
+        put(c, star4(), x, y, 0.55 * tw + 0.2, a)
+    put(c, moon(), 120, 160, 0.9, a, rot=-0.2)
+    put(c, planet(), 940, 1530, 0.9, a * 0.85, rot=0.25 + 0.03 * math.sin(t))
     w0, w1 = TRICK[3]
     u = (t - (w0 + 1.2)) / 0.9
     if 0 <= u <= 1:
         x, y = lerp(980, 560, u), lerp(200, 430, u)
-        for j in range(12):
-            dot(c, x + j * 14, y - j * 7.4, 6 - j * 0.45, (255, 220, 90), (1 - j / 12) * math.sin(math.pi * u))
-        put(c, star4(), x, y, 0.9, math.sin(math.pi * u))
+        for j in range(14):
+            dot(c, x + j * 14, y - j * 7.4, 7 - j * 0.45, (255, 220, 90), (1 - j / 14) * math.sin(math.pi * u))
+        put(c, star4(), x, y, 1.1, math.sin(math.pi * u))
 
 
 def motif_ripples(c, t, a):
-    """R5 (bullet time): concentric ripples spread from the centre while the rain almost stops."""
+    """R5 (bullet time): ripples spread from the centre while the rain almost stops; sawdust hangs in the air;
+    a ghosted «ФИНАЛ» stands behind everything."""
+    put(c, label('ФИНАЛ', 300, 'Heavy', (0, 140, 60)), 540, 1230, 1.0, a * 0.18, rot=-0.06)
     k = sm(TIMER0[4] - 0.2, TIMER0[4] + 0.4, t) * (1 - sm(REVEAL[4], REVEAL[4] + 0.4, t))
+    slow = 1 - 0.9 * k
+    for j in range(40):                                        # sawdust / wood chips, almost frozen in bullet time
+        sd = (j * 0.381) % 1
+        x = (sd * 1180 + 60 * math.sin(j)) % W
+        y = (j * 97 + 140 * t * slow * (0.5 + sd)) % H
+        r = 3 + 4 * ((j * 7) % 5) / 5
+        col = (196, 150, 90) if j % 3 else (150, 110, 60)
+        fx.over(c, fx.draw_rgba((x - r - 2, y - r - 2, x + r + 2, y + r + 2), lambda d, m, S, x=x, y=y, r=r, col=col:
+                d.polygon([m(x - r, y), m(x, y - r * 0.6), m(x + r, y + r * 0.4), m(x - r * 0.2, y + r)], fill=col + (255,))),
+                a * 0.85)
     if k <= 0.004:
         return
     cx, cy = 540, 820
     def draw(d, m, S):
-        for j in range(4):
-            ph = ((t - TIMER0[4]) * 0.45 + j / 4) % 1
-            r = 80 + ph * 760
-            al = int(150 * (1 - ph))
-            d.ellipse([*m(cx - r, cy - r * 0.9), *m(cx + r, cy + r * 0.9)], outline=(0, 150, 60, al), width=round(4 * S))
+        for j in range(5):
+            ph = ((t - TIMER0[4]) * 0.45 + j / 5) % 1
+            r = 80 + ph * 820
+            al = int(220 * (1 - ph))
+            d.ellipse([*m(cx - r, cy - r * 0.9), *m(cx + r, cy + r * 0.9)], outline=(0, 130, 55, al), width=round(6 * S))
     fx.over(c, fx.draw_rgba((0, 0, W, H), draw), a * k)
+
+
+def ambient(c, t):
+    """Small details everywhere: glowing data motes drift up slowly; a soft green vignette frames the picture."""
+    for j in range(16):
+        sd = (j * 0.618) % 1
+        x = (sd * W + 40 * math.sin(t * 0.6 + j)) % W
+        y = H - ((t * (30 + 40 * sd) + j * 137) % (H + 100))
+        put(c, glow_glyph('01'[j % 2]), x, y, 0.45 + 0.3 * sd, 0.55 * (0.5 + 0.5 * math.sin(t * 2 + j)))
+
+
+@functools.lru_cache(1)
+def vignette():
+    yy, xx = np.mgrid[:H, :W].astype(np.float32)
+    d = np.hypot((xx - W / 2) / (W * 0.62), (yy - H / 2) / (H * 0.62))
+    v = np.clip(d - 0.55, 0, 1) ** 1.6 * 0.55
+    return v[..., None]
 
 
 # ------------------------------------------------------------------ hands (realistic 6-frame fist strip)
@@ -902,6 +1023,13 @@ def draw_items(c, t):
             hx, hy = item_anchor(side, GIFT_H[r] if side == 0 else im.height)
         if not win and defeat(c, r, side, t, im, cx, cy):
             continue
+        if TRICK_SIDE[r] == side and r in (1, 4) and k >= 0.999:      # motion trail while it flies
+            w0, w1 = TRICK[r]
+            u = (t - w0) / (w1 - w0)
+            if 0 < u < (0.34 if r == 1 else 0.42):
+                for j in (3, 2, 1):
+                    _, gx, gy, gsc, grot, _, _, ganc = item_state(r, side, t - 0.025 * j)
+                    put(c, im, gx, gy, gsc, 0.16 * (4 - j), grot, anchor=ganc)
         shown = matrix.code_mix(im, k, t, seed=31 + r * 2 + side, cell=12) if k < 0.999 else im
         put(c, shown, cx, cy, sc, 1.0, rot, anchor=anchor)
         for kind, v in extra:
@@ -1075,7 +1203,21 @@ def draw_header(c, t):
     log = f'> ТЕЛЕГА {s[0]} : {s[1]} ЖИЗНЬ' + (f'  · {lab_}' if lab_ else '')
     last = max([REVEAL[r] + 0.3 for r in range(5) if t >= REVEAL[r] + 0.3] or [-9])
     kb = 1 + 0.18 * fx.bump(t - last, 3.0, 6.0) if last > 0 else 1.0
-    text(c, log, 28, 'Heavy', GREEN, 540, 232, a, kb, mono=True)
+    typed = cl((t - last) / 0.35) if last > 0 and t - last < 0.35 else 1.0
+    n = max(2, int(len(log) * typed))
+    shown = log[:n] + ('_' if typed < 1 else '')
+    text(c, shown + ' ' * (len(log) - len(shown)), 28, 'Heavy', GREEN, 540, 232, a, kb, mono=True)
+
+
+def count_up(s, k):
+    """«≈ 13 560 ₽» rolls up from zero like a counter (k 0..1, eased)."""
+    import re as _re
+    m = _re.search(r'[\d ]+\d', s)
+    if not m or k >= 1:
+        return s
+    v = int(m.group(0).replace(' ', ''))
+    cur = int(v * fx.ease_out(k))
+    return s[:m.start()] + f'{cur:,}'.replace(',', ' ') + s[m.end():]
 
 
 def draw_prices(c, t):
@@ -1088,7 +1230,7 @@ def draw_prices(c, t):
     a = cl(k * 2) * (1 - sm(FISTS[r] - 0.1, FISTS[r] + 0.15, t))
     for side in (0, 1):
         win = WIN[r] == side
-        s = GIFT_RUB[r] if side == 0 else THING_RUB[r]
+        s = count_up(GIFT_RUB[r] if side == 0 else THING_RUB[r], cl((t - REVEAL[r]) / 0.45))
         im = pill(s, 40 if win else 34, SIDE_COL[side], (255, 255, 255))
         put(c, im, ch.HAND_POS[side][0], 1468, max(0.01, k), a * (1.0 if win else 0.75))
         sub = 'в телеге' if side == 0 else ROUNDS[r][6]
@@ -1307,6 +1449,8 @@ def render_at(t, ad=None, raw=False):
     green_flood(c, t, flood_env(t))
     if ad is None:
         bg_motif(c, t)
+        ambient(c, t)
+        c[:] = c * (1 - vignette()) + np.array((0, 70, 35), np.float32) * vignette()
         draw_morpheus(c, t)
         draw_halos(c, t)
         draw_hands(c, t)

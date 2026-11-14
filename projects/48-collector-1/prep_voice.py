@@ -19,7 +19,8 @@ RAW = HERE / 'voice' / 'raw'
 OUT = HERE / 'voice'
 TEMPO = {'N': 1.0, 'U': 1.0, 'K': 1.0, 'T': 1.0, 'M': 1.0, 'X': 0.96, 'P': 1.0}   # автор: реплики не ускорять
 MAX_GAP = 0.32
-GAP_LINE = {12: 0.75, 17: 0.55, 18: 0.45, 24: 0.45, 26: 0.4}     # драматические паузы внутри реплики
+GAP_LINE = {12: 0.5, 20: 0.55, 21: 0.45, 27: 0.45, 29: 0.4}     # драматические паузы внутри реплики
+GAP_WHO = {'U': 0.12}    # неизвестный — без пауз между словами (автор)
 
 
 def ff(src, af=None, out=None):
@@ -46,11 +47,11 @@ def write(path, x):
         w.writeframes((np.clip(x, -1, 1) * 32767).astype('<i2').tobytes())
 
 
-def tighten(x, max_gap):
+def tighten(x, max_gap, thr=34):
     hop = SR // 100
     e = np.array([np.sqrt((x[k:k + hop] ** 2).mean()) for k in range(0, len(x) - hop, hop)])
     db = 20 * np.log10(e + 1e-9)
-    loud = db > db.max() - 34
+    loud = db > db.max() - thr
     on = np.nonzero(loud)[0]
     a, b = on[0], on[-1] + 1
     keep = np.zeros(len(e), bool)
@@ -134,14 +135,14 @@ def main():
     for i, (who, text) in enumerate(script.LINES, 1):
         task = takes[f'L{i:02d}'][0]
         x = ff(RAW / f'{task}.mp3')
-        x = tighten(x, GAP_LINE.get(i, MAX_GAP))
+        x = tighten(x, GAP_LINE.get(i, GAP_WHO.get(who, MAX_GAP)), thr=26 if who == 'U' else 34)   # у неизвестного вдохи между фразами тоже режем
         t = TEMPO[who]
         if t != 1.0:
             x = proc(x, f'rubberband=tempo={t}')
         if who == 'X':
             x = monster(x)
         elif who == 'M':
-            x = fake_mom(x) if i == 13 else behind_door(x)
+            x = fake_mom(x) if i == 15 else behind_door(x)
         elif who == 'U':
             x = unknown(x)
         elif who == 'T':

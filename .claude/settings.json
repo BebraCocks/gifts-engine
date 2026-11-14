@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Fish_Audio__text_to_speech",
+      "mcp__Fish_Audio__get_speech",
+      "mcp__Fish_Audio__list_speech_history",
+      "mcp__Fish_Audio__search_sound_effects",
+      "mcp__Fish_Audio__get_voice",
+      "mcp__Fish_Audio__get_credit_balance"
+    ]
+  }
+}

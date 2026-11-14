@@ -100,7 +100,7 @@ def sfx_layer(n, kit):
     add(fx, 'riser', STOPS[0] - 1.2, gain_db=-23, fit=1.2, fade_out=0.05, label='«и тут приходит условие» → RubUp №1')
     add(fx, 'popup', STOPS[0] + 0.2, gain_db=-17, label='после рекламы: приходит условие')
     add(fx, 'typing', ON[5] + 0.2, gain_db=-26, fit=2.0, fade_out=0.4, label='условие печатается')
-    add(fx, 'sub-drop', ON[5] + 3.9, gain_db=-17, label='«…охотится Коллекционер»')
+    add(fx, 'sub-drop', ON[5] + 4.65, gain_db=-17, label='«…охотится Коллекционер»')
     add(fx, 'riser', END[5] - 3.0, gain_db=-24, fit=3.0, fade_out=0.1, label='напряжение к концу условия')
     # ---------------- подарок, продажа
     add(fx, 'popup', ON[6] + 2.25, gain_db=-15, label='дзынь: падает подарок')

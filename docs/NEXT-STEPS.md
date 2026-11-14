@@ -530,3 +530,8 @@ RubUp перенесены: ~0:23 (после «И тут приходит ус�
 
 ## 2026-11-14 · 48-collector-1 — звук v7
 «Выживешь — и все NFT твои», неизвестный пишет «Удачи 😇» (голосом «Удачи»). Ждём прослушивания.
+
+## 2026-11-14 · 48-collector-1 — видео собрано
+`renders/48-collector-1/collector_1_v2.mp4` (159,7 с, 25 МБ, в Drive «TikTok»; v1 — 60 МБ, вебхук Drive не принял >50 МБ).
+Музыка Kevin MacLeod (CC BY 4.0) — подпись в `input/music/SOURCE.md`, её нужно добавить в описание. Ждём отзыв автора.
+Пересборка: дубли по `takes.json`, `prep_voice.py`, `audio.py`, `render.py` (или engine/tools/build.py).

@@ -26,7 +26,7 @@ from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TE
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
 from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH, HOOK_OPEN, REEL_T,
-                    REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE)
+                    REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE, OGRE)
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -668,6 +668,13 @@ def draw_hand(c, t, side, pos=None, sc=1.0, a=1.0, force_fist=False):
         im = pose_im(side, 'point_up')
         put(c, im, px + dx + (10 if side == 0 else -10), py + dy - 60, 400 / 522 * sc, a, rot)
         return
+    if pos is None and ogre_on(t) and pose != 'point_up':  # the ogre's big green hands, same open pose
+        im = ogre_im('hand_L' if side == 0 else 'hand_R')
+        ref = strip_im(side, 0)
+        bb = ref.getbbox()
+        s_ = HAND_SC * (bb[2] - bb[0]) / im.width * 1.05
+        put(c, torn(im, t, cl(1 - min(t - OGRE[0], OGRE[1] - t) / 0.09)), px + dx, py + dy, s_ * sc, a, rot)
+        return
     tp = None if (force_fist or pos is not None) else turn_p(side, t)
     if tp is not None:
         k0 = int(math.floor(tp))
@@ -763,10 +770,39 @@ def mouth_patch(face, vis):
     return Image.fromarray(a.astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6))
 
 
+def ogre_on(t):
+    return OGRE[0] <= t < OGRE[1]
+
+
+@functools.lru_cache(None)
+def ogre_im(kind):
+    return Image.open(ch.SP / f'{kind}_ogre.png').convert('RGBA')
+
+
+def torn(im, t, k):
+    """Horizontal glitch slices on a sprite (k 0..1)."""
+    if k <= 0.02:
+        return im
+    a = np.asarray(im).copy()
+    rng = np.random.default_rng(int(t * 60))
+    for _ in range(6):
+        y0 = int(rng.integers(0, a.shape[0] - 12))
+        hh = int(rng.integers(6, 40))
+        a[y0:y0 + hh] = np.roll(a[y0:y0 + hh], int(rng.integers(-50, 50) * k), axis=1)
+    return Image.fromarray(a)
+
+
 def draw_head_ls(c, t, pos=None, extra_sc=1.0):
     """Morpheus' head with lip sync: the face rig (ch.draw_head) + the viseme's mouth on frontal faces."""
-    vis, openness = lipsync.mouth(t)
     pos = pos or ch.HEAD_POS
+    if ogre_on(t):                                        # the glitch: an ogre for an instant (same place, size, motion)
+        dx, dy, rot, sc = ch.head_motion(t, HEAD_G)
+        im = ogre_im('head')
+        base, s0 = ch.head('calm3')
+        edge = 1 - min(t - OGRE[0], OGRE[1] - t) / 0.09
+        put(c, torn(im, t, cl(edge)), pos[0] + dx, pos[1] + dy, s0 * base.width / im.width * 1.08 * sc * extra_sc, 1.0, rot)
+        return
+    vis, openness = lipsync.mouth(t)
     p2 = (pos[0], pos[1] + 3.0 * openness)               # the jaw moves the head a hair
     ch.draw_head(c, t, FACES, HEAD_G, glints=GLINTS, pos=p2, extra_sc=extra_sc)
     if not vis:

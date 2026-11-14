@@ -49,6 +49,7 @@ EGGS = [(TIMER0[0] + 2.6, 'ПРОСНИСЬ,|НЕО', 1), (ROUND_IN[1] + 0.9, '�
 EGG_HOLD = 1.9
 # «сбой в Матрице» (author): what each interference does to the code besides the torn bands
 GLITCH_MODE = ['stutter', 'reverse', 'failure', 'deja', 'stutter', 'failure']
+OGRE = (EGGS[4][0] + 0.05, EGGS[4][0] + 0.41)   # author: once, Morpheus glitches into a green ogre for an instant
 
 E = {
     'formed': 1.28,                # Morpheus assembled from code (intro)

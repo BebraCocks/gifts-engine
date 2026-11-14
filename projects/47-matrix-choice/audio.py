@@ -17,7 +17,7 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO
-from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE
+from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE, OGRE
 from words import wt
 HOOK_SLAM_T = wt(0, 'Угадай') - 0.04
 import music
@@ -147,6 +147,9 @@ def sfx_layer(n, kit):
             add(fx, 'voice', t0 + 1.55, gain_db=-22, file='cute-vocal', vary=False, label='déjà vu: the same cat again')
         add(fx, 'glitch-text', t0 + 0.08, gain_db=-21, pan=-0.6 if side == 0 else 0.6, label='the easter egg decodes')
         add(fx, 'glitch-text', t0 + EGG_HOLD, gain_db=-24, pan=-0.6 if side == 0 else 0.6, label='it falls back into digits')
+    add(fx, 'transform', OGRE[0] - 0.02, gain_db=-16, label='glitch: Morpheus turns into a green ogre for an instant')
+    add(fx, '*', OGRE[0] + 0.05, gain_db=-20, file='cartoon-bonk', vary=False, label='glitch: ogre — comic bonk')
+    add(fx, 'glitch', OGRE[1] - 0.03, gain_db=-17, label='glitch: back to Morpheus')
     # bullet time in the final countdown
     add(fx, 'downlifter', TIMER0[4] - 0.2, gain_db=-19, label='R5: bullet time — the code slows down')
     add(fx, 'riser', REVEAL[4] - 0.9, gain_db=-20, fit=0.9, fade_out=0.1, label='R5: time resumes on the answer')

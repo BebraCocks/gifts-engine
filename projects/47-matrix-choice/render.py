@@ -26,7 +26,7 @@ from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TE
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
 from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH, HOOK_OPEN, REEL_T,
-                    REEL_LAND)
+                    REEL_LAND, EGGS, EGG_HOLD)
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -212,6 +212,59 @@ def page(t):
     hh = (0.95 * hd * band)[..., None]
     c[:] = c * (1 - hh) + RAIN_HEAD * hh
     return c
+
+
+def bg_glitch(c, t):
+    """Interference on the code (author: «изредка помехи на фоне»): torn bands, RGB split, a pale flash — the background
+    only (characters are drawn on top afterwards)."""
+    for t0, _, _ in EGGS:
+        u = t - t0
+        if not 0 <= u < 0.32:
+            continue
+        k = math.sin(math.pi * u / 0.32)
+        rng = np.random.default_rng(int(t0 * 1000) + int(u * 60))
+        for _ in range(7):
+            y0 = int(rng.integers(0, H - 80))
+            hh = int(rng.integers(10, 90))
+            sh = int(rng.integers(-90, 90) * k)
+            band = c[y0:y0 + hh].copy()
+            c[y0:y0 + hh] = np.roll(band, sh, axis=1)
+            c[y0:y0 + hh, :, 0] = np.roll(band[..., 0], sh + int(12 * k), axis=1)
+        for _ in range(3):                                         # a few static noise blocks
+            x0, y0 = int(rng.integers(0, W - 200)), int(rng.integers(0, H - 60))
+            n = rng.integers(0, 255, (int(rng.integers(12, 50)), int(rng.integers(80, 220)), 1)).astype(np.float32)
+            reg = c[y0:y0 + n.shape[0], x0:x0 + n.shape[1]]
+            reg[:] = reg * (1 - 0.5 * k) + n[:reg.shape[0], :reg.shape[1]] * 0.5 * k
+        c[:] = c * (1 - 0.12 * k) + np.array((200, 255, 210), np.float32) * 0.12 * k
+
+
+EGG_CHARS = '01'
+
+
+def draw_eggs(c, t):
+    """Easter eggs: a phrase decodes out of the rain beside the head, holds, then falls back into digits."""
+    for t0, phrase, side in EGGS:
+        u = t - t0
+        if not 0 <= u < EGG_HOLD + 0.5:
+            continue
+        lines = phrase.split('|')
+        x0 = 175 if side == 0 else 905
+        for li, line in enumerate(lines):
+            y = 470 + li * 62
+            n = len(line)
+            for j, chr_ in enumerate(line):
+                lock = 0.05 + 0.04 * j + 0.1 * li                        # letters lock one after another
+                unlock = EGG_HOLD + 0.02 * j
+                x = x0 + (j - (n - 1) / 2) * 30
+                if chr_ == ' ':
+                    continue
+                if u < lock or u > unlock:
+                    ch_ = EGG_CHARS[(int(t * 20) + j * 3 + li) % 2]
+                    a = cl(u / 0.1) * (1 - cl((u - unlock) / 0.4)) * 0.85
+                else:
+                    ch_ = chr_
+                    a = 1.0
+                put(c, glow_glyph(ch_, 40), x, y, 0.95, a)
 
 
 def green_flood(c, t, env):
@@ -478,7 +531,6 @@ def strip_p(side, t):
         if side == 0 and r == 1:                                     # the watch is crushed in the left hand
             t0 = LOSE_T[1]
             keys.append((t0 + CRUSH['close'][0], CRUSH['close'][1] - CRUSH['close'][0], 0, 5))
-            keys.append((t0 + CRUSH['open'][0], CRUSH['open'][1] - CRUSH['open'][0], 5, 0))
         keys.append((FISTS[r], 0.28, 0, 5))
     keys.append((OUTRO + 0.35, OPEN_DUR, 5, 0))
     keys.append((E['dissolve'] - 0.5, 0.28, 0, 5))
@@ -503,8 +555,6 @@ def hand_extra(side, t):
             dx += 7 * math.sin(u * 2 * math.pi * 14) * (1 - (u - a0) / (a1 - a0) * 0.4)
             dy += 3 * math.cos(u * 2 * math.pi * 11)
             rot += 0.035 * math.sin(u * 2 * math.pi * 9)
-        tl = sm(LOSE_T[1] + CRUSH['tilt'][0], LOSE_T[1] + CRUSH['tilt'][1], t) * (1 - sm(LOSE_T[1] + CRUSH['level'][0], LOSE_T[1] + CRUSH['level'][1], t))
-        rot += 0.42 * tl                                             # fingers (screen-left) go down
         w0, w1 = TRICK[4]                                            # R5: index finger up for the cap
         if w0 + 0.30 <= t < w1 - 0.25:
             pose = 'point_up'
@@ -520,6 +570,33 @@ def hand_extra(side, t):
     return dx, dy, rot, pose
 
 
+TURN_SC = 0.641                # turn strip (fist → back of the hand up → open palm-down), matched to the main fist
+TURN_OFF = (-37.0, -55.0)
+
+
+def turn_p(side, t):
+    """Left hand, round 2: 0 fist (knuckles to camera) … 2 back of the hand up … 5 open palm-down; None otherwise."""
+    if side != 0:
+        return None
+    t0 = LOSE_T[1]
+    a0, a1 = t0 + CRUSH['turn'][0], t0 + CRUSH['turn'][1]
+    b0, b1 = t0 + CRUSH['open'][0], t0 + CRUSH['open'][1]
+    if t < a0 or t >= FISTS[1] + 0.28:
+        return None
+    if t < a1:
+        return 2 * fx.smooth((t - a0) / (a1 - a0))
+    if t < b1:
+        return 2 + 3 * fx.smooth((t - b0) / (b1 - b0)) if t >= b0 else 2.0
+    if t < FISTS[1]:
+        return 5.0
+    return 5 - 5 * fx.smooth((t - FISTS[1]) / 0.28)               # turns back into the fist for the next round
+
+
+@functools.lru_cache(None)
+def turn_im(k):
+    return Image.open(ch.SP / f'hand_L_turn_{k}.png').convert('RGBA')
+
+
 def hand_xy(side):
     return ch.HAND_POS[side]
 
@@ -531,6 +608,15 @@ def draw_hand(c, t, side, pos=None, sc=1.0, a=1.0, force_fist=False):
     if pose == 'point_up':
         im = pose_im(side, 'point_up')
         put(c, im, px + dx + (10 if side == 0 else -10), py + dy - 60, 400 / 522 * sc, a, rot)
+        return
+    tp = None if (force_fist or pos is not None) else turn_p(side, t)
+    if tp is not None:
+        k0 = int(math.floor(tp))
+        f = tp - k0
+        x, y = px + dx + TURN_OFF[0], py + dy + TURN_OFF[1]
+        put(c, turn_im(k0), x, y, TURN_SC * sc, a, rot)
+        if f > 0.02 and k0 + 1 < 6:
+            put(c, turn_im(k0 + 1), x, y, TURN_SC * sc, a * f, rot)
         return
     p = 5.0 if force_fist else strip_p(side, t)
     k0 = int(math.floor(p))
@@ -568,7 +654,7 @@ def _faces():
             f += [(LOSE_T[0] - 0.12, 'after_blow_right'), (LOSE_T[0] - 0.02, 'blow_right'),
                   (LOSE_T[0] + 0.55, 'after_blow_right')]
         elif r == 1:
-            f += [(LOSE_T[1] - 0.1, 'look_left_down'), (LOSE_T[1] + CRUSH['level'][1], 'calm3')]
+            f += [(LOSE_T[1] - 0.1, 'look_left_down'), (LOSE_T[1] + CRUSH['drop'][1], 'calm3')]
         elif r == 2:
             f += [(LOSE_T[2], 'brows_up'), (LOSE_T[2] + 1.3, 'calm3')]
         else:
@@ -903,29 +989,34 @@ def defeat(c, r, side, t, im, cx, cy):
         if u < c1:
             v = u / c1
             put(c, im, lerp(cx, px, v), lerp(cy, py - 30, v), 1 - 0.35 * v, 1.0, sy=(1 - 0.35 * v) * (1 - 0.3 * v))
-        # crumbs: appear when the fist opens, slide to the fingers when the palm tilts, then fall
-        o0 = CRUSH['open'][1]
-        if u >= o0:
-            tilt_t = LOSE_T[1] + CRUSH['tilt'][0]
-            for j in range(16):
-                sd = ((j * 41) % 17) / 17
-                x = px - 60 + 120 * sd
-                y = py - 8 - 10 * ((j * 13) % 5) / 5
-                q = t - tilt_t - 0.03 * (j % 5)
-                if q > 0:                                    # slide toward the fingertips (screen-left), then fall
-                    x -= 260 * q + 400 * q * q
-                    if x < px - 200:
-                        fall = (px - 200 - x) / 300
-                        y += 0.5 * G * fall * fall + 40 * fall
-                    else:
-                        y += 70 * q
+        # dust: pours out from under the fingers of the hand turned palm-down (gravity, slight spread, a soft cloud)
+        d0 = LOSE_T[1] + CRUSH['drop'][0]
+        if t >= d0:
+            hx, hy = hand_xy(0)
+            hdx, hdy = hand_extra(0, t)[:2]
+            for j in range(150):
+                sd = ((j * 41) % 97) / 97
+                born = d0 + 0.6 * ((j * 13) % 29) / 29
+                q = t - born
+                if q < 0:
+                    continue
+                x = hx + hdx - 160 + 200 * sd + 30 * q * math.sin(j * 1.7)
+                y = hy + hdy + 88 + 0.5 * G * 0.32 * q * q + 40 * q
                 if y > H:
                     continue
-                col = (70, 76, 82) if j % 3 else ((40, 190, 90) if j % 2 else (150, 156, 162))
-                rr = 5 + 4 * sd
+                if j % 9 == 0:                                   # green glints of the watch screen
+                    col, rr = (40, 220, 100), 6.0
+                elif j % 3 == 0:
+                    col, rr = (120, 126, 132), 4.6
+                else:
+                    col, rr = (62, 66, 72), 3.6
                 fx.over(c, fx.draw_rgba((x - rr - 2, y - rr - 2, x + rr + 2, y + rr + 2), lambda d, m, S, x=x, y=y, rr=rr, col=col:
-                        d.polygon([m(x - rr, y), m(x, y - rr * 0.8), m(x + rr, y + rr * 0.3), m(x - rr * 0.3, y + rr)],
-                                  fill=col + (255,))))
+                        d.ellipse([*m(x - rr, y - rr), *m(x + rr, y + rr)], fill=col + (255,))), cl(1.4 - q))
+            for j in range(6):                                    # a soft cloud of fine dust drifting down
+                q = t - d0 - 0.06 * j
+                if 0 < q < 1.2:
+                    put(c, wisp(60, (110, 116, 122)), hx + hdx - 120 + 40 * j, hy + hdy + 120 + 140 * q, 0.7 + 1.3 * q,
+                        0.6 * (1 - q / 1.2))
     elif r == 2:        # the ring's black hole pulls the cactus across: spiral path, stretched toward the hole, gone
         hx, hy = ring_pos()
         v = cl(u / 1.15)
@@ -1452,7 +1543,9 @@ def render_at(t, ad=None, raw=False):
     green_flood(c, t, flood_env(t))
     if ad is None:
         bg_motif(c, t)
+        bg_glitch(c, t)
         ambient(c, t)
+        draw_eggs(c, t)
         c[:] = c * (1 - vignette()) + np.array((0, 70, 35), np.float32) * vignette()
         draw_morpheus(c, t)
         draw_halos(c, t)

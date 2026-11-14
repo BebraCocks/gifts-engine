@@ -20,8 +20,8 @@ DEFEAT = ['blow_away', 'crush', 'black_hole', 'lens_crack', 'glitch_cube']
 
 LOSE_T = [rv + (0.10 if r == 0 else 0.5) for r, rv in enumerate(REVEAL)]   # R1: the blow comes before the answer line
 # R2 crush: watch into the palm → fist closes → shakes → opens → palm tilts → crumbs fall → palm level again
-CRUSH = dict(close=(0.0, 0.26), shake=(0.26, 0.72), open=(0.72, 0.98), tilt=(0.98, 1.22), drop=(1.05, 1.75),
-             level=(1.45, 1.70))
+CRUSH = dict(close=(0.0, 0.26), shake=(0.26, 0.70), turn=(0.70, 1.00), open=(1.00, 1.30), drop=(1.10, 2.10))
+# v6 (author): after the crush the fist turns over (back of the hand up) and opens palm-down — the dust pours out by itself
 WIN_GONE = [END[3 + 3 * r] - 0.40 for r in range(5)]    # the winner dissolves into code under the answer's last word
 FISTS = [END[3 + 3 * r] - 0.02 for r in range(5)]       # empty palms close into fists (strip, 0.28 s)
 OPEN_DUR = 0.26                                          # fist → open palm at ROUND_IN
@@ -42,6 +42,11 @@ def _reel_times():
 
 REEL_T = _reel_times()
 REEL_LAND = REEL_T[-1]
+
+# background interference + an easter-egg phrase decoding out of the rain (author 2026-11-14), away from key moments
+EGGS = [(TIMER0[0] + 2.6, 'ПРОСНИСЬ,|НЕО', 1), (ROUND_IN[1] + 0.9, 'ТУК-ТУК,|НЕО', 0), (TIMER0[2] + 2.8, 'ЛОЖКИ|НЕТ', 1),
+        (TIMER0[3] + 1.4, 'СЛЕДУЙ ЗА|КРОЛИКОМ', 0), (ROUND_IN[4] + 0.6, 'ЭТО|ДЕЖАВЮ', 1), (OUTRO + 1.6, 'ТЕЛЕГА|ЗНАЕТ', 0)]
+EGG_HOLD = 1.9
 
 E = {
     'formed': 1.28,                # Morpheus assembled from code (intro)

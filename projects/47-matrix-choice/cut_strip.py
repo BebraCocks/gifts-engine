@@ -7,7 +7,9 @@ from PIL import Image, ImageOps
 import cut_sheets
 
 HERE = Path(__file__).resolve().parent
-sheet = Image.open(HERE / 'assets' / 'gen' / 'fist_strip_v1.png').convert('RGB')
+import sys
+SHEET, PREFIX = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ('fist_strip_v1.png', 'close')
+sheet = Image.open(HERE / 'assets' / 'gen' / SHEET).convert('RGB')
 cw, ch = sheet.width / 3, sheet.height / 2
 cells = [sheet.crop((round(c * cw), round(r * ch), round((c + 1) * cw), round((r + 1) * ch))) for r in range(2) for c in range(3)]
 cuts = []
@@ -45,6 +47,6 @@ box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in box
 out = HERE / 'assets' / 'sprites'
 for k, im in enumerate(rgba_cells):
     c = im.crop(box)
-    c.save(out / f'hand_L_close_{k}.png')
-    ImageOps.mirror(c).save(out / f'hand_R_close_{k}.png')
+    c.save(out / f'hand_L_{PREFIX}_{k}.png')
+    ImageOps.mirror(c).save(out / f'hand_R_{PREFIX}_{k}.png')
 print('box', box, 'size', (box[2] - box[0], box[3] - box[1]))

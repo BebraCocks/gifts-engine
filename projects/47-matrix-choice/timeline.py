@@ -9,7 +9,7 @@ from script import LINES, TIMER
 HERE = Path(__file__).resolve().parent
 TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
 HAS_NARRATION = all(p.is_file() for p in TAKES)
-MAX_TOTAL = 70.0           # author 2026-11-13: up to 70 s with RubUp; the track is extended to the content length
+MAX_TOTAL = 71.2           # author 2026-11-13: up to 70 s with RubUp; the track is extended to the content length
 AD_EXTRA = 6.1155          # banner.Breaks([..]).out_dur(d) - d
 
 
@@ -45,7 +45,7 @@ for r in range(5):
 OUTRO = cur - CLOSE + 0.0
 ON[16] = OUTRO
 END[16] = ON[16] + _len(16)
-DUR = END[16] + 0.20         # Morpheus dissolves into code after the last word
+DUR = END[16] + 1.20         # Morpheus dissolves into code after the last word
 SLACK = MAX_TOTAL - AD_EXTRA - DUR
 assert SLACK >= 0, f'content too long by {-SLACK:.2f} s'
 for k in range(len(LINES) - 1):

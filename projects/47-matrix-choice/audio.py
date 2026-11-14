@@ -17,7 +17,7 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO
-from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND
+from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND, EGGS, EGG_HOLD
 from words import wt
 HOOK_SLAM_T = wt(0, 'Угадай') - 0.04
 import music
@@ -132,6 +132,11 @@ def sfx_layer(n, kit):
             add(fx, 'sparkle', ROUND_IN[r] + 0.32 + 0.1 * side, gain_db=-25, pan=SIDE_PAN[side], label=f'R{r + 1}: code sparks burst ({"NFT" if side == 0 else "thing"})')
     for g0 in [f + 0.12 for f in FISTS[:4]] + [OUTRO - 0.05]:
         add(fx, 'glitch', g0, gain_db=-21, label='RGB glitch between rounds')
+    # background interference with an easter egg decoding out of the rain
+    for t0, phrase, side in EGGS:
+        add(fx, 'glitch', t0, gain_db=-18, pan=-0.5 if side == 0 else 0.5, label=f'interference on the code («{phrase.replace("|", " ")}»)')
+        add(fx, 'glitch-text', t0 + 0.08, gain_db=-21, pan=-0.6 if side == 0 else 0.6, label='the easter egg decodes')
+        add(fx, 'glitch-text', t0 + EGG_HOLD, gain_db=-24, pan=-0.6 if side == 0 else 0.6, label='it falls back into digits')
     # bullet time in the final countdown
     add(fx, 'downlifter', TIMER0[4] - 0.2, gain_db=-19, label='R5: bullet time — the code slows down')
     add(fx, 'riser', REVEAL[4] - 0.9, gain_db=-20, fit=0.9, fade_out=0.1, label='R5: time resumes on the answer')
@@ -155,10 +160,14 @@ def defeats(fx, kit):
     add(fx, 'cartoon-hit', LOSE_T[1] + CRUSH['close'][1] - 0.04, gain_db=-16, pan=p(1), label='R2: the fist closes on the watch')
     add(fx, '*', LOSE_T[1] + CRUSH['shake'][0], gain_db=-12, pan=p(1), file='paper-texture-crunch-distort-05', vary=False, label='R2: crunch while the fist shakes')
     add(fx, '*', LOSE_T[1] + CRUSH['shake'][0] + 0.15, gain_db=-15, pan=p(1), file='ice-cube', vary=False, label='R2: watch glass cracks inside')
-    add(fx, 'whoosh-short', LOSE_T[1] + CRUSH['open'][0], gain_db=-22, pan=p(1), label='R2: the fist opens')
-    for j in range(6):
-        add(fx, '*', LOSE_T[1] + CRUSH['drop'][0] + 0.09 * j, gain_db=-21 - j, pan=-0.7, file='foley/drop.flac', vary=False,
-            semitones=7 + j, label=f'R2: crumbs fall off the palm {j + 1}')
+    add(fx, '*', LOSE_T[1] + CRUSH['turn'][0], gain_db=-19, pan=p(1), file='friction-movement-transform-02', vary=True,
+        label='R2: the fist turns over, back of the hand up')
+    add(fx, 'whoosh-short', LOSE_T[1] + CRUSH['open'][0], gain_db=-22, pan=p(1), label='R2: the hand opens palm-down')
+    add(fx, 'granular-move', LOSE_T[1] + CRUSH['drop'][0], gain_db=-17, pan=p(1), fit=1.0, fade_out=0.4,
+        label='R2: metal dust pours out of the hand')
+    for j in range(4):
+        add(fx, '*', LOSE_T[1] + CRUSH['drop'][0] + 0.12 + 0.1 * j, gain_db=-24 - j, pan=p(1), file='foley/drop.flac',
+            vary=False, semitones=10 + j, label=f'R2: tiny glass glints fall {j + 1}')
     # R3: the ring's black hole pulls the cactus in
     add(fx, 'downlifter', LOSE_T[2], gain_db=-14, pan=0.0, label='R3: black hole pulls the cactus across')
     add(fx, 'sub-drop', LOSE_T[2] + 1.05, gain_db=-15, pan=L, label='R3: swallowed, the hole closes')

@@ -1,7 +1,6 @@
 """Дубли Fish (takes.json) -> voice/LNN.wav (48 кГц моно) + voice/lines.json (длительность и паузы внутри реплики).
 
-Обрезка тишины по краям, длинные паузы внутри реплики сокращаются до MAX_GAP. Темп по персонажу (TEMPO,
-rubberband без смены тона) — чтобы ролик уложился в 120–140 с вместе с двумя RubUp.
+Обрезка тишины по краям, длинные паузы внутри реплики сокращаются до MAX_GAP. Реплики не ускоряются (автор, v2); монстр слегка замедлен для веса.
 Обработка: монстр — ниже на ~4 полутона + октавный слой, хрип, реверберация; голоса за дверью (мама,
 полиция) — приглушены дверью; во второй реплике «мамы» под голосом проступает низкий слой монстра."""
 import json
@@ -18,9 +17,9 @@ import script
 SR = 48000
 RAW = HERE / 'voice' / 'raw'
 OUT = HERE / 'voice'
-TEMPO = {'N': 1.26, 'K': 1.12, 'M': 1.0, 'X': 0.96, 'P': 1.0}
+TEMPO = {'N': 1.0, 'U': 1.0, 'K': 1.0, 'M': 1.0, 'X': 0.96, 'P': 1.0}   # автор: реплики не ускорять
 MAX_GAP = 0.32
-GAP_LINE = {11: 0.75, 15: 0.55, 16: 0.45, 22: 0.45, 24: 0.4}     # драматические паузы внутри реплики
+GAP_LINE = {12: 0.75, 17: 0.55, 18: 0.45, 24: 0.45, 26: 0.4}     # драматические паузы внутри реплики
 
 
 def ff(src, af=None, out=None):
@@ -103,6 +102,11 @@ def monster(x):
     return y / (np.abs(y).max() + 1e-9) * 0.85
 
 
+def unknown(x):
+    """Неизвестный: тот же голос, что у монстра, но чистый — холодный «цифровой» отзвук."""
+    return proc(x, 'highpass=f=90,aecho=0.8:0.6:40|90:0.25|0.15')
+
+
 def behind_door(x, fc=2400, room=True):
     af = f'lowpass=f={fc},lowpass=f={fc + 800},highpass=f=120'
     if room:
@@ -122,7 +126,7 @@ def fake_mom(x):
 def main():
     takes = json.loads((HERE / 'takes.json').read_text(encoding='utf-8'))
     meta = []
-    for i, (who, text, pause) in enumerate(script.LINES, 1):
+    for i, (who, text) in enumerate(script.LINES, 1):
         task = takes[f'L{i:02d}'][0]
         x = ff(RAW / f'{task}.mp3')
         x = tighten(x, GAP_LINE.get(i, MAX_GAP))
@@ -132,13 +136,15 @@ def main():
         if who == 'X':
             x = monster(x)
         elif who == 'M':
-            x = fake_mom(x) if i == 12 else behind_door(x)
+            x = fake_mom(x) if i == 13 else behind_door(x)
+        elif who == 'U':
+            x = unknown(x)
         elif who == 'P':
             x = behind_door(x, fc=3000)
         x = x / (np.sqrt(np.mean(x[np.abs(x) > 0.02] ** 2)) + 1e-9) * 0.16      # выровнять громкость реплик
         x = np.clip(x, -0.95, 0.95)
         write(OUT / f'L{i:02d}.wav', x)
-        meta.append(dict(line=i, who=who, dur=round(len(x) / SR, 3), gaps=gaps(x), pause=pause))
+        meta.append(dict(line=i, who=who, dur=round(len(x) / SR, 3), gaps=gaps(x)))
         print(f'L{i:02d} {who} {len(x) / SR:6.2f} s  gaps {gaps(x)}')
     (OUT / 'lines.json').write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding='utf-8')
     print('речь всего', round(sum(m['dur'] for m in meta), 1), 'с')

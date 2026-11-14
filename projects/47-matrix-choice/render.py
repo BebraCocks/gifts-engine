@@ -800,7 +800,7 @@ def draw_head_ls(c, t, pos=None, extra_sc=1.0):
         im = ogre_im('head')
         base, s0 = ch.head('calm3')
         edge = 1 - min(t - OGRE[0], OGRE[1] - t) / 0.09
-        put(c, torn(im, t, cl(edge)), pos[0] + dx, pos[1] + dy, s0 * base.width / im.width * 1.08 * sc * extra_sc, 1.0, rot)
+        put(c, torn(im, t, cl(edge)), pos[0] + dx, pos[1] + dy, s0 * base.width / im.width * 1.32 * sc * extra_sc, 1.0, rot)
         return
     vis, openness = lipsync.mouth(t)
     p2 = (pos[0], pos[1] + 3.0 * openness)               # the jaw moves the head a hair

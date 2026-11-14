@@ -230,7 +230,7 @@ def page(t):
 def bg_glitch(c, t):
     """Interference on the code (author: «изредка помехи на фоне»): torn bands, RGB split, a pale flash — the background
     only (characters are drawn on top afterwards)."""
-    for t0, _, _ in EGGS:
+    for t0 in [e[0] for e in EGGS] + [OGRE[0] - 0.06, OGRE[1] - 0.12]:     # + the ogre glitch in and out
         u = t - t0
         if not 0 <= u < 0.32:
             continue
@@ -1550,7 +1550,7 @@ def _shakes():
 
 
 SHAKES = _shakes()
-GLITCHES = [f + 0.12 for f in FISTS[:4]] + [END[KEY['a3']] - 0.2, OUTRO - 0.05]
+GLITCHES = [f + 0.12 for f in FISTS[:4]] + [END[KEY['a3']] - 0.2, OUTRO - 0.05] + [OGRE[0] - 0.08, OGRE[1] - 0.1]
 
 
 def post_fx(frame, t):

@@ -49,7 +49,9 @@ EGGS = [(TIMER0[0] + 2.6, 'ПРОСНИСЬ,|НЕО', 1), (ROUND_IN[1] + 0.9, '�
 EGG_HOLD = 1.9
 # «сбой в Матрице» (author): what each interference does to the code besides the torn bands
 GLITCH_MODE = ['stutter', 'reverse', 'failure', 'deja', 'stutter', 'failure']
-OGRE = (EGGS[4][0] + 0.05, EGGS[4][0] + 0.41)   # author: once, Morpheus glitches into a green ogre for an instant
+# author (v9): once, during round 2's countdown, a glitch turns Morpheus into the green ogre for ~0.7 s — same pose,
+# Morpheus' glasses; after the drill's second burst, before the reveal riser
+OGRE = (TIMER0[1] + 3.71, TIMER0[1] + 4.41)
 
 E = {
     'formed': 1.28,                # Morpheus assembled from code (intro)

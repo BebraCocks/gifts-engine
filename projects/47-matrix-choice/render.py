@@ -491,7 +491,10 @@ def strip_p(side, t):
 def hand_extra(side, t):
     """(dx, dy, rot, override pose name or None) for tricks and the crush sequence."""
     ph = 0.0 if side == 0 else math.pi
-    dx, dy, rot = 0.0, 5.0 * math.sin(t * 2 * math.pi / 3.2 + ph + 1.6), 0.015 * math.sin(t * 2 * math.pi / 3.9 + ph)
+    # always alive: each palm floats on its own rhythm (author 2026-11-14)
+    dx = 5.0 * math.sin(t * 2 * math.pi / 4.4 + ph * 0.7) + 1.5 * math.sin(t * 2 * math.pi / 1.7 + ph)
+    dy = 9.0 * math.sin(t * 2 * math.pi / 3.2 + ph + 1.6) + 2.5 * math.sin(t * 2 * math.pi / 1.45 + ph * 1.3)
+    rot = 0.032 * math.sin(t * 2 * math.pi / 3.9 + ph) + 0.01 * math.sin(t * 2 * math.pi / 1.6 + ph)
     pose = None
     if side == 0:                                                     # R2 crush: shake, then tilt to drop crumbs
         u = t - LOSE_T[1]

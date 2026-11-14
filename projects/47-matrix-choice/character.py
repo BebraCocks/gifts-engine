@@ -94,9 +94,11 @@ def _mix(seq, t, dur=0.12):
 
 def head_motion(t, gestures):
     """(dx, dy, rot rad, scale) from idle breathing + gestures [(kind, t0)]."""
-    dy = 4.0 * math.sin(t * 2 * math.pi / 3.2)
-    rot = 0.012 * math.sin(t * 2 * math.pi / 4.7 + 1.0)
-    dx, sc = 0.0, 1.0
+    # always alive (author 2026-11-14): breathing + a slow sway + tiny head tilts, several periods so it never loops visibly
+    dy = 7.0 * math.sin(t * 2 * math.pi / 3.2) + 2.0 * math.sin(t * 2 * math.pi / 1.35 + 0.7)
+    dx = 6.0 * math.sin(t * 2 * math.pi / 5.3 + 0.4) + 1.5 * math.sin(t * 2 * math.pi / 2.1)
+    rot = 0.026 * math.sin(t * 2 * math.pi / 4.7 + 1.0) + 0.008 * math.sin(t * 2 * math.pi / 1.9 + 2.0)
+    sc = 1.0 + 0.008 * math.sin(t * 2 * math.pi / 3.2 + 0.5)
     for kind, t0 in gestures:
         u = t - t0
         if u <= 0 or u > 2.0:

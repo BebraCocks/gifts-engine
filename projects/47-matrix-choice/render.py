@@ -26,7 +26,7 @@ from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TE
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
 from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH, HOOK_OPEN, REEL_T,
-                    REEL_LAND, EGGS, EGG_HOLD)
+                    REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE)
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -199,8 +199,21 @@ def _rain_time(t):
     return float(np.trapezoid([rain_speed(x) for x in ts], ts)) if t > a0 else t
 
 
+def glitch_time(t, tr):
+    """The code itself misbehaves during a glitch: it stutters back and forth or runs backwards for a moment."""
+    for (t0, _, _), mode in zip(EGGS, GLITCH_MODE):
+        u = t - t0
+        if mode == 'stutter' and 0 <= u < 0.45:
+            return tr - 0.35 * ((int(u * 14) % 3) / 2)               # jumps back a step, again and again
+        if mode == 'reverse' and 0 <= u < 0.5:
+            return tr - 2.2 * u * math.sin(math.pi * u / 0.5)         # the rain runs upward, then catches up
+        if mode == 'deja' and (0 <= u < 0.3 or 1.15 <= u < 1.45):
+            return tr - 0.25 * (int(u * 18) % 2)
+    return tr
+
+
 def page(t):
-    tr = _rain_time(t)
+    tr = glitch_time(t, _rain_time(t))
     g, hd = matrix.rain_bg(tr, cell=36, seed=0, speed_px=(190, 280), with_head=True, gaps=0.08, period=16.0)
     c = np.empty((H, W, 3), np.float32)
     c[:] = 255
@@ -239,6 +252,52 @@ def bg_glitch(c, t):
 
 
 EGG_CHARS = '01'
+
+
+@functools.lru_cache(16)
+def black_cat(ph):
+    """A walking black cat silhouette (the film's déjà vu); ph = walk phase 0..7."""
+    S = 3
+    w, h = 230, 150
+    im = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    k = (0, 0, 0, 255)
+    def E(x0, y0, x1, y1):
+        d.ellipse([x0 * S, y0 * S, x1 * S, y1 * S], fill=k)
+    E(40, 50, 170, 100)                                   # body
+    E(150, 28, 198, 74)                                   # head
+    d.polygon([(156 * S, 38 * S), (160 * S, 10 * S), (174 * S, 32 * S)], fill=k)     # ears
+    d.polygon([(178 * S, 32 * S), (192 * S, 10 * S), (196 * S, 40 * S)], fill=k)
+    a = 2 * math.pi * ph / 8
+    for x0, off in ((62, 0), (80, math.pi), (140, math.pi), (156, 0)):              # legs swing
+        sw = 10 * math.sin(a + off)
+        d.line([(x0 * S, 88 * S), ((x0 + sw) * S, 140 * S)], fill=k, width=9 * S)
+    pts = [(44 + 8 * math.sin(i / 6 + a * 0.5) - i * 1.2, 70 - i * 3.2) for i in range(16)]   # tail
+    d.line([(x * S, y * S) for x, y in pts], fill=k, width=8 * S, joint='curve')
+    d.ellipse([182 * S, 44 * S, 188 * S, 50 * S], fill=(120, 255, 120, 255))         # a green eye
+    return im.resize((w, h), Image.LANCZOS)
+
+
+def draw_deja_vu(c, t):
+    """Déjà vu: a black cat walks across the bottom, the code glitches, and exactly the same cat walks again."""
+    for (t0, _, _), mode in zip(EGGS, GLITCH_MODE):
+        if mode != 'deja':
+            continue
+        for start in (t0 + 0.1, t0 + 1.3):                # the same walk, twice
+            u = (t - start) / 1.05
+            if 0 <= u <= 1:
+                x = lerp(-140, W + 140, u)
+                y = 1835 + 4 * math.sin(u * 40)
+                put(c, black_cat(int(u * 40) % 8), x, y, 0.9, 1.0)
+
+
+def draw_failure(c, t):
+    """«СБОЙ МАТРИЦЫ» flickers in red on a black plate (like the film's system failure screen)."""
+    for (t0, _, _), mode in zip(EGGS, GLITCH_MODE):
+        u = t - t0
+        if mode == 'failure' and 0.02 <= u < 0.62 and (int(u * 22) % 3) != 1:
+            put(c, pill('СБОЙ МАТРИЦЫ', 40, (10, 10, 12), (255, 50, 40), mono=True), 540, 1388, 1.0 + 0.04 * math.sin(u * 80),
+                0.92, rot=0.01 * math.sin(u * 50))
 
 
 def draw_eggs(c, t):
@@ -1064,30 +1123,67 @@ def defeat(c, r, side, t, im, cx, cy):
                     rot_ = (sd - 0.5) * 6 * w
                     piece_im = Image.fromarray(np.ascontiguousarray(blk))
                     put(c, piece_im, xx + cell / 2, yy + cell / 2, 1.0, 1.0, rot=rot_)
-    elif r == 4:        # chainsaw glitches like a broken signal, squeezed into a green pixel cube that falls
-        if u < 0.55:
-            a = np.asarray(im).copy()
-            rng = np.random.default_rng(int(t * 60))
-            for _ in range(8):
-                y0 = int(rng.integers(0, a.shape[0] - 10))
-                hgt = int(rng.integers(4, 26))
-                a[y0:y0 + hgt] = np.roll(a[y0:y0 + hgt], int(rng.integers(-40, 40)), axis=1)
-            g = Image.fromarray(a)
-            rr = np.asarray(g).copy()
-            rr[..., 1:3] = 0
-            put(c, Image.fromarray(rr), cx - 8, cy, 1.0, 0.35, add=True)
-            put(c, g, cx, cy, 1.0, 1.0)
+    elif r == 4:        # chainsaw: overheats (shakes, smoke, sparks), then explodes — flash, fireball, shockwave, debris
+        BOOM = 0.62
+        if u < BOOM:
+            v = u / BOOM
+            jit = 2 + 7 * v
+            put(c, im, cx + jit * math.sin(u * 160), cy + jit * 0.6 * math.cos(u * 190), 1.0, 1.0,
+                rot=0.02 * v * math.sin(u * 120))
+            hot = Image.new('RGBA', im.size, (255, 90, 20, 0))         # glowing red-hot
+            hot.putalpha(Image.fromarray((np.asarray(im)[..., 3] * 0.55 * v).astype(np.uint8)))
+            put(c, hot, cx, cy, 1.0, 1.0, add=True)
+            for j in range(10):                                         # smoke puffs from the engine
+                q = (u * 2.2 + j / 10) % 1
+                put(c, wisp(50, (70, 72, 76)), cx - 60 + 18 * j % 90, cy - 40 - 230 * q, 0.6 + 1.4 * q, 0.55 * v * (1 - q))
+            for j in range(8):                                          # sparks
+                q = (u * 3.0 + j / 8) % 1
+                ang = -math.pi / 2 + (j - 3.5) * 0.35
+                dot(c, cx + math.cos(ang) * 160 * q, cy - 20 + math.sin(ang) * 160 * q + 200 * q * q, 3, (255, 200, 60), v * (1 - q))
         else:
-            w = cl((u - 0.55) / 0.3)
-            s = lerp(1.0, 0.0, w)
-            if w < 1:
-                put(c, im, cx, cy, max(0.02, s), 1.0, sy=max(0.02, s * (1 - 0.5 * w)))
-            fall = max(0.0, u - 0.85)
-            y = cy + 0.5 * G * fall * fall
-            if y < H + 40:
-                box = (cx - 24, y - 24, cx + 24, y + 24)
-                fx.over(c, fx.draw_rgba(box, lambda d, m, S, y=y:
-                        d.rectangle([*m(cx - 20, y - 20), *m(cx + 20, y + 20)], fill=(0, 166, 81, 255))), cl(w * 3))
+            w = u - BOOM
+            flash = math.exp(-w * 14)
+            if flash > 0.02:                                            # white-hot flash
+                put(c, wisp(160, (255, 250, 220)), cx, cy, 1.0 + 3 * w, flash)
+            fr = 90 + 330 * (1 - math.exp(-w * 8))                      # fireball: deep orange → orange → yellow core
+            fa = cl(1 - w / 0.8)
+            if fa > 0:
+                for j, col in enumerate(((230, 70, 15), (255, 150, 35), (255, 235, 150))):
+                    rr = fr * (1.0 - 0.28 * j)
+                    for q in range(5):                                  # lumpy, not a perfect disc
+                        ang = 2 * math.pi * q / 5 + j
+                        ox, oy = math.cos(ang) * rr * 0.28, math.sin(ang) * rr * 0.22 - 40 * w
+                        fx.over(c, fx.draw_rgba((cx + ox - rr * 0.7, cy + oy - rr * 0.7, cx + ox + rr * 0.7, cy + oy + rr * 0.7),
+                                lambda d, m, S, ox=ox, oy=oy, rr=rr, col=col: d.ellipse(
+                                    [*m(cx + ox - rr * 0.62, cy + oy - rr * 0.62), *m(cx + ox + rr * 0.62, cy + oy + rr * 0.62)],
+                                    fill=col + (255,))), fa * (0.85 if j < 2 else 0.95) * (1 - 0.5 * w))
+            if w < 0.6:                                                 # shockwave ring
+                rr = 40 + 900 * w
+                fx.over(c, fx.draw_rgba((cx - rr - 6, cy - rr - 6, cx + rr + 6, cy + rr + 6), lambda d, m, S, rr=rr:
+                        d.ellipse([*m(cx - rr, cy - rr * 0.8), *m(cx + rr, cy + rr * 0.8)], outline=(255, 230, 180, 255),
+                                  width=round(8 * S))), 0.8 * (1 - w / 0.6))
+            for j in range(12):                                         # dark smoke billows after the fire
+                q = w - 0.15 - 0.03 * j
+                if 0 < q < 1.4:
+                    ang = 2 * math.pi * j / 12
+                    put(c, wisp(70, (50, 52, 56)), cx + math.cos(ang) * 120 * q, cy - 80 * q + math.sin(ang) * 90 * q,
+                        1.0 + 1.6 * q, 0.7 * (1 - q / 1.4))
+            a_ = np.asarray(im)                                         # debris: real pieces of the chainsaw fly out
+            cell = 34
+            hh, ww = a_.shape[:2]
+            for y0 in range(0, hh, cell):
+                for x0 in range(0, ww, cell):
+                    blk = a_[y0:y0 + cell, x0:x0 + cell]
+                    if blk[..., 3].mean() < 70:
+                        continue
+                    sd = ((x0 * 31 + y0 * 17) % 97) / 97
+                    vx = (x0 - ww / 2) / ww * 2200 + (sd - 0.5) * 500 + 300
+                    vy = (y0 - hh / 2) / hh * 700 - 420 - 260 * sd
+                    xx = cx - ww / 2 + x0 + vx * w
+                    yy = cy - hh / 2 + y0 + vy * w + 0.5 * G * w * w
+                    if yy > H + 60 or xx < -80 or xx > W + 80:
+                        continue
+                    put(c, Image.fromarray(np.ascontiguousarray(blk)), xx, yy, 1.0, 1.0, rot=(sd - 0.5) * 14 * w)
     return True
 
 
@@ -1413,7 +1509,7 @@ def caption_layer(c, t):
 def _shakes():
     ev = [(E['formed'], 10.0), (HOOK_SLAM, 12.0)]
     ev += [(rv, 9.0) for rv in REVEAL]
-    ev += [(LOSE_T[1] + CRUSH['shake'][0], 4.0), (LOSE_T[2] + 1.0, 7.0), (LOSE_T[4] + 0.55, 6.0)]
+    ev += [(LOSE_T[1] + CRUSH['shake'][0], 4.0), (LOSE_T[2] + 1.0, 7.0), (LOSE_T[4] + 0.62, 22.0)]
     return ev
 
 
@@ -1426,8 +1522,8 @@ def post_fx(frame, t):
     dx = dy = 0.0
     for t0, amp in SHAKES:
         u = t - t0
-        if 0 <= u < 0.5:
-            e = amp * math.exp(-u * 9)
+        if 0 <= u < 0.8:
+            e = amp * math.exp(-u * (5 if amp > 15 else 9))
             dx += e * math.sin(u * 2 * math.pi * 17 + t0)
             dy += e * 0.7 * math.cos(u * 2 * math.pi * 13 + t0)
     zoom = 1.0
@@ -1448,6 +1544,10 @@ def post_fx(frame, t):
             a = 0.16 * (1 - u / 0.3)
             col = np.array(SIDE_COL[WIN[r]], np.float32)
             frame = (frame * (1 - a) + col * a).astype(np.uint8)
+    ub = t - (LOSE_T[4] + 0.62)                                  # the chainsaw explosion lights the whole frame
+    if 0 <= ub < 0.35:
+        a = 0.42 * (1 - ub / 0.35)
+        frame = (frame * (1 - a) + np.array((255, 214, 150), np.float32) * a).astype(np.uint8)
     if t >= HOOK_SLAM and t - HOOK_SLAM < 0.22:
         a = 0.35 * (1 - (t - HOOK_SLAM) / 0.22)
         frame = (frame * (1 - a) + 255 * a).astype(np.uint8)
@@ -1546,12 +1646,14 @@ def render_at(t, ad=None, raw=False):
         bg_glitch(c, t)
         ambient(c, t)
         draw_eggs(c, t)
+        draw_deja_vu(c, t)
         c[:] = c * (1 - vignette()) + np.array((0, 70, 35), np.float32) * vignette()
         draw_morpheus(c, t)
         draw_halos(c, t)
         draw_hands(c, t)
         draw_items(c, t)
         draw_sparks(c, t)
+        draw_failure(c, t)
         draw_header(c, t)
         draw_hook(c, t)
         draw_prices(c, t)

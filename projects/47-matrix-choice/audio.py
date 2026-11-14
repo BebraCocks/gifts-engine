@@ -17,7 +17,7 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO
-from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND, EGGS, EGG_HOLD
+from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND, EGGS, EGG_HOLD, GLITCH_MODE
 from words import wt
 HOOK_SLAM_T = wt(0, 'Угадай') - 0.04
 import music
@@ -133,8 +133,18 @@ def sfx_layer(n, kit):
     for g0 in [f + 0.12 for f in FISTS[:4]] + [OUTRO - 0.05]:
         add(fx, 'glitch', g0, gain_db=-21, label='RGB glitch between rounds')
     # background interference with an easter egg decoding out of the rain
-    for t0, phrase, side in EGGS:
+    for (t0, phrase, side), mode in zip(EGGS, GLITCH_MODE):
         add(fx, 'glitch', t0, gain_db=-18, pan=-0.5 if side == 0 else 0.5, label=f'interference on the code («{phrase.replace("|", " ")}»)')
+        if mode == 'stutter':
+            add(fx, 'glitch-texture', t0, gain_db=-20, fit=0.45, fade_out=0.08, label='the code stutters')
+        elif mode == 'reverse':
+            add(fx, 'spinback', t0, gain_db=-18, label='the code runs backwards for a moment')
+        elif mode == 'failure':
+            add(fx, 'error', t0 + 0.02, gain_db=-17, label='«СБОЙ МАТРИЦЫ» flickers')
+        elif mode == 'deja':
+            add(fx, 'voice', t0 + 0.35, gain_db=-22, file='cute-vocal', vary=False, label='déjà vu: a black cat walks by')
+            add(fx, 'glitch', t0 + 1.15, gain_db=-17, label='déjà vu: the glitch')
+            add(fx, 'voice', t0 + 1.55, gain_db=-22, file='cute-vocal', vary=False, label='déjà vu: the same cat again')
         add(fx, 'glitch-text', t0 + 0.08, gain_db=-21, pan=-0.6 if side == 0 else 0.6, label='the easter egg decodes')
         add(fx, 'glitch-text', t0 + EGG_HOLD, gain_db=-24, pan=-0.6 if side == 0 else 0.6, label='it falls back into digits')
     # bullet time in the final countdown
@@ -177,10 +187,16 @@ def defeats(fx, kit):
     for j in range(4):
         add(fx, '*', LOSE_T[3] + 0.6 + 0.07 * j, gain_db=-22 - j, pan=p(3), file='foley/drop.flac', vary=False, semitones=9 + j,
             label=f'R4: pieces fall {j + 1}')
-    # R5: chainsaw glitches like a broken signal and is squeezed into a cube that drops
-    add(fx, 'glitch-texture', LOSE_T[4], gain_db=-16, pan=p(4), fit=0.6, fade_out=0.15, label='R5: chainsaw glitches')
-    add(fx, 'power-down', LOSE_T[4] + 0.55, gain_db=-17, pan=p(4), label='R5: squeezed into a pixel cube')
-    add(fx, '*', LOSE_T[4] + 0.95, gain_db=-17, pan=p(4), file='foley/drop.flac', vary=False, semitones=-5, label='R5: the cube drops')
+    # R5: the chainsaw overheats (hiss, sparks) and explodes
+    add(fx, 'glitch-texture', LOSE_T[4], gain_db=-19, pan=p(4), fit=0.62, fade_out=0.1, label='R5: chainsaw overheats, sizzles')
+    add(fx, 'power-down', LOSE_T[4] + 0.15, gain_db=-20, pan=p(4), label='R5: the engine chokes, smoke')
+    add(fx, 'riser', LOSE_T[4] + 0.05, gain_db=-21, fit=0.57, fade_out=0.02, label='R5: pressure builds')
+    add(fx, 'impact', LOSE_T[4] + 0.62, gain_db=-8, align='peak', pan=p(4), label='R5: EXPLOSION')
+    add(fx, '*', LOSE_T[4] + 0.62, gain_db=-10, pan=p(4), file='demolition', vary=False, label='R5: blast and debris')
+    add(fx, 'sub-drop', LOSE_T[4] + 0.64, gain_db=-11, label='R5: the boom in the chest')
+    for j in range(4):
+        add(fx, '*', LOSE_T[4] + 1.2 + 0.11 * j, gain_db=-20 - j, pan=0.6 - 0.3 * j, file='foley/drop.flac', vary=False,
+            semitones=-3 + 2 * j, label=f'R5: debris lands {j + 1}')
     # teaser before RubUp, outro, finale
     add(fx, 'error', AD_STOP - 0.45, gain_db=-17, label='teaser «НЕ ЛИСТАЙ»: glitch before RubUp')
     add(fx, 'confirm', OUTRO + 0.05, gain_db=-18, label='outro: «ТЕЛЕГА ПОБЕДИЛА 3:2»')

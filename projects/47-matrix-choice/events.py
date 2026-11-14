@@ -47,6 +47,8 @@ REEL_LAND = REEL_T[-1]
 EGGS = [(TIMER0[0] + 2.6, 'ПРОСНИСЬ,|НЕО', 1), (ROUND_IN[1] + 0.9, 'ТУК-ТУК,|НЕО', 0), (TIMER0[2] + 2.8, 'ЛОЖКИ|НЕТ', 1),
         (TIMER0[3] + 1.4, 'СЛЕДУЙ ЗА|КРОЛИКОМ', 0), (ROUND_IN[4] + 0.6, 'ЭТО|ДЕЖАВЮ', 1), (OUTRO + 1.6, 'ТЕЛЕГА|ЗНАЕТ', 0)]
 EGG_HOLD = 1.9
+# «сбой в Матрице» (author): what each interference does to the code besides the torn bands
+GLITCH_MODE = ['stutter', 'reverse', 'failure', 'deja', 'stutter', 'failure']
 
 E = {
     'formed': 1.28,                # Morpheus assembled from code (intro)

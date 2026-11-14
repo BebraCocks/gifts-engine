@@ -133,8 +133,13 @@ def main():
     takes = json.loads((HERE / 'takes.json').read_text(encoding='utf-8'))
     meta = []
     for i, (who, text) in enumerate(script.LINES, 1):
-        task = takes[f'L{i:02d}'][0]
-        x = ff(RAW / f'{task}.mp3')
+        tk = takes[f'L{i:02d}']
+        if isinstance(tk, dict):                     # реплика из нескольких дублей по фразам
+            parts = [tighten(ff(RAW / f'{t}.mp3'), 0.12, thr=26) for t in tk['concat']]
+            gap = np.zeros(int(0.16 * SR))
+            x = np.concatenate([np.concatenate([q, gap]) for q in parts])
+        else:
+            x = ff(RAW / f'{tk[0]}.mp3')
         x = tighten(x, GAP_LINE.get(i, GAP_WHO.get(who, MAX_GAP)), thr=26 if who == 'U' else 34)   # у неизвестного вдохи между фразами тоже режем
         t = TEMPO[who]
         if t != 1.0:

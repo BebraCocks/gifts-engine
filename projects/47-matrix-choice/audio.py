@@ -17,7 +17,9 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, END, HAS_NARRATION, TAKES, ROUND_IN, TIMER0, REVEAL, OUTRO
-from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH
+from events import AD_STOP, E, WIN, TRICK, LOSE_T, WIN_GONE, FISTS, CRUSH, HOOK_OPEN, REEL_T, REEL_LAND
+from words import wt
+HOOK_SLAM_T = wt(0, 'Угадай') - 0.04
 import music
 
 SR = 48000
@@ -79,22 +81,21 @@ def sfx_layer(n, kit):
     add(fx, 'power-up', 0.15, gain_db=-17, fit=1.15, fade_out=0.3, label='intro: the figure charges up')
     add(fx, 'glitch', 0.80, gain_db=-18, label='intro: code → photo')
     add(fx, 'impact', E['formed'], gain_db=-14, align='peak', label='intro: Morpheus formed, fists')
-    # hook: fists open on a blue and a red pill, the pills glitch into the final pair, the bet slams in
-    add(fx, '*', 1.32, gain_db=-19, file='friction-movement-transform-01', vary=False, label='hook: fists open')
-    add(fx, 'sparkle', 1.42, gain_db=-17, label='hook: blue and red pills on the palms')
-    add(fx, 'glitch', 1.60, gain_db=-16, label='hook: the pills glitch')
-    add(fx, 'transform', 1.70, gain_db=-17, label='hook: pills turn into the cap and the chainsaw')
-    add(fx, 'impact', 2.00, gain_db=-13, align='peak', label='hook: «ОДНА ДОРОЖЕ ВДВОЕ» slams in')
-    add(fx, 'pop', 2.25, gain_db=-19, pan=-0.4, label='hook: «? ₽» blue')
-    add(fx, 'pop', 2.35, gain_db=-19, pan=0.4, label='hook: «? ₽» red')
-    add(fx, 'glitch-text', 2.60, gain_db=-19, label='hook: the pair drains into code')
+    # hook: fists open, the reels spin (a reel tick per switch, slowing down), a ding when they land on round 1
+    add(fx, '*', HOOK_OPEN, gain_db=-19, file='friction-movement-transform-01', vary=False, label='hook: fists open')
+    for i, ts in enumerate(REEL_T[:-1]):
+        add(fx, 'click', ts, gain_db=-19 + 0.25 * i, key='reel', vary=False, semitones=-2 + 0.25 * i,
+            pan=-0.35 if i % 2 else 0.35, label=f'hook: reel switch {i + 1}')
+    add(fx, 'confirm', REEL_LAND, gain_db=-14, label='hook: the reels land on the lamp and the chess')
+    add(fx, 'impact', HOOK_SLAM_T, gain_db=-13, align='peak', label='hook: «УГАДАЙ, ЧТО ДОРОЖЕ» slams in')
     for r in range(5):
         # fists open (skin/cloth friction), the pair assembles from code, auras flash on (round 1: palms already open)
         if r:
             add(fx, '*', ROUND_IN[r], gain_db=-20, file='friction-movement-transform-02', vary=False, label=f'R{r + 1}: fists open')
-        add(fx, 'glitch-text', ROUND_IN[r] + 0.08, gain_db=-21, pan=L, label=f'R{r + 1}: NFT assembles (blue)')
-        add(fx, 'glitch-text', ROUND_IN[r] + 0.18, gain_db=-21, pan=R, label=f'R{r + 1}: thing assembles (red)')
-        add(fx, 'power-up', ROUND_IN[r] + 0.30, gain_db=-22, fit=0.9, fade_out=0.3, label=f'R{r + 1}: auras flash on')
+        if r:
+            add(fx, 'glitch-text', ROUND_IN[r] + 0.08, gain_db=-21, pan=L, label=f'R{r + 1}: NFT assembles (blue)')
+            add(fx, 'glitch-text', ROUND_IN[r] + 0.18, gain_db=-21, pan=R, label=f'R{r + 1}: thing assembles (red)')
+            add(fx, 'power-up', ROUND_IN[r] + 0.30, gain_db=-22, fit=0.9, fade_out=0.3, label=f'R{r + 1}: auras flash on')
         for s_ in range(5):                         # the real 5 s countdown, one tick motif, last second higher
             add(fx, 'click', TIMER0[r] + s_, gain_db=-20 + 2 * (s_ == 4), key='tick', vary=False, semitones=3 * (s_ == 4),
                 label=f'R{r + 1}: timer {5 - s_}')
@@ -127,7 +128,7 @@ def sfx_layer(n, kit):
         add(fx, 'riser', REVEAL[r] - 1.25, gain_db=-23, fit=1.25, fade_out=0.05, label=f'R{r + 1}: tension rises into the reveal')
         add(fx, 'sub-drop', REVEAL[r] + 0.02, gain_db=-19, label=f'R{r + 1}: sub hit on the reveal (screen punch)')
         add(fx, 'key-enter', REVEAL[r] + 0.32, gain_db=-22, label=f'R{r + 1}: the score line updates')
-        for side in (0, 1):
+        for side in (0, 1) if r else ():
             add(fx, 'sparkle', ROUND_IN[r] + 0.32 + 0.1 * side, gain_db=-25, pan=SIDE_PAN[side], label=f'R{r + 1}: code sparks burst ({"NFT" if side == 0 else "thing"})')
     for g0 in [f + 0.12 for f in FISTS[:4]] + [OUTRO - 0.05]:
         add(fx, 'glitch', g0, gain_db=-21, label='RGB glitch between rounds')

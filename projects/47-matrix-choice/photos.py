@@ -25,8 +25,18 @@ SRC = {   # kind: (file, url, page, crop box or None, mode)
                   'https://www.holodilnik.ru/cottage_repair/telescopes/praktica/antares_70_700az_chernyy_91170700/', None, 'white'),
     'chainsaw': ('chainsaw_1.jpg', 'https://holod.ru/pics/clean/big/20/539320_1.jpg',
                  'https://www.holodilnik.ru/cottage_repair/petrol_powered_saws/champion/254_18_0_325_1_5_72/', None, 'white'),
+    # hook reel only (author 2026-11-14: random NFTs and things flash in the hands)
+    'headphones': ('x_headphones.jpg', 'https://holod.ru/pics/clean/big/31/739831_0.jpg',
+              'https://www.holodilnik.ru/digital_tech/headphones/marshall/major_iv_bluetooth_black/', None, 'white'),
+    'iron': ('x_iron.jpg', 'https://holod.ru/pics/clean/big/51/1003351_0.jpg',
+              'https://www.holodilnik.ru/domestic/irons/tefal/fv5736e0/', None, 'white'),
+    'kettle': ('x_kettle.jpg', 'https://holod.ru/pics/clean/big/65/1285065_3183495.jpg',
+              'https://www.holodilnik.ru/small_domestic/teapots/tefal/ki871fe0/', None, 'white'),
+    'microwave': ('x_microwave.jpg', 'https://holod.ru/pics/clean/big/25/1223325_0.jpg',
+              'https://www.holodilnik.ru/small_domestic/microwave_ovens/oursson/mm2013v_bl_chernyy/', None, 'white'),
 }
-BOX = {'chess': 330, 'drill': 330, 'cactus': 250, 'telescope': 380, 'chainsaw': 360}
+BOX = {'chess': 330, 'drill': 330, 'cactus': 250, 'telescope': 380, 'chainsaw': 360,
+       'headphones': 290, 'iron': 300, 'kettle': 290, 'microwave': 320}
 
 
 def fetch(kind):

@@ -25,7 +25,8 @@ import lipsync
 from script import LINES, ROUNDS, GIFT_RUB, THING_RUB, BADGE, SUBTITLE, HOOK, TEASER, TIMER
 from timeline import DUR, ON, END, KEY, ROUND_IN, TIMER0, REVEAL, OUTRO
 from words import WORDS
-from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH)
+from events import (AD_STOP, E, WIN, TRICK, TRICK_SIDE, LOSE_T, WIN_GONE, FISTS, OPEN_DUR, CRUSH, HOOK_OPEN, REEL_T,
+                    REEL_LAND)
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -625,7 +626,7 @@ def item_state(r, side, t):
         im = thing_im(r)
         cx, cy = item_anchor(1, im.height, t)
     cy += 6 * math.sin(2 * math.pi * t / 2.4 + side * 1.7 + r)          # hovering
-    k = sm(ROUND_IN[r] + 0.08 + 0.10 * side, ROUND_IN[r] + 0.62 + 0.10 * side, t)
+    k = 1.0 if r == 0 else sm(ROUND_IN[r] + 0.08 + 0.10 * side, ROUND_IN[r] + 0.62 + 0.10 * side, t)
     sc, rot, extra, anchor = 1.0, 0.0, [], None
     if t >= REVEAL[r] and WIN[r] == side:
         cy -= 30 * spr(REVEAL[r], t, 1.8, 0.6)
@@ -908,19 +909,6 @@ def draw_items(c, t):
                 draw_extra(c, kind, v, cx, cy, im, t)
 
 
-def hook_halos(c, t):
-    kp = sm(HOOK_OPEN + 0.1, HOOK_OPEN + 0.3, t) * (1 - sm(HOOK_MORPH, HOOK_MORPH + 0.35, t))
-    k = sm(HOOK_MORPH + 0.05, HOOK_MORPH + 0.6, t) * (1 - sm(HOOK_GONE, HOOK_GONE + 0.4, t))
-    for side in (0, 1):
-        x, y = palm_point(side, t)
-        if kp > 0.004:
-            put(c, halo(SIDE_COL[side], 110), x, y - 26, 1.0 + 0.2 * kp, kp)
-        if k > 0.004:
-            h = gift_h(4)[0] if side == 0 else thing_im(4).height
-            flash = 1 + 0.35 * fx.bump(t - HOOK_MORPH - 0.3, 2.0, 4.0)
-            put(c, halo(SIDE_COL[side]), *item_anchor(side, h, t), 1.0, cl(k * flash))
-
-
 def draw_halos(c, t):
     """Auras sit behind the items AND the hands (the hands are lit by them, not painted over)."""
     if HOOK_OPEN <= t < ROUND_IN[0]:
@@ -952,47 +940,78 @@ def draw_halos(c, t):
         put(c, halo(SIDE_COL[side]), hx, hy, pulse * k ** 0.5 * (1.12 if win and t > REVEAL[r] else 1.0), cl(hal * flash) * k)
 
 
-HOOK_OPEN = 1.32          # fists open → a blue and a red pill on the palms (the film's choice)
-HOOK_MORPH = 1.66         # the pills glitch and turn into the final pair (cap / chainsaw)
-HOOK_SLAM = 2.00          # «ОДНА ДОРОЖЕ ВДВОЕ» slams in
-HOOK_GONE = 2.60          # the pair drains back into code; round 1 assembles on the same open palms
+REEL_NFT = ['Plush Pepe', 'Swiss Watch', 'Signet Ring', 'Diamond Ring', 'Top Hat', 'Record Player', 'Mini Oscar',
+            'Astral Shard', 'Electric Skull', 'Precious Peach', 'Heroic Helmet', 'Ion Gem', 'Perfume Bottle',
+            'Neko Helmet', "Durov's Glasses", 'Crystal Ball', 'Love Potion']
+REEL_THING = ['drill', 'headphones', 'telescope', 'iron', 'cactus', 'kettle', 'chainsaw', 'microwave']
+
+
+@functools.lru_cache(64)
+def reel_nft(name):
+    im = Image.open(gifts_api.original_png(name, 256)).convert('RGBA')
+    im = im.crop(im.getbbox())
+    s_ = 250 / max(im.size)
+    return im.resize((round(im.width * s_), round(im.height * s_)), Image.LANCZOS)
+
+
+def reel_state(t):
+    """(index of the current switch, seconds since it) or (None, 0) before the reels start."""
+    k = None
+    for i, ts in enumerate(REEL_T):
+        if t >= ts:
+            k = i
+    return k, (t - REEL_T[k]) if k is not None else 0.0
 
 
 def draw_hook_pair(c, t):
-    if t < HOOK_OPEN + 0.05 or t >= ROUND_IN[0] + 0.05:
+    if t < HOOK_OPEN + 0.06 or t >= ROUND_IN[0]:
         return
-    # pills lying on the palms, then glitching into code
-    kp = sm(HOOK_OPEN + 0.1, HOOK_OPEN + 0.3, t) * (1 - sm(HOOK_MORPH, HOOK_MORPH + 0.35, t))
-    for side in (0, 1):
-        x, y = palm_point(side, t)
-        if kp > 0.004:
-            jit = 6 * math.sin(t * 90 + side) * sm(HOOK_MORPH - 0.15, HOOK_MORPH, t)
-            put(c, matrix.code_mix(capsule(SIDE_COL[side]), kp, t, seed=61 + side, cell=8), x + jit, y - 26,
-                1.15, 1.0, rot=0.35 if side == 0 else -0.35)
-    # the final pair assembles out of the pills' code, hovers with hidden prices, then drains
-    k = sm(HOOK_MORPH + 0.05, HOOK_MORPH + 0.6, t) * (1 - sm(HOOK_GONE, HOOK_GONE + 0.4, t))
-    if k <= 0.004:
+    k, since = reel_state(t)
+    if k is None:
         return
+    last = k == len(REEL_T) - 1
     for side in (0, 1):
-        im = gift_im(4, t) if side == 0 else thing_im(4)
-        h = gift_h(4)[0] if side == 0 else im.height
-        px, py = item_anchor(side, h, t)
-        if side == 0:
-            py -= gift_h(4)[1]
-        py += 6 * math.sin(t * 2.6 + side)
-        put(c, matrix.code_mix(im, k, t, seed=5 + side, cell=12), px, py, 1.0, 1.0)
-        kq = spr(HOOK_MORPH + 0.6 + 0.1 * side, t, 2.4, 0.5)
-        put(c, pill('? ₽', 44, SIDE_COL[side], (255, 255, 255)), ch.HAND_POS[side][0], 1468, max(0.01, kq), k * cl(kq * 2))
+        if last:                                    # landed: round 1's pair, exactly where round 1 continues
+            im, cx, cy, sc, rot, kk, extra, anchor = item_state(0, side, t)
+        else:
+            if side == 0:
+                im = reel_nft(REEL_NFT[(k * 7 + 3) % len(REEL_NFT)])
+            else:
+                im = photos.sprite(REEL_THING[(k * 5 + 1) % len(REEL_THING)])
+            cx, cy = item_anchor(side, im.height, t)
+            sc = 0.85
+        drop = 46 * (1 - fx.smooth(since / 0.06))          # each new item snaps in from above like a reel
+        pop = 1 + (0.14 if last else 0.07) * fx.bump(since, 3.0, 7.0)
+        put(c, im, cx, cy - drop, sc * pop, 1.0)
+
+
+def hook_halos(c, t):
+    k, since = reel_state(t)
+    if k is None:
+        return
+    a = sm(HOOK_OPEN, HOOK_OPEN + 0.25, t)
+    land = 1 + 0.6 * fx.bump(t - REEL_LAND, 2.0, 4.0) if t >= REEL_LAND else 1.0
+    for side in (0, 1):
+        x, y = item_anchor(side, 260, t)
+        put(c, halo(SIDE_COL[side]), x, y, 1.0, cl(a * land))
 
 
 # ------------------------------------------------------------------ texts: hook, header, prices, timer
 @functools.lru_cache(8)
 def hook_line2():
-    a_, b_ = label('ИЛИ ', 80, 'Heavy', INK), label('БЕНЗОПИЛА?', 80, 'Heavy', RED)
+    a_, b_ = label('ИЛИ ', 80, 'Heavy', INK), label('РЕАЛЬНОСТЬ?', 80, 'Heavy', RED)
     plate = Image.new('RGBA', (a_.width + b_.width + 28, max(a_.height, b_.height) + 12), (255, 255, 255, 236))
     plate.alpha_composite(a_, (14, (plate.height - a_.height) // 2))
     plate.alpha_composite(b_, (14 + a_.width, (plate.height - b_.height) // 2))
     return plate
+
+
+def hook_slam_t():
+    from words import wt
+    return wt(0, 'Угадай') - 0.04
+
+
+HOOK_SLAM = hook_slam_t()
 
 
 def draw_hook(c, t):
@@ -1000,13 +1019,14 @@ def draw_hook(c, t):
     if a <= 0.004:
         return
     k1 = 0.9 + 0.1 * spr(-0.05, t, 2.2, 0.5)
-    k2 = 0.9 + 0.1 * spr(0.35, t, 2.2, 0.5)
-    text(c, 'КЕПКА ДУРОВА', 84, 'Heavy', BLUE, 540, 100, a, k1, maxw=980)          # the question from frame 0
-    put(c, hook_line2(), 540, 192, min(k2, 980 / hook_line2().width), a)
-    if t >= HOOK_SLAM:
-        ks = spr(HOOK_SLAM, t, 2.6, 0.45)
-        sc = lerp(2.2, 1.0, cl(ks)) if ks < 1 else 1 + 0.04 * fx.bump(t - HOOK_SLAM - 0.2, 3, 6)
-        put(c, pill(HOOK[2], 44, GREEN, (255, 255, 255), mono=True), 540, 288, sc, a * cl(ks * 3), rot=-0.03)
+    k2 = 0.9 + 0.1 * spr(0.30, t, 2.2, 0.5)
+    text(c, 'NFT', 96, 'Heavy', BLUE, 540, 100, a, k1)                         # the question from frame 0
+    put(c, hook_line2(), 540, 196, min(k2, 980 / hook_line2().width), a)
+    ts = HOOK_SLAM
+    if t >= ts:
+        ks = spr(ts, t, 2.6, 0.45)
+        sc = lerp(2.2, 1.0, cl(ks)) if ks < 1 else 1 + 0.04 * fx.bump(t - ts - 0.2, 3, 6)
+        put(c, pill(HOOK[2], 44, GREEN, (255, 255, 255), mono=True), 540, 292, sc, a * cl(ks * 3), rot=-0.03)
 
 
 def score_at(t):
@@ -1214,7 +1234,8 @@ def post_fx(frame, t):
 
 def draw_sparks(c, t):
     """Green code sparks burst out of each item as it assembles (and out of the pills in the hook)."""
-    bursts = [(ROUND_IN[r] + 0.32 + 0.1 * side, r, side) for r in range(5) for side in (0, 1)]
+    bursts = [(ROUND_IN[r] + 0.32 + 0.1 * side, r, side) for r in range(1, 5) for side in (0, 1)]
+    bursts += [(REEL_LAND + 0.02 + 0.06 * side, 0, side) for side in (0, 1)]       # the reels land
     for t0, r, side in bursts:
         u = t - t0
         if not 0 <= u < 0.7:

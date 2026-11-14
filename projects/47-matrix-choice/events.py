@@ -26,6 +26,23 @@ WIN_GONE = [END[3 + 3 * r] - 0.40 for r in range(5)]    # the winner dissolves i
 FISTS = [END[3 + 3 * r] - 0.02 for r in range(5)]       # empty palms close into fists (strip, 0.28 s)
 OPEN_DUR = 0.26                                          # fist → open palm at ROUND_IN
 
+HOOK_OPEN = 1.32          # hook: fists open and the reels start (random NFTs / things flash in the hands)
+
+
+def _reel_times():
+    """Reel switches: fast at first, slowing like a slot machine; the last one lands on round 1's pair."""
+    end = ROUND_IN[0] - 0.30
+    ts, d, t = [], 0.40, end
+    while t > HOOK_OPEN + 0.08:
+        ts.append(t)
+        t -= d
+        d = max(0.065, d / 1.22)
+    return sorted(ts)
+
+
+REEL_T = _reel_times()
+REEL_LAND = REEL_T[-1]
+
 E = {
     'formed': 1.28,                # Morpheus assembled from code (intro)
     'outro': OUTRO,

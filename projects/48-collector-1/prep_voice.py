@@ -17,7 +17,7 @@ import script
 SR = 48000
 RAW = HERE / 'voice' / 'raw'
 OUT = HERE / 'voice'
-TEMPO = {'N': 1.0, 'U': 1.0, 'K': 1.0, 'M': 1.0, 'X': 0.96, 'P': 1.0}   # автор: реплики не ускорять
+TEMPO = {'N': 1.0, 'U': 1.0, 'K': 1.0, 'T': 1.0, 'M': 1.0, 'X': 0.96, 'P': 1.0}   # автор: реплики не ускорять
 MAX_GAP = 0.32
 GAP_LINE = {12: 0.75, 17: 0.55, 18: 0.45, 24: 0.45, 26: 0.4}     # драматические паузы внутри реплики
 
@@ -102,6 +102,11 @@ def monster(x):
     return y / (np.abs(y).max() + 1e-9) * 0.85
 
 
+def thought(x):
+    """Мысли Кирилла: близкий тихий голос с заметным эхом, чтобы было ясно, что это в голове."""
+    return proc(x, 'highpass=f=110,aecho=0.85:0.8:140|280|420:0.45|0.28|0.15,lowpass=f=7500')
+
+
 def unknown(x):
     """Неизвестный: тот же голос, что у монстра, но чистый — холодный «цифровой» отзвук."""
     return proc(x, 'highpass=f=90,aecho=0.8:0.6:40|90:0.25|0.15')
@@ -139,6 +144,8 @@ def main():
             x = fake_mom(x) if i == 13 else behind_door(x)
         elif who == 'U':
             x = unknown(x)
+        elif who == 'T':
+            x = thought(x)
         elif who == 'P':
             x = behind_door(x, fc=3000)
         x = x / (np.sqrt(np.mean(x[np.abs(x) > 0.02] ** 2)) + 1e-9) * 0.16      # выровнять громкость реплик

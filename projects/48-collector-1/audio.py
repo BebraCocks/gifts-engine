@@ -122,13 +122,13 @@ def sfx_layer(n, kit):
     add(fx, 'confirm', END[3] + 0.08, gain_db=-20, label='принято')
     add(fx, 'popup', END[4] + 0.05, gain_db=-17, label='приходит условие')
     add(fx, 'typing', ON[5] + 0.2, gain_db=-26, fit=2.0, fade_out=0.4, label='условие печатается')
-    add(fx, 'sub-drop', ON[5] + 3.3, gain_db=-17, label='«…охотится Коллекционер»')
+    add(fx, 'sub-drop', ON[5] + 4.3, gain_db=-17, label='«…охотится Коллекционер»')
     add(fx, 'riser', END[5] - 3.0, gain_db=-24, fit=3.0, fade_out=0.1, label='напряжение к концу условия')
     # ---------------- подарок, продажа
     add(fx, 'popup', ON[6] + 2.25, gain_db=-15, label='дзынь: падает подарок')
     add(fx, 'sparkle', ON[6] + 2.45, gain_db=-18, label='Лут Бэг появляется')
     add(fx, 'granular-combo', ON[6] + 2.55, gain_db=-22, fit=1.5, fade_out=0.4, label='блеск NFT')
-    add(fx, 'coin', ON[7] + 0.3, gain_db=-20, label='«продаю!» — мечтает о деньгах')
+    add(fx, 'coin', ON[7] + 0.3, gain_db=-20, label='«сейчас продам и…» — мечтает о деньгах')
     add(fx, 'click', ON[7] + 0.6, gain_db=-18, label='жмёт «Продать»')
     add(fx, 'error', ON[8] + 0.1, gain_db=-15, label='«Продажа недоступна 24 ч»')
     add(fx, 'downlifter', END[9] - 0.1, gain_db=-20, label='перебивка времени → 01:37')
@@ -181,7 +181,7 @@ def sfx_layer(n, kit):
     for s in range(12):
         add(fx, 'click', ON[29] + 0.2 + s * 1.0, gain_db=-27, key='tick', vary=False, semitones=2 * (s % 2),
             label=f'тикает таймер до подарка {s + 1}')
-    for k, dt in enumerate((3.6, 4.95, 7.55)):
+    for k, dt in enumerate((3.5, 4.85, 7.2)):
         add(fx, 'select', ON[29] + dt, gain_db=-17, label=f'вариант {"АБВ"[k]}')
     add(fx, 'riser-hit', END[29] - 0.2, gain_db=-17, label='финал: «пиши в комментариях»')
     return fx, bed

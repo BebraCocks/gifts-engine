@@ -18,35 +18,12 @@ import sound
 import sfxkit
 import synth
 import script
+import music
 
 SR = 48000
-META = json.loads((HERE / 'voice' / 'lines.json').read_text(encoding='utf-8'))
-LEAD = 0.15
-# пауза после реплики (с): место для звуков действия; RubUp — после реплик script.AD_AFTER
-PAUSE = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.6, 5: 0.25, 6: 0.1, 7: 0.05, 8: 0.1, 9: 0.3, 10: 0.2, 11: 0.25,
-         12: 0.2, 13: 0.2, 14: 0.6, 15: 0.15, 16: 0.15, 17: 0.1, 18: 0.1, 19: 0.2, 20: 0.3, 21: 0.5, 22: 0.1,
-         23: 1.3, 24: 0.55, 25: 0.1, 26: 0.25, 27: 0.6, 28: 0.3, 29: 0.5}
-FX_DB, BED_DB = 8.0, 5.0      # общий уровень звуков и фона относительно голоса
-AD_GAP = 0.25          # после остановки на рекламу речь продолжается через столько секунд
-
-
-def timeline():
-    on, stops = {}, []
-    t = LEAD
-    for m in META:
-        i = m['line']
-        on[i] = t
-        t += m['dur'] + PAUSE[i]
-        if i in script.AD_AFTER:
-            stop = t - PAUSE[i] / 2
-            stops.append(round(stop, 3))
-            t = stop + AD_GAP + 0.05
-    return on, stops, t
-
-
-ON, STOPS, DUR = timeline()
-END = {m['line']: ON[m['line']] + m['dur'] for m in META}
-GAPS = {m['line']: m['gaps'] for m in META}
+FX_DB, BED_DB = 8.0, 2.0      # общий уровень звуков и фона относительно голоса (гул тише — есть музыка)
+MUSIC_DB = 3.0               # музыка относительно −24 dBFS; под голосом приглушается ещё на 7 дБ
+from timeline import META, ON, STOPS, DUR, END, GAPS
 BR = banner.Breaks(STOPS, cy=960, speed=1.1)
 
 
@@ -211,8 +188,10 @@ def main():
     k = np.convolve(k, np.ones(4800) / 4800, 'same')
     fx *= (1 - 0.45 * k)[:, None] * 10 ** (FX_DB / 20)      # звуки уступают голосу
     bed *= (1 - 0.3 * k)[:, None] * 10 ** (BED_DB / 20)
+    mus = music.music(n, SR) * 10 ** (MUSIC_DB / 20)
+    mus *= (1 - (1 - 10 ** (-7 / 20)) * k)[:, None]
     gain = 10 ** (2.5 / 20)
-    content = limit((voice * 1.0 + fx + bed) * gain)
+    content = limit((voice * 1.0 + fx + bed + mus) * gain)
     data = BR.audio(content, SR)
     b = paths.build(HERE)
     with wave.open(str(b / 'mix.wav'), 'wb') as w:
@@ -224,6 +203,7 @@ def main():
         kit.save(BR)
     rev = sfxkit.write_review(HERE, (fx + bed) * gain, data, BR, SR, kit.cues)
     mp3(BR.audio(voice * gain, SR, banner=False), rev / 'voice_only.mp3')
+    mp3(BR.audio(mus * gain, SR, banner=False), rev / 'music_only.mp3')
     (b / 'timeline.json').write_text(json.dumps(dict(on=ON, end=END, gaps=GAPS, stops=STOPS, dur=DUR,
                                                      out_dur=BR.out_dur(DUR)), ensure_ascii=False, indent=1))
     print(f'содержание {DUR:.1f} с, с рекламой {BR.out_dur(DUR):.1f} с; RubUp на {STOPS}')

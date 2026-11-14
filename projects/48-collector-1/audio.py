@@ -23,9 +23,9 @@ SR = 48000
 META = json.loads((HERE / 'voice' / 'lines.json').read_text(encoding='utf-8'))
 LEAD = 0.15
 # пауза после реплики (с): место для звуков действия; RubUp — после реплик script.AD_AFTER
-PAUSE = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.1, 5: 0.25, 6: 0.1, 7: 0.05, 8: 0.1, 9: 0.3, 10: 0.2, 11: 0.25,
-         12: 0.2, 13: 0.2, 14: 0.5, 15: 0.15, 16: 0.15, 17: 0.1, 18: 0.1, 19: 0.2, 20: 0.3, 21: 0.5, 22: 0.1,
-         23: 0.35, 24: 0.55, 25: 0.1, 26: 0.25, 27: 0.6, 28: 0.3, 29: 0.5}
+PAUSE = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.6, 5: 0.25, 6: 0.1, 7: 0.05, 8: 0.1, 9: 0.3, 10: 0.2, 11: 0.25,
+         12: 0.2, 13: 0.2, 14: 0.6, 15: 0.15, 16: 0.15, 17: 0.1, 18: 0.1, 19: 0.2, 20: 0.3, 21: 0.5, 22: 0.1,
+         23: 1.3, 24: 0.55, 25: 0.1, 26: 0.25, 27: 0.6, 28: 0.3, 29: 0.5}
 FX_DB, BED_DB = 8.0, 5.0      # общий уровень звуков и фона относительно голоса
 AD_GAP = 0.25          # после остановки на рекламу речь продолжается через столько секунд
 
@@ -108,7 +108,7 @@ def sfx_layer(n, kit):
     add(bed, 'ambience', 0.0, gain_db=-36, file='ambience-nature-night', vary=False, fit=DUR, fade_out=1.0,
         label='фон: ночь за окном (окраина)')
     place(bed, synth.drone(END[6] - ON[4] + 1.5, 3), ON[4] - 0.3, -26, C, 'гул: условие от неизвестного')
-    place(bed, synth.drone(STOPS[0] - ON[10] + 0.5, 4, base=36.7), ON[10], -27, C, 'гул: стук в 01:37, до рекламы')
+    place(bed, synth.drone(STOPS[1] - ON[10] + 0.5, 4, base=36.7), ON[10], -27, C, 'гул: стук в 01:37, до рекламы №2')
     place(bed, synth.drone(END[23] - ON[15] + 1, 5, base=32.7), ON[15], -24, C, 'гул: «мама» — монстр — выбивание')
     place(bed, synth.drone(DUR - ON[27] + 0.5, 6, base=36.7), ON[27] + 1.5, -28, C, 'гул: снова стук, опрос')
 
@@ -120,7 +120,8 @@ def sfx_layer(n, kit):
     add(fx, 'glitch-text', ON[2] + 4.5, gain_db=-21, label='«…одно условие» — сбой текста')
     add(fx, 'click', END[3] - 0.05, gain_db=-14, label='жмёт «Принять»')
     add(fx, 'confirm', END[3] + 0.08, gain_db=-20, label='принято')
-    add(fx, 'popup', END[4] + 0.05, gain_db=-17, label='приходит условие')
+    add(fx, 'riser', STOPS[0] - 1.2, gain_db=-23, fit=1.2, fade_out=0.05, label='«и тут приходит условие» → RubUp №1')
+    add(fx, 'popup', STOPS[0] + 0.2, gain_db=-17, label='после рекламы: приходит условие')
     add(fx, 'typing', ON[5] + 0.2, gain_db=-26, fit=2.0, fade_out=0.4, label='условие печатается')
     add(fx, 'sub-drop', ON[5] + 4.3, gain_db=-17, label='«…охотится Коллекционер»')
     add(fx, 'riser', END[5] - 3.0, gain_db=-24, fit=3.0, fade_out=0.1, label='напряжение к концу условия')
@@ -139,7 +140,7 @@ def sfx_layer(n, kit):
     add(fx, 'impact', END[10] - 0.25, gain_db=-22, label='«…и замирает»')
     place(fx, synth.knocks([0, 0.28], 0.7, seed=21), ON[11] - 0.55, -15, C, 'снова тихий стук')
     place(fx, synth.heartbeat(5, 88), ON[13] + 0.2, -15, C, 'сердцебиение — проверка «мамы»')
-    add(fx, 'riser', STOPS[0] - 1.6, gain_db=-23, fit=1.6, fade_out=0.05, label='молчание за дверью → RubUp №1')
+    add(fx, 'riser', STOPS[1] - 1.6, gain_db=-23, fit=1.6, fade_out=0.05, label='молчание за дверью → RubUp №2')
     # ---------------- после RubUp №1: «шестого июля»
     add(fx, 'riser-hit', END[15] - 0.5, gain_db=-14, label='«…шестого июля» — удар страха')
     add(fx, 'sub-drop', END[15] - 0.45, gain_db=-17, label='«…шестого июля» — низ')
@@ -152,7 +153,7 @@ def sfx_layer(n, kit):
     # ---------------- выбивание двери
     t0 = END[21] + 0.15
     hits = [0, 0.95, 1.7, 2.3, 3.4, 4.0, 4.6, 5.6, 6.2, 6.7, 7.6, 8.2, 8.7, 9.3, 9.8, 10.3]
-    hits = [h for h in hits if t0 + h < STOPS[1] - 0.3]
+    hits = [h for h in hits if t0 + h < END[23] + 0.1]
     for k, h in enumerate(hits):
         place(fx, synth.bash(40 + k, 1.0), t0 + h, -9 - (2 if k % 3 == 1 else 0), C, f'удар в дверь {k + 1}')
         if k % 3 == 0:
@@ -163,10 +164,10 @@ def sfx_layer(n, kit):
     add(fx, '*', ON[22] + 2.2, gain_db=-17, file='ice-cube', vary=False, label='ставит банку огурцов (стекло)')
     add(fx, '*', ON[23] + 1.0, gain_db=-19, file='plastic-creaks-02', vary=False, label='петли скрипят')
     add(fx, '*', ON[23] + 2.2, gain_db=-14, file='demolition', vary=False, label='дверь трещит')
-    add(fx, 'riser', STOPS[1] - 2.0, gain_db=-20, fit=2.0, fade_out=0.05, label='«это конец» → RubUp №2')
+    add(fx, 'riser', END[23] - 2.0, gain_db=-20, fit=2.0, fade_out=0.05, label='«это конец» — дверь вот-вот вылетит')
     # ---------------- после RubUp №2: сирены, банка
-    place(fx, synth.bash(90, 1.0), STOPS[1] + 0.35, -8, C, 'последний удар после рекламы')
-    place(fx, synth.siren(9.0, 2), STOPS[1] + 0.4, -15, C, 'сирена за окном, подъезжает')
+    place(fx, synth.bash(90, 1.0), END[23] + 0.3, -8, C, 'последний, самый сильный удар')
+    place(fx, synth.siren(9.0, 2), END[23] + 0.45, -15, C, 'сирена за окном, подъезжает')
     ext_add(fx, C, 'explosion_glass.mp3', END[24] + 0.2, -12, 'банка огурцов разбивается (только стекло)',
             seg=(0.25, 2.6), hp=1800)
     add(fx, '*', END[24] + 0.22, gain_db=-14, file='foley/drop', vary=False, semitones=-5, label='банка падает на пол')

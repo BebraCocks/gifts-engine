@@ -35,6 +35,15 @@ WHITE = (255, 255, 255)
 INK = (30, 24, 48)
 MUTED = (118, 112, 140)
 ACCENT = (226, 54, 120)
+PINK, VIOLET = (226, 54, 120), (112, 82, 226)
+# Тема сцены: акцент, обводка панелей, цвет большой цифры — детали подстраиваются под палитру сцены
+THEMES = {
+    'type1': dict(accent=(218, 48, 128), border=(248, 212, 230), digit=(250, 226, 238)),
+    'type2': dict(accent=VIOLET, border=(222, 216, 250), digit=(229, 225, 250)),
+    'type3': dict(accent=PINK, border=(214, 214, 222), digit=(232, 232, 237)),
+}
+THEME_DEFAULT = dict(accent=PINK, border=(232, 224, 246), digit=(234, 227, 246))
+THEME = THEME_DEFAULT
 
 
 # ------------------------------------------------------------------ helpers
@@ -396,7 +405,7 @@ def card(cv, t, c, cx, cy, s, a, t_anim, highlight=0.0, dim=0.0, mark=None):
     put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), cx, cy + 14 * s, s, a)
     put(cv, tile, cx, cy, s, a)
     put(cv, text(c['gift'], 34, 'Heavy'), cx, cy - (TILE / 2 + 34) * s, s, a)
-    hl = (226, 54, 120) if highlight > 0.5 else INK
+    hl = ACCENT if highlight > 0.5 else INK
     l1 = multi((('Модель ', MUTED), (c['model'], hl), ('  ' + pct(c['model_pct']), ACCENT)), 27, 'Semibold')
     l2 = multi((('Фон ', MUTED), (c['backdrop'], hl), ('  ' + pct(c['backdrop_pct']), ACCENT)), 27, 'Semibold')
     put(cv, l1, cx, cy + (TILE / 2 + 32) * s, s, a)
@@ -446,9 +455,8 @@ def card_row(cv, t, key, t_in, zoom_i=None, zoom_t=None, zoom_len=1.9, t_out=Non
         card(cv, t, cs[j], cx, cy, s, a, t - tj, hl, dim, mk)
 
 
-@functools.lru_cache(None)
 def neq_badge():
-    return fx.solid_pill('≠ цвет', (230, 60, 80), 26)
+    return fx.solid_pill('≠ цвет', ACCENT, 26)
 
 
 # ------------------------------------------------------------------ scenes
@@ -651,31 +659,31 @@ def window_a(t, t0, t1, d=0.3):
 
 
 @functools.lru_cache(None)
-def panel(w=PANEL_W, h=PANEL_H):
+def panel(w=PANEL_W, h=PANEL_H, border=(232, 224, 246)):
     im = Image.new('RGBA', (w + 60, h + 60), (0, 0, 0, 0))
     sh = fx.soft_shadow(w, h, 34, 18, 0.18)
     im.alpha_composite(sh.resize((w + 60, h + 60)))
-    im.alpha_composite(fx.rounded(w, h, 34, (255, 255, 255, 236), (232, 224, 246, 255), 2), (30, 26))
+    im.alpha_composite(fx.rounded(w, h, 34, (255, 255, 255, 236), border + (255,), 3), (30, 26))
     return im
 
 
 def put_panel(cv, cx, cy, a, pop_t, t, h=PANEL_H):
     pop = fx.ease_out_back(fx.clamp01((t - pop_t) / 0.45)) if t < pop_t + 0.45 else 1.0
-    put(cv, panel(PANEL_W, h), cx, cy, 0.7 + 0.3 * pop, a)
+    put(cv, panel(PANEL_W, h, THEME['border']), cx, cy, 0.7 + 0.3 * pop, a)
     return 0.7 + 0.3 * pop
 
 
 # ---- большая бледная цифра вида за Митой
 @functools.lru_cache(None)
-def big_digit(d):
-    return text(d, 760, 'Heavy', (234, 227, 246))
+def big_digit(d, col):
+    return text(d, 760, 'Heavy', col)
 
 
 def big_number(cv, t):
     for d, t0, t1 in (('1', E.TYPE1, E.TYPE2), ('2', E.TYPE2, E.SEEN), ('3', E.TEASE, E.WHY)):
         a = window_a(t, t0, t1, 0.4)
         if a > 0:
-            put(cv, big_digit(d), 540, 1330 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
+            put(cv, big_digit(d, THEME['digit']), 540, 1330 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
 
 
 # ---- полоса прогресса «вид 1 · 2 · 3»
@@ -771,7 +779,7 @@ def reactions(cv, t):
         pop = fx.ease_out_back(fx.clamp01(k / 0.35))
         x, y = 700, 1075 - 40 * ease(k / 1.3)
         if kind in ('!', '?'):
-            put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else (90, 120, 230), 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
+            put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
             if kind == '?':                       # капелька пота
                 def drop(d, mp, S):
                     X, Y = mp(615, 1110 + 30 * ease(k / 1.3))
@@ -861,7 +869,7 @@ def chips(cv, t, t0, a, c1, c2, merge, ok, label):
         fx.over(cv, fx.draw_rgba((LX - 140, SIDE_Y - 100, LX + 140, SIDE_Y + 40), dot))
     put(cv, text('подарок   фон', 22, 'Semibold', MUTED), LX, SIDE_Y - 112, 1.0, a)
     sign = '✓' if ok else '≠'
-    put(cv, fx.solid_pill(label, (60, 180, 120) if ok else (230, 60, 80), 26), LX, SIDE_Y + 90, 1.0, a * fx.clamp01(merge * 2))
+    put(cv, fx.solid_pill(label, INK if ok else ACCENT, 26), LX, SIDE_Y + 90, 1.0, a * fx.clamp01(merge * 2))
 
 
 def side_left(cv, t):
@@ -897,7 +905,7 @@ def side_left(cv, t):
             put(cv, text('=', 46, 'Heavy', ACCENT), LX, SIDE_Y - 25, 1.0, a * k)
             put(cv, text('фон', 22, 'Semibold', MUTED), LX, SIDE_Y + 25, 1.0, a)
             put(cv, text('Cyberpunk', 34, 'Heavy'), LX, SIDE_Y + 63, 1.0, a)
-            put(cv, fx.solid_pill('названия ✓', (60, 180, 120), 24), LX, SIDE_Y + 125, 1.0, a * k)
+            put(cv, fx.solid_pill('названия ✓', INK, 24), LX, SIDE_Y + 125, 1.0, a * k)
         else:
             chips(cv, t, E.TYPE2_COLOR - 0.3, a, model_color(c['gift'], c['model']),
                   hexrgb(backdrop_hex(c['gift'], c['backdrop'])[0]), (t - E.TYPE2_COLOR) / 0.6, 0, 'цвет ≠')
@@ -975,6 +983,9 @@ def vignette(cv, t):
 
 
 def render_at(t):
+    global ACCENT, THEME
+    THEME = THEMES.get(scene_key(t), THEME_DEFAULT)
+    ACCENT = THEME['accent']
     cv = background(t)
     big_number(cv, t)
     drifting_gifts(cv, t)

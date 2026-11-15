@@ -40,8 +40,8 @@ def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
     a(fx, 'whoosh-short', 0.05, gain_db=-17, label='хук: подарки въезжают')
-    a(fx, 'pop', ON[1] + 0.25, gain_db=-16, label='хук: левый подарок')
-    a(fx, 'pop', ON[1] + 0.55, gain_db=-16, label='хук: правый подарок')
+    a(fx, 'pop', E.HOOK_POPS[0] - 0.05, gain_db=-16, label='хук: левый подарок')
+    a(fx, 'pop', E.HOOK_POPS[1] - 0.05, gain_db=-16, label='хук: правый подарок')
     a(fx, 'counter', E.PRICE_X10 - 0.55, gain_db=-18, label='цена правого растёт')
     a(fx, 'coin', E.PRICE_X10, gain_db=-14, label='×10')
     a(fx, 'select-soft', E.INTRO, gain_db=-17, label='подпись «монохром»')
@@ -49,24 +49,27 @@ def sfx_layer(n, kit):
         a(fx, 'click', E.COUNTER + dt, gain_db=-17, label=f'счётчик {j + 1}')
     a(fx, 'whoosh*', E.SPIN, align='peak', gain_db=-13, label='Мита кружится')
     a(fx, 'sparkle', E.TYPE1, gain_db=-14, label='наряд → розовый')
-    for j in range(3):
-        a(fx, 'popup', E.TYPE1 + 0.35 + 0.29 * j, gain_db=-18, label=f'вид 1: карточка {j + 1}')
+    for j, tp in enumerate(E.CARD_POPS['type1']):
+        a(fx, 'popup', tp - 0.05, gain_db=-18, label=f'вид 1: карточка {j + 1} (на долю)')
     a(fx, 'whoosh-short', E.TYPE1_ZOOM, align='peak', gain_db=-18, label='зум на карточку')
     a(fx, 'sparkle-whoosh', E.TYPE2, gain_db=-15, label='наряд → пёстрый')
-    for j in range(3):
-        a(fx, 'popup', E.TYPE2 + 0.35 + 0.29 * j, gain_db=-18, label=f'вид 2: карточка {j + 1}')
+    for j, tp in enumerate(E.CARD_POPS['type2']):
+        a(fx, 'popup', tp - 0.05, gain_db=-18, label=f'вид 2: карточка {j + 1} (на долю)')
     a(fx, 'select', E.TYPE2_NAMES, gain_db=-16, label='совпадающие названия подсвечены')
     a(fx, 'error', E.TYPE2_COLOR, gain_db=-19, label='«по цвету — не всегда»')
     a(fx, 'riser', AD_STOP, align='end', gain_db=-19, label='тизер перед рекламой')
     a(fx, 'whoosh-deep', AD_STOP, align='peak', gain_db=-16, label='торможение на RubUp')
     a(fx, 'impact', E.TYPE3, gain_db=-15, label='вспышка: чёрно-белый')
     a(fx, 'sparkle', E.TYPE3 + 0.05, gain_db=-16, label='наряд → чёрно-белый')
-    for j in range(3):
-        a(fx, 'popup', E.TYPE3 + 0.45 + 0.29 * j, gain_db=-18, label=f'вид 3: карточка {j + 1}')
+    for j, tp in enumerate(E.CARD_POPS['type3']):
+        a(fx, 'popup', tp - 0.05, gain_db=-18, label=f'вид 3: карточка {j + 1} (на долю)')
     a(fx, 'whoosh-short', E.TYPE3_ZOOM, align='peak', gain_db=-18, label='зум на самую дорогую')
     a(fx, 'transform', E.ORDER, gain_db=-16, label='хаос → порядок')
     a(fx, 'confirm', E.SEEN + 0.6, gain_db=-17, label='монохром видно сразу')
-    a(fx, 'select-soft', E.OUTRO, gain_db=-17, label='финал: три вида рядом')
+    for j, tp in enumerate(E.CARD_POPS['tease']):
+        a(fx, 'click', tp - 0.05, gain_db=-19, label=f'тизер: «?» {j + 1}')
+    for j, tp in enumerate(E.CARD_POPS['outro']):
+        a(fx, 'select-soft', tp - 0.05, gain_db=-18, label=f'финал: вид {j + 1}')
     a(fx, 'downlifter', E.CREEPY, gain_db=-18, label='жутковатый финал')
     return fx * 10 ** (SFX_GAIN_DB / 20)
 

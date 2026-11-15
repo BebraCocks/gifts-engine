@@ -33,3 +33,26 @@ ORDER = snap(ON[11] + 2.4)               # «мозг любит порядок�
 SEEN = snap(ON[12] - 0.05)
 OUTRO = snap(ON[13] - 0.1)
 CREEPY = ON[14] - 0.05
+
+
+def beats_after(t, n=3, min_gap=0.22, max_gap=0.75):
+    """n последовательных долей после t (для появления карточек «под бит»); если долей мало — равный шаг 0,29 с."""
+    out, cur = [], t
+    for _ in range(n):
+        nxt = BEATS[BEATS > cur + min_gap]
+        if len(nxt) and nxt[0] - cur <= max_gap:
+            cur = float(nxt[0])
+        else:
+            cur = cur + 0.29
+        out.append(cur)
+    return out
+
+
+HOOK_POPS = beats_after(0.05, 2)
+CARD_POPS = {
+    'type1': beats_after(TYPE1 + 0.05),
+    'type2': beats_after(TYPE2 + 0.05),
+    'tease': beats_after(TEASE + 0.05),
+    'type3': beats_after(TYPE3 + 0.1),
+    'outro': beats_after(OUTRO),
+}

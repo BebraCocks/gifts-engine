@@ -9,7 +9,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 TRACK = HERE / 'input' / 'music' / 'your_reality_piano_torby_brand.mp3'
 OFFSET = 0.25          # первая нота трека (~0,58 с) попадает на начало первой фразы
-LEVEL_DB = -23.0       # автор: ещё тише (v3: −20 → −23 дБ)
+LEVEL_DB = -26.0       # автор: ещё тише (v4: −23 → −26 дБ)
 DUCK_DB = -7.0         # дополнительное приглушение под речью
 
 

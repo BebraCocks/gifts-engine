@@ -19,12 +19,12 @@ if im.width < W:                                    # дотянуть фон в
 im = im.crop((0, 0, W, H))
 INK, PINK = (30, 24, 48), (226, 54, 120)
 font = lambda w, z: ImageFont.truetype(str(F / f'Unbounded-{w}.ttf'), z)
-f1 = font('ExtraBold', 152)
+f1 = font('ExtraBold', 140)
 # Видимая зона профиля TikTok (по скриншоту автора): по горизонтали ≈0,12–0,87 W; снизу ≈0,62 H закрывает имя;
 # справа (x > 0,63 W, y 0,28–0,47 H) — кнопки. Надпись — в две строки вплотную к Мите, в верхней части.
 x = int(W * 0.318); y = int(H * 0.12)
-lines = [('Мита', PINK), ('о Гифтах', INK)]
-LH = 190
+lines = [('Мита', PINK), ('про гифты', INK)]
+LH = 178
 # декор: бледные NFT-модели справа и под надписью, вне зоны текста
 gifts = [('Ginger Cookie', 'Sweetheart'), ('Love Potion', 'Milkshake'), ('Big Year', 'Cyberpunk'), ('Santa Hat', 'Inky White'),
          ('Whip Cupcake', 'Sweetheart'), ('Jester Hat', 'Neon White'), ('Clover Pin', 'Lollipop'), ('Gem Signet', 'Moonstone'),

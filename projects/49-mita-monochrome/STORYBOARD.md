@@ -58,6 +58,11 @@ SFX — пак по умолчанию `input/sfx/` через `sfxkit` (см. `
 
 ### Статус
 
+- 2026-11-15 v5 (финал): `renders/49-mita-monochrome/mita_monochrome_v5.mp4` (67,29 с, −16,8 LUFS), декодирован, кадры просмотрены.
+  Drive «TikTok» (копия crf 20, 34 МБ): https://drive.google.com/file/d/1hyCR43b9SST-tv1frGjZoEnTAXMojMIG/view
+  Убрана жуткая концовка («Я прочитаю. Все. До одного.», поза, затемнение, замедление музыки); финал — «Напиши в
+  комментариях…» + подмигивание, музыка мягко затихает.
+
 - 2026-11-15 v4: `renders/49-mita-monochrome/mita_monochrome_v4.mp4` (69,88 с, −16,8 LUFS), декодирован, кадры просмотрены.
   Drive «TikTok» (копия crf 20, 35 МБ): https://drive.google.com/file/d/1uHV6ldTxk7dkwnX85U0iR_nnaSnPqv_d/view
   Правка по удержанию (друг автора): на «Смотри» наезд — плитки хука в центр и крупнее, Мита за кадром ~3 с и

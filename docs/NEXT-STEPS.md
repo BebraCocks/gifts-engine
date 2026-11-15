@@ -559,3 +559,7 @@ RubUp перенесены: ~0:23 (после «И тут приходит ус�
 
 Наезд на «Смотри» (подарки в центр крупно, Мита за кадром ~3 с), музыка −27,5 дБ. `renders/49-mita-monochrome/mita_monochrome_v4.mp4`,
 Drive «TikTok» (копия crf 20). Канал: @mitagifts, аватар и баннеры — `projects/49-mita-monochrome/channel/`.
+
+## 2026-11-15 · 49-mita-monochrome v5 — собрано (финал)
+
+Жуткая концовка убрана, финал — «Напиши в комментариях…». `renders/49-mita-monochrome/mita_monochrome_v5.mp4` (67,29 с), Drive «TikTok».

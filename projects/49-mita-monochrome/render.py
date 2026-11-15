@@ -156,22 +156,37 @@ def silhouette(name, mirror=False):
     return w
 
 
-SPIN_SEQ = [('normal_explain', False), ('spin_1_threequarter', False), ('spin_2_profile', False),
+def _spin_seq():
+    """Кадры полного оборота. Если есть 9 ракурсов spin_a00…spin_a08 (0°…180°, шаг 22,5°) — 16 кадров на оборот
+    (вторая половина — зеркало), иначе прежние 4 ракурса."""
+    if all((MITA / f'spin_a{k:02d}.png').is_file() for k in range(9)):
+        half = [(f'spin_a{k:02d}', False) for k in range(9)]
+        return half + [(f'spin_a{k:02d}', True) for k in range(7, 0, -1)] + [('spin_a00', False)]
+    return [('normal_explain', False), ('spin_1_threequarter', False), ('spin_2_profile', False),
             ('spin_3_backthreequarter', False), ('spin_4_back', False), ('spin_3_backthreequarter', True),
             ('spin_2_profile', True), ('spin_1_threequarter', True), ('normal_explain', False)]
-SPIN_DUR = 0.72
-POSES = [  # (с какого времени, поза, смена наряда)
+
+
+SPIN_SEQ = _spin_seq()
+SPIN_DUR = 0.95 if len(SPIN_SEQ) > 10 else 0.72
+POSES = [  # (с какого времени, поза, смена наряда); v4 — 6 новых уникальных поз (Fish nano-banana)
     (0.0, 'normal_sly', False),
     (ON[2], 'normal_explain', False),
+    (E.PRICE_X10 - 0.05, 'normal_surprised', False),
+    (E.INTRO, 'normal_excited', False),
+    (E.COUNTER - 0.3, 'normal_listen', False),
+    (ON[4], 'normal_explain', False),
     (E.TYPE1, 'pink_explain', True),
     (E.TYPE2, 'clash_explain', True),
     (ON[7] + 0.1, 'clash_confused', False),
-    (E.SEEN, 'normal_explain', True),
+    (E.SEEN, 'normal_listen', True),
     (E.TEASE, 'normal_secret', False),
-    (E.TYPE3, 'bw_explain', True),
-    (E.WHY, 'bw_proud', False),
-    (E.OUTRO, 'bw_explain', False),
-    (E.CREEPY, 'bw_wink', False),
+    (E.TYPE3, 'bw_tada', True),
+    (ON[10], 'bw_explain', False),
+    (E.TYPE3_ZOOM, 'bw_proud', False),
+    (E.WHY, 'bw_think', False),
+    (E.OUTRO, 'bw_wink', False),
+    (E.CREEPY, 'bw_creepy', False),
 ]
 
 
@@ -186,9 +201,13 @@ def pose_at(t):
 def draw_mita(cv, t):
     t0, name, change = pose_at(t)
     mirror = False
-    if E.SPIN <= t < E.SPIN + SPIN_DUR:
-        k = min(len(SPIN_SEQ) - 1, int((t - E.SPIN) / SPIN_DUR * len(SPIN_SEQ)))
+    blend = None
+    if E.SPIN <= t < E.SPIN + SPIN_DUR:             # кружение: скорость разгон → торможение, соседние кадры перетекают
+        u = ease((t - E.SPIN) / SPIN_DUR)
+        f = u * (len(SPIN_SEQ) - 1)
+        k = min(len(SPIN_SEQ) - 2, int(f))
         name, mirror = SPIN_SEQ[k]
+        blend = (SPIN_SEQ[k + 1], f - k)
     im = mita(name, mirror)
     since = t - t0
     pop = fx.spring(fx.clamp01(since / 0.5)) if since < 0.5 else 1.0
@@ -207,7 +226,13 @@ def draw_mita(cv, t):
     placed = fx.warp(im, cx, MITA_FOOT + bob, sx, sy, 0.0, (im.width / 2, im.height))
     shadow = fx.radial(256, (0, 0, 0), 1.6, 0.55)
     put(cv, shadow.resize((420, 70)), cx, MITA_FOOT - 4, 1.0, 0.8)
-    fx.over(cv, placed)
+    if blend:
+        (n2, m2), w2 = blend
+        im2 = mita(n2, m2)
+        fx.over(cv, placed)
+        fx.over(cv, fx.warp(im2, cx, MITA_FOOT + bob, sx, sy, 0.0, (im2.width / 2, im2.height)), fx.smooth(fx.clamp01(w2)))
+    else:
+        fx.over(cv, placed)
     if change and since < 0.55:                      # смена наряда: белая вспышка по силуэту + искры
         a = (1 - since / 0.55) ** 1.5
         sil = silhouette(name, mirror)

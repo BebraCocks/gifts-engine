@@ -1,0 +1,157 @@
+{
+ "_note": "Fragment 2026-11-15 (лоты «в продаже» и «продано»; цена — указанная на Fragment, TON). Курс tonapi.io. Редкость — api.changes.tg. Пол модели (самый дешёвый лот модели) — для сравнения.",
+ "ton_rub": 86.5317086857474,
+ "cards": {
+  "hook": [
+   {
+    "gift": "Ginger Cookie",
+    "model": "Sweetheart",
+    "backdrop": "Caramel",
+    "model_pct": 0.9,
+    "backdrop_pct": 2.0,
+    "backdrop_hex": "#d09932",
+    "ton": 10,
+    "rub": 865,
+    "lot": "https://fragment.com/gift/gingercookie-3868",
+    "status": "For sale",
+    "model_floor_ton": 10.0
+   },
+   {
+    "gift": "Ginger Cookie",
+    "model": "Sweetheart",
+    "backdrop": "Fandango",
+    "model_pct": 0.9,
+    "backdrop_pct": 2.0,
+    "backdrop_hex": "#e28ab6",
+    "ton": 100,
+    "rub": 8653,
+    "lot": "https://fragment.com/gift/gingercookie-59876",
+    "status": "For sale",
+    "model_floor_ton": 10.0
+   }
+  ],
+  "type1": [
+   {
+    "gift": "Ginger Cookie",
+    "model": "Sweetheart",
+    "backdrop": "Fandango",
+    "model_pct": 0.9,
+    "backdrop_pct": 2.0,
+    "backdrop_hex": "#e28ab6",
+    "ton": 100,
+    "rub": 8653,
+    "lot": "https://fragment.com/gift/gingercookie-59876",
+    "status": "For sale",
+    "model_floor_ton": 10.0
+   },
+   {
+    "gift": "Whip Cupcake",
+    "model": "Sweetheart",
+    "backdrop": "Raspberry",
+    "model_pct": 1.5,
+    "backdrop_pct": 1.5,
+    "backdrop_hex": "#e07b85",
+    "ton": 40,
+    "rub": 3461,
+    "lot": "https://fragment.com/gift/whipcupcake-135317",
+    "status": "Sold",
+    "model_floor_ton": 7.0
+   },
+   {
+    "gift": "Clover Pin",
+    "model": "Lollipop",
+    "backdrop": "Fandango",
+    "model_pct": 2.0,
+    "backdrop_pct": 1.2,
+    "backdrop_hex": "#e28ab6",
+    "ton": 17,
+    "rub": 1471,
+    "lot": "https://fragment.com/gift/cloverpin-74641",
+    "status": "Sold",
+    "model_floor_ton": 8.0
+   }
+  ],
+  "type2": [
+   {
+    "gift": "Big Year",
+    "model": "Cyberpunk",
+    "backdrop": "Cyberpunk",
+    "model_pct": 2.9,
+    "backdrop_pct": 1.2,
+    "backdrop_hex": "#858ff3",
+    "ton": 33,
+    "rub": 2856,
+    "lot": "https://fragment.com/gift/bigyear-16353",
+    "status": "Sold",
+    "model_floor_ton": null
+   },
+   {
+    "gift": "Gem Signet",
+    "model": "Moonstone",
+    "backdrop": "Moonstone",
+    "model_pct": 4.0,
+    "backdrop_pct": 1.5,
+    "backdrop_hex": "#7eb1b4",
+    "ton": 69,
+    "rub": 5971,
+    "lot": "https://fragment.com/gift/gemsignet-3345",
+    "status": "Sold",
+    "model_floor_ton": null
+   },
+   {
+    "gift": "Snoop Dogg",
+    "model": "Sapphire",
+    "backdrop": "Sapphire",
+    "model_pct": 2.0,
+    "backdrop_pct": 1.5,
+    "backdrop_hex": "#58a3c8",
+    "ton": 10,
+    "rub": 865,
+    "lot": "https://fragment.com/gift/snoopdogg-487565",
+    "status": "Sold",
+    "model_floor_ton": null
+   }
+  ],
+  "type3": [
+   {
+    "gift": "Santa Hat",
+    "model": "Inky White",
+    "backdrop": "Black",
+    "model_pct": 1.5,
+    "backdrop_pct": 2.0,
+    "backdrop_hex": "#363738",
+    "ton": 59,
+    "rub": 5105,
+    "lot": "https://fragment.com/gift/santahat-33389",
+    "status": "Sold",
+    "model_floor_ton": 12.0
+   },
+   {
+    "gift": "Jester Hat",
+    "model": "Neon White",
+    "backdrop": "Black",
+    "model_pct": 0.8,
+    "backdrop_pct": 2.0,
+    "backdrop_hex": "#363738",
+    "ton": 215,
+    "rub": 18604,
+    "lot": "https://fragment.com/gift/jesterhat-120006",
+    "status": "Sold",
+    "model_floor_ton": 45.0
+   },
+   {
+    "gift": "Love Potion",
+    "model": "Milkshake",
+    "backdrop": "Black",
+    "model_pct": 2.0,
+    "backdrop_pct": 1.5,
+    "backdrop_hex": "#363738",
+    "ton": 250,
+    "rub": 21633,
+    "lot": "https://fragment.com/gift/lovepotion-2484",
+    "status": "Sold",
+    "model_floor_ton": 30.0
+   }
+  ]
+ }
+}

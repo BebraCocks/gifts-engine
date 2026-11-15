@@ -1,21 +1,30 @@
-"""Use selected takes when complete, otherwise estimate a text-only timeline."""
+"""Таймлайн содержания (до вставки рекламы), общий для audio.py и render.py.
+ON/END — начало и конец реплик (1-based), AD_STOP — где ролик встаёт на RubUp, DUR — длительность содержания."""
+import json
 from pathlib import Path
-import wave
-import config
-from script import LINES
+import script
 
 HERE = Path(__file__).resolve().parent
-TAKES = [HERE / 'voice' / f'L{k:02d}.wav' for k in range(1, len(LINES) + 1)]
-HAS_NARRATION = not config.WITHOUT_NARRATION and all(p.is_file() for p in TAKES)
-ON, END = [], []
-cursor = 0.3
-for k, (spoken, screen, style, pause) in enumerate(LINES):
-    if HAS_NARRATION:
-        with wave.open(str(TAKES[k])) as w:
-            duration = w.getnframes() / w.getframerate()
-    else:
-        duration = max(2.5, len(spoken.split()) / 2.5)
-    ON.append(cursor)
-    END.append(cursor + duration)
-    cursor += duration + pause
-DUR = cursor + 0.3
+META = json.loads((HERE / 'voice' / 'lines.json').read_text(encoding='utf-8'))
+TAKES = {m['line']: HERE / 'voice' / f"L{m['line']:02d}.wav" for m in META}
+HAS_NARRATION = True
+LEAD = 0.3
+AD_GAP = 0.3
+
+
+def build():
+    on, end, stop = {}, {}, None
+    t = LEAD
+    for m in META:
+        i = m['line']
+        on[i], end[i] = t, t + m['dur']
+        pause = script.LINES[i - 1][2]
+        t += m['dur'] + pause
+        if i == script.AD_AFTER:
+            stop = end[i] + pause * 0.6
+            t = stop + AD_GAP
+    return on, end, stop, t + 0.45
+
+
+ON, END, AD_STOP, DUR = build()
+SCENE = {i: script.LINES[i - 1][1] for i in ON}

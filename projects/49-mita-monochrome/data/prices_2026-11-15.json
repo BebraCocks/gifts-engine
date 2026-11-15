@@ -1,0 +1,279 @@
+{
+ "_note": "Fragment, фильтр «в продаже», сортировка по цене; 2026-11-15 16:48 UTC. Курс tonapi.io.",
+ "ton_rub": 86.5317086857474,
+ "ton_usd": 1.0476752206815887,
+ "items": [
+  {
+   "gift": "Ginger Cookie",
+   "model": "Sweetheart",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/gingercookie?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Sweetheart%22%5D",
+   "lots": [
+    [
+     "gingercookie-3868",
+     10.0
+    ],
+    [
+     "gingercookie-76710",
+     11.0
+    ],
+    [
+     "gingercookie-21568",
+     15.0
+    ],
+    [
+     "gingercookie-36793",
+     27.0
+    ],
+    [
+     "gingercookie-9876",
+     38.0
+    ],
+    [
+     "gingercookie-12796",
+     50.0
+    ],
+    [
+     "gingercookie-76347",
+     55.0
+    ],
+    [
+     "gingercookie-73281",
+     58.0
+    ],
+    [
+     "gingercookie-149579",
+     85.0
+    ],
+    [
+     "gingercookie-59876",
+     100.0
+    ]
+   ]
+  },
+  {
+   "gift": "Ginger Cookie",
+   "model": "Sweetheart",
+   "backdrop": "Fandango",
+   "url": "https://fragment.com/gifts/gingercookie?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Sweetheart%22%5D&attr%5BBackdrop%5D=%5B%22Fandango%22%5D",
+   "lots": [
+    [
+     "gingercookie-59876",
+     100.0
+    ]
+   ]
+  },
+  {
+   "gift": "Jingle Bells",
+   "model": "Barbie",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/jinglebells?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Barbie%22%5D",
+   "lots": [
+    [
+     "jinglebells-52321",
+     15.0
+    ],
+    [
+     "jinglebells-27253",
+     22.0
+    ],
+    [
+     "jinglebells-9146",
+     32.0
+    ],
+    [
+     "jinglebells-3490",
+     55.0
+    ],
+    [
+     "jinglebells-4144",
+     80.0
+    ],
+    [
+     "jinglebells-11868",
+     450.0
+    ]
+   ]
+  },
+  {
+   "gift": "Jingle Bells",
+   "model": "Barbie",
+   "backdrop": "Fandango",
+   "url": "https://fragment.com/gifts/jinglebells?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Barbie%22%5D&attr%5BBackdrop%5D=%5B%22Fandango%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Jester Hat",
+   "model": "Pinky Circus",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/jesterhat?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Pinky+Circus%22%5D",
+   "lots": [
+    [
+     "jesterhat-2890",
+     29.0
+    ],
+    [
+     "jesterhat-55559",
+     39.0
+    ],
+    [
+     "jesterhat-20162",
+     200.0
+    ],
+    [
+     "jesterhat-7069",
+     10138.0
+    ]
+   ]
+  },
+  {
+   "gift": "Jester Hat",
+   "model": "Pinky Circus",
+   "backdrop": "Raspberry",
+   "url": "https://fragment.com/gifts/jesterhat?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Pinky+Circus%22%5D&attr%5BBackdrop%5D=%5B%22Raspberry%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Precious Peach",
+   "model": "Malachite",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/preciouspeach?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Malachite%22%5D",
+   "lots": [
+    [
+     "preciouspeach-444",
+     4000.0
+    ]
+   ]
+  },
+  {
+   "gift": "Precious Peach",
+   "model": "Malachite",
+   "backdrop": "Malachite",
+   "url": "https://fragment.com/gifts/preciouspeach?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Malachite%22%5D&attr%5BBackdrop%5D=%5B%22Malachite%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Eternal Rose",
+   "model": "Moonstone",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/eternalrose?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Moonstone%22%5D",
+   "lots": [
+    [
+     "eternalrose-8298",
+     50.0
+    ]
+   ]
+  },
+  {
+   "gift": "Eternal Rose",
+   "model": "Moonstone",
+   "backdrop": "Moonstone",
+   "url": "https://fragment.com/gifts/eternalrose?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Moonstone%22%5D&attr%5BBackdrop%5D=%5B%22Moonstone%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Spiced Wine",
+   "model": "Persimmon",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/spicedwine?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Persimmon%22%5D",
+   "lots": [
+    [
+     "spicedwine-76767",
+     9.0
+    ],
+    [
+     "spicedwine-32200",
+     322.0
+    ]
+   ]
+  },
+  {
+   "gift": "Spiced Wine",
+   "model": "Persimmon",
+   "backdrop": "Persimmon",
+   "url": "https://fragment.com/gifts/spicedwine?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Persimmon%22%5D&attr%5BBackdrop%5D=%5B%22Persimmon%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Plush Pepe",
+   "model": "Marble",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/plushpepe?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Marble%22%5D",
+   "lots": [
+    [
+     "plushpepe-1097",
+     8888.0
+    ],
+    [
+     "plushpepe-1387",
+     30000.0
+    ]
+   ]
+  },
+  {
+   "gift": "Plush Pepe",
+   "model": "Marble",
+   "backdrop": "Black",
+   "url": "https://fragment.com/gifts/plushpepe?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Marble%22%5D&attr%5BBackdrop%5D=%5B%22Black%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Perfume Bottle",
+   "model": "Mono Delight",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/perfumebottle?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Mono+Delight%22%5D",
+   "lots": [
+    [
+     "perfumebottle-2553",
+     340.0
+    ]
+   ]
+  },
+  {
+   "gift": "Perfume Bottle",
+   "model": "Mono Delight",
+   "backdrop": "Black",
+   "url": "https://fragment.com/gifts/perfumebottle?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Mono+Delight%22%5D&attr%5BBackdrop%5D=%5B%22Black%22%5D",
+   "lots": []
+  },
+  {
+   "gift": "Santa Hat",
+   "model": "Inky White",
+   "backdrop": null,
+   "url": "https://fragment.com/gifts/santahat?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Inky+White%22%5D",
+   "lots": [
+    [
+     "santahat-44105",
+     12.0
+    ],
+    [
+     "santahat-27195",
+     14.0
+    ],
+    [
+     "santahat-40667",
+     14.0
+    ],
+    [
+     "santahat-13745",
+     15.0
+    ],
+    [
+     "santahat-52583",
+     15.0
+    ],
+    [
+     "santahat-61106",
+     15.0
+    ]
+   ]
+  },
+  {
+   "gift": "Santa Hat",
+   "model": "Inky White",
+   "backdrop": "Black",
+   "url": "https://fragment.com/gifts/santahat?filter=sale&sort=price_asc&attr%5BModel%5D=%5B%22Inky+White%22%5D&attr%5BBackdrop%5D=%5B%22Black%22%5D",
+   "lots": []
+  }
+ ]
+}

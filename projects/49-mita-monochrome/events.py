@@ -1,10 +1,35 @@
-"""Shared content-time events. Add word anchors here for picture and sound together."""
-from timeline import DUR, ON, END
-from words import wt
+"""Общие события картинки и звука: границы сцен, удары музыки (бит), рекламная пауза."""
+import numpy as np
+from timeline import ON, END, AD_STOP, DUR
+import music
 
-# Place an ad in the pause nearest the middle, with room for deceleration.
-gaps = [(abs((END[k] + ON[k+1])/2 - DUR/2), k) for k in range(len(ON)-1)]
-if not gaps:
-    raise ValueError('Use at least two lines and plan a speech pause for RubUp')
-k = min(gaps)[1]
-AD_STOP = (END[k] + ON[k+1]) / 2
+BEATS = music.beats_in_content()          # времена сильных долей музыки во времени содержания
+
+
+def snap(t, win=0.22):
+    """Ближайшая доля музыки в пределах win, иначе t."""
+    if not len(BEATS):
+        return t
+    b = BEATS[np.argmin(np.abs(BEATS - t))]
+    return float(b) if abs(b - t) <= win else t
+
+
+# Сцены (время содержания)
+HOOK = ON[1]
+PRICE_X10 = snap(ON[2] + 2.3)            # «дороже в десять раз»
+INTRO = snap(ON[3] - 0.05)
+COUNTER = snap(ON[3] + 2.4)              # «трёх видов»
+SPIN = snap(ON[4] + 1.0)                 # «менять наряды»
+TYPE1 = snap(ON[5] - 0.1)
+TYPE1_ZOOM = snap(ON[5] + 3.6)           # «почти идеально»
+TYPE2 = snap(ON[6] - 0.1)
+TYPE2_NAMES = snap(ON[6] + 2.6)          # «Киберпанк … тоже Киберпанк»
+TYPE2_COLOR = snap(ON[7] + 1.2)          # «а по цвету»
+TEASE = snap(ON[8] - 0.1)
+TYPE3 = ON[9] - 0.05                     # сразу после рекламы
+TYPE3_ZOOM = snap(ON[10] + 2.6)          # «огромная удача»
+WHY = snap(ON[11] - 0.1)
+ORDER = snap(ON[11] + 2.4)               # «мозг любит порядок»
+SEEN = snap(ON[12] - 0.05)
+OUTRO = snap(ON[13] - 0.1)
+CREEPY = ON[14] - 0.05

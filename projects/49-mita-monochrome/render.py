@@ -182,7 +182,7 @@ POSES = [  # (с какого времени, поза, смена наряда)
     (0.0, 'normal_sly', False),
     (ON[2], 'normal_explain', False),
     (E.PRICE_X10 - 0.05, 'normal_surprised', False),
-    (E.INTRO, 'normal_excited', False),
+    (E.INTRO, 'normal_excited', True),
     (E.COUNTER - 0.3, 'normal_listen', False),
     (ON[4], 'normal_explain', False),
     (E.TYPE1, 'pink_explain', True),
@@ -283,13 +283,14 @@ def draw_mita(cv, t):
     cx = 540 + math.sin(t * 0.7) * 6
     if E.SPIN <= t < E.SPIN + SPIN_DUR:
         bob -= 18 * math.sin(math.pi * (t - E.SPIN) / SPIN_DUR)
+    bob += 1300 * hook_push(t, overshoot=False)      # на наезде хука Мита уезжает вниз за кадр
     creepy = ease((t - E.CREEPY) / 2.0)
     if creepy > 0:                                   # финал: Мита медленно приближается
         s = 1 + 0.07 * creepy
         sx, sy = sx * s, sy * s
     placed = fx.warp(im, cx, MITA_FOOT + bob, sx, sy, 0.0, (im.width / 2, im.height))
     shadow = fx.radial(256, (0, 0, 0), 1.6, 0.55)
-    put(cv, shadow.resize((420, 70)), cx, MITA_FOOT - 4, 1.0, 0.8)
+    put(cv, shadow.resize((420, 70)), cx, MITA_FOOT - 4, 1.0, 0.8 * (1 - hook_push(t, overshoot=False)))
     if blend:
         (n2, m2), w2 = blend
         im2 = mita(n2, m2)
@@ -521,6 +522,14 @@ def neq_badge():
 
 
 # ------------------------------------------------------------------ scenes
+def hook_push(t, overshoot=True):
+    """0..1: на «Смотри» плитки хука съезжают в центр и растут, на «правая — монохром» возвращаются."""
+    x = fx.clamp01((t - E.LOOK) / 0.45)
+    rise = fx.ease_out_back(x) if overshoot else fx.smooth(x)
+    fall = fx.smooth(fx.clamp01((t - (E.INTRO - 0.15)) / 0.45))
+    return rise * (1 - fall) if t >= E.LOOK else 0.0
+
+
 def scene_hook(cv, t):
     left, right = CARDS['hook']
     out = appear(t, E.TYPE1 - 0.35, 0.35)
@@ -536,17 +545,23 @@ def scene_hook(cv, t):
         s = 1.1 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
         cx = (290, 790)[j]
         cy = 520
+        p = hook_push(t)                 # наезд на «Смотри»
+        cy += (930 - 520) * p
+        cx += ((272, 808)[j] - cx) * p
+        s *= 1 + 0.5 * p
+        ls = 1 + 0.38 * p                # подписи растут вместе с плитками
         if j == 0:
             a *= 1 - 0.7 * focus
             s *= 1 - 0.15 * focus
         else:
             cx += (540 - cx) * focus * 0.35
             s *= 1 + 0.12 * focus
+            cy -= 40 * focus
         a *= 1 - 0.55 * spin_away
         tile = gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - tj)
         put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), cx, cy + 16 * s, s, a)
         put(cv, tile, cx, cy, s, a)
-        put(cv, multi(((c['model'], INK), (' · ', MUTED), (c['backdrop'], MUTED)), 28, 'Semibold'), cx, cy + 215 * s / 1.25, 1.0, a)
+        put(cv, multi(((c['model'], INK), (' · ', MUTED), (c['backdrop'], MUTED)), 28, 'Semibold'), cx, cy + 215 * s / 1.25, ls, a)
         price = c['rub']
         if j == 1:                      # цена правой растёт ×10 на «в десять раз»
             k = fx.clamp01((t - (E.PRICE_X10 - 0.5)) / 0.5)
@@ -554,13 +569,13 @@ def scene_hook(cv, t):
             if t < E.PRICE_X10 - 0.5:
                 price = None
         if price is not None:
-            put(cv, text(rub(price), 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, 1.0, a)
+            put(cv, text(rub(price), 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, ls, a)
         elif t > 0.6:
-            put(cv, text('≈ ? ₽', 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, 1.0, a)
+            put(cv, text('≈ ? ₽', 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, ls, a)
         if j == 1 and t >= E.PRICE_X10:
             k = t - E.PRICE_X10
             ps = fx.spring(fx.clamp01(k / 0.6))
-            put(cv, fx.solid_pill('×10', (236, 72, 120), 40), cx + 130 * s, cy - 150 * s, 0.6 + 0.4 * ps, a)
+            put(cv, fx.solid_pill('×10', (236, 72, 120), 40), min(cx + 130 * s, 990), cy - 150 * s, 0.6 + 0.4 * ps, a)
         if j == 1 and focus > 0 and t < E.COUNTER - 0.1:
             put(cv, fx.solid_pill('МОНОХРОМ', (30, 24, 48), 30), cx, cy - 190 * s, 1.0, a * focus)
     # счётчик видов 1 · 2 · 3
@@ -828,7 +843,7 @@ def subtitles(cv, t):
 
 
 # ---- реакции над Митой
-REACT = [(E.PRICE_X10, '!'), (E.SPIN, 'note'), (E.TYPE1_ZOOM, 'heart'), (E.TYPE2_COLOR, '?'),
+REACT = [(E.INTRO + 0.15, '!'), (E.SPIN, 'note'), (E.TYPE1_ZOOM, 'heart'), (E.TYPE2_COLOR, '?'),
          (E.TYPE3 + 0.15, '!'), (E.TYPE3_ZOOM, 'heart'), (E.ORDER, 'heart'), (E.CREEPY + 0.3, 'dots')]
 
 
@@ -988,9 +1003,9 @@ def chips(cv, t, t0, a, c1, c2, merge, ok, label):
 def side_left(cv, t):
     hook_l, hook_r = CARDS['hook']
     # хук: столбики цены ×10
-    a = window_a(t, E.PRICE_X10 - 0.3, E.SPIN - 0.4)
+    a = window_a(t, E.INTRO + 0.2, E.SPIN - 0.4)
     if a > 0:
-        bars(cv, t, E.PRICE_X10 - 0.3, a, hook_l['rub'], hook_r['rub'], '865 ₽', '8 653 ₽', '×10')
+        bars(cv, t, E.INTRO + 0.2, a, hook_l['rub'], hook_r['rub'], '865 ₽', '8 653 ₽', '×10')
     # кружение: анонс трёх видов
     a = window_a(t, E.SPIN - 0.4, E.TYPE1)
     if a > 0:

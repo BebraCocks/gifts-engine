@@ -886,11 +886,12 @@ def side_right(cv, t):
         if a <= 0:
             continue
         s = put_panel(cv, RX, SIDE_Y, a, t0, t)
-        y = SIDE_Y - 115
-        put(cv, text('шанс сочетания', 24, 'Semibold', MUTED), RX, y, s, a)
-        put(cv, text(who, 26, 'Bold'), RX, y + 52 * s, s, a)
-        put(cv, text(f, 34, 'Heavy'), RX, y + 120 * s, s, a)
-        put(cv, text(res, 36, 'Heavy', ACCENT), RX, y + 185 * s, s, a)
+        y = SIDE_Y - 115                                 # автор: без формулы с процентами — только примерный шанс
+        num = res.replace('≈ 1 из ', '')
+        put(cv, text('шанс выпадения', 24, 'Semibold', MUTED), RX, y, s, a)
+        put(cv, text(who, 26, 'Bold'), RX, y + 46 * s, s, a)
+        put(cv, text('примерно 1 из', 30, 'Heavy'), RX, y + 112 * s, s, a)
+        put(cv, text(num, 64, 'Heavy', ACCENT), RX, y + 180 * s, s * (1 + 0.04 * beat_pulse(t, 8)), a)
 
 
 # ---- левая панель: по сценам

@@ -554,3 +554,8 @@ RubUp перенесены: ~0:23 (после «И тут приходит ус�
 
 Раскладка «Б» (компактный заголовок, субтитры под Митой), панель шанса без формулы (Unbounded), музыка −23 дБ.
 `renders/49-mita-monochrome/mita_monochrome_v3.mp4`, Drive «TikTok» (копия crf 20). Ждём отзыв автора.
+
+## 2026-11-15 · 49-mita-monochrome v4 — собрано
+
+Наезд на «Смотри» (подарки в центр крупно, Мита за кадром ~3 с), музыка −27,5 дБ. `renders/49-mita-monochrome/mita_monochrome_v4.mp4`,
+Drive «TikTok» (копия crf 20). Канал: @mitagifts, аватар и баннеры — `projects/49-mita-monochrome/channel/`.

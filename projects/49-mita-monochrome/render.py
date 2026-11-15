@@ -760,7 +760,7 @@ def subtitles(cv, t):
     sc = min(1.0, 980 / im.width)
     pop = fx.ease_out_back(fx.clamp01((t - start) / 0.22))
     pw = int(im.width * sc) + 44
-    plate = fx.rounded(pw, 84, 30, (255, 255, 255, 228), (236, 228, 248, 255), 2)
+    plate = fx.rounded(pw, 84, 30, (255, 255, 255, 230), THEME["border"] + (255,), 3)
     put(cv, plate, 540, 990, 0.85 + 0.15 * pop, 1.0)
     put(cv, im, 540, 990, sc * (0.85 + 0.15 * pop), 1.0)
 

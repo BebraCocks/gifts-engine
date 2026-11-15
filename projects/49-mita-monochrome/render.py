@@ -504,8 +504,8 @@ def card_row(cv, t, key, t_in, zoom_i=None, zoom_t=None, zoom_len=1.9, t_out=Non
         dim = 0.0
         if zoom_i is not None:
             if j == zoom_i:
-                cx, cy = cx + (540 - cx) * z, cy - 40 * z
-                s *= 1 + 0.24 * z
+                cx, cy = cx + (540 - cx) * z, cy - 10 * z
+                s *= 1 + 0.08 * z
             else:
                 dim = z * 1.3
         hl = appear(t, highlight_t, 0.25) if highlight_t else 0.0
@@ -533,9 +533,9 @@ def scene_hook(cv, t):
         tj = E.HOOK_POPS[j] - 0.08
         a = appear(t, tj, 0.35) * a0 * (1 - out)
         pop = fx.ease_out_back(fx.clamp01((t - tj) / 0.5)) if t < tj + 0.5 else 1.0
-        s = 1.25 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
+        s = 1.1 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
         cx = (290, 790)[j]
-        cy = 500
+        cy = 520
         if j == 0:
             a *= 1 - 0.7 * focus
             s *= 1 - 0.15 * focus
@@ -561,7 +561,7 @@ def scene_hook(cv, t):
             k = t - E.PRICE_X10
             ps = fx.spring(fx.clamp01(k / 0.6))
             put(cv, fx.solid_pill('×10', (236, 72, 120), 40), cx + 130 * s, cy - 150 * s, 0.6 + 0.4 * ps, a)
-        if j == 1 and focus > 0:
+        if j == 1 and focus > 0 and t < E.COUNTER - 0.1:
             put(cv, fx.solid_pill('МОНОХРОМ', (30, 24, 48), 30), cx, cy - 190 * s, 1.0, a * focus)
     # счётчик видов 1 · 2 · 3
     for j in range(3):
@@ -569,7 +569,7 @@ def scene_hook(cv, t):
         a = appear(t, tj, 0.25) * (1 - out)
         if a > 0:
             ps = fx.ease_out_back(fx.clamp01((t - tj) / 0.4))
-            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (30, 24, 48))[j], 40, WHITE), 400 + 140 * j, 205, 0.5 + 0.5 * ps, a)
+            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (30, 24, 48))[j], 40, WHITE), 400 + 140 * j, 262, 0.5 + 0.5 * ps, a)
 
 
 def scene_type1(cv, t):
@@ -749,7 +749,7 @@ def big_number(cv, t):
 
 # ---- полоса прогресса «вид 1 · 2 · 3»
 def progress(cv, t):
-    a = window_a(t, E.INTRO + 0.6, E.OUTRO + 0.4, 0.4)
+    a = window_a(t, E.TYPE1 - 0.3, E.OUTRO + 0.4, 0.4)
     if a <= 0:
         return
     cur = {'type1': 0, 'type2': 1, 'seen': 1, 'tease': 2, 'type3': 2}.get(scene_key(t), -1)

@@ -19,32 +19,33 @@ if im.width < W:                                    # дотянуть фон в
 im = im.crop((0, 0, W, H))
 INK, PINK = (30, 24, 48), (226, 54, 120)
 font = lambda w, z: ImageFont.truetype(str(F / f'Unbounded-{w}.ttf'), z)
-f1 = font('ExtraBold', 170)
-d0 = ImageDraw.Draw(im)
-t1, t2 = 'Мита ', 'о Гифтах'
-tw = d0.textlength(t1, font=f1) + d0.textlength(t2, font=f1)
-x = int(W * 0.405); cx = int(x + tw / 2); y = int(H / 2 - 110)
-box = (x - 60, y - 40, x + tw + 60, y + 250)
-# декор: бледные NFT-модели сверху и снизу надписи
+f1 = font('ExtraBold', 152)
+# Видимая зона профиля TikTok (по скриншоту автора): по горизонтали ≈0,12–0,87 W; снизу ≈0,62 H закрывает имя;
+# справа (x > 0,63 W, y 0,28–0,47 H) — кнопки. Надпись — в две строки вплотную к Мите, в верхней части.
+x = int(W * 0.318); y = int(H * 0.12)
+lines = [('Мита', PINK), ('о Гифтах', INK)]
+LH = 190
+# декор: бледные NFT-модели справа и под надписью, вне зоны текста
 gifts = [('Ginger Cookie', 'Sweetheart'), ('Love Potion', 'Milkshake'), ('Big Year', 'Cyberpunk'), ('Santa Hat', 'Inky White'),
          ('Whip Cupcake', 'Sweetheart'), ('Jester Hat', 'Neon White'), ('Clover Pin', 'Lollipop'), ('Gem Signet', 'Moonstone'),
          ('Snoop Dogg', 'Sapphire'), ('Precious Peach', 'Malachite'), ('Eternal Rose', 'Moonstone'), ('Spiced Wine', 'Persimmon')]
 rnd = random.Random(7)
 deco = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-xs = [int(W * 0.42 + i * (W * 0.54) / 6) for i in range(7)]
-spots = [(xx + rnd.randint(-40, 40), rnd.randint(90, 230)) for xx in xs] + [(xx + 120 + rnd.randint(-40, 40), rnd.randint(H - 230, H - 100)) for xx in xs[:6]]
-for k, (px, py) in enumerate(spots):
+spots = [(0.70, 0.10), (0.79, 0.20), (0.88, 0.09), (0.94, 0.27), (0.72, 0.52), (0.83, 0.60), (0.93, 0.50),
+         (0.40, 0.56), (0.50, 0.62), (0.60, 0.55), (0.45, 0.85), (0.62, 0.82), (0.78, 0.86)]
+for k, (fx_, fy_) in enumerate(spots):
+    px, py = int(W * fx_ + rnd.randint(-30, 30)), int(H * fy_ + rnd.randint(-20, 20))
     g, m = gifts[k % len(gifts)]
     p = Image.open(G.model_png(g, m, size=256)).convert('RGBA')
-    sz = rnd.randint(120, 170)
+    sz = rnd.randint(120, 165)
     p = p.resize((sz, sz), Image.LANCZOS).rotate(rnd.uniform(-18, 18), expand=True, resample=Image.BICUBIC)
     p = ImageEnhance.Color(p).enhance(0.75)
-    a = p.getchannel('A').point(lambda v: int(v * 0.24)); p.putalpha(a)
+    p.putalpha(p.getchannel('A').point(lambda v: int(v * 0.24)))
     deco.alpha_composite(p, (px - p.width // 2, py - p.height // 2))
 im.alpha_composite(deco)
 lay = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
-d.text((x, y), t1, font=f1, fill=PINK + (255,))
-d.text((x + d.textlength(t1, font=f1), y), t2, font=f1, fill=INK + (255,))
+for j, (t_, col) in enumerate(lines):
+    d.text((x, y + j * LH), t_, font=f1, fill=col + (255,))
 sh = Image.new('RGBA', (W, H), (255, 255, 255, 0)); sh.putalpha(lay.getchannel('A').point(lambda v: int(v * 0.35)))
 im.alpha_composite(sh.filter(ImageFilter.GaussianBlur(18))); im.alpha_composite(lay)
 im.convert('RGB').save(dst, quality=95)

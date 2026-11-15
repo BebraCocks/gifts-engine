@@ -29,8 +29,8 @@ BR = banner.Breaks([AD_STOP], cy=H / 2, speed=1.1)
 DATA = json.loads((HERE / 'data' / 'cards_2026-11-15.json').read_text(encoding='utf-8'))
 CARDS = DATA['cards']
 MITA = HERE / 'input' / 'mita'
-MITA_H = 880            # рост Миты в кадре, px
-MITA_FOOT = 1915
+MITA_H = 760            # рост Миты в кадре, px
+MITA_FOOT = 1540
 WHITE = (255, 255, 255)
 INK = (30, 24, 48)
 MUTED = (118, 112, 140)
@@ -418,17 +418,18 @@ def confetti(d, mp, S, t):
 
 
 # ------------------------------------------------------------------ headline
-HEADS = [  # (с, по, строки, малая подпись)
-    (0.0, ON[3] - 0.15, ('Почему одинаковые', 'подарки стоят по-разному?'), 'Мита объясняет'),
+HEADS = [  # (с, по, строки, малая подпись); v3 — компактно: одна строка, «Вид N» акцентом
+    (0.0, ON[3] - 0.15, ('Почему одинаковые подарки', 'стоят по-разному?'), 'Мита объясняет'),
     (ON[3] - 0.15, E.TYPE1, ('Монохром',), None),
-    (E.TYPE1, E.TYPE2, ('Вид 1', 'цвет в цвет'), None),
-    (E.TYPE2, E.SEEN, ('Вид 2', 'одинаковые названия'), None),
-    (E.SEEN, E.TEASE, ('Монохром', 'видно сразу'), None),
-    (E.TEASE, E.TYPE3, ('Вид 3', '???'), None),
-    (E.TYPE3, E.WHY, ('Вид 3', 'чёрно-белый'), None),
-    (E.WHY, E.OUTRO, ('Почему это', 'так нравится?'), None),
-    (E.OUTRO, DUR + 1, ('А у тебя есть', 'монохром?'), None),
+    (E.TYPE1, E.TYPE2, ('Вид 1 · цвет в цвет',), None),
+    (E.TYPE2, E.SEEN, ('Вид 2 · одинаковые названия',), None),
+    (E.SEEN, E.TEASE, ('Монохром видно сразу',), None),
+    (E.TEASE, E.TYPE3, ('Вид 3 · ???',), None),
+    (E.TYPE3, E.WHY, ('Вид 3 · чёрно-белый',), None),
+    (E.WHY, E.OUTRO, ('Почему это так нравится?',), None),
+    (E.OUTRO, DUR + 1, ('А у тебя есть монохром?',), None),
 ]
+HEAD_Y = 172
 
 
 def headline(cv, t):
@@ -436,18 +437,23 @@ def headline(cv, t):
         a = appear(t, t0, 0.3) * (1 - appear(t, t1 - 0.25, 0.25))
         if a <= 0:
             continue
-        y = 150 + 14 * (1 - a)
-        big = 70 if len(lines) == 1 else 60
+        y = HEAD_Y + 10 * (1 - a)
+        big = 50 if len(lines) == 1 else 46
         for j, s in enumerate(lines):
-            col = ACCENT if (j == 0 and len(lines) == 2 and s.startswith('Вид')) else INK
-            put(cv, text(s, big if not s.startswith('Вид') else 52, 'Heavy', col), 540, y + j * (big + 14), 1.0, a)
+            if s.startswith('Вид') and ' · ' in s:
+                head, rest = s.split(' · ', 1)
+                im = multi(((head, ACCENT), (' · ', MUTED), (rest, INK)), big, 'Heavy')
+            else:
+                im = text(s, big, 'Heavy')
+            sc = min(1.0, 1000 / im.width)
+            put(cv, im, 540, y + j * (big + 10), sc, a)
         if sub:
-            pill = fx.solid_pill(sub, (236, 72, 120), 30)
-            put(cv, pill, 540, y + len(lines) * (big + 14) + 22, 1.0, a)
+            pill = fx.solid_pill(sub, (236, 72, 120), 26)
+            put(cv, pill, 540, y + len(lines) * (big + 10) + 12, 1.0, a)
 
 
 # ------------------------------------------------------------------ cards
-CARD_Y = 600           # центр плитки
+CARD_Y = 480           # центр плитки
 TILE = 300
 
 
@@ -499,7 +505,7 @@ def card_row(cv, t, key, t_in, zoom_i=None, zoom_t=None, zoom_len=1.9, t_out=Non
         if zoom_i is not None:
             if j == zoom_i:
                 cx, cy = cx + (540 - cx) * z, cy - 40 * z
-                s *= 1 + 0.36 * z
+                s *= 1 + 0.24 * z
             else:
                 dim = z * 1.3
         hl = appear(t, highlight_t, 0.25) if highlight_t else 0.0
@@ -529,7 +535,7 @@ def scene_hook(cv, t):
         pop = fx.ease_out_back(fx.clamp01((t - tj) / 0.5)) if t < tj + 0.5 else 1.0
         s = 1.25 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
         cx = (290, 790)[j]
-        cy = 640
+        cy = 500
         if j == 0:
             a *= 1 - 0.7 * focus
             s *= 1 - 0.15 * focus
@@ -563,7 +569,7 @@ def scene_hook(cv, t):
         a = appear(t, tj, 0.25) * (1 - out)
         if a > 0:
             ps = fx.ease_out_back(fx.clamp01((t - tj) / 0.4))
-            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (30, 24, 48))[j], 40, WHITE), 400 + 140 * j, 300, 0.5 + 0.5 * ps, a)
+            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (30, 24, 48))[j], 40, WHITE), 400 + 140 * j, 205, 0.5 + 0.5 * ps, a)
 
 
 def scene_type1(cv, t):
@@ -616,14 +622,14 @@ def scene_why(cv, t):
     m = appear(t, E.ORDER, 0.8)                         # хаос → порядок: фон «подстраивается» под подарок
     s = 1.45 * (1 + 0.025 * beat_pulse(t, 7))
     t_an = t - E.WHY
-    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 640 + 16, s, a)
-    put(cv, gift_tile(left['gift'], left['model'], left['backdrop'], 300, t_an), 540, 640, s, a * (1 - m))
-    put(cv, gift_tile(right['gift'], right['model'], right['backdrop'], 300, t_an), 540, 640, s, a * m)
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 470 + 16, s, a)
+    put(cv, gift_tile(left['gift'], left['model'], left['backdrop'], 300, t_an), 540, 470, s, a * (1 - m))
+    put(cv, gift_tile(right['gift'], right['model'], right['backdrop'], 300, t_an), 540, 470, s, a * m)
     lab = 'хаос' if m < 0.5 else 'порядок'
     col = MUTED if m < 0.5 else ACCENT
-    put(cv, text(lab, 46, 'Heavy', col), 540, 900, 1.0, a)
+    put(cv, text(lab, 46, 'Heavy', col), 540, 730, 1.0, a)
     if m > 0.95:
-        sparkles(cv, t, E.ORDER + 0.8, 540, 640, 260, 12, (236, 72, 120))
+        sparkles(cv, t, E.ORDER + 0.8, 540, 470, 260, 12, (236, 72, 120))
 
 
 def scene_seen(cv, t):
@@ -634,17 +640,17 @@ def scene_seen(cv, t):
     a = appear(t, E.SEEN, 0.35) * (1 - out)
     c = CARDS['hook'][1]
     s = 1.45 * (1 + 0.025 * beat_pulse(t, 7))
-    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 640 + 16, s, a)
-    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - E.SEEN), 540, 640, s, a)
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 470 + 16, s, a)
+    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - E.SEEN), 540, 470, s, a)
     k = appear(t, E.SEEN + 1.6, 0.3)                    # «никаких процентов»
     pc = multi((('Модель 0,9%', MUTED), ('   ', MUTED), ('Фон 2%', MUTED)), 34, 'Semibold')
-    put(cv, pc, 540, 900, 1.0, a * appear(t, E.SEEN + 0.4, 0.3))
+    put(cv, pc, 540, 730, 1.0, a * appear(t, E.SEEN + 0.4, 0.3))
     if k > 0:
         def strike(d, mp, S):
-            x0, y = mp(540 - 190 * k, 902)
-            x1, _ = mp(540 + 190 * k, 902)
+            x0, y = mp(540 - 190 * k, 732)
+            x1, _ = mp(540 + 190 * k, 732)
             d.line([x0, y, x1, y], fill=(236, 72, 120, 255), width=int(6 * S))
-        fx.over(cv, fx.draw_rgba((330, 870, 750, 930), strike), a)
+        fx.over(cv, fx.draw_rgba((330, 700, 750, 760), strike), a)
     hearts(cv, t, E.SEEN + 0.4, a)
 
 def hearts(cv, t, t0, a):
@@ -678,17 +684,17 @@ def scene_outro(cv, t):
             continue
         pop = fx.ease_out_back(fx.clamp01((t - tj) / 0.45))
         s = 0.88 * (0.6 + 0.4 * pop) * (1 + 0.025 * beat_pulse(t, 8))
-        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), XS[j], 610 + 14, s, a)
-        put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), XS[j], 610, s, a)
-        put(cv, text(('цвет в цвет', 'названия', 'чёрно-белый')[j], 28, 'Semibold', MUTED), XS[j], 775, 1.0, a)
+        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), XS[j], 470 + 14, s, a)
+        put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), XS[j], 470, s, a)
+        put(cv, text(('цвет в цвет', 'названия', 'чёрно-белый')[j], 28, 'Semibold', MUTED), XS[j], 630, 1.0, a)
     k = appear(t, E.OUTRO + 0.9, 0.35)
-    put(cv, fx.solid_pill('Пиши в комментариях', (236, 72, 120), 34), 540, 860, 0.8 + 0.2 * k, k)
+    put(cv, fx.solid_pill('Пиши в комментариях', (236, 72, 120), 34), 540, 700, 0.8 + 0.2 * k, k)
 
 
 # ------------------------------------------------------------------ v4: наполнение кадра
-SIDE_Y = 1400          # центр боковых панелей
-LX, RX = 172, 908      # центры левой и правой панелей
-PANEL_W, PANEL_H = 300, 330
+SIDE_Y = 1150          # центр боковых панелей
+LX, RX = 168, 836      # центры левой и правой панелей
+PANEL_W, PANEL_H = 280, 320
 
 
 def scene_key(t):
@@ -738,7 +744,7 @@ def big_number(cv, t):
     for d, t0, t1 in (('1', E.TYPE1, E.TYPE2), ('2', E.TYPE2, E.SEEN), ('3', E.TEASE, E.WHY)):
         a = window_a(t, t0, t1, 0.4)
         if a > 0:
-            put(cv, big_digit(d, THEME['digit']), 540, 1330 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
+            put(cv, big_digit(d, THEME['digit']), 540, 1130 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
 
 
 # ---- полоса прогресса «вид 1 · 2 · 3»
@@ -752,7 +758,7 @@ def progress(cv, t):
         done = cur > j or scene_key(t) in ('why', 'outro')
         fill = ACCENT if on else ((30, 24, 48) if done else (226, 220, 238))
         tc = WHITE if (on or done) else MUTED
-        put(cv, fx.solid_pill(f'вид {j + 1}', fill, 22, tc), 540 + (j - 1) * 150, 64, 1.0 + (0.06 * beat_pulse(t, 8) if on else 0), a)
+        put(cv, fx.solid_pill(f'вид {j + 1}', fill, 22, tc), 540 + (j - 1) * 150, 236, 1.0 + (0.06 * beat_pulse(t, 8) if on else 0), a)
 
 
 # ---- плывущие подарки по краям (живые модели текущей сцены), за всем остальным
@@ -789,6 +795,7 @@ def _chunks():
 
 
 CHUNKS = _chunks()
+SUB_Y = 1596           # субтитры под ногами Миты, выше зоны описания TikTok
 
 
 def _disp(w):
@@ -816,8 +823,8 @@ def subtitles(cv, t):
     pop = fx.ease_out_back(fx.clamp01((t - start) / 0.22))
     pw = int(im.width * sc) + 44
     plate = fx.rounded(pw, 84, 30, (255, 255, 255, 230), THEME["border"] + (255,), 3)
-    put(cv, plate, 540, 990, 0.85 + 0.15 * pop, 1.0)
-    put(cv, im, 540, 990, sc * (0.85 + 0.15 * pop), 1.0)
+    put(cv, plate, 540, SUB_Y, 0.85 + 0.15 * pop, 1.0)
+    put(cv, im, 540, SUB_Y, sc * (0.85 + 0.15 * pop), 1.0)
 
 
 # ---- реакции над Митой
@@ -832,16 +839,16 @@ def reactions(cv, t):
             continue
         a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
         pop = fx.ease_out_back(fx.clamp01(k / 0.35))
-        x, y = 700, 1075 - 40 * ease(k / 1.3)
+        x, y = 690, MITA_FOOT - MITA_H + 40 - 40 * ease(k / 1.3)
         if kind in ('!', '?'):
             put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
             if kind == '?':                       # капелька пота
                 def drop(d, mp, S):
-                    X, Y = mp(615, 1110 + 30 * ease(k / 1.3))
+                    X, Y = mp(615, MITA_FOOT - MITA_H + 75 + 30 * ease(k / 1.3))
                     r = 11 * S
                     d.polygon([(X, Y - r * 1.8), (X - r, Y), (X + r, Y)], fill=(120, 190, 255, int(220 * a)))
                     d.ellipse([X - r, Y - r, X + r, Y + r], fill=(120, 190, 255, int(220 * a)))
-                fx.over(cv, fx.draw_rgba((580, 1060, 650, 1160), drop))
+                fx.over(cv, fx.draw_rgba((580, MITA_FOOT - MITA_H + 25, 650, MITA_FOOT - MITA_H + 125), drop))
         else:
             def icon(d, mp, S):
                 X, Y = mp(x, y)
@@ -882,8 +889,8 @@ def side_right(cv, t):
         y = SIDE_Y - 115
         put(cv, text('шанс сочетания', 24, 'Semibold', MUTED), RX, y, s, a)
         put(cv, text(who, 26, 'Bold'), RX, y + 52 * s, s, a)
-        put(cv, text(f, 40, 'Heavy'), RX, y + 120 * s, s, a)
-        put(cv, text(res, 40, 'Heavy', ACCENT), RX, y + 185 * s, s, a)
+        put(cv, text(f, 34, 'Heavy'), RX, y + 120 * s, s, a)
+        put(cv, text(res, 36, 'Heavy', ACCENT), RX, y + 185 * s, s, a)
 
 
 # ---- левая панель: по сценам
@@ -1032,7 +1039,7 @@ def vignette(cv, t):
     if c <= 0:
         return
     yy, xx = np.ogrid[0:H, 0:W]
-    r = np.sqrt(((xx - 540) / 620) ** 2 + ((yy - 1250) / 1100) ** 2)
+    r = np.sqrt(((xx - 540) / 620) ** 2 + ((yy - 1050) / 1000) ** 2)
     v = np.clip((r - 0.45) / 0.7, 0, 1) ** 1.4 * 0.85 * c
     cv[..., :3] *= (1 - v)[..., None]
 

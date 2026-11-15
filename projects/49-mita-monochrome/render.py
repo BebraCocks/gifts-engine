@@ -5,6 +5,7 @@
 import functools
 import json
 import math
+import re
 import sys
 import wave
 from pathlib import Path
@@ -20,6 +21,7 @@ import gifts_api
 import lottie
 import events as E
 from timeline import DUR, ON, END, AD_STOP, TAKES
+from words import WORDS
 
 W, H, FPS = 1080, 1920, 60
 fx.set_frame(W, H)
@@ -439,7 +441,7 @@ def scene_hook(cv, t):
         pop = fx.ease_out_back(fx.clamp01((t - tj) / 0.5)) if t < tj + 0.5 else 1.0
         s = 1.25 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
         cx = (290, 790)[j]
-        cy = 700
+        cy = 640
         if j == 0:
             a *= 1 - 0.7 * focus
             s *= 1 - 0.15 * focus
@@ -526,14 +528,14 @@ def scene_why(cv, t):
     m = appear(t, E.ORDER, 0.8)                         # хаос → порядок: фон «подстраивается» под подарок
     s = 1.45 * (1 + 0.025 * beat_pulse(t, 7))
     t_an = t - E.WHY
-    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 700 + 16, s, a)
-    put(cv, gift_tile(left['gift'], left['model'], left['backdrop'], 300, t_an), 540, 700, s, a * (1 - m))
-    put(cv, gift_tile(right['gift'], right['model'], right['backdrop'], 300, t_an), 540, 700, s, a * m)
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 640 + 16, s, a)
+    put(cv, gift_tile(left['gift'], left['model'], left['backdrop'], 300, t_an), 540, 640, s, a * (1 - m))
+    put(cv, gift_tile(right['gift'], right['model'], right['backdrop'], 300, t_an), 540, 640, s, a * m)
     lab = 'хаос' if m < 0.5 else 'порядок'
     col = MUTED if m < 0.5 else ACCENT
-    put(cv, text(lab, 46, 'Heavy', col), 540, 960, 1.0, a)
+    put(cv, text(lab, 46, 'Heavy', col), 540, 900, 1.0, a)
     if m > 0.95:
-        sparkles(cv, t, E.ORDER + 0.8, 540, 700, 260, 12, (236, 72, 120))
+        sparkles(cv, t, E.ORDER + 0.8, 540, 640, 260, 12, (236, 72, 120))
 
 
 def scene_seen(cv, t):
@@ -544,17 +546,17 @@ def scene_seen(cv, t):
     a = appear(t, E.SEEN, 0.35) * (1 - out)
     c = CARDS['hook'][1]
     s = 1.45 * (1 + 0.025 * beat_pulse(t, 7))
-    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 700 + 16, s, a)
-    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - E.SEEN), 540, 700, s, a)
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 640 + 16, s, a)
+    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - E.SEEN), 540, 640, s, a)
     k = appear(t, E.SEEN + 1.6, 0.3)                    # «никаких процентов»
     pc = multi((('Модель 0,9%', MUTED), ('   ', MUTED), ('Фон 2%', MUTED)), 34, 'Semibold')
-    put(cv, pc, 540, 960, 1.0, a * appear(t, E.SEEN + 0.4, 0.3))
+    put(cv, pc, 540, 900, 1.0, a * appear(t, E.SEEN + 0.4, 0.3))
     if k > 0:
         def strike(d, mp, S):
-            x0, y = mp(540 - 190 * k, 962)
-            x1, _ = mp(540 + 190 * k, 962)
+            x0, y = mp(540 - 190 * k, 902)
+            x1, _ = mp(540 + 190 * k, 902)
             d.line([x0, y, x1, y], fill=(236, 72, 120, 255), width=int(6 * S))
-        fx.over(cv, fx.draw_rgba((330, 930, 750, 990), strike), a)
+        fx.over(cv, fx.draw_rgba((330, 870, 750, 930), strike), a)
     hearts(cv, t, E.SEEN + 0.4, a)
 
 def hearts(cv, t, t0, a):
@@ -595,6 +597,348 @@ def scene_outro(cv, t):
     put(cv, fx.solid_pill('Пиши в комментариях', (236, 72, 120), 34), 540, 860, 0.8 + 0.2 * k, k)
 
 
+# ------------------------------------------------------------------ v4: наполнение кадра
+SIDE_Y = 1400          # центр боковых панелей
+LX, RX = 172, 908      # центры левой и правой панелей
+PANEL_W, PANEL_H = 300, 330
+
+
+def scene_key(t):
+    if t < E.TYPE1:
+        return 'intro'
+    if t < E.TYPE2:
+        return 'type1'
+    if t < E.SEEN:
+        return 'type2'
+    if t < E.TEASE:
+        return 'seen'
+    if t < E.TYPE3:
+        return 'tease'
+    if t < E.WHY:
+        return 'type3'
+    if t < E.OUTRO:
+        return 'why'
+    return 'outro'
+
+
+def window_a(t, t0, t1, d=0.3):
+    return appear(t, t0, d) * (1 - appear(t, t1 - d, d))
+
+
+@functools.lru_cache(None)
+def panel(w=PANEL_W, h=PANEL_H):
+    im = Image.new('RGBA', (w + 60, h + 60), (0, 0, 0, 0))
+    sh = fx.soft_shadow(w, h, 34, 18, 0.18)
+    im.alpha_composite(sh.resize((w + 60, h + 60)))
+    im.alpha_composite(fx.rounded(w, h, 34, (255, 255, 255, 236), (232, 224, 246, 255), 2), (30, 26))
+    return im
+
+
+def put_panel(cv, cx, cy, a, pop_t, t, h=PANEL_H):
+    pop = fx.ease_out_back(fx.clamp01((t - pop_t) / 0.45)) if t < pop_t + 0.45 else 1.0
+    put(cv, panel(PANEL_W, h), cx, cy, 0.7 + 0.3 * pop, a)
+    return 0.7 + 0.3 * pop
+
+
+# ---- большая бледная цифра вида за Митой
+@functools.lru_cache(None)
+def big_digit(d):
+    return text(d, 760, 'Heavy', (234, 227, 246))
+
+
+def big_number(cv, t):
+    for d, t0, t1 in (('1', E.TYPE1, E.TYPE2), ('2', E.TYPE2, E.SEEN), ('3', E.TEASE, E.WHY)):
+        a = window_a(t, t0, t1, 0.4)
+        if a > 0:
+            put(cv, big_digit(d), 540, 1330 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
+
+
+# ---- полоса прогресса «вид 1 · 2 · 3»
+def progress(cv, t):
+    a = window_a(t, E.INTRO + 0.6, E.OUTRO + 0.4, 0.4)
+    if a <= 0:
+        return
+    cur = {'type1': 0, 'type2': 1, 'seen': 1, 'tease': 2, 'type3': 2}.get(scene_key(t), -1)
+    for j in range(3):
+        on = j == cur
+        done = cur > j or scene_key(t) in ('why', 'outro')
+        fill = ACCENT if on else ((30, 24, 48) if done else (226, 220, 238))
+        tc = WHITE if (on or done) else MUTED
+        put(cv, fx.solid_pill(f'вид {j + 1}', fill, 22, tc), 540 + (j - 1) * 150, 64, 1.0 + (0.06 * beat_pulse(t, 8) if on else 0), a)
+
+
+# ---- плывущие подарки по краям (живые модели текущей сцены), за всем остальным
+DRIFT = {'intro': [('hook', 1), ('hook', 0)], 'type1': [('type1', 1), ('type1', 2)], 'type2': [('type2', 1), ('type2', 2)],
+         'seen': [('hook', 1), ('type1', 2)], 'tease': [], 'type3': [('type3', 0), ('type3', 1)],
+         'why': [('type1', 1), ('type3', 2)], 'outro': [('type1', 0), ('type3', 0)]}
+
+
+def drifting_gifts(cv, t):
+    k = scene_key(t)
+    for side, (key, i) in enumerate(DRIFT[k]):
+        c = CARDS[key][i]
+        for m in range(2):
+            ph = (t * 0.045 + m * 0.5 + side * 0.25) % 1.0
+            y = 1900 - ph * 1900
+            x = (58, 1022)[side] + math.sin(t * 0.9 + m * 2 + side) * 16
+            a = 0.42 * min(1.0, ph * 6, (1 - ph) * 6)
+            g = lottie.frame(model_path(c['gift'], c['model']), t + m, size=110)
+            put(cv, g, x, y, 1.0, a, math.sin(t * 0.7 + m) * 0.15)
+
+
+# ---- субтитры с подсветкой текущего слова
+def _chunks():
+    out, cur = [], []
+    for w in WORDS:
+        if cur and (len(cur) >= 3 or cur[-1][3] != w[3] or sum(len(x[0]) for x in cur) + len(w[0]) > 20
+                    or re.search(r'[.!?…:,]$', cur[-1][0])):
+            out.append(cur)
+            cur = []
+        cur.append(w)
+    if cur:
+        out.append(cur)
+    return out
+
+
+CHUNKS = _chunks()
+
+
+def _disp(w):
+    return re.sub(r'[.,:;…]+$', '', w.replace('«', '').replace('»', ''))
+
+
+def subtitles(cv, t):
+    ch = None
+    for k, c in enumerate(CHUNKS):
+        t0 = c[0][1] - 0.06
+        t1 = CHUNKS[k + 1][0][1] - 0.06 if k + 1 < len(CHUNKS) else c[-1][2] + 0.6
+        t1 = min(t1, c[-1][2] + 0.7)
+        if t0 <= t < t1:
+            ch, start = c, t0
+            break
+    if ch is None:
+        return
+    parts = []
+    for j, w in enumerate(ch):
+        on = w[1] - 0.03 <= t
+        col = ACCENT if (on and (j == len(ch) - 1 or t < ch[j + 1][1] - 0.03)) else (INK if on else (150, 144, 170))
+        parts.append(((' ' if j else '') + _disp(w[0]).upper(), col))
+    im = multi(tuple(parts), 54, 'Heavy')
+    sc = min(1.0, 980 / im.width)
+    pop = fx.ease_out_back(fx.clamp01((t - start) / 0.22))
+    pw = int(im.width * sc) + 44
+    plate = fx.rounded(pw, 84, 30, (255, 255, 255, 228), (236, 228, 248, 255), 2)
+    put(cv, plate, 540, 990, 0.85 + 0.15 * pop, 1.0)
+    put(cv, im, 540, 990, sc * (0.85 + 0.15 * pop), 1.0)
+
+
+# ---- реакции над Митой
+REACT = [(E.PRICE_X10, '!'), (E.SPIN, 'note'), (E.TYPE1_ZOOM, 'heart'), (E.TYPE2_COLOR, '?'),
+         (E.TYPE3 + 0.15, '!'), (E.TYPE3_ZOOM, 'heart'), (E.ORDER, 'heart'), (E.CREEPY + 0.3, 'dots')]
+
+
+def reactions(cv, t):
+    for t0, kind in REACT:
+        k = t - t0
+        if not 0 <= k < 1.3:
+            continue
+        a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
+        pop = fx.ease_out_back(fx.clamp01(k / 0.35))
+        x, y = 700, 1075 - 40 * ease(k / 1.3)
+        if kind in ('!', '?'):
+            put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else (90, 120, 230), 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
+            if kind == '?':                       # капелька пота
+                def drop(d, mp, S):
+                    X, Y = mp(615, 1110 + 30 * ease(k / 1.3))
+                    r = 11 * S
+                    d.polygon([(X, Y - r * 1.8), (X - r, Y), (X + r, Y)], fill=(120, 190, 255, int(220 * a)))
+                    d.ellipse([X - r, Y - r, X + r, Y + r], fill=(120, 190, 255, int(220 * a)))
+                fx.over(cv, fx.draw_rgba((580, 1060, 650, 1160), drop))
+        else:
+            def icon(d, mp, S):
+                X, Y = mp(x, y)
+                r = 26 * S * (0.6 + 0.4 * pop)
+                if kind == 'heart':
+                    col = (236, 72, 120, int(255 * a))
+                    d.ellipse([X - r, Y - r, X, Y], fill=col)
+                    d.ellipse([X, Y - r, X + r, Y], fill=col)
+                    d.polygon([(X - r, Y - r * 0.45), (X + r, Y - r * 0.45), (X, Y + r * 0.95)], fill=col)
+                elif kind == 'note':
+                    col = (120, 90, 230, int(255 * a))
+                    d.ellipse([X - r * 0.9, Y, X, Y + r * 0.7], fill=col)
+                    d.rectangle([X - r * 0.15, Y - r * 1.2, X, Y + r * 0.35], fill=col)
+                    d.polygon([(X, Y - r * 1.2), (X + r * 0.7, Y - r * 0.8), (X, Y - r * 0.6)], fill=col)
+                else:
+                    for j in range(3):
+                        rr = r * 0.28
+                        cxx = X - r + j * r
+                        d.ellipse([cxx - rr, Y - rr, cxx + rr, Y + rr], fill=(30, 24, 48, int(200 * a)))
+            fx.over(cv, fx.draw_rgba((x - 60, y - 70, x + 60, y + 60), icon))
+
+
+# ---- правая панель: шанс сочетания
+CHANCE = [  # (с, по, подпись, формула, итог)
+    (E.INTRO + 0.4, E.SPIN - 0.4, 'Sweetheart + Fandango', '0,9% × 2%', '≈ 1 из 5 600'),
+    (E.TYPE1 + 0.9, E.TYPE2, 'Whip Cupcake', '1,5% × 1,5%', '≈ 1 из 4 400'),
+    (E.TYPE2 + 0.9, E.SEEN, 'Big Year', '2,9% × 1,2%', '≈ 1 из 2 900'),
+    (E.TYPE3 + 0.7, E.WHY, 'Love Potion', '2% × 1,5%', '≈ 1 из 3 300'),
+]
+
+
+def side_right(cv, t):
+    for t0, t1, who, f, res in CHANCE:
+        a = window_a(t, t0, t1, 0.3)
+        if a <= 0:
+            continue
+        s = put_panel(cv, RX, SIDE_Y, a, t0, t)
+        y = SIDE_Y - 115
+        put(cv, text('шанс сочетания', 24, 'Semibold', MUTED), RX, y, s, a)
+        put(cv, text(who, 26, 'Bold'), RX, y + 52 * s, s, a)
+        put(cv, text(f, 40, 'Heavy'), RX, y + 120 * s, s, a)
+        put(cv, text(res, 40, 'Heavy', ACCENT), RX, y + 185 * s, s, a)
+
+
+# ---- левая панель: по сценам
+@functools.lru_cache(None)
+def model_color(gift, model):
+    im = np.array(Image.open(gifts_api.model_png(gift, model, size=128)).convert('RGBA')).astype(float)
+    px = im[..., :3][im[..., 3] > 160]
+    return tuple(int(v) for v in np.median(px, 0))
+
+
+def bars(cv, t, t0, a, lo, hi, lo_lab, hi_lab, mult):
+    s = put_panel(cv, LX, SIDE_Y, a, t0, t)
+    g = ease((t - t0 - 0.2) / 0.8)
+    base = SIDE_Y + 105
+    maxh = 150
+    for j, (v, lab, col) in enumerate(((lo, lo_lab, (190, 184, 210)), (hi, hi_lab, ACCENT))):
+        h = max(8, maxh * (v / hi) * g)
+        x = LX - 62 + 124 * j
+        def bar(d, mp, S, h=h, x=x, col=col):
+            x0, y0 = mp(x - 38, base - h)
+            x1, y1 = mp(x + 38, base)
+            d.rounded_rectangle([x0, y0, x1, y1], int(12 * S), fill=col + (int(255 * a),))
+        fx.over(cv, fx.draw_rgba((x - 45, base - maxh - 10, x + 45, base + 4), bar))
+        put(cv, text(lab, 22, 'Bold', INK if j == 0 else ACCENT), x, base + 26, 1.0, a)
+    put(cv, text(mult, 38, 'Heavy', ACCENT), LX + 62, base - maxh * g - 30, 1.0, a * g)
+    put(cv, text('обычная  ·  монохром', 20, 'Semibold', MUTED), LX, SIDE_Y - 140, 1.0, a)
+
+
+def chips(cv, t, t0, a, c1, c2, merge, ok, label):
+    s = put_panel(cv, LX, SIDE_Y, a, t0, t)
+    m = ease(merge)
+    for j, col in enumerate((c1, c2)):
+        cx = LX + (-58 + 116 * j) * (1 - 0.5 * m * ok)
+        def dot(d, mp, S, cx=cx, col=col):
+            X, Y = mp(cx, SIDE_Y - 30)
+            r = 52 * S
+            d.ellipse([X - r, Y - r, X + r, Y + r], fill=col + (int(255 * a),), outline=(255, 255, 255, int(255 * a)), width=int(4 * S))
+        fx.over(cv, fx.draw_rgba((LX - 140, SIDE_Y - 100, LX + 140, SIDE_Y + 40), dot))
+    put(cv, text('подарок   фон', 22, 'Semibold', MUTED), LX, SIDE_Y - 112, 1.0, a)
+    sign = '✓' if ok else '≠'
+    put(cv, fx.solid_pill(label, (60, 180, 120) if ok else (230, 60, 80), 26), LX, SIDE_Y + 90, 1.0, a * fx.clamp01(merge * 2))
+
+
+def side_left(cv, t):
+    hook_l, hook_r = CARDS['hook']
+    # хук: столбики цены ×10
+    a = window_a(t, E.PRICE_X10 - 0.3, E.SPIN - 0.4)
+    if a > 0:
+        bars(cv, t, E.PRICE_X10 - 0.3, a, hook_l['rub'], hook_r['rub'], '865 ₽', '8 653 ₽', '×10')
+    # кружение: анонс трёх видов
+    a = window_a(t, E.SPIN - 0.4, E.TYPE1)
+    if a > 0:
+        put_panel(cv, LX, SIDE_Y, a, E.SPIN - 0.4, t)
+        put(cv, text('впереди', 22, 'Semibold', MUTED), LX, SIDE_Y - 135, 1.0, a)
+        for j, c in enumerate((CARDS['type1'][0], CARDS['type2'][0], CARDS['type3'][2])):
+            tile = gift_tile(c['gift'], c['model'], c['backdrop'], 84, t)
+            put(cv, tile, LX - 60, SIDE_Y - 70 + j * 92, 1.0, a)
+            put(cv, text(('цвет в цвет', 'названия', 'чёрно-белый')[j], 22, 'Bold'), LX + 50, SIDE_Y - 70 + j * 92, 1.0, a)
+    # вид 1: цвет подарка и фона сливаются
+    a = window_a(t, E.TYPE1 + 0.6, E.TYPE2)
+    if a > 0:
+        c = CARDS['type1'][0]
+        chips(cv, t, E.TYPE1 + 0.6, a, model_color(c['gift'], c['model']), hexrgb(backdrop_hex(c['gift'], c['backdrop'])[0]),
+              (t - E.TYPE1 - 1.2) / 1.0, 1, 'цвет в цвет ✓')
+    # вид 2: названия совпали, цвет — нет
+    a = window_a(t, E.TYPE2 + 0.6, E.SEEN)
+    if a > 0:
+        c = CARDS['type2'][0]
+        if t < E.TYPE2_COLOR - 0.3:
+            put_panel(cv, LX, SIDE_Y, a, E.TYPE2 + 0.6, t)
+            k = appear(t, E.TYPE2_NAMES, 0.3)
+            put(cv, text('модель', 22, 'Semibold', MUTED), LX, SIDE_Y - 120, 1.0, a)
+            put(cv, text('Cyberpunk', 34, 'Heavy'), LX, SIDE_Y - 82, 1.0, a)
+            put(cv, text('=', 46, 'Heavy', ACCENT), LX, SIDE_Y - 25, 1.0, a * k)
+            put(cv, text('фон', 22, 'Semibold', MUTED), LX, SIDE_Y + 25, 1.0, a)
+            put(cv, text('Cyberpunk', 34, 'Heavy'), LX, SIDE_Y + 63, 1.0, a)
+            put(cv, fx.solid_pill('названия ✓', (60, 180, 120), 24), LX, SIDE_Y + 125, 1.0, a * k)
+        else:
+            chips(cv, t, E.TYPE2_COLOR - 0.3, a, model_color(c['gift'], c['model']),
+                  hexrgb(backdrop_hex(c['gift'], c['backdrop'])[0]), (t - E.TYPE2_COLOR) / 0.6, 0, 'цвет ≠')
+    # «видно сразу»: глаз
+    a = window_a(t, E.SEEN + 0.3, E.TEASE)
+    if a > 0:
+        put_panel(cv, LX, SIDE_Y, a, E.SEEN + 0.3, t)
+        blink = 1 - 0.85 * max(0.0, math.sin(t * 2.2) ** 40)
+        def eye(d, mp, S):
+            X, Y = mp(LX, SIDE_Y - 30)
+            w, h = 95 * S, 55 * S * blink
+            d.ellipse([X - w, Y - h, X + w, Y + h], fill=(255, 255, 255, int(255 * a)), outline=(30, 24, 48, int(255 * a)), width=int(6 * S))
+            r = min(34 * S, h)
+            d.ellipse([X - r, Y - r, X + r, Y + r], fill=(236, 72, 120, int(255 * a)))
+            for k_ in range(7):
+                ang = -math.pi + k_ * math.pi / 6
+                d.line([X + math.cos(ang) * 120 * S, Y + math.sin(ang) * 90 * S, X + math.cos(ang) * 145 * S,
+                        Y + math.sin(ang) * 110 * S], fill=(255, 190, 60, int(255 * a)), width=int(6 * S))
+        fx.over(cv, fx.draw_rgba((LX - 150, SIDE_Y - 150, LX + 150, SIDE_Y + 60), eye))
+        put(cv, text('сразу видно', 30, 'Heavy'), LX, SIDE_Y + 95, 1.0, a)
+    # тизер: «?»
+    a = window_a(t, E.TEASE + 0.2, E.TYPE3 + 0.2)
+    if a > 0:
+        put_panel(cv, LX, SIDE_Y, a, E.TEASE + 0.2, t)
+        put(cv, text('?', 200, 'Heavy', ACCENT), LX, SIDE_Y - 10, 1.0, a, math.sin(t * 5) * 0.12)
+    # вид 3: столбики цены Love Potion · Milkshake
+    a = window_a(t, E.TYPE3 + 0.7, E.WHY)
+    if a > 0:
+        c = CARDS['type3'][2]
+        lo = round(c['model_floor_ton'] * DATA['ton_rub'])
+        bars(cv, t, E.TYPE3 + 0.7, a, lo, c['rub'], f'{lo:,} ₽'.replace(',', ' '), f"{c['rub']:,} ₽".replace(',', ' '),
+             f"×{c['rub'] / lo:.0f}")
+    # почему нравится: хаос → порядок
+    a = window_a(t, E.WHY + 0.3, E.OUTRO)
+    if a > 0:
+        put_panel(cv, LX, SIDE_Y, a, E.WHY + 0.3, t)
+        m = ease((t - E.ORDER) / 0.8)
+        rng = np.random.default_rng(5)
+        cols = [(236, 72, 120), (120, 90, 230), (255, 190, 60), (70, 190, 230), (150, 220, 160), (30, 24, 48)]
+        def blocks(d, mp, S):
+            for j in range(6):
+                x0, y0 = LX + rng.uniform(-100, 100), SIDE_Y + rng.uniform(-110, 50)
+                r0 = rng.uniform(-0.8, 0.8)
+                x1, y1 = LX - 100 + (j % 3) * 100, SIDE_Y - 70 + (j // 3) * 95
+                x, y = x0 + (x1 - x0) * m, y0 + (y1 - y0) * m
+                col = tuple(int(c0 + (p - c0) * m) for c0, p in zip(cols[j], (236, 72, 120)))
+                rot = r0 * (1 - m)
+                pts = [(x + math.cos(rot + q * math.pi / 2 + math.pi / 4) * 46, y + math.sin(rot + q * math.pi / 2 + math.pi / 4) * 46) for q in range(4)]
+                d.polygon([mp(px, py) for px, py in pts], fill=col + (int(255 * a),))
+        fx.over(cv, fx.draw_rgba((LX - 150, SIDE_Y - 160, LX + 150, SIDE_Y + 120), blocks))
+        put(cv, text('порядок' if m > 0.5 else 'хаос', 30, 'Heavy', ACCENT if m > 0.5 else MUTED), LX, SIDE_Y + 125, 1.0, a)
+    # финал: печатающийся комментарий
+    a = window_a(t, E.OUTRO + 0.5, DUR + 2)
+    if a > 0:
+        put_panel(cv, LX, SIDE_Y, a, E.OUTRO + 0.5, t, 240)
+        put(cv, text('новый комментарий', 22, 'Semibold', MUTED), LX, SIDE_Y - 75, 1.0, a)
+        def dots(d, mp, S):
+            for j in range(3):
+                ph = math.sin(t * 6 - j * 0.9)
+                X, Y = mp(LX - 50 + j * 50, SIDE_Y + 10 - 10 * max(0, ph))
+                r = 15 * S
+                d.ellipse([X - r, Y - r, X + r, Y + r], fill=(236, 72, 120, int(255 * a * (0.5 + 0.5 * max(0, ph)))))
+        fx.over(cv, fx.draw_rgba((LX - 100, SIDE_Y - 40, LX + 100, SIDE_Y + 50), dots))
+
+
+
 def vignette(cv, t):
     c = ease((t - E.CREEPY) / 1.8)
     if c <= 0:
@@ -607,6 +951,9 @@ def vignette(cv, t):
 
 def render_at(t):
     cv = background(t)
+    big_number(cv, t)
+    drifting_gifts(cv, t)
+    progress(cv, t)
     headline(cv, t)
     scene_hook(cv, t)
     scene_type1(cv, t)
@@ -616,7 +963,11 @@ def render_at(t):
     scene_type3(cv, t)
     scene_why(cv, t)
     scene_outro(cv, t)
+    side_left(cv, t)
+    side_right(cv, t)
     draw_mita(cv, t)
+    reactions(cv, t)
+    subtitles(cv, t)
     # вспышка на «чёрно-белый» после рекламы
     fl = math.exp(-max(0.0, t - E.TYPE3) * 6) if t >= E.TYPE3 else 0.0
     if fl > 0.01:

@@ -73,5 +73,7 @@ def music(n, voice_env, slow_from=None, sr=48000):
     out[:len(y)] = y
     fade = int(0.6 * sr)
     out[:fade] *= np.linspace(0, 1, fade)[:, None]
+    tail = min(n, int(1.4 * sr))                    # мягкое затухание в конце ролика
+    out[-tail:] *= np.linspace(1, 0, tail)[:, None] ** 1.5
     duck = 10 ** (DUCK_DB * np.clip(voice_env, 0, 1) / 20)
     return out * duck[:, None]

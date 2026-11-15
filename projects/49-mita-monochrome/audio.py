@@ -71,7 +71,6 @@ def sfx_layer(n, kit):
         a(fx, 'click', tp - 0.05, gain_db=-19, label=f'тизер: «?» {j + 1}')
     for j, tp in enumerate(E.CARD_POPS['outro']):
         a(fx, 'select-soft', tp - 0.05, gain_db=-18, label=f'финал: вид {j + 1}')
-    a(fx, 'downlifter', E.CREEPY, gain_db=-18, label='жутковатый финал')
     return fx * 10 ** (SFX_GAIN_DB / 20)
 
 
@@ -92,7 +91,7 @@ if __name__ == '__main__':
     kit = sfxkit.Kit(HERE)
     v = voice_track(n)
     env = envelope(v)
-    m = music.music(n, env, slow_from=E.CREEPY)
+    m = music.music(n, env, slow_from=None)
     fx = sfx_layer(n, kit)
     fx *= (1 - 0.45 * env)[:, None]
     content = v + m + fx

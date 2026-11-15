@@ -882,17 +882,19 @@ CHANCE = [  # (с, по, подпись, формула, итог)
 
 @functools.lru_cache(None)
 def chance_line(num, acc):
-    """«≈ 1 из» цветом акцента + число крупнее, самым жирным и тёмным — главное в панели."""
-    a = text('≈ 1 из ', 36, 'Bold', acc)
-    b = text(num, 54, 'Heavy', INK)
-    h = max(a.height, b.height)
-    im = Image.new('RGBA', (a.width + b.width - 12, h), (0, 0, 0, 0))
-    base_a, base_b = fx.font('Bold', 36).getmetrics()[0], fx.font('Heavy', 54).getmetrics()[0]
-    yb = max(base_a, base_b) + 8
-    im.alpha_composite(a, (0, yb - base_a - 8))
-    im.alpha_composite(b, (a.width - 12, yb - base_b - 8))
-    return im
-
+    """«≈ 1» цветом акцента, «из» приглушённо, число крупнее, самым жирным и тёмным — главное в панели."""
+    parts = [(text('≈ 1 ', 36, 'Bold', acc), fx.font('Bold', 36)),
+             (text('из ', 32, 'Semibold', MUTED), fx.font('Semibold', 32)),
+             (text(num, 54, 'Heavy', INK), fx.font('Heavy', 54))]
+    yb = max(f.getmetrics()[0] for _, f in parts) + 8
+    w = sum(im.width - 12 for im, _ in parts) + 12
+    h = max(yb + f.getmetrics()[1] + 8 for _, f in parts)
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    x = 0
+    for im, f in parts:
+        out.alpha_composite(im, (x, yb - f.getmetrics()[0] - 8))
+        x += im.width - 12
+    return out
 
 def side_right(cv, t):
     for t0, t1, who, f, res in CHANCE:

@@ -58,6 +58,11 @@ SFX — пак по умолчанию `input/sfx/` через `sfxkit` (см. `
 
 ### Статус
 
+- 2026-11-15 v3: `renders/49-mita-monochrome/mita_monochrome_v3.mp4` (69,88 с, −16,4 LUFS), декодирован, кадры просмотрены.
+  Drive «TikTok» (копия crf 20, 35 МБ): https://drive.google.com/file/d/1FJcgeaNR3rRmRVhGXOOoD8pdIZurzH_w/view
+  Правки автора: раскладка «Б» (заголовок в одну строку, всё выше, Мита 760 px, субтитры под ней у границы зоны
+  описания TikTok), панель шанса «≈ 1 из N» шрифтом Unbounded (OFL, input/fonts), название в овале, музыка −23 дБ.
+
 - 2026-11-15 v2: собран `renders/49-mita-monochrome/mita_monochrome_v2.mp4` (69,88 с, 1080×1920, 60 fps, −15,8 LUFS),
   декодирован, кадры просмотрены. Drive «TikTok» (копия crf 20, 36 МБ):
   https://drive.google.com/file/d/1laRX7aPdj6szGn9XqRhpFUPdfpHR1jXE/view

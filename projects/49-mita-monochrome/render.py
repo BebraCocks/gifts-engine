@@ -880,6 +880,20 @@ CHANCE = [  # (с, по, подпись, формула, итог)
 ]
 
 
+@functools.lru_cache(None)
+def chance_line(num, acc):
+    """«≈ 1 из» цветом акцента + число крупнее, самым жирным и тёмным — главное в панели."""
+    a = text('≈ 1 из ', 36, 'Bold', acc)
+    b = text(num, 54, 'Heavy', INK)
+    h = max(a.height, b.height)
+    im = Image.new('RGBA', (a.width + b.width - 12, h), (0, 0, 0, 0))
+    base_a, base_b = fx.font('Bold', 36).getmetrics()[0], fx.font('Heavy', 54).getmetrics()[0]
+    yb = max(base_a, base_b) + 8
+    im.alpha_composite(a, (0, yb - base_a - 8))
+    im.alpha_composite(b, (a.width - 12, yb - base_b - 8))
+    return im
+
+
 def side_right(cv, t):
     for t0, t1, who, f, res in CHANCE:
         a = window_a(t, t0, t1, 0.3)
@@ -891,8 +905,9 @@ def side_right(cv, t):
         put(cv, text('шанс выпадения', 24, 'Semibold', MUTED), RX, y, s, a)
         tint = tuple(int(255 - (255 - c) * 0.16) for c in ACCENT)     # светлый тон акцента сцены
         put(cv, fx.solid_pill(who, tint, 26, ACCENT), RX, y + 50 * s, s, a)
-        put(cv, text('примерно 1 из', 30, 'Heavy'), RX, y + 112 * s, s, a)
-        put(cv, text(num, 64, 'Heavy', ACCENT), RX, y + 180 * s, s * (1 + 0.04 * beat_pulse(t, 8)), a)
+        im = chance_line(num, ACCENT)
+        sc = min(1.0, 244 / im.width)
+        put(cv, im, RX, y + 150 * s, s * sc * (1 + 0.04 * beat_pulse(t, 8)), a)
 
 
 # ---- левая панель: по сценам

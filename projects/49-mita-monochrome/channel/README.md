@@ -3,4 +3,4 @@
 - Юзернейм: @mitagifts
 - Имя: Мита · Гифты
 - Описание: Мита знает всё о гифтах 👀 Подписывайся, пока не поздно 🔪
-- Аватар и баннер: Fish nano-banana по артам Миты (2026-11-15), надпись баннера — Unbounded (make_banner.py).
+- Аватар: channel/avatar.png (2048², Fish nano-banana). Баннер: channel/banner.png (2752×1536, Fish + надпись Unbounded, make_banner.py). Кредиты: 2×1350.

@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'engine'))
 import gifts_api as G
 F = Path(__file__).resolve().parents[1] / 'input' / 'fonts'
-W, H = 3800, 1000
+W, H = 3200, 1200          # пропорции ≈2,67:1 — как в окне обрезки приложения
 src, dst = sys.argv[1], sys.argv[2]
 im = Image.open(src).convert('RGBA')
 s = H / im.height
@@ -19,11 +19,11 @@ if im.width < W:                                    # дотянуть фон в
 im = im.crop((0, 0, W, H))
 INK, PINK = (30, 24, 48), (226, 54, 120)
 font = lambda w, z: ImageFont.truetype(str(F / f'Unbounded-{w}.ttf'), z)
-f1 = font('ExtraBold', 190)
+f1 = font('ExtraBold', 170)
 d0 = ImageDraw.Draw(im)
 t1, t2 = 'Мита ', 'о Гифтах'
 tw = d0.textlength(t1, font=f1) + d0.textlength(t2, font=f1)
-x = int(W * 0.30); cx = int(x + tw / 2); y = int(H / 2 - 120)
+x = int(W * 0.405); cx = int(x + tw / 2); y = int(H / 2 - 110)
 box = (x - 60, y - 40, x + tw + 60, y + 250)
 # декор: бледные NFT-модели сверху и снизу надписи
 gifts = [('Ginger Cookie', 'Sweetheart'), ('Love Potion', 'Milkshake'), ('Big Year', 'Cyberpunk'), ('Santa Hat', 'Inky White'),
@@ -31,8 +31,8 @@ gifts = [('Ginger Cookie', 'Sweetheart'), ('Love Potion', 'Milkshake'), ('Big Ye
          ('Snoop Dogg', 'Sapphire'), ('Precious Peach', 'Malachite'), ('Eternal Rose', 'Moonstone'), ('Spiced Wine', 'Persimmon')]
 rnd = random.Random(7)
 deco = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-xs = [int(W * 0.30 + i * (W * 0.66) / 6) for i in range(7)]
-spots = [(xx + rnd.randint(-40, 40), rnd.randint(60, 150)) for xx in xs] + [(xx + 120 + rnd.randint(-40, 40), rnd.randint(H - 170, H - 70)) for xx in xs[:6]]
+xs = [int(W * 0.42 + i * (W * 0.54) / 6) for i in range(7)]
+spots = [(xx + rnd.randint(-40, 40), rnd.randint(90, 230)) for xx in xs] + [(xx + 120 + rnd.randint(-40, 40), rnd.randint(H - 230, H - 100)) for xx in xs[:6]]
 for k, (px, py) in enumerate(spots):
     g, m = gifts[k % len(gifts)]
     p = Image.open(G.model_png(g, m, size=256)).convert('RGBA')

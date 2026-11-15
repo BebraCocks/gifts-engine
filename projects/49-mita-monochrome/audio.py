@@ -57,8 +57,7 @@ def sfx_layer(n, kit):
         a(fx, 'popup', tp - 0.05, gain_db=-18, label=f'вид 2: карточка {j + 1} (на долю)')
     a(fx, 'select', E.TYPE2_NAMES, gain_db=-16, label='совпадающие названия подсвечены')
     a(fx, 'error', E.TYPE2_COLOR, gain_db=-19, label='«по цвету — не всегда»')
-    a(fx, 'riser', AD_STOP, align='end', gain_db=-19, label='тизер перед рекламой')
-    a(fx, 'whoosh-deep', AD_STOP, align='peak', gain_db=-16, label='торможение на RubUp')
+    a(fx, 'whoosh-short', AD_STOP, align='peak', gain_db=-19, label='короткое торможение на RubUp')
     a(fx, 'impact', E.TYPE3, gain_db=-15, label='вспышка: чёрно-белый')
     a(fx, 'sparkle', E.TYPE3 + 0.05, gain_db=-16, label='наряд → чёрно-белый')
     for j, tp in enumerate(E.CARD_POPS['type3']):

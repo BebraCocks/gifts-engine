@@ -12,7 +12,8 @@ SR = 48000
 PICK = {}            # 'L05': 1 — номер дубля, по умолчанию 0
 TEMPO = 1.10         # максимум по правилам ускорения речи; тон не меняется
 MAX_GAP = 0.2
-GAP_LINE = {14: 0.42}   # «Все. До одного.» — драматические паузы
+GAP_LINE = {14: 0.42}
+TRIM_START = {8: 0.155}    # «И монохром…» → «Монохром…» (метки слов Fish ASR pro: «монохром» с 0,16 с)   # «Все. До одного.» — драматические паузы
 
 
 def load(path, af):
@@ -60,7 +61,8 @@ if __name__ == '__main__':
     meta = []
     for k in range(1, len(LINES) + 1):
         name = f'L{k:02d}'
-        x = load(RAW / f'{name}_{PICK.get(name, 0)}.mp3', f'atempo={TEMPO},loudnorm=I=-16:TP=-1.5:LRA=11')
+        trim = TRIM_START.get(k, 0.0)
+        x = load(RAW / f'{name}_{PICK.get(name, 0)}.mp3', f'atrim=start={trim},asetpts=PTS-STARTPTS,atempo={TEMPO},loudnorm=I=-16:TP=-1.5:LRA=11')
         y, gaps = tighten(x, GAP_LINE.get(k, MAX_GAP))
         write(OUT / f'{name}.wav', y)
         meta.append({'line': k, 'dur': round(len(y) / SR, 3), 'gaps': gaps})

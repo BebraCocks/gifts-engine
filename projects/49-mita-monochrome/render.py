@@ -30,8 +30,9 @@ MITA = HERE / 'input' / 'mita'
 MITA_H = 880            # рост Миты в кадре, px
 MITA_FOOT = 1915
 WHITE = (255, 255, 255)
-MUTED = (178, 176, 205)
-ACCENT = (255, 214, 102)
+INK = (30, 24, 48)
+MUTED = (118, 112, 140)
+ACCENT = (226, 54, 120)
 
 
 # ------------------------------------------------------------------ helpers
@@ -90,12 +91,12 @@ def gift_tile(gift, model, backdrop, size, t, radius=None):
 
 
 @functools.lru_cache(None)
-def text(s, size, weight='Bold', color=WHITE, shadow=True):
+def text(s, size, weight='Bold', color=INK, shadow=False):
     return fx.text_img(((s, color),), size, weight, shadow)
 
 
 @functools.lru_cache(None)
-def multi(parts, size, weight='Bold', shadow=True):
+def multi(parts, size, weight='Bold', shadow=False):
     return fx.text_img(parts, size, weight, shadow)
 
 
@@ -163,7 +164,8 @@ POSES = [  # (с какого времени, поза, смена наряда)
     (E.TYPE1, 'pink_explain', True),
     (E.TYPE2, 'clash_explain', True),
     (ON[7] + 0.1, 'clash_confused', False),
-    (E.TEASE, 'normal_secret', True),
+    (E.SEEN, 'normal_explain', True),
+    (E.TEASE, 'normal_secret', False),
     (E.TYPE3, 'bw_explain', True),
     (E.WHY, 'bw_proud', False),
     (E.OUTRO, 'bw_explain', False),
@@ -211,7 +213,7 @@ def draw_mita(cv, t):
         sparkles(cv, t, t0, cx, MITA_FOOT - MITA_H * 0.55, 360)
 
 
-def sparkles(cv, t, t0, cx, cy, spread, n=14, col=(255, 255, 255)):
+def sparkles(cv, t, t0, cx, cy, spread, n=14, col=(255, 180, 60)):
     k = t - t0
     if not 0 <= k < 0.9:
         return
@@ -232,7 +234,8 @@ TINTS = [  # (время, цвет свечения 1, цвет свечения
     (0.0, (120, 70, 200), (220, 90, 160)),
     (E.TYPE1, (240, 90, 170), (255, 150, 200)),
     (E.TYPE2, (60, 170, 255), (255, 200, 40)),
-    (E.TEASE, (40, 30, 70), (80, 50, 110)),
+    (E.SEEN, (130, 80, 220), (240, 110, 170)),
+    (E.TEASE, (150, 120, 220), (90, 70, 160)),
     (E.TYPE3, (210, 210, 220), (90, 90, 100)),
     (E.WHY, (130, 80, 220), (240, 110, 170)),
     (E.CREEPY, (150, 20, 40), (60, 10, 30)),
@@ -254,7 +257,7 @@ def tint_at(t):
 @functools.lru_cache(None)
 def base_bg():
     yy = np.linspace(0, 1, H)[:, None, None]
-    top, bot = np.array([16, 12, 32], np.float32), np.array([8, 6, 18], np.float32)
+    top, bot = np.array([252, 250, 255], np.float32), np.array([240, 236, 248], np.float32)
     return np.broadcast_to(top * (1 - yy) + bot * yy, (H, W, 3)).astype(np.float32)
 
 
@@ -278,20 +281,49 @@ def background(t):
     c1, c2 = tint_at(t)
     p = beat_pulse(t, 5)
     q = lambda c: tuple(int(v) for v in c)
-    put(cv, tinted_glow(q(c1)), 240 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.6, 0.32 + 0.12 * p)
-    put(cv, tinted_glow(q(c2)), 860 + 70 * math.cos(t * 0.23), 1250 + 90 * math.sin(t * 0.29), 2.9, 0.26 + 0.1 * p)
-    # плывущие искорки
-    def dots(d, mp, S):
-        rng = np.random.default_rng(7)
-        for j in range(26):
-            x0, y0, sp, r = rng.uniform(0, W), rng.uniform(0, H), rng.uniform(12, 40), rng.uniform(2, 5)
-            y = (y0 - t * sp) % H
-            x = x0 + math.sin(t * 0.8 + j) * 14
-            a = int(70 + 60 * math.sin(t * 1.7 + j * 1.3))
-            X, Y = mp(x, y)
-            d.ellipse([X - r * S, Y - r * S, X + r * S, Y + r * S], fill=(255, 255, 255, max(0, a)))
-    fx.over(cv, fx.draw_rgba((0, 0, W, H), dots))
+    put(cv, tinted_glow(q(c1)), 230 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.8, 0.16 + 0.07 * p)
+    put(cv, tinted_glow(q(c2)), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.13 + 0.06 * p)
+    fx.over(cv, (grid_dots(), 0, 0))
+    fx.over(cv, fx.draw_rgba((0, 0, W, H), lambda d, mp, S: confetti(d, mp, S, t)))
     return cv
+
+
+@functools.lru_cache(None)
+def grid_dots():
+    """Едва заметная точечная сетка — фон не пустой, но не шумит."""
+    im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for y in range(24, H, 48):
+        for x in range(24 + (24 if (y // 48) % 2 else 0), W, 48):
+            d.ellipse([x - 2, y - 2, x + 2, y + 2], fill=(150, 140, 190, 46))
+    return im
+
+
+CONF = [(236, 72, 120), (120, 90, 230), (255, 190, 60), (70, 190, 230), (150, 220, 160), (30, 24, 48)]
+
+
+def confetti(d, mp, S, t):
+    """Пастельное конфетти и мерцающие звёздочки, медленно плывут вверх."""
+    rng = np.random.default_rng(11)
+    for j in range(34):
+        x0, y0, sp = rng.uniform(0, W), rng.uniform(0, H), rng.uniform(10, 34)
+        kind, col = rng.integers(0, 3), CONF[rng.integers(0, len(CONF))]
+        size, rot0, vr = rng.uniform(5, 11), rng.uniform(0, 6.3), rng.uniform(-1.5, 1.5)
+        y = (y0 - t * sp) % (H + 40) - 20
+        x = x0 + math.sin(t * 0.6 + j) * 18
+        X, Y = mp(x, y)
+        r = size * S
+        a = 120 if col != (30, 24, 48) else 60
+        if kind == 0:
+            d.ellipse([X - r * 0.6, Y - r * 0.6, X + r * 0.6, Y + r * 0.6], fill=col + (a,))
+        elif kind == 1:
+            ang = rot0 + vr * t
+            pts = [(X + math.cos(ang + k * math.pi / 2 + 0.5) * r, Y + math.sin(ang + k * math.pi / 2 + 0.5) * r * 0.45)
+                   for k in range(4)]
+            d.polygon(pts, fill=col + (a,))
+        else:
+            tw = 0.5 + 0.5 * math.sin(t * 2.4 + j * 1.7)
+            fx.sparkle(d, X, Y, r * (0.6 + 0.6 * tw), col + (int(60 + 120 * tw),))
 
 
 # ------------------------------------------------------------------ headline
@@ -299,7 +331,8 @@ HEADS = [  # (с, по, строки, малая подпись)
     (0.0, ON[3] - 0.15, ('Почему одинаковые', 'подарки стоят по-разному?'), 'Мита объясняет'),
     (ON[3] - 0.15, E.TYPE1, ('Монохром',), None),
     (E.TYPE1, E.TYPE2, ('Вид 1', 'цвет в цвет'), None),
-    (E.TYPE2, E.TEASE, ('Вид 2', 'одинаковые названия'), None),
+    (E.TYPE2, E.SEEN, ('Вид 2', 'одинаковые названия'), None),
+    (E.SEEN, E.TEASE, ('Монохром', 'видно сразу'), None),
     (E.TEASE, E.TYPE3, ('Вид 3', '???'), None),
     (E.TYPE3, E.WHY, ('Вид 3', 'чёрно-белый'), None),
     (E.WHY, E.OUTRO, ('Почему это', 'так нравится?'), None),
@@ -315,7 +348,7 @@ def headline(cv, t):
         y = 150 + 14 * (1 - a)
         big = 70 if len(lines) == 1 else 60
         for j, s in enumerate(lines):
-            col = ACCENT if (j == 0 and len(lines) == 2 and s.startswith('Вид')) else WHITE
+            col = ACCENT if (j == 0 and len(lines) == 2 and s.startswith('Вид')) else INK
             put(cv, text(s, big if not s.startswith('Вид') else 52, 'Heavy', col), 540, y + j * (big + 14), 1.0, a)
         if sub:
             pill = fx.solid_pill(sub, (236, 72, 120), 30)
@@ -336,13 +369,13 @@ def card(cv, t, c, cx, cy, s, a, t_anim, highlight=0.0, dim=0.0, mark=None):
     put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), cx, cy + 14 * s, s, a)
     put(cv, tile, cx, cy, s, a)
     put(cv, text(c['gift'], 34, 'Heavy'), cx, cy - (TILE / 2 + 34) * s, s, a)
-    hl = (255, 236, 120) if highlight > 0.5 else WHITE
+    hl = (226, 54, 120) if highlight > 0.5 else INK
     l1 = multi((('Модель ', MUTED), (c['model'], hl), ('  ' + pct(c['model_pct']), ACCENT)), 27, 'Semibold')
     l2 = multi((('Фон ', MUTED), (c['backdrop'], hl), ('  ' + pct(c['backdrop_pct']), ACCENT)), 27, 'Semibold')
     put(cv, l1, cx, cy + (TILE / 2 + 32) * s, s, a)
     put(cv, l2, cx, cy + (TILE / 2 + 68) * s, s, a)
     if highlight > 0:
-        g = tinted_glow((255, 230, 90))
+        g = tinted_glow((255, 200, 60))
         for yy in (TILE / 2 + 30, TILE / 2 + 64):
             put(cv, g.resize((300, 60)), cx, cy + yy * s, s, 0.35 * highlight * a)
     put(cv, text(rub(c['rub']), 42, 'Heavy', ACCENT), cx, cy + (TILE / 2 + 116) * s, s, a)
@@ -417,7 +450,7 @@ def scene_hook(cv, t):
         tile = gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - tj)
         put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), cx, cy + 16 * s, s, a)
         put(cv, tile, cx, cy, s, a)
-        put(cv, multi(((c['model'], WHITE), (' · ', MUTED), (c['backdrop'], MUTED)), 28, 'Semibold'), cx, cy + 215 * s / 1.25, 1.0, a)
+        put(cv, multi(((c['model'], INK), (' · ', MUTED), (c['backdrop'], MUTED)), 28, 'Semibold'), cx, cy + 215 * s / 1.25, 1.0, a)
         price = c['rub']
         if j == 1:                      # цена правой растёт ×10 на «в десять раз»
             k = fx.clamp01((t - (E.PRICE_X10 - 0.5)) / 0.5)
@@ -433,15 +466,14 @@ def scene_hook(cv, t):
             ps = fx.spring(fx.clamp01(k / 0.6))
             put(cv, fx.solid_pill('×10', (236, 72, 120), 40), cx + 130 * s, cy - 150 * s, 0.6 + 0.4 * ps, a)
         if j == 1 and focus > 0:
-            put(cv, fx.solid_pill('МОНОХРОМ', (255, 255, 255), 30, (30, 20, 50)), cx, cy - 190 * s, 1.0, a * focus)
+            put(cv, fx.solid_pill('МОНОХРОМ', (30, 24, 48), 30), cx, cy - 190 * s, 1.0, a * focus)
     # счётчик видов 1 · 2 · 3
     for j in range(3):
         tj = E.COUNTER + 0.29 * j
         a = appear(t, tj, 0.25) * (1 - out)
         if a > 0:
             ps = fx.ease_out_back(fx.clamp01((t - tj) / 0.4))
-            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (235, 235, 240))[j], 40,
-                                  (20, 15, 35) if j == 2 else WHITE), 400 + 140 * j, 300, 0.5 + 0.5 * ps, a)
+            put(cv, fx.solid_pill(str(j + 1), ((240, 110, 180), (90, 170, 255), (30, 24, 48))[j], 40, WHITE), 400 + 140 * j, 300, 0.5 + 0.5 * ps, a)
 
 
 def scene_type1(cv, t):
@@ -451,9 +483,9 @@ def scene_type1(cv, t):
 
 
 def scene_type2(cv, t):
-    if not (E.TYPE2 - 0.1 <= t < E.TEASE + 0.4):
+    if not (E.TYPE2 - 0.1 <= t < E.SEEN + 0.4):
         return
-    card_row(cv, t, 'type2', E.TYPE2, zoom_i=0, zoom_t=E.TYPE2_COLOR - 0.2, zoom_len=1.5, t_out=E.TEASE - 0.05,
+    card_row(cv, t, 'type2', E.TYPE2, zoom_i=0, zoom_t=E.TYPE2_COLOR - 0.2, zoom_len=1.5, t_out=E.SEEN - 0.05,
              highlight_t=E.TYPE2_NAMES, mark_t=E.TYPE2_COLOR)
 
 
@@ -498,22 +530,32 @@ def scene_why(cv, t):
     put(cv, gift_tile(left['gift'], left['model'], left['backdrop'], 300, t_an), 540, 700, s, a * (1 - m))
     put(cv, gift_tile(right['gift'], right['model'], right['backdrop'], 300, t_an), 540, 700, s, a * m)
     lab = 'хаос' if m < 0.5 else 'порядок'
-    col = (150, 150, 170) if m < 0.5 else ACCENT
+    col = MUTED if m < 0.5 else ACCENT
     put(cv, text(lab, 46, 'Heavy', col), 540, 960, 1.0, a)
     if m > 0.95:
-        sparkles(cv, t, E.ORDER + 0.8, 540, 700, 260, 12, (255, 220, 240))
-    # «видно сразу»: проценты зачёркнуты, вокруг — сердечки
-    k = appear(t, E.SEEN + 0.3, 0.3)
-    if k > 0:
-        pc = multi((('0,9%', MUTED), ('  ·  ', MUTED), ('2%', MUTED)), 34, 'Semibold')
-        put(cv, pc, 540, 1030, 1.0, a * k * 0.9)
-        def strike(d, mp, S):
-            x0, y = mp(540 - 110 * k, 1030)
-            x1, _ = mp(540 + 110 * k, 1030)
-            d.line([x0, y, x1, y], fill=(236, 72, 120, 255), width=int(5 * S))
-        fx.over(cv, fx.draw_rgba((400, 1000, 680, 1060), strike), a)
-        hearts(cv, t, E.SEEN + 0.3, a)
+        sparkles(cv, t, E.ORDER + 0.8, 540, 700, 260, 12, (236, 72, 120))
 
+
+def scene_seen(cv, t):
+    """«Монохром видно сразу»: монохромный подарок крупно, проценты зачёркнуты, вокруг — сердечки."""
+    if not (E.SEEN - 0.1 <= t < E.TEASE + 0.4):
+        return
+    out = appear(t, E.TEASE - 0.1, 0.3)
+    a = appear(t, E.SEEN, 0.35) * (1 - out)
+    c = CARDS['hook'][1]
+    s = 1.45 * (1 + 0.025 * beat_pulse(t, 7))
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.6), 540, 700 + 16, s, a)
+    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], 300, t - E.SEEN), 540, 700, s, a)
+    k = appear(t, E.SEEN + 1.6, 0.3)                    # «никаких процентов»
+    pc = multi((('Модель 0,9%', MUTED), ('   ', MUTED), ('Фон 2%', MUTED)), 34, 'Semibold')
+    put(cv, pc, 540, 960, 1.0, a * appear(t, E.SEEN + 0.4, 0.3))
+    if k > 0:
+        def strike(d, mp, S):
+            x0, y = mp(540 - 190 * k, 962)
+            x1, _ = mp(540 + 190 * k, 962)
+            d.line([x0, y, x1, y], fill=(236, 72, 120, 255), width=int(6 * S))
+        fx.over(cv, fx.draw_rgba((330, 930, 750, 990), strike), a)
+    hearts(cv, t, E.SEEN + 0.4, a)
 
 def hearts(cv, t, t0, a):
     def draw(d, mp, S):
@@ -569,6 +611,7 @@ def render_at(t):
     scene_hook(cv, t)
     scene_type1(cv, t)
     scene_type2(cv, t)
+    scene_seen(cv, t)
     scene_tease(cv, t)
     scene_type3(cv, t)
     scene_why(cv, t)
@@ -577,13 +620,62 @@ def render_at(t):
     # вспышка на «чёрно-белый» после рекламы
     fl = math.exp(-max(0.0, t - E.TYPE3) * 6) if t >= E.TYPE3 else 0.0
     if fl > 0.01:
-        cv[..., :3] = cv[..., :3] * (1 - fl * 0.85) + 255 * fl * 0.85
+        cv[..., :3] = cv[..., :3] * (1 - fl * 0.9) + 12 * fl * 0.9
     vignette(cv, t)
     return np.clip(cv[..., :3], 0, 255).astype(np.uint8)
 
 
+@functools.lru_cache(None)
+def teaser_base():
+    c = CARDS['type3'][2]
+    return c
+
+
+@functools.lru_cache(None)
+def ad_panel():
+    im = Image.new('RGBA', (W, 662), (0, 0, 0, 0))
+    m = Image.new('L', (W, 662), 0)
+    ImageDraw.Draw(m).rounded_rectangle([30, 30, W - 30, 650], 48, fill=240)
+    im.paste((252, 250, 255, 255), (0, 0), m)
+    return im
+
+
+def ad_overlay(c, t):
+    """Во время RubUp над баннером (не поверх него): «Угадай подарок» — силуэт самого дорогого чёрно-белого
+    подарка проясняется за время рекламы, отсчёт до ответа. Ответ — сразу после рекламы («Чёрно-белый монохром!»)."""
+    ph = BR.phase(t)
+    if ph is None:
+        return c
+    a = ph['dim']
+    bt = ph['bt']
+    prog = fx.clamp01(bt / BR.B)
+    cv = c.astype(np.float32)
+    cv = np.dstack([cv, np.full(cv.shape[:2], 255, np.float32)])
+    fx.over(cv, (ad_panel(), 0, 8), a)
+    put(cv, text('Угадай подарок', 54, 'Heavy'), 540, 130, 1.0, a)
+    cc = teaser_base()
+    tile = gift_tile(cc['gift'], cc['model'], cc['backdrop'], 300, t)
+    blur = 26 * (1 - prog) ** 1.3 + 2
+    dark = 0.85 * (1 - prog) ** 1.2
+    tl = tile.filter(ImageFilter.GaussianBlur(blur))
+    arr = np.array(tl).astype(np.float32)
+    arr[..., :3] *= 1 - dark
+    tl = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
+    wob = 1 + 0.03 * math.sin(t * 4)
+    put(cv, fx.soft_shadow(300, 300, 48, 26, 0.5), 540, 395 + 14, 0.95 * wob, a)
+    put(cv, tl, 540, 395, 0.95 * wob, a)
+    left = max(0, math.ceil(BR.B - max(0.0, bt)))
+    lab = f'ответ через {left}' if left > 0 else 'ответ!'
+    put(cv, fx.solid_pill(lab, ACCENT, 32), 540, 600, 1.0 + 0.04 * math.sin(t * 6), a)
+    return cv[..., :3]
+
+
+def out_frame(t, i=None):
+    return np.clip(ad_overlay(BR.render(render_at, t, i).astype(np.float32), t), 0, 255).astype(np.uint8)
+
+
 def frame_bytes(i):
-    return BR.render(render_at, i / FPS, i).tobytes()
+    return out_frame(i / FPS, i).tobytes()
 
 
 if __name__ == '__main__':
@@ -594,4 +686,11 @@ if __name__ == '__main__':
             Image.fromarray(render_at(float(s))).save(out / f't{float(s):06.2f}.png')
             print('t', s)
         raise SystemExit
-    frames.cli(lambda t: BR.render(render_at, t), frame_bytes, W, H, FPS, BR.n_frames(FPS, DUR))
+    if '--out' in sys.argv:                        # просмотр по ВЫХОДНОМУ времени (с рекламой): --out 40,43
+        out = paths.build(HERE) / 'review'
+        out.mkdir(parents=True, exist_ok=True)
+        for s in sys.argv[sys.argv.index('--out') + 1].split(','):
+            Image.fromarray(out_frame(float(s))).save(out / f'o{float(s):06.2f}.png')
+            print('o', s)
+        raise SystemExit
+    frames.cli(out_frame, frame_bytes, W, H, FPS, BR.n_frames(FPS, DUR))

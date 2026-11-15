@@ -23,7 +23,7 @@ f1 = font('ExtraBold', 190)
 d0 = ImageDraw.Draw(im)
 t1, t2 = 'Мита ', 'о Гифтах'
 tw = d0.textlength(t1, font=f1) + d0.textlength(t2, font=f1)
-cx = int(W * 0.63); x = int(cx - tw / 2); y = int(H / 2 - 120)
+x = int(W * 0.30); cx = int(x + tw / 2); y = int(H / 2 - 120)
 box = (x - 60, y - 40, x + tw + 60, y + 250)
 # декор: бледные NFT-модели сверху и снизу надписи
 gifts = [('Ginger Cookie', 'Sweetheart'), ('Love Potion', 'Milkshake'), ('Big Year', 'Cyberpunk'), ('Santa Hat', 'Inky White'),

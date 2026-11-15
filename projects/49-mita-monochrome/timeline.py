@@ -23,7 +23,7 @@ def build():
         if i == script.AD_AFTER:
             stop = end[i] + pause * 0.6
             t = stop + AD_GAP
-    return on, end, stop, t + 0.45
+    return on, end, stop, t + 0.3
 
 
 ON, END, AD_STOP, DUR = build()

@@ -14,26 +14,25 @@ def snap(t, win=0.22):
     return float(b) if abs(b - t) <= win else t
 
 
-# Сцены (время содержания)
+# Сцены (время содержания); v2 — RubUp сразу после «А третий вид — самый крутой. Это…»
 HOOK = ON[1]
-PRICE_X10 = snap(ON[2] + 2.3)            # «дороже в десять раз»
+PRICE_X10 = snap(ON[2] + 2.6)            # «дороже в десять раз»
 INTRO = snap(ON[3] - 0.05)
 COUNTER = snap(ON[3] + 2.4)              # «трёх видов»
 SPIN = snap(ON[4] + 1.0)                 # «менять наряды»
 TYPE1 = snap(ON[5] - 0.1)
-TYPE1_ZOOM = snap(ON[5] + 3.6)           # «почти идеально»
+TYPE1_ZOOM = snap(ON[5] + 4.0)           # «почти идеально»
 TYPE2 = snap(ON[6] - 0.1)
 TYPE2_NAMES = snap(ON[6] + 2.6)          # «Киберпанк … тоже Киберпанк»
-TYPE2_COLOR = snap(ON[7] + 1.2)          # «а по цвету»
-TEASE = snap(ON[8] - 0.1)
+TYPE2_COLOR = snap(ON[7] + 1.3)          # «а по цвету»
+TEASE = snap(ON[8] - 0.1)                # «Это…» → RubUp
 TYPE3 = ON[9] - 0.05                     # сразу после рекламы
 TYPE3_ZOOM = snap(ON[10] + 2.6)          # «огромная удача»
 WHY = snap(ON[11] - 0.1)
-ORDER = snap(ON[11] + 2.4)               # «мозг любит порядок»
+ORDER = snap(ON[11] + 2.6)               # «мозг любит порядок»
 SEEN = snap(ON[12] - 0.05)
 OUTRO = snap(ON[13] - 0.1)
 CREEPY = ON[14] - 0.05
-
 
 def beats_after(t, n=3, min_gap=0.22, max_gap=0.75):
     """n последовательных долей после t (для появления карточек «под бит»); если долей мало — равный шаг 0,29 с."""

@@ -181,7 +181,7 @@ SPIN_DUR = 0.95 if len(SPIN_SEQ) > 10 else 0.72
 POSES = [  # (с какого времени, поза, смена наряда); v4 — 6 новых уникальных поз (Fish nano-banana)
     (0.0, 'normal_sly', False),
     (ON[2], 'normal_explain', False),
-    (E.PRICE_X10 - 0.05, 'normal_surprised', False),
+    (E.PRICE_X10 + 0.45, 'normal_surprised', True),
     (E.INTRO, 'normal_excited', True),
     (E.COUNTER - 0.3, 'normal_listen', False),
     (ON[4], 'normal_explain', False),
@@ -526,7 +526,7 @@ def hook_push(t, overshoot=True):
     """0..1: на «Смотри» плитки хука съезжают в центр и растут, на «правая — монохром» возвращаются."""
     x = fx.clamp01((t - E.LOOK) / 0.45)
     rise = fx.ease_out_back(x) if overshoot else fx.smooth(x)
-    fall = fx.smooth(fx.clamp01((t - (E.INTRO - 0.15)) / 0.45))
+    fall = fx.smooth(fx.clamp01((t - (E.PRICE_X10 + 0.45)) / 0.4))   # автор: Мита не пропадает надолго (~3 с)
     return rise * (1 - fall) if t >= E.LOOK else 0.0
 
 
@@ -843,7 +843,7 @@ def subtitles(cv, t):
 
 
 # ---- реакции над Митой
-REACT = [(E.INTRO + 0.15, '!'), (E.SPIN, 'note'), (E.TYPE1_ZOOM, 'heart'), (E.TYPE2_COLOR, '?'),
+REACT = [(E.PRICE_X10 + 0.7, '!'), (E.SPIN, 'note'), (E.TYPE1_ZOOM, 'heart'), (E.TYPE2_COLOR, '?'),
          (E.TYPE3 + 0.15, '!'), (E.TYPE3_ZOOM, 'heart'), (E.ORDER, 'heart'), (E.CREEPY + 0.3, 'dots')]
 
 
@@ -854,7 +854,7 @@ def reactions(cv, t):
             continue
         a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
         pop = fx.ease_out_back(fx.clamp01(k / 0.35))
-        x, y = 690, MITA_FOOT - MITA_H + 40 - 40 * ease(k / 1.3)
+        x, y = 700, MITA_FOOT - MITA_H + 70 - 40 * ease(k / 1.3)
         if kind in ('!', '?'):
             put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
             if kind == '?':                       # капелька пота

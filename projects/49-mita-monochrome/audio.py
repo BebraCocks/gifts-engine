@@ -43,7 +43,7 @@ def sfx_layer(n, kit):
     a(fx, 'pop', E.HOOK_POPS[0] - 0.05, gain_db=-16, label='хук: левый подарок')
     a(fx, 'pop', E.HOOK_POPS[1] - 0.05, gain_db=-16, label='хук: правый подарок')
     a(fx, 'whoosh-short', E.LOOK, align='peak', gain_db=-14, label='«Смотри»: наезд, подарки в центр')
-    a(fx, 'pop', E.INTRO, gain_db=-16, label='Мита возвращается')
+    a(fx, 'pop', E.PRICE_X10 + 0.45, gain_db=-16, label='Мита возвращается')
     a(fx, 'counter', E.PRICE_X10 - 0.55, gain_db=-18, label='цена правого растёт')
     a(fx, 'coin', E.PRICE_X10, gain_db=-14, label='×10')
     a(fx, 'select-soft', E.INTRO, gain_db=-17, label='подпись «монохром»')

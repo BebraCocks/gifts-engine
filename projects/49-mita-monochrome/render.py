@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import paths
 HERE = paths.enter(__file__)
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 import banner
 import frames
 import fx
@@ -880,12 +880,44 @@ CHANCE = [  # (с, по, подпись, формула, итог)
 ]
 
 
+UFONT = HERE / 'input' / 'fonts'          # Unbounded (OFL) — шрифт панели шанса
+
+
+@functools.lru_cache(None)
+def ufont(weight, size):
+    return ImageFont.truetype(str(UFONT / f'Unbounded-{weight}.ttf'), size)
+
+
+@functools.lru_cache(None)
+def utext(s_, size, weight='SemiBold', color=INK):
+    f = ufont(weight, size)
+    l, t_, r, b_ = f.getbbox(s_)
+    asc, desc = f.getmetrics()
+    im = Image.new('RGBA', (r + 16, asc + desc + 16), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((8, 8), s_, font=f, fill=color + (255,))
+    return im
+
+
+@functools.lru_cache(None)
+def upill(s_, fill, size, tcol):
+    f = ufont('SemiBold', size)
+    tw = int(f.getlength(s_))
+    h_ = int(size * 1.9)
+    w_ = tw + h_
+    S = 2
+    im = Image.new('RGBA', (w_ * S, h_ * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([0, 0, w_ * S - 1, h_ * S - 1], h_ * S // 2, fill=fill + (255,))
+    d.text((w_ * S / 2, h_ * S / 2), s_, font=ufont('SemiBold', size * S), fill=tcol + (255,), anchor='mm')
+    return im.resize((w_, h_), Image.LANCZOS)
+
+
 @functools.lru_cache(None)
 def chance_line(num, acc):
-    """«≈ 1» цветом акцента, «из» приглушённо, число крупнее, самым жирным и тёмным — главное в панели."""
-    parts = [(text('≈ 1 ', 36, 'Bold', acc), fx.font('Bold', 36)),
-             (text('из ', 32, 'Semibold', MUTED), fx.font('Semibold', 32)),
-             (text(num, 54, 'Heavy', INK), fx.font('Heavy', 54))]
+    """«≈ 1» цветом акцента, «из» приглушённо, число крупнее, самым жирным и тёмным — главное в панели (Unbounded)."""
+    parts = [(utext('≈ 1 ', 30, 'ExtraBold', acc), ufont('ExtraBold', 30)),
+             (utext('из ', 26, 'SemiBold', MUTED), ufont('SemiBold', 26)),
+             (utext(num, 46, 'ExtraBold', INK), ufont('ExtraBold', 46))]
     yb = max(f.getmetrics()[0] for _, f in parts) + 8
     w = sum(im.width - 12 for im, _ in parts) + 12
     h = max(yb + f.getmetrics()[1] + 8 for _, f in parts)
@@ -904,9 +936,9 @@ def side_right(cv, t):
         s = put_panel(cv, RX, SIDE_Y, a, t0, t)
         y = SIDE_Y - 115                                 # автор: без формулы с процентами — только примерный шанс
         num = res.replace('≈ 1 из ', '')
-        put(cv, text('шанс выпадения', 24, 'Semibold', MUTED), RX, y, s, a)
+        put(cv, utext('Шанс выпадения', 20, 'SemiBold', MUTED), RX, y, s, a)
         tint = tuple(int(255 - (255 - c) * 0.16) for c in ACCENT)     # светлый тон акцента сцены
-        put(cv, fx.solid_pill(who, tint, 26, ACCENT), RX, y + 50 * s, s, a)
+        put(cv, upill(who, tint, 20, ACCENT), RX, y + 52 * s, s, a)
         im = chance_line(num, ACCENT)
         sc = min(1.0, 244 / im.width)
         put(cv, im, RX, y + 150 * s, s * sc * (1 + 0.04 * beat_pulse(t, 8)), a)

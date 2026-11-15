@@ -44,8 +44,13 @@ for k, (fx_, fy_) in enumerate(spots):
     deco.alpha_composite(p, (px - p.width // 2, py - p.height // 2))
 im.alpha_composite(deco)
 lay = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
-for j, (t_, col) in enumerate(lines):
-    d.text((x, y + j * LH), t_, font=f1, fill=col + (255,))
+d.text((x, y), 'Мита', font=f1, fill=PINK + (255,))
+# вторая строка: «про» мельче и лавандовым, «гифты» — основной тёмный; по общей базовой линии
+fp = font('SemiBold', 96)
+VIOLET = (140, 110, 220)
+base = y + LH + f1.getmetrics()[0]
+d.text((x, base), 'про ', font=fp, fill=VIOLET + (255,), anchor='ls')
+d.text((x + d.textlength('про ', font=fp), base), 'гифты', font=f1, fill=INK + (255,), anchor='ls')
 sh = Image.new('RGBA', (W, H), (255, 255, 255, 0)); sh.putalpha(lay.getchannel('A').point(lambda v: int(v * 0.35)))
 im.alpha_composite(sh.filter(ImageFilter.GaussianBlur(18))); im.alpha_composite(lay)
 im.convert('RGB').save(dst, quality=95)

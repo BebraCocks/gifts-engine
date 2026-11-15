@@ -207,6 +207,61 @@ def pose_at(t):
     return cur
 
 
+def wind(cv, t, front):
+    """Ветерок при кружении: вихри-дуги вокруг Миты (задние — за ней, передние — перед ней) и разлетающиеся лепестки."""
+    t0, t1 = E.SPIN - 0.12, E.SPIN + SPIN_DUR + 0.45
+    if not t0 <= t < t1:
+        return
+    k = (t - t0) / (t1 - t0)
+    env = fx.smooth(fx.clamp01(k / 0.2)) * (1 - fx.smooth(fx.clamp01((k - 0.6) / 0.4)))
+    if env <= 0.01:
+        return
+    cx, base = 540, MITA_FOOT
+    rot = (t - t0) * 9.0                                # угол вихря растёт — дуги бегут по кругу
+    col = THEME['accent']
+    def draw(d, mp, S):
+        for j, (hy, rx, ry, w, ph) in enumerate(((0.12, 250, 46, 7, 0.0), (0.34, 290, 58, 9, 2.1),
+                                                   (0.56, 270, 52, 7, 4.0), (0.76, 220, 40, 5, 1.2))):
+            cy = base - MITA_H * hy
+            a0 = rot * (1.15 - 0.1 * j) + ph
+            pts = []
+            for q in range(26):
+                ang = a0 + q * 0.085
+                sn = math.sin(ang)
+                if (sn > 0) != front:                   # sin>0 — нижняя (ближняя к зрителю) половина эллипса
+                    if pts:
+                        break
+                    continue
+                pts.append(mp(cx + math.cos(ang) * rx, cy + sn * ry))
+            for q in range(1, len(pts)):
+                fade = q / len(pts)
+                al = int(200 * env * fade)
+                c = tuple(int(v * 0.35 + 255 * 0.65) for v in col) if q < len(pts) * 0.5 else col
+                d.line([pts[q - 1], pts[q]], fill=c + (al,), width=max(1, int(w * S * (0.4 + 0.6 * fade))))
+        if front:                                       # лепестки и искорки улетают по спирали
+            rng = np.random.default_rng(21)
+            for j in range(16):
+                st = rng.uniform(0, 0.55)
+                u = (k - st) / 0.45
+                if not 0 < u < 1:
+                    continue
+                ang = rng.uniform(0, 2 * math.pi) + u * 3.0
+                r = 120 + u * rng.uniform(220, 380)
+                x = cx + math.cos(ang) * r
+                y = base - MITA_H * rng.uniform(0.1, 0.8) - u * 120
+                X, Y = mp(x, y)
+                al = int(230 * env * (1 - u))
+                if j % 3 == 0:
+                    fx.sparkle(d, X, Y, rng.uniform(8, 15) * S, (255, 190, 60, al))
+                else:
+                    rr = rng.uniform(6, 11) * S
+                    a2 = ang * 2
+                    pts = [(X + math.cos(a2) * rr * 1.6, Y + math.sin(a2) * rr * 1.6), (X + math.cos(a2 + 1.57) * rr * 0.6, Y + math.sin(a2 + 1.57) * rr * 0.6),
+                           (X - math.cos(a2) * rr * 1.6, Y - math.sin(a2) * rr * 1.6), (X - math.cos(a2 + 1.57) * rr * 0.6, Y - math.sin(a2 + 1.57) * rr * 0.6)]
+                    d.polygon(pts, fill=(255, 150, 190, al))
+    fx.over(cv, fx.draw_rgba((cx - 520, base - MITA_H - 260, cx + 520, base + 40), draw))
+
+
 def draw_mita(cv, t):
     t0, name, change = pose_at(t)
     mirror = False
@@ -1001,7 +1056,9 @@ def render_at(t):
     scene_outro(cv, t)
     side_left(cv, t)
     side_right(cv, t)
+    wind(cv, t, False)
     draw_mita(cv, t)
+    wind(cv, t, True)
     reactions(cv, t)
     subtitles(cv, t)
     # вспышка на «чёрно-белый» после рекламы

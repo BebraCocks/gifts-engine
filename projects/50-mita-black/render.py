@@ -515,13 +515,14 @@ def scene_x7(cv, t):
         a = appear(t, tj, 0.3) * (1 - out)
         if a <= 0:
             continue
-        y = 330 + j * 200
+        y = 340 + j * 205
         s = 0.5 * (0.6 + 0.4 * pop_in(t, tj))
         for side, c in enumerate((L, R)):
             x = 150 + side * 390
             put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.5), x, y + 8, s, a)
             put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), x, y, s, a)
-            put(cv, text(rub(c['rub']), 34, 'Heavy', WINE if side else MUTED), x + 165, y, 1.0, a)
+            put(cv, text(c['gift'], 20, 'Heavy'), x, y - 92, 1.0, a)
+            put(cv, text(rub(c['rub']), 34, 'Heavy', WINE if side else MUTED), x + 180, y, 1.0, a)
         put(cv, fx.solid_pill(f"×{R['ton'] / L['ton']:.0f}", WINE, 28), 965, y, 1.0, a * appear(t, tj + 0.3, 0.3))
     if t >= E.X7_BADGE:
         ps = fx.spring(fx.clamp01((t - E.X7_BADGE) / 0.6))
@@ -567,6 +568,7 @@ def scene_rarity(cv, t):
         s = 0.8 * (0.6 + 0.4 * pop_in(t, tj))
         put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.5), x, 500 + 10, s, a)
         put(cv, gift_tile('Whip Cupcake', m['model'], bd, TILE, t - tj), x, 500, s, a)
+        put(cv, text('Whip Cupcake', 26, 'Heavy'), x, 500 - 150 * s / 0.8 * 0.8 - 30, 1.0, a)
         put(cv, text(bd, 30, 'Heavy'), x, 650, 1.0, a)
         hl = appear(t, E.RARITY_SAME, 0.3)
         put(cv, utext('1,5%', 40, 'ExtraBold', WINE if hl > 0.5 else MUTED), x, 705, 1.0 + 0.1 * hl * beat_pulse(t, 8), a)
@@ -657,6 +659,7 @@ def scene_glow(cv, t):
     glow = 0.35 + 0.25 * (0.5 + 0.5 * math.sin(t * 4))
     put(cv, tinted_glow((255, 210, 120)), 540, 510, 1.6 * s, a * glow)
     put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - E.GLOW), 540, 510, s, a)
+    put(cv, text(c['gift'], 30, 'Heavy', WHITE if ph > 0.5 else INK), 540, 510 - 150 * s - 28, 1.0, a)
 
 
 # ---- 10. обычный фон тускнеет
@@ -674,6 +677,7 @@ def scene_plain(cv, t):
         tile = Image.blend(tile, g, dim * 0.85)
     put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.5), 540, 550, 1.0, a * (1 - 0.6 * dim))
     put(cv, tile, 540, 540, 1.0 - 0.08 * dim, a * (1 - 0.35 * dim))
+    put(cv, text(c['gift'], 30, 'Heavy'), 540, 540 - 150 - 30, 1.0, a * (1 - 0.35 * dim))
     put(cv, text('просто фон…', 40, 'Heavy', MUTED), 540, 760, 1.0, a * dim)
 
 
@@ -718,10 +722,11 @@ def scene_outro(cv, t):
             put(cv, tinted_glow((255, 210, 120)), x, 500, 1.3 * s, a * (0.3 + 0.15 * math.sin(t * 4)))
         put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), x, 500 + 14, s, a)
         put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), x, 500, s, a)
+        put(cv, text(c['gift'], 28, 'Heavy'), x, 500 - 150 * s - 28, 1.0, a)
         put(cv, upill(lab, WINE if j == 0 else (226, 220, 238), 24, WHITE if j == 0 else INK), x, 690, 1.0, a)
         put(cv, text(rub(c['rub']), 36, 'Heavy', WINE if j == 0 else MUTED), x, 745, 1.0, a)
     k = appear(t, E.OUTRO_PILL, 0.3)
-    put(cv, fx.solid_pill('Пиши в комментариях', ACCENT, 34), 540, 300, 0.8 + 0.2 * k, k)
+    put(cv, fx.solid_pill('Пиши в комментариях', ACCENT, 34), 540, 232, 0.8 + 0.2 * k, k)
 
 
 # ------------------------------------------------------------------ субтитры

@@ -121,7 +121,7 @@ PUMP_SIZE = 700
 
 
 @functools.lru_cache(None)
-def pumpkin_top():
+def _unused_pumpkin_top():
     """Верх «купола» тыквы (без рожек) в долях кадра модели — для посадки Миты."""
     im = np.array(R.lottie.frame(R.model_path('Mad Pumpkin', 'Red Demon'), 0.0, size=480))
     col = im[:, 200:280, 3].max(1)
@@ -129,16 +129,91 @@ def pumpkin_top():
     return ys.min() / 480
 
 
+PUMP_DUR, PUMP_FPS, PS = 3.0, 60, 240         # длительность Lottie тыквы, кадры, размер для анализа
+SEAT_U = (0.25, 0.43)                          # окно поверхности под Митой (доли ширины модели, левее рожки по центру)
+
+
+def _surface(a, x):
+    """Верх «толстой» части тела в столбце x (рожки тонкие — пропускаются)."""
+    c = a[:, x] > 120
+    y = 0
+    while y < PS:
+        if c[y]:
+            run = 0
+            while y + run < PS and c[y + run]:
+                run += 1
+            if run >= PS // 8:
+                return y
+            y += run
+        y += 1
+    return None
+
+
+@functools.lru_cache(None)
+def pump_profile():
+    """По каждому кадру анимации тыквы: высота поверхности под Митой, наклон, сдвиг тела по x, высота тела.
+    Сглажено по времени (окно 5 кадров, по кругу), чтобы Мита не дрожала."""
+    path = R.model_path('Mad Pumpkin', 'Red Demon')
+    n = int(PUMP_DUR * PUMP_FPS)
+    ys, sl, cx, hh = np.zeros(n), np.zeros(n), np.zeros(n), np.zeros(n)
+    x0, x1 = int(PS * SEAT_U[0]), int(PS * SEAT_U[1])
+    xm = (x0 + x1) / 2
+    for i in range(n):
+        a = np.array(R.lottie.frame(path, i / PUMP_FPS, size=PS))[..., 3]
+        pts = [(x, _surface(a, x)) for x in range(x0, x1 + 1, 3)]
+        Y = np.array([y for x, y in pts if y is not None], float)
+        ys[i] = np.median(Y)
+        # общий наклон тыквы: разница высот поверхности слева и справа от центра (без рожек)
+        def mean_top(u0, u1):
+            v = [_surface(a, x) for x in range(int(PS * u0), int(PS * u1), 2)]
+            v = [y for y in v if y is not None]
+            return float(np.median(v)) if v else ys[i]
+        sl[i] = (mean_top(0.58, 0.66) - mean_top(0.34, 0.42)) / (0.24 * PS)
+        cols = np.nonzero(a.max(0) > 120)[0]
+        cx[i] = (cols.min() + cols.max()) / 2 - PS / 2
+        rows = np.nonzero(a.max(1) > 120)[0]
+        hh[i] = rows.max() - ys[i]
+    sl -= np.median(sl)
+    ker = np.hanning(9)[1:-1]
+    ker /= ker.sum()
+    sm = lambda v: np.convolve(np.concatenate([v[-3:], v, v[:3]]), ker, 'valid')
+    return sm(ys), sm(sl), sm(cx), sm(hh), xm
+
+
+def pump_state(t):
+    ys, sl, cx, hh, xm = pump_profile()
+    n = len(ys)
+    f = (t % PUMP_DUR) * PUMP_FPS
+    i = int(f) % n
+    j = (i + 1) % n
+    w = f - int(f)
+    lerp = lambda v: v[i] * (1 - w) + v[j] * w
+    return lerp(ys), lerp(sl), lerp(cx), lerp(hh), xm, float(np.median(hh))
+
+
+def pump_scale(t):
+    return 0.92 + 0.08 * ease((t - E.PUMPKIN + 0.15) / 0.45)
+
+
 def draw_pumpkin(cv, t, a):
     im = R.lottie.frame(R.model_path('Mad Pumpkin', 'Red Demon'), t, size=PUMP_SIZE)
-    s = 0.92 + 0.08 * ease((t - E.PUMPKIN + 0.15) / 0.45)
+    s = pump_scale(t)
     R.put(cv, shadow_sprite(), PUMP_C[0], PUMP_C[1] + PUMP_SIZE * 0.42, 1.6, 0.8 * a)
-    R.put(cv, im, PUMP_C[0], PUMP_C[1] + 8 * math.sin(t * 1.6), s, a)
+    R.put(cv, im, PUMP_C[0], PUMP_C[1], s, a)
 
 
 def pumpkin_seat(t):
-    top = PUMP_C[1] - PUMP_SIZE / 2 + pumpkin_top() * PUMP_SIZE + 8 * math.sin(t * 1.6)
-    return PUMP_C[0] - 120, top + 34
+    """(x, y, наклон в радианах, сжатие) точки, где сидит Мита, — едет вместе с поверхностью тыквы.
+    Небольшая инерция: Мита отстаёт от тыквы на ~0,04 с (её «подбрасывает» и она опускается обратно)."""
+    k = PUMP_SIZE / PS * pump_scale(t)
+    y_now, sl, cx, hh, xm, h0 = pump_state(t)
+    y_lag = pump_state(t - 0.04)[0]
+    y = 0.65 * y_now + 0.35 * y_lag
+    X = PUMP_C[0] + (xm - PS / 2) * k + cx * k * 0.3
+    Y = PUMP_C[1] + (y - PS / 2) * k
+    ang = float(np.clip(math.atan(sl) * 0.7, -0.2, 0.2))
+    squash = float(np.clip(hh / h0, 0.85, 1.12))
+    return X, Y, ang, squash
 
 
 # ------------------------------------------------------------------ Мита по сценам
@@ -166,8 +241,10 @@ def mita_frame(name, t):
         else:
             k = ease((t - (E.PUMP_BLACK - 0.45)) / 0.5)
             a = anim.morph(anim.pingpong_name(PUMP_SWING, E.PUMP_BLACK - 0.45 - E.PUMPKIN, 2.6), 'pump_point', k)
-        sx_, sy_ = pumpkin_seat(t)
-        return a, dict(P_, cx=sx_, foot=sy_, base=570, shadow=False, sy=1.0, rot=0.0)
+        sx_, sy_, ang, sq = pumpkin_seat(t)
+        # сжатие тыквы → Мита слегка «проседает» (по вертикали сильнее, по ширине чуть шире)
+        return a, dict(P_, cx=sx_, foot=sy_ + 34, base=570, shadow=False, sy=1 - 0.35 * (1 - sq), sx=1 + 0.12 * (1 - sq),
+                       rot=ang)
     if name == 'jump':
         a = JUMP_T.frame(t)
         u = (t - LH) / 0.52

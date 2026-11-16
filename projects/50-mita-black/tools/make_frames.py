@@ -21,6 +21,7 @@ SHEETS = {
     'kick_a': 'kick_1 kick_2 kick_3', 'kick_b': 'kick_in_a kick_in_b kick_dust',
     'hang_a': 'hang_1 hang_2 hang_3', 'hang_b': 'hang_in_a hang_in_b hang_grab',
     'two_a': 'two_1 two_2 two_3', 'two_b': 'two_in_a two_in_b two_point',
+    'box_a': 'box_guard box_jab box_win',
 }
 THIRDS = {'creepy_a', 'creepy_b'}            # бюсты касаются друг друга — режем строго по третям
 CW = 768

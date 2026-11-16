@@ -574,5 +574,29 @@
   "left": 179,
   "right": 531,
   "magenta": 2561
+ },
+ "box_guard": {
+  "sheet": "box_a",
+  "top": 53,
+  "bottom": 989,
+  "left": 233,
+  "right": 583,
+  "magenta": 12
+ },
+ "box_jab": {
+  "sheet": "box_a",
+  "top": 54,
+  "bottom": 990,
+  "left": 186,
+  "right": 553,
+  "magenta": 8
+ },
+ "box_win": {
+  "sheet": "box_a",
+  "top": 14,
+  "bottom": 990,
+  "left": 189,
+  "right": 544,
+  "magenta": 23
  }
 }

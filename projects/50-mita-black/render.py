@@ -703,18 +703,23 @@ def scene_price(cv, t):
 
 # ---- 12. люкс или минимум
 def scene_outro(cv, t):
+    """«роскошный люкс» — дорогой подарок на чёрном (Electric Skull, 26 тыс. ₽);
+    «базовый минимум» — дешёвый на самом невзрачном зелёном (Snow Globe, Ranger Green, 701 ₽)."""
     if t < E.OUTRO - 0.1:
         return
-    L, R = lot('Snow Globe', 'black_floor'), lot('Snow Globe', 'floor')
-    for j, (c, lab, tj) in enumerate(((L, 'роскошный люкс', E.OUTRO + 0.1), (R, 'базовый минимум', E.OUTRO_MIN))):
+    L, R = lot('Electric Skull', 'black_floor'), lot('Snow Globe', 'floor')
+    for j, (c, lab, tj) in enumerate(((L, 'роскошный люкс', E.OUTRO_LUX), (R, 'базовый минимум', E.OUTRO_MIN))):
         a = appear(t, tj, 0.3)
         if a <= 0:
             continue
         x = 540 + (j - 0.5) * 520
         s = 0.95 * (0.6 + 0.4 * pop_in(t, tj)) * (1 + 0.02 * beat_pulse(t, 8))
+        if j == 0:                                  # люкс слегка сияет
+            put(cv, tinted_glow((255, 210, 120)), x, 500, 1.3 * s, a * (0.3 + 0.15 * math.sin(t * 4)))
         put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), x, 500 + 14, s, a)
         put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), x, 500, s, a)
         put(cv, upill(lab, WINE if j == 0 else (226, 220, 238), 24, WHITE if j == 0 else INK), x, 690, 1.0, a)
+        put(cv, text(rub(c['rub']), 36, 'Heavy', WINE if j == 0 else MUTED), x, 745, 1.0, a)
     k = appear(t, E.OUTRO_PILL, 0.3)
     put(cv, fx.solid_pill('Пиши в комментариях', ACCENT, 34), 540, 300, 0.8 + 0.2 * k, k)
 

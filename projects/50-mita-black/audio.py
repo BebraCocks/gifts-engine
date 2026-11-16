@@ -61,8 +61,8 @@ def sfx_layer(n, kit):
     a(fx, 'sparkle-whoosh', E.GLOW + 0.1, gain_db=-16, label='подарок светится')
     a(fx, 'power-down', E.PLAIN + 1.0, gain_db=-19, label='обычный фон тускнеет')
     a(fx, 'riser', E.PRICE_UP + 0.4, align='end', gain_db=-21, label='цена растёт')
-    a(fx, 'popup', E.OUTRO + 0.1, gain_db=-17, label='люкс')
-    a(fx, 'popup', E.OUTRO_MIN, gain_db=-17, label='минимум')
+    a(fx, 'sparkle', E.OUTRO_LUX, gain_db=-16, label='люкс')
+    a(fx, 'pop', E.OUTRO_MIN, gain_db=-18, label='минимум')
     a(fx, 'select-soft', E.OUTRO_PILL, gain_db=-16, label='пиши в комментариях')
     return fx * 10 ** (-1 / 20)
 

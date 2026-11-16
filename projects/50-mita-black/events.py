@@ -31,5 +31,6 @@ PLAIN = ON[10] - 0.05
 PRICE = ON[11] - 0.05
 PRICE_UP = at('растет') - 0.6
 OUTRO = ON[12] - 0.05
+OUTRO_LUX = at('роскошный') - 0.1
 OUTRO_MIN = at('базовый') - 0.1
 OUTRO_PILL = at('Пиши') - 0.05

@@ -131,6 +131,26 @@
    "model_pct": "2.5%",
    "backdrop": "Black",
    "backdrop_pct": "1.2%"
+  },
+  "Electric Skull|black_floor": {
+   "gift": "Electric Skull",
+   "lot": "electricskull-6446",
+   "ton": 300.0,
+   "rub": 26269,
+   "model": "Bubblegum",
+   "model_pct": "2%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.2%"
+  },
+  "Bonded Ring|black_floor": {
+   "gift": "Bonded Ring",
+   "lot": "bondedring-1952",
+   "ton": 550.0,
+   "rub": 48160,
+   "model": "Frostband",
+   "model_pct": "3.5%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.5%"
   }
  }
 }

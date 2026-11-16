@@ -670,5 +670,29 @@
   "left": 196,
   "right": 534,
   "magenta": 11
+ },
+ "pop_1": {
+  "sheet": "pop_a",
+  "top": 28,
+  "bottom": 988,
+  "left": 246,
+  "right": 603,
+  "magenta": 29
+ },
+ "pop_2": {
+  "sheet": "pop_a",
+  "top": 28,
+  "bottom": 988,
+  "left": 214,
+  "right": 570,
+  "magenta": 23
+ },
+ "pop_3": {
+  "sheet": "pop_a",
+  "top": 28,
+  "bottom": 988,
+  "left": 182,
+  "right": 538,
+  "magenta": 27
  }
 }

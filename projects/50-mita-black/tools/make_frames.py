@@ -20,6 +20,7 @@ SHEETS = {
     'phone_a': 'phone_1 phone_2 phone_3', 'phone_b': 'phone_in_a phone_in_b phone_hug',
     'kick_a': 'kick_1 kick_2 kick_3', 'kick_b': 'kick_in_a kick_in_b kick_dust',
     'hang_a': 'hang_1 hang_2 hang_3', 'hang_b': 'hang_in_a hang_in_b hang_grab',
+    'hang_c': 'hang_tiptoe hang_lift hang_settle',
     'two_a': 'two_1 two_2 two_3', 'two_b': 'two_in_a two_in_b two_point',
     'box_a': 'box_guard box_jab box_win',
     'pump_a': 'pump_1 pump_2 pump_3', 'pump_b': 'pump_in_a pump_in_b pump_point',

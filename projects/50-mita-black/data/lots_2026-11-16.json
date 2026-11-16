@@ -1,0 +1,136 @@
+{
+ "_note": "Атрибуты лотов Fragment (страницы лотов), 2026-11-16; цены — data/black_2026-11-16.json",
+ "ton_rub": 87.56344928623965,
+ "lots": {
+  "Whip Cupcake|floor": {
+   "gift": "Whip Cupcake",
+   "lot": "whipcupcake-78482",
+   "ton": 5.0,
+   "rub": 438,
+   "model": "Cloud Nine",
+   "model_pct": "3%",
+   "backdrop": "Sapphire",
+   "backdrop_pct": "1.5%"
+  },
+  "Whip Cupcake|black_floor": {
+   "gift": "Whip Cupcake",
+   "lot": "whipcupcake-170363",
+   "ton": 28.0,
+   "rub": 2452,
+   "model": "Wasteland",
+   "model_pct": "2.5%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.5%"
+  },
+  "Record Player|floor": {
+   "gift": "Record Player",
+   "lot": "recordplayer-20178",
+   "ton": 15.0,
+   "rub": 1313,
+   "model": "Serenity",
+   "model_pct": "2%",
+   "backdrop": "Jade Green",
+   "backdrop_pct": "1.5%"
+  },
+  "Heart Locket|floor": {
+   "gift": "Heart Locket",
+   "lot": "heartlocket-1437",
+   "ton": 1700.0,
+   "rub": 148858,
+   "model": "Karaoke Bar",
+   "model_pct": "2%",
+   "backdrop": "Rifle Green",
+   "backdrop_pct": "1.2%"
+  },
+  "Heart Locket|black_floor": {
+   "gift": "Heart Locket",
+   "lot": "heartlocket-1886",
+   "ton": 200000.0,
+   "rub": 17512690,
+   "model": "Comic Book",
+   "model_pct": "2.5%",
+   "backdrop": "Black",
+   "backdrop_pct": "1%"
+  },
+  "Top Hat|floor": {
+   "gift": "Top Hat",
+   "lot": "tophat-20131",
+   "ton": 12.0,
+   "rub": 1051,
+   "model": "Limoncello",
+   "model_pct": "2%",
+   "backdrop": "Cyberpunk",
+   "backdrop_pct": "1.5%"
+  },
+  "Top Hat|black_floor": {
+   "gift": "Top Hat",
+   "lot": "tophat-9506",
+   "ton": 165.0,
+   "rub": 14448,
+   "model": "Blake",
+   "model_pct": "1.5%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.2%"
+  },
+  "Big Year|floor": {
+   "gift": "Big Year",
+   "lot": "bigyear-62366",
+   "ton": 5.0,
+   "rub": 438,
+   "model": "Christmas Carol",
+   "model_pct": "2.3%",
+   "backdrop": "Pistachio",
+   "backdrop_pct": "1%"
+  },
+  "Big Year|black_floor": {
+   "gift": "Big Year",
+   "lot": "bigyear-49440",
+   "ton": 44.0,
+   "rub": 3853,
+   "model": "Picasso",
+   "model_pct": "2.3%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.2%"
+  },
+  "Snow Globe|floor": {
+   "gift": "Snow Globe",
+   "lot": "snowglobe-24495",
+   "ton": 8.0,
+   "rub": 701,
+   "model": "Lost Color",
+   "model_pct": "3%",
+   "backdrop": "Ranger Green",
+   "backdrop_pct": "1.5%"
+  },
+  "Snow Globe|black_floor": {
+   "gift": "Snow Globe",
+   "lot": "snowglobe-1153",
+   "ton": 57.0,
+   "rub": 4991,
+   "model": "Choco Waffle",
+   "model_pct": "3%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.2%"
+  },
+  "Neko Helmet|floor": {
+   "gift": "Neko Helmet",
+   "lot": "nekohelmet-2117",
+   "ton": 45.0,
+   "rub": 3940,
+   "model": "Databreak",
+   "model_pct": "2.5%",
+   "backdrop": "Dark Green",
+   "backdrop_pct": "1.2%"
+  },
+  "Neko Helmet|black_floor": {
+   "gift": "Neko Helmet",
+   "lot": "nekohelmet-14271",
+   "ton": 440.0,
+   "rub": 38528,
+   "model": "Ultravolt",
+   "model_pct": "2.5%",
+   "backdrop": "Black",
+   "backdrop_pct": "1.2%"
+  }
+ }
+}

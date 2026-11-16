@@ -34,7 +34,7 @@
   "bed035742c994860b594de6521085677"
  ],
  "L12": [
-  "84f9ba8533f44b2f98ea5cc7e5059e44"
+  "013f128f5df74100b2bd043a8cc9bcb0"
  ],
  "_L12_v1_old": [
   "f94d416f0be64973ae6a70130dff1b97"
@@ -51,5 +51,8 @@
  "_L12_variants": {
   "A": "013f128f5df74100b2bd043a8cc9bcb0",
   "B": "7c6b4c00d88e4633bdbf060772fa51ae"
- }
+ },
+ "_L12_v3_old": [
+  "84f9ba8533f44b2f98ea5cc7e5059e44"
+ ]
 }

@@ -622,18 +622,24 @@ def scene_demand(cv, t):
     out = appear(t, E.GLOW - 0.3, 0.3)
     a0 = appear(t, E.DEMAND + 0.1, 0.3) * (1 - out)
     put(cv, utext('спрос', 60, 'ExtraBold', WINE), 540, 300, 0.8 + 0.2 * pop_in(t, E.DEMAND + 0.1), a0)
-    for j, (fn, lab) in enumerate(((icon_card, 'карты'), (icon_car, 'машины'), (icon_tux, 'смокинги'))):
+    for j, (name, lab) in enumerate((('card', 'карты'), ('car', 'машины'), ('tux', 'смокинги'))):
         tj = E.ICONS[j]
         a = appear(t, tj, 0.25) * (1 - out)
         if a <= 0:
             continue
         x = 190 + 350 * j
-        s = 0.9 * pop_in(t, tj)
-        def draw(d, mp, S, fn=fn, x=x, s=s):
-            X, Y = mp(x, 560)
-            fn(d, X, Y, s * S)
-        fx.over(cv, fx.draw_rgba((x - 170, 420, x + 170, 700), draw), a)
+        s = pop_in(t, tj) * (1 + 0.015 * beat_pulse(t, 8))
+        put(cv, prop_img(name), x, 560, s, a)
         put(cv, text(lab, 32, 'Heavy'), x, 730, 1.0, a)
+
+
+@functools.lru_cache(None)
+def prop_img(name):
+    """Фото-предметы для «спроса» (ChatGPT, хромакей: input/props/luxury_sheet.png → card/car/tux.png)."""
+    im = Image.open(HERE / 'input' / 'props' / f'{name}.png').convert('RGBA')
+    bw, bh = {'card': (270, 230), 'car': (345, 260), 'tux': (250, 280)}[name]
+    k = min(bw / im.width, bh / im.height)
+    return im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
 
 
 # ---- 9. светится в тёмной теме

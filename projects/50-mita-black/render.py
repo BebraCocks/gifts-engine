@@ -806,7 +806,7 @@ def side_panels(cv, t):
     txt_panel(RX, E.ICONS[1], E.GLOW, 'хотят', 'все', 'спрос ↑')
     # светится
     txt_panel(LX, E.GLOW + 0.4, E.PLAIN, 'на чёрном', 'ярче', 'контраст')
-    txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телега', 'фон сливается')
+    txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телеграм', 'фон сливается')
     # обычный фон: тот же Neko Helmet
     txt_panel(LX, E.PLAIN + 0.4, E.PRICE, 'обычный фон', '3 940 ₽', 'Neko Helmet', MUTED)
     txt_panel(RX, E.PLAIN + 1.0, E.PRICE, 'на чёрном', '×10', '38 528 ₽')

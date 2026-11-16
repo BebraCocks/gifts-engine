@@ -598,5 +598,29 @@
   "left": 189,
   "right": 544,
   "magenta": 23
+ },
+ "pump_1": {
+  "sheet": "pump_a",
+  "top": 38,
+  "bottom": 867,
+  "left": 150,
+  "right": 667,
+  "magenta": 25
+ },
+ "pump_2": {
+  "sheet": "pump_a",
+  "top": 38,
+  "bottom": 967,
+  "left": 161,
+  "right": 545,
+  "magenta": 35
+ },
+ "pump_3": {
+  "sheet": "pump_a",
+  "top": 39,
+  "bottom": 956,
+  "left": 169,
+  "right": 553,
+  "magenta": 41
  }
 }

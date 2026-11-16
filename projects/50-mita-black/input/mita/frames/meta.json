@@ -742,5 +742,29 @@
   "left": 175,
   "right": 605,
   "magenta": 30
+ },
+ "show_in_a": {
+  "sheet": "show_b",
+  "top": 32,
+  "bottom": 989,
+  "left": 163,
+  "right": 598,
+  "magenta": 32
+ },
+ "show_in_b": {
+  "sheet": "show_b",
+  "top": 37,
+  "bottom": 989,
+  "left": 195,
+  "right": 633,
+  "magenta": 30
+ },
+ "show_end": {
+  "sheet": "show_b",
+  "top": 34,
+  "bottom": 989,
+  "left": 206,
+  "right": 558,
+  "magenta": 39
  }
 }

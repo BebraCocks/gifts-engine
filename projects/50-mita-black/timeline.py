@@ -6,7 +6,7 @@ import script
 
 HERE = Path(__file__).resolve().parent
 META = json.loads((HERE / 'voice' / 'lines.json').read_text(encoding='utf-8'))
-TAKES = {m['line']: HERE / 'voice' / f"L{m['line']:02d}.wav" for m in META}
+TAKES = {m['line']: HERE / 'voice' / f"L{m['line']:02d}.wav" for m in META if script.LINES[m['line'] - 1][0]}
 HAS_NARRATION = True
 LEAD = 0.3
 AD_GAP = 0.3
@@ -17,9 +17,10 @@ def build():
     t = LEAD
     for m in META:
         i = m['line']
-        on[i], end[i] = t, t + m['dur']
+        dur = m['dur'] if script.LINES[i - 1][0] else 0.0     # пустая реплика — пропущена
+        on[i], end[i] = t, t + dur
         pause = script.LINES[i - 1][2]
-        t += m['dur'] + pause
+        t += dur + pause
         if i == script.AD_AFTER:
             stop = end[i] + pause * 0.6
             t = stop + AD_GAP

@@ -453,4 +453,4 @@ HyperFrames (heygen-com) не ставим: тот же headless Chrome с по�
 Для каждого нового ролика с Митой делать новые позы, эмоции и наряды под тему ролика. Готовые арты
 (`projects/49-mita-monochrome/input/mita/`) использовать только там, где новые не добавляют смысла.
 Арты: ChatGPT по промптам (лист из 3 фигур, фон #00FF00) или Fish nano-banana; юбка всегда закрывает бёдра
-полностью; вырезка — хромакей (scratchpad `key2.py` / `splitn.py`, перенести в проект при следующем ролике).
+полностью; вырезка — хромакей (`projects/49-mita-monochrome/tools/chroma_key.py`, `split_sheet.py`).

@@ -22,7 +22,7 @@ SHEETS = {
     'hang_a': 'hang_1 hang_2 hang_3', 'hang_b': 'hang_in_a hang_in_b hang_grab',
     'two_a': 'two_1 two_2 two_3', 'two_b': 'two_in_a two_in_b two_point',
     'box_a': 'box_guard box_jab box_win',
-    'pump_a': 'pump_1 pump_2 pump_3',
+    'pump_a': 'pump_1 pump_2 pump_3', 'pump_b': 'pump_in_a pump_in_b pump_point',
 }
 THIRDS = {'creepy_a', 'creepy_b'}            # бюсты касаются друг друга — режем строго по третям
 CW = 768

@@ -570,3 +570,8 @@ Drive «TikTok» (копия crf 20). Канал: @mitagifts, аватар и б
 «Okay, Everyone! (Yuri)» −27,5 дБ, RubUp на ~54% с мини-игрой «Угадай цену» (Neko Helmet), боковые панели,
 названия над NFT. Реплика 9 перезаписана: «в тёмной теме телеграма» (автор: чередовать «телега»/«телеграм»).
 `renders/50-mita-black/mita_black_v1.mp4` (67,96 с, −16,6 LUFS), Drive «TikTok» (копия crf 20).
+
+## 2026-11-16 · 50-mita-black v2 — собрано
+
+Фото карты/машины/смокинга (ChatGPT, хромакей → `input/props/`) вместо иконок кодом; реплика 4 — «Самая дешёвая NFT…»
+(без повтора «подарок»). `renders/50-mita-black/mita_black_v2.mp4` (68,4 с, −16,6 LUFS), Drive «TikTok» (копия crf 20).

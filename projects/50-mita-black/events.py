@@ -1,4 +1,4 @@
-"""Общие события картинки и звука (время содержания). Опорные слова — data/words_asr.json."""
+"""Общие события картинки и звука (время содержания). Опорные слова — data/words_asr.json. v3 (2026-11-17)."""
 import json
 from pathlib import Path
 from timeline import ON, END, AD_STOP, DUR
@@ -6,31 +6,45 @@ W = json.loads((Path(__file__).resolve().parent / 'data' / 'words_asr.json').rea
 
 
 def at(word, n=0, after=0.0):
-    """Начало n-го вхождения слова (после времени after)."""
-    hits = [s for w, s, e in W if w.lower().strip('.,!?') == word.lower() and s >= after]
+    """Начало n-го вхождения слова (после времени after); ё = е."""
+    w0 = word.lower().replace('ё', 'е')
+    hits = [s for w, s, e in W if w.lower().strip('.,!?…').replace('ё', 'е') == w0 and s >= after]
+    return hits[n]
+
+
+def end_of(word, n=0, after=0.0):
+    w0 = word.lower().replace('ё', 'е')
+    hits = [e for w, s, e in W if w.lower().strip('.,!?…').replace('ё', 'е') == w0 and s >= after]
     return hits[n]
 
 
 HOOK = ON[1]
 HOOK_PRICE = at('больше') - 0.1                  # «готовы платить больше» — цена чёрного растёт
 SPIN = at('переоденусь') + 0.15                  # кружение-переход в готику
-X7 = ON[3] - 0.05
-X7_BADGE = at('семь', 0, ON[3]) - 0.05           # «в семь раз»
-PLAYER = ON[4] - 0.05
-PLAYER_HIT = at('проигрыватель') - 0.05
+X7 = ON[3] - 0.05                                # «Чёрный фон — самый дорогой…»
+CARD_GRAB = at('тот', 0, ON[3]) - 0.35           # «Тот же самый подарок…» — Мита берёт кекс
+CARD_SHOW = at('намного', 0, ON[3]) - 0.25       # подносит к камере
+UFC = ON[4] - 0.05
+UFC_CHEAP = at('обычный', 0, ON[4]) - 0.05
+UFC_BLACK = at('пятнадцати', 0, ON[4]) - 0.1
 LOCKET = ON[5] - 0.05
 LOCKET_HIT = at('семнадцать') - 0.1
-RARITY = ON[6] - 0.05
-RARITY_SAME = at('бордовый') - 0.1
+CREEPY = ON[6] - 0.05                            # «Но вот что странно…» — жуть
+CREEPY_END = at('черный', 0, ON[6]) - 0.12       # щелчок — снова мило
+GACHA = [at('выпадает', 0, ON[6]) - 0.05, at('бордовый', 0, ON[6]) - 0.1, at('медный', 0, ON[6]) - 0.1]
+RARITY = CREEPY
+RARITY_SAME = GACHA[1]
 TEASE = ON[7] - 0.05
 DEMAND = ON[8] - 0.05
 ICONS = [at('карты') - 0.2, at('машины') - 0.2, at('смокинги') - 0.2]
 GLOW = ON[9] - 0.05
 GLOW_PHONE = at('темной', 0, ON[9]) - 0.1
+GLOW_SHOW = at('светится', 0, ON[9]) - 0.2
 PLAIN = ON[10] - 0.05
+KICK = at('просто', 0, ON[10]) - 0.1
 PRICE = ON[11] - 0.05
 PRICE_UP = at('растет') - 0.6
 OUTRO = ON[12] - 0.05
 OUTRO_LUX = at('роскошный') - 0.1
 OUTRO_MIN = at('базовый') - 0.1
-OUTRO_PILL = at('Пиши') - 0.05
+OUTRO_PILL = at('пиши') - 0.05

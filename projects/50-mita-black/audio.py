@@ -38,33 +38,54 @@ def envelope(v):
 def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
+    a(fx, 'whoosh-short', 1.05, align='peak', gain_db=-19, label='хук: Мита выходит из-за края')
     a(fx, 'pop', 0.1, gain_db=-16, label='хук: кекс 1')
     a(fx, 'pop', 0.35, gain_db=-16, label='хук: кекс 2')
     a(fx, 'counter', E.HOOK_PRICE, gain_db=-18, label='цена чёрного растёт')
-    a(fx, 'coin', E.HOOK_PRICE + 0.6, gain_db=-15, label='×5,6')
+    a(fx, 'glitch', E.SPIN + 0.6, gain_db=-20, label='глитч на вспышке')
     a(fx, 'whoosh*', E.SPIN + SPIN_DUR * 0.3, align='peak', gain_db=-13, label='кружение')
     a(fx, 'sparkle', E.SPIN + SPIN_DUR * 0.62, gain_db=-13, label='смена наряда → готика')
     for j in range(3):
-        a(fx, 'popup', E.X7 + 0.3 + 0.35 * j, gain_db=-18, label=f'×7: пара {j + 1}')
-    a(fx, 'confirm', E.X7_BADGE, gain_db=-17, label='«в семь раз»')
-    a(fx, 'whoosh-short', E.PLAYER + 0.1, align='peak', gain_db=-18, label='кекс vs проигрыватель')
-    a(fx, 'select', E.PLAYER_HIT, gain_db=-16, label='«>»')
+        a(fx, 'popup', E.X7 + 0.3 + 0.35 * j, gain_db=-18, label=f'пара {j + 1}')
+    a(fx, 'sparkle', E.CARD_GRAB, gain_db=-18, label='Мита берёт кекс')
+    a(fx, 'whoosh-short', E.CARD_SHOW + 0.1, align='peak', gain_db=-17, label='кекс к камере, наезд')
+    a(fx, 'cartoon-move', E.UFC - 0.15, gain_db=-17, label='боец UFC появляется')
+    a(fx, 'select-soft', E.UFC_CHEAP, gain_db=-17, label='обычный ≈ 2 000 ₽')
+    a(fx, 'coin', E.UFC_BLACK, gain_db=-15, label='на чёрном ≈ 15 500 ₽')
     a(fx, 'whoosh-short', E.LOCKET + 0.1, align='peak', gain_db=-18, label='медальон')
-    a(fx, 'impact', E.LOCKET_HIT + 0.9, gain_db=-14, label='17,5 млн ₽')
-    for j in range(3):
-        a(fx, 'popup', E.RARITY + 0.3 + 0.3 * j, gain_db=-18, label=f'фон {j + 1} (1,5%)')
-    a(fx, 'select-soft', E.RARITY_SAME, gain_db=-16, label='«так же часто»')
+    a(fx, 'boing', E.LOCKET_HIT, gain_db=-17, label='прыжок от шока')
+    a(fx, 'impact', E.LOCKET_HIT + 0.52, gain_db=-15, label='приземление, 17 млн')
+    a(fx, 'glitch', E.CREEPY, gain_db=-14, label='ЖУТЬ: глитч, музыка обрывается')
+    a(fx, 'sub-drop', E.CREEPY + 0.05, gain_db=-15, label='жуть: низкий гул')
+    a(fx, 'glitch-text', E.CREEPY + 1.3, gain_db=-19, label='ромбы в глазах')
+    a(fx, 'glitch', E.CREEPY_END - 0.04, gain_db=-15, label='щелчок — снова мило')
+    for j, g in enumerate(E.GACHA):
+        a(fx, 'click', g - 0.6, gain_db=-17, label=f'ручка автомата {j + 1}')
+        a(fx, 'pop', g + 0.05, gain_db=-16, label=f'капсула {j + 1}')
+        a(fx, 'sparkle', g + 0.55, gain_db=-19, label=f'капсула раскрылась {j + 1}')
     a(fx, 'whoosh-short', AD_STOP, align='peak', gain_db=-19, label='торможение на RubUp')
-    a(fx, 'confirm', AD_STOP + 0.05, gain_db=-15, label='ответ мини-игры')
+    a(fx, 'glitch', AD_STOP + 0.07, gain_db=-17, label='глитч → шоурум')
+    a(fx, 'whoosh-organic', E.ICONS[0] - 0.4, gain_db=-19, label='Мита бежит')
     for j, ti in enumerate(E.ICONS):
-        a(fx, 'pop', ti, gain_db=-16, label=f'иконка {j + 1}')
-    a(fx, 'sparkle-whoosh', E.GLOW + 0.1, gain_db=-16, label='подарок светится')
-    a(fx, 'power-down', E.PLAIN + 1.0, gain_db=-19, label='обычный фон тускнеет')
-    a(fx, 'riser', E.PRICE_UP + 0.4, align='end', gain_db=-21, label='цена растёт')
+        a(fx, 'pop', ti, gain_db=-16, label=f'предмет {j + 1}')
+    a(fx, 'glitch', E.GLOW - 0.07, gain_db=-18, label='глитч → спальня')
+    a(fx, 'sparkle-whoosh', E.GLOW_SHOW, gain_db=-17, label='подарок светится на экране')
+    a(fx, 'glitch', E.PLAIN - 0.07, gain_db=-18, label='глитч → студия')
+    a(fx, 'cartoon-hit', E.KICK + 0.12, gain_db=-15, label='пинок по серому подарку')
+    a(fx, 'riser', E.PRICE_UP + 0.4, align='end', gain_db=-21, label='цена растёт (Мита на графике)')
     a(fx, 'sparkle', E.OUTRO_LUX, gain_db=-16, label='люкс')
     a(fx, 'pop', E.OUTRO_MIN, gain_db=-18, label='минимум')
     a(fx, 'select-soft', E.OUTRO_PILL, gain_db=-16, label='пиши в комментариях')
     return fx * 10 ** (-1 / 20)
+
+
+def creepy_cut(m):
+    """Музыка обрывается на жути и возвращается после «щелчка»."""
+    t = np.arange(len(m)) / SR
+    g = np.ones(len(m))
+    g -= np.clip((t - E.CREEPY + 0.05) / 0.08, 0, 1)
+    g += np.clip((t - E.CREEPY_END) / 0.25, 0, 1)
+    return m * np.clip(g, 0, 1)[:, None]
 
 
 def save_wav(path, x):
@@ -80,7 +101,7 @@ if __name__ == '__main__':
     kit = sfxkit.Kit(HERE)
     v = voice_track(n)
     env = envelope(v)
-    m = music.music(n, env, slow_from=None)
+    m = creepy_cut(music.music(n, env, slow_from=None))
     fx = sfx_layer(n, kit)
     fx *= (1 - 0.45 * env)[:, None]
     data = BR.audio(v + m + fx, SR)

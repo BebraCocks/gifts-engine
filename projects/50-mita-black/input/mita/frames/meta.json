@@ -694,5 +694,29 @@
   "left": 182,
   "right": 538,
   "magenta": 27
+ },
+ "pop_in_a": {
+  "sheet": "pop_b",
+  "top": 27,
+  "bottom": 988,
+  "left": 246,
+  "right": 600,
+  "magenta": 33
+ },
+ "pop_in_b": {
+  "sheet": "pop_b",
+  "top": 28,
+  "bottom": 988,
+  "left": 214,
+  "right": 568,
+  "magenta": 33
+ },
+ "pop_wow": {
+  "sheet": "pop_b",
+  "top": 27,
+  "bottom": 988,
+  "left": 182,
+  "right": 537,
+  "magenta": 40
  }
 }

@@ -787,6 +787,27 @@ def side_panels(cv, t):
     txt_panel(RX, E.LOCKET_HIT + 0.9, E.RARITY, 'на чёрном', '17,5 млн', 'цена продавца')
     txt_panel(LX, E.RARITY + 0.6, E.TEASE, 'шанс Black', '1,5%', 'как у других')
     txt_panel(RX, E.RARITY_SAME, E.TEASE, 'а цена', '×5,6', 'Whip Cupcake')
+    # хук: обычный против чёрного
+    txt_panel(LX, 0.9, E.SPIN - 0.3, 'обычный фон', '438 ₽', 'Whip Cupcake', MUTED)
+    txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', '×5,6', 'дороже')
+    # дороже проигрывателя
+    txt_panel(LX, E.PLAYER + 0.5, E.LOCKET, 'самый дешёвый', 'на Black', 'из 121 коллекции')
+    txt_panel(RX, E.PLAYER_HIT, E.LOCKET, 'дороже', '×1,9', 'проигрывателя')
+    # тизер — загадка
+    txt_panel(LX, E.TEASE + 0.3, AD_STOP + 0.2, 'не редкость', '?', 'тогда что')
+    txt_panel(RX, E.TEASE + 0.6, AD_STOP + 0.2, 'платят', '×7', 'за что?')
+    # спрос
+    txt_panel(LX, E.DEMAND + 0.5, E.GLOW, 'чёрный', 'люкс', 'цвет статуса')
+    txt_panel(RX, E.ICONS[1], E.GLOW, 'хотят', 'все', 'спрос ↑')
+    # светится
+    txt_panel(LX, E.GLOW + 0.4, E.PLAIN, 'на чёрном', 'ярче', 'контраст')
+    txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телега', 'фон сливается')
+    # обычный фон: тот же Neko Helmet
+    txt_panel(LX, E.PLAIN + 0.4, E.PRICE, 'обычный фон', '3 940 ₽', 'Neko Helmet', MUTED)
+    txt_panel(RX, E.PLAIN + 1.0, E.PRICE, 'на чёрном', '×10', '38 528 ₽')
+    # финал
+    txt_panel(LX, E.OUTRO_MIN + 0.3, DUR + 1, 'разница', '×37', 'люкс / минимум')
+    txt_panel(RX, E.OUTRO_PILL, DUR + 1, 'а ты?', 'люкс', 'или минимум')
     txt_panel(LX, E.PRICE + 0.4, E.OUTRO, 'хотят все', 'спрос ↑', '')
     txt_panel(RX, E.PRICE_UP, E.OUTRO, 'продавцы', 'цена ↑', 'не снижают')
 

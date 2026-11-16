@@ -1,0 +1,2094 @@
+{
+ "_note": "Fragment «в продаже», сортировка по цене, 2026-11-16 04:04 UTC; редкость фонов — api.changes.tg; курс tonapi.io",
+ "ton_rub": 87.56344928623965,
+ "gifts": {
+  "Santa Hat": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "santahat-10596",
+     9.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "santahat-64521",
+     48.0
+    ]
+   ]
+  },
+  "Signet Ring": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "signetring-15289",
+     38.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "signetring-634",
+     444.0
+    ]
+   ]
+  },
+  "Precious Peach": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "preciouspeach-1037",
+     319.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "preciouspeach-2783",
+     3500.0
+    ]
+   ]
+  },
+  "Plush Pepe": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "plushpepe-1507",
+     7499.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "plushpepe-2804",
+     88888.0
+    ]
+   ]
+  },
+  "Spiced Wine": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "spicedwine-89831",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "spicedwine-49056",
+     40.0
+    ]
+   ]
+  },
+  "Jelly Bunny": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "jellybunny-70879",
+     11.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "jellybunny-93014",
+     63.0
+    ]
+   ]
+  },
+  "Durov's Cap": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "durovscap-3453",
+     499.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "durovscap-1429",
+     3999.0
+    ]
+   ]
+  },
+  "Perfume Bottle": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "perfumebottle-406",
+     90.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "perfumebottle-1620",
+     2000.0
+    ]
+   ]
+  },
+  "Eternal Rose": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "eternalrose-6901",
+     35.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "eternalrose-17380",
+     188.0
+    ]
+   ]
+  },
+  "Berry Box": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "berrybox-1751",
+     11.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "berrybox-33382",
+     60.0
+    ]
+   ]
+  },
+  "Vintage Cigar": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "vintagecigar-25402",
+     49.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "vintagecigar-1799",
+     555.0
+    ]
+   ]
+  },
+  "Magic Potion": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "magicpotion-475",
+     70.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "magicpotion-1352",
+     3333.0
+    ]
+   ]
+  },
+  "Kissed Frog": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "kissedfrog-133",
+     66.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "kissedfrog-9466",
+     350.0
+    ]
+   ]
+  },
+  "Hex Pot": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "hexpot-2455",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "hexpot-27522",
+     49.0
+    ]
+   ]
+  },
+  "Evil Eye": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "evileye-33401",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "evileye-3957",
+     100.0
+    ]
+   ]
+  },
+  "Sharp Tongue": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "sharptongue-3313",
+     58.0
+    ]
+   ],
+   "black_floor": []
+  },
+  "Trapped Heart": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "trappedheart-20256",
+     20.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "trappedheart-11997",
+     150.0
+    ]
+   ]
+  },
+  "Skull Flower": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "skullflower-14239",
+     15.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "skullflower-8310",
+     86.0
+    ]
+   ]
+  },
+  "Scared Cat": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "scaredcat-14972",
+     320.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "scaredcat-2658",
+     4444.0
+    ]
+   ]
+  },
+  "Spy Agaric": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "spyagaric-43104",
+     8.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "spyagaric-16625",
+     59.0
+    ]
+   ]
+  },
+  "Homemade Cake": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "homemadecake-42650",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "homemadecake-115788",
+     28.0
+    ]
+   ]
+  },
+  "Genie Lamp": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "genielamp-5003",
+     44.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "genielamp-1706",
+     6000.0
+    ]
+   ]
+  },
+  "Lunar Snake": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "lunarsnake-10698",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lunarsnake-8353",
+     32.0
+    ]
+   ]
+  },
+  "Party Sparkler": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "partysparkler-117156",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "partysparkler-34575",
+     49.0
+    ]
+   ]
+  },
+  "Jester Hat": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "jesterhat-105490",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "jesterhat-142567",
+     42.0
+    ]
+   ]
+  },
+  "Witch Hat": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "witchhat-40719",
+     8.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "witchhat-31841",
+     50.0
+    ]
+   ]
+  },
+  "Hanging Star": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "hangingstar-20423",
+     11.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "hangingstar-7647",
+     140.0
+    ]
+   ]
+  },
+  "Love Candle": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "lovecandle-20933",
+     13.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lovecandle-3830",
+     65.0
+    ]
+   ]
+  },
+  "Cookie Heart": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "cookieheart-13380",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "cookieheart-139768",
+     39.0
+    ]
+   ]
+  },
+  "Desk Calendar": {
+   "black_permille": 9,
+   "min_permille": 9,
+   "max_permille": 21,
+   "floor": [
+    [
+     "deskcalendar-156558",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "deskcalendar-192103",
+     45.0
+    ]
+   ]
+  },
+  "Jingle Bells": {
+   "black_permille": 20,
+   "min_permille": 9,
+   "max_permille": 21,
+   "floor": [
+    [
+     "jinglebells-39661",
+     12.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "jinglebells-64950",
+     99.0
+    ]
+   ]
+  },
+  "Snow Mittens": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "snowmittens-30356",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "snowmittens-2350",
+     63.0
+    ]
+   ]
+  },
+  "Voodoo Doll": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "voodoodoll-19884",
+     46.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "voodoodoll-10322",
+     400.0
+    ]
+   ]
+  },
+  "Mad Pumpkin": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "madpumpkin-1279",
+     15.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "madpumpkin-17550",
+     499.0
+    ]
+   ]
+  },
+  "Hypno Lollipop": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "hypnolollipop-58068",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "hypnolollipop-69358",
+     39.0
+    ]
+   ]
+  },
+  "B-Day Candle": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "bdaycandle-253022",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "bdaycandle-8383",
+     38.0
+    ]
+   ]
+  },
+  "Bunny Muffin": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "bunnymuffin-14308",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "bunnymuffin-23432",
+     55.0
+    ]
+   ]
+  },
+  "Astral Shard": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "astralshard-4222",
+     162.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "astralshard-1054",
+     2300.0
+    ]
+   ]
+  },
+  "Flying Broom": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "flyingbroom-8684",
+     15.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "flyingbroom-10721",
+     100.0
+    ]
+   ]
+  },
+  "Crystal Ball": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "crystalball-23699",
+     15.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "crystalball-25842",
+     150.0
+    ]
+   ]
+  },
+  "Eternal Candle": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "eternalcandle-31015",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "eternalcandle-11387",
+     62.0
+    ]
+   ]
+  },
+  "Swiss Watch": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "swisswatch-5211",
+     69.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "swisswatch-13965",
+     999.0
+    ]
+   ]
+  },
+  "Ginger Cookie": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "gingercookie-16034",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "gingercookie-85536",
+     37.0
+    ]
+   ]
+  },
+  "Mini Oscar": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "minioscar-4161",
+     120.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "minioscar-1726",
+     699.0
+    ]
+   ]
+  },
+  "Lol Pop": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "lolpop-284034",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lolpop-367197",
+     35.0
+    ]
+   ]
+  },
+  "Ion Gem": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "iongem-2889",
+     85.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "iongem-2780",
+     1000.0
+    ]
+   ]
+  },
+  "Star Notepad": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "starnotepad-45265",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "starnotepad-73328",
+     38.0
+    ]
+   ]
+  },
+  "Loot Bag": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "lootbag-10951",
+     150.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lootbag-6266",
+     1000.0
+    ]
+   ]
+  },
+  "Love Potion": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "lovepotion-9746",
+     17.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lovepotion-26923",
+     98.0
+    ]
+   ]
+  },
+  "Toy Bear": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "toybear-26055",
+     40.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "toybear-11187",
+     250.0
+    ]
+   ]
+  },
+  "Diamond Ring": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "diamondring-8347",
+     40.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "diamondring-7682",
+     175.0
+    ]
+   ]
+  },
+  "Sakura Flower": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "sakuraflower-803",
+     14.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "sakuraflower-16528",
+     175.0
+    ]
+   ]
+  },
+  "Sleigh Bell": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "sleighbell-16684",
+     13.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "sleighbell-6284",
+     78.0
+    ]
+   ]
+  },
+  "Top Hat": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "tophat-20131",
+     12.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "tophat-9506",
+     165.0
+    ]
+   ]
+  },
+  "Record Player": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "recordplayer-20178",
+     15.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "recordplayer-33891",
+     99.0
+    ]
+   ]
+  },
+  "Winter Wreath": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "winterwreath-3124",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "winterwreath-12149",
+     44.0
+    ]
+   ]
+  },
+  "Snow Globe": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "snowglobe-24495",
+     8.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "snowglobe-1153",
+     57.0
+    ]
+   ]
+  },
+  "Electric Skull": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "electricskull-8452",
+     35.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "electricskull-6446",
+     300.0
+    ]
+   ]
+  },
+  "Tama Gadget": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "tamagadget-22814",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "tamagadget-60270",
+     36.0
+    ]
+   ]
+  },
+  "Candy Cane": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "candycane-172082",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "candycane-110474",
+     36.0
+    ]
+   ]
+  },
+  "Neko Helmet": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "nekohelmet-2117",
+     45.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "nekohelmet-14271",
+     440.0
+    ]
+   ]
+  },
+  "Jack-in-the-Box": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "jackinthebox-27239",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "jackinthebox-53612",
+     40.0
+    ]
+   ]
+  },
+  "Easter Egg": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "easteregg-133155",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "easteregg-40292",
+     46.0
+    ]
+   ]
+  },
+  "Bonded Ring": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "bondedring-3212",
+     49.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "bondedring-1952",
+     550.0
+    ]
+   ]
+  },
+  "Pet Snake": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "petsnake-188646",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "petsnake-25903",
+     44.0
+    ]
+   ]
+  },
+  "Snake Box": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "snakebox-123774",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "snakebox-100869",
+     35.0
+    ]
+   ]
+  },
+  "Xmas Stocking": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "xmasstocking-110832",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "xmasstocking-170108",
+     28.0
+    ]
+   ]
+  },
+  "Big Year": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "bigyear-62366",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "bigyear-49440",
+     44.0
+    ]
+   ]
+  },
+  "Holiday Drink": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "holidaydrink-64633",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "holidaydrink-14210",
+     45.0
+    ]
+   ]
+  },
+  "Gem Signet": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "gemsignet-4432",
+     75.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "gemsignet-637",
+     1288.0
+    ]
+   ]
+  },
+  "Light Sword": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "lightsword-25473",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lightsword-60499",
+     72.0
+    ]
+   ]
+  },
+  "Restless Jar": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "restlessjar-22072",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "restlessjar-80631",
+     45.0
+    ]
+   ]
+  },
+  "Nail Bracelet": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "nailbracelet-4559",
+     149.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "nailbracelet-3691",
+     1500.0
+    ]
+   ]
+  },
+  "Heroic Helmet": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "heroichelmet-1863",
+     250.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "heroichelmet-1149",
+     15000.0
+    ]
+   ]
+  },
+  "Bow Tie": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "bowtie-13336",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "bowtie-21771",
+     77.0
+    ]
+   ]
+  },
+  "Heart Locket": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "heartlocket-1437",
+     1700.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "heartlocket-1886",
+     200000.0
+    ]
+   ]
+  },
+  "Lush Bouquet": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "lushbouquet-93014",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lushbouquet-58676",
+     45.0
+    ]
+   ]
+  },
+  "Whip Cupcake": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "whipcupcake-78482",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "whipcupcake-170363",
+     28.0
+    ]
+   ]
+  },
+  "Joyful Bundle": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "joyfulbundle-83525",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "joyfulbundle-27644",
+     50.0
+    ]
+   ]
+  },
+  "Cupid Charm": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "cupidcharm-11191",
+     28.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "cupidcharm-5010",
+     135.0
+    ]
+   ]
+  },
+  "Valentine Box": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "valentinebox-29962",
+     14.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "valentinebox-23960",
+     70.0
+    ]
+   ]
+  },
+  "Snoop Dogg": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "snoopdogg-98404",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "snoopdogg-416349",
+     40.0
+    ]
+   ]
+  },
+  "Swag Bag": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "swagbag-6878",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "swagbag-83560",
+     45.0
+    ]
+   ]
+  },
+  "Snoop Cigar": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "snoopcigar-80279",
+     20.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "snoopcigar-95248",
+     198.0
+    ]
+   ]
+  },
+  "Low Rider": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "lowrider-14533",
+     77.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "lowrider-6787",
+     488.0
+    ]
+   ]
+  },
+  "Westside Sign": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "westsidesign-3487",
+     139.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "westsidesign-441",
+     987.0
+    ]
+   ]
+  },
+  "Stellar Rocket": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "stellarrocket-1032",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "stellarrocket-92670",
+     45.0
+    ]
+   ]
+  },
+  "Jolly Chimp": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "jollychimp-20813",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "jollychimp-107409",
+     88.0
+    ]
+   ]
+  },
+  "Moon Pendant": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "moonpendant-54068",
+     8.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "moonpendant-35033",
+     68.0
+    ]
+   ]
+  },
+  "Ionic Dryer": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "ionicdryer-2371",
+     18.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "ionicdryer-1057",
+     120.0
+    ]
+   ]
+  },
+  "Input Key": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "inputkey-55258",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "inputkey-52865",
+     73.0
+    ]
+   ]
+  },
+  "Mighty Arm": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "mightyarm-2172",
+     150.0
+    ]
+   ],
+   "black_floor": []
+  },
+  "Artisan Brick": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "artisanbrick-5426",
+     85.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "artisanbrick-537",
+     688.0
+    ]
+   ]
+  },
+  "Clover Pin": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "cloverpin-182892",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "cloverpin-150145",
+     55.0
+    ]
+   ]
+  },
+  "Sky Stilettos": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "skystilettos-38634",
+     24.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "skystilettos-44774",
+     145.0
+    ]
+   ]
+  },
+  "Fresh Socks": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "freshsocks-89343",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "freshsocks-119364",
+     38.0
+    ]
+   ]
+  },
+  "Happy Brownie": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "happybrownie-150660",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "happybrownie-17896",
+     35.0
+    ]
+   ]
+  },
+  "Ice Cream": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "icecream-22624",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "icecream-259033",
+     35.0
+    ]
+   ]
+  },
+  "Spring Basket": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "springbasket-38334",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "springbasket-133980",
+     50.0
+    ]
+   ]
+  },
+  "Instant Ramen": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "instantramen-347071",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "instantramen-156379",
+     31.0
+    ]
+   ]
+  },
+  "Faith Amulet": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "faithamulet-122924",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "faithamulet-15457",
+     45.0
+    ]
+   ]
+  },
+  "Mousse Cake": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "moussecake-148204",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "moussecake-76726",
+     36.0
+    ]
+   ]
+  },
+  "Bling Binky": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "blingbinky-704",
+     30.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "blingbinky-8104",
+     400.0
+    ]
+   ]
+  },
+  "Money Pot": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "moneypot-56340",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "moneypot-14947",
+     45.0
+    ]
+   ]
+  },
+  "Pretty Posy": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "prettyposy-11305",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "prettyposy-110263",
+     33.0
+    ]
+   ]
+  },
+  "Khabib's Papakha": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "khabibspapakha-25791",
+     33.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "khabibspapakha-28830",
+     250.0
+    ]
+   ]
+  },
+  "UFC Strike": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "ufcstrike-11932",
+     23.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "ufcstrike-4869",
+     177.0
+    ]
+   ]
+  },
+  "Victory Medal": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "victorymedal-93917",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "victorymedal-38019",
+     64.0
+    ]
+   ]
+  },
+  "Rare Bird": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "rarebird-6040",
+     33.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "rarebird-494",
+     500.0
+    ]
+   ]
+  },
+  "Mood Pack": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "moodpack-54357",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "moodpack-146512",
+     39.0
+    ]
+   ]
+  },
+  "Pool Float": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "poolfloat-20479",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "poolfloat-74569",
+     35.0
+    ]
+   ]
+  },
+  "Timeless Book": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "timelessbook-11836",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "timelessbook-53465",
+     63.0
+    ]
+   ]
+  },
+  "Chill Flame": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "chillflame-415026",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "chillflame-218164",
+     32.0
+    ]
+   ]
+  },
+  "Vice Cream": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "vicecream-329988",
+     5.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "vicecream-102893",
+     30.0
+    ]
+   ]
+  },
+  "Surge Board": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "surgeboard-1602",
+     8.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "surgeboard-32546",
+     77.0
+    ]
+   ]
+  },
+  "Liberty Figure": {
+   "black_permille": 10,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "libertyfigure-32727",
+     7.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "libertyfigure-176975",
+     64.0
+    ]
+   ]
+  },
+  "Durov's Glasses": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "durovsglasses-632",
+     150.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "durovsglasses-3044",
+     1500.0
+    ]
+   ]
+  },
+  "Fine Pen": {
+   "black_permille": 20,
+   "min_permille": 10,
+   "max_permille": 20,
+   "floor": [
+    [
+     "finepen-25946",
+     10.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "finepen-16064",
+     66.0
+    ]
+   ]
+  },
+  "Intelligence Cup": {
+   "black_permille": 150,
+   "min_permille": 20,
+   "max_permille": 150,
+   "floor": [
+    [
+     "intelligencecup-201",
+     1700.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "intelligencecup-99",
+     7000.0
+    ]
+   ]
+  },
+  "Algorithm Cup": {
+   "black_permille": 150,
+   "min_permille": 20,
+   "max_permille": 150,
+   "floor": [
+    [
+     "algorithmcup-166",
+     3000.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "algorithmcup-41",
+     8888.0
+    ]
+   ]
+  },
+  "Mirage Lamp": {
+   "black_permille": 15,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "miragelamp-51469",
+     6.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "miragelamp-24856",
+     49.0
+    ]
+   ]
+  },
+  "Lucky Locket": {
+   "black_permille": 12,
+   "min_permille": 10,
+   "max_permille": 15,
+   "floor": [
+    [
+     "luckylocket-29333",
+     17.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "luckylocket-18680",
+     365.0
+    ]
+   ]
+  },
+  "Resistance Dog": {
+   "black_permille": 27,
+   "min_permille": 6,
+   "max_permille": 27,
+   "floor": [
+    [
+     "resistancedog-7963",
+     629.0
+    ]
+   ],
+   "black_floor": [
+    [
+     "resistancedog-11956",
+     5500.0
+    ]
+   ]
+  },
+  "Myth Mask": {
+   "black_permille": 14,
+   "min_permille": 9,
+   "max_permille": 17,
+   "floor": [],
+   "black_floor": []
+  }
+ }
+}

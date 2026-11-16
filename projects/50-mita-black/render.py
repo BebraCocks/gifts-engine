@@ -812,7 +812,7 @@ def ad_overlay(c, t):
     put(cv, gift_tile(QUIZ['gift'], QUIZ['model'], QUIZ['backdrop'], TILE, t), 300, 380, 0.85 * (1 + 0.03 * math.sin(t * 4)), a)
     put(cv, text(QUIZ['gift'], 28, 'Heavy'), 300, 230, 1.0, a)
     for j, o in enumerate(QUIZ_OPTS):
-        put(cv, upill(f'{"ABC"[j]}  {o}', (236, 230, 246), 24, INK), 760, 290 + j * 95, 1.0 + 0.03 * math.sin(t * 5 + j), a)
+        put(cv, upill(f'{"ABC"[j]}  {o}', (236, 230, 246), 32, INK), 740, 280 + j * 105, 1.0 + 0.03 * math.sin(t * 5 + j), a)
     left = max(0, math.ceil(BR.B - max(0.0, bt)))
     put(cv, fx.solid_pill(f'ответ через {left}' if left > 0 else 'ответ!', WINE, 30), 540, 600, 1.0, a)
     return cv[..., :3]

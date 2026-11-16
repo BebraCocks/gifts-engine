@@ -25,6 +25,7 @@ SHEETS = {
     'pump_a': 'pump_1 pump_2 pump_3', 'pump_b': 'pump_in_a pump_in_b pump_point',
     'think_a': 'think_1 think_2 think_3',
     'pop_a': 'pop_1 pop_2 pop_3', 'pop_b': 'pop_in_a pop_in_b pop_wow',
+    'show_a': 'show_left show_up show_right',
 }
 THIRDS = {'creepy_a', 'creepy_b'}            # бюсты касаются друг друга — режем строго по третям
 CW = 768

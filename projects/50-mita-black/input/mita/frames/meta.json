@@ -718,5 +718,29 @@
   "left": 182,
   "right": 537,
   "magenta": 40
+ },
+ "show_left": {
+  "sheet": "show_a",
+  "top": 43,
+  "bottom": 989,
+  "left": 164,
+  "right": 595,
+  "magenta": 20
+ },
+ "show_up": {
+  "sheet": "show_a",
+  "top": 43,
+  "bottom": 989,
+  "left": 165,
+  "right": 603,
+  "magenta": 27
+ },
+ "show_right": {
+  "sheet": "show_a",
+  "top": 44,
+  "bottom": 989,
+  "left": 175,
+  "right": 605,
+  "magenta": 30
  }
 }

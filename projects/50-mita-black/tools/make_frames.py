@@ -10,6 +10,7 @@ from PIL import Image
 M = Path(__file__).resolve().parents[1] / 'input' / 'mita'
 SHEETS = {
     'hook_a': 'hook_peek hook_step hook_wave', 'hook_b': 'hook_in_a hook_in_b hook_in_c',
+    'hook_c': 'hook_w1 hook_w2 hook_w3',
     'card_a': 'card_1 card_2 card_3', 'card_b': 'card_in_a card_in_b card_in_c',
     'ufc': 'ufc_sit_1 ufc_sit_2 ufc_sit_3',
     'jump_a': 'jump_crouch jump_peak jump_land', 'jump_b': 'jump_takeoff jump_fall jump_recover', 'jump_c': 'jump_notice jump_prep jump_calm',

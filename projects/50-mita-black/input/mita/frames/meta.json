@@ -47,6 +47,30 @@
   "right": 474,
   "magenta": 0
  },
+ "hook_w1": {
+  "sheet": "hook_c",
+  "top": 32,
+  "bottom": 954,
+  "left": 216,
+  "right": 602,
+  "magenta": 0
+ },
+ "hook_w2": {
+  "sheet": "hook_c",
+  "top": 32,
+  "bottom": 954,
+  "left": 204,
+  "right": 551,
+  "magenta": 0
+ },
+ "hook_w3": {
+  "sheet": "hook_c",
+  "top": 29,
+  "bottom": 954,
+  "left": 143,
+  "right": 506,
+  "magenta": 0
+ },
  "card_1": {
   "sheet": "card_a",
   "top": 27,

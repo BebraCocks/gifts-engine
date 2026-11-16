@@ -1031,6 +1031,110 @@ def ad_overlay(c, t):
     return cv[..., :3]
 
 
+# ------------------------------------------------------------------ эффекты к движениям Миты (как ветер при кружении, но свои)
+def fx_ring(cv, t, t0, x, y, col=(190, 150, 230), w=380, d=0.55):
+    u = (t - t0) / d
+    if not 0 <= u < 1:
+        return
+    def draw(dr, mp, S):
+        r = (0.25 + 0.75 * ease(u)) * w / 2
+        X, Y = mp(x, y)
+        for k, a in ((0, 1.0), (0.12, 0.5)):
+            rr = r * (1 - k) * S
+            dr.ellipse([X - rr, Y - rr * 0.22, X + rr, Y + rr * 0.22], outline=col + (int(200 * a * (1 - u)),),
+                       width=max(1, int((7 - 5 * u) * S)))
+    fx.over(cv, fx.draw_rgba((x - w / 2 - 20, y - w * 0.15, x + w / 2 + 20, y + w * 0.15), draw))
+
+
+def fx_dust(cv, t, t0, x, y, d=0.6, n=9, spread=170):
+    u = (t - t0) / d
+    if not 0 <= u < 1:
+        return
+    rng = np.random.default_rng(int(t0 * 100))
+    def draw(dr, mp, S):
+        for j in range(n):
+            side = -1 if j % 2 else 1
+            dx = side * rng.uniform(0.3, 1.0) * spread * ease(u)
+            dy = -rng.uniform(10, 50) * ease(u)
+            X, Y = mp(x + dx, y + dy)
+            r = (8 + 18 * u) * rng.uniform(0.7, 1.2) * S
+            dr.ellipse([X - r, Y - r * 0.8, X + r, Y + r * 0.8], fill=(205, 196, 222, int(150 * (1 - u))))
+    fx.over(cv, fx.draw_rgba((x - spread - 60, y - 120, x + spread + 60, y + 40), draw))
+
+
+def fx_lines(cv, t, t0, x, y, d=0.35, n=12, r0=120, r1=260, col=(150, 24, 52), up=False):
+    u = (t - t0) / d
+    if not 0 <= u < 1:
+        return
+    def draw(dr, mp, S):
+        for j in range(n):
+            ang = (-math.pi / 2 + (j - n / 2) * 0.12) if up else j * 2 * math.pi / n + 0.2
+            a = r0 + (r1 - r0) * ease(u)
+            b = a + 70 * (1 - u)
+            X0, Y0 = mp(x + math.cos(ang) * a, y + math.sin(ang) * a)
+            X1, Y1 = mp(x + math.cos(ang) * b, y + math.sin(ang) * b)
+            dr.line([X0, Y0, X1, Y1], fill=col + (int(220 * (1 - u)),), width=max(1, int(6 * S * (1 - 0.6 * u))))
+    R_ = r1 + 90
+    fx.over(cv, fx.draw_rgba((x - R_, y - R_, x + R_, y + R_), draw))
+
+
+def fx_arc(cv, t, t0, cx, cy, r, a0, a1, d=0.4, col=(200, 190, 215)):
+    """След-«свуш» по дуге (пинок, взмах руки)."""
+    u = (t - t0) / d
+    if not 0 <= u < 1:
+        return
+    def draw(dr, mp, S):
+        head = ease(min(1.0, u * 1.6))
+        tail = ease(max(0.0, u * 1.6 - 0.6))
+        pts = []
+        for q in range(24):
+            k = tail + (head - tail) * q / 23
+            ang = a0 + (a1 - a0) * k
+            pts.append(mp(cx + math.cos(ang) * r, cy + math.sin(ang) * r))
+        for q in range(1, len(pts)):
+            f = q / len(pts)
+            dr.line([pts[q - 1], pts[q]], fill=col + (int(220 * f * (1 - u * 0.6)),), width=max(1, int(14 * f * S)))
+    fx.over(cv, fx.draw_rgba((cx - r - 40, cy - r - 40, cx + r + 40, cy + r + 40), draw))
+
+
+def action_fx(cv, t, front):
+    """Эффекты на действиях. back — на полу (за Митой), front — искры/линии (перед ней)."""
+    LH, K, P = E.LOCKET_HIT, E.KICK, E.PRICE
+    if not front:
+        fx_dust(cv, t, 1.25, M3.hook_x(1.25) + 30, 1540)                      # хук: первый шаг
+        fx_dust(cv, t, 2.05, M3.hook_x(2.05) + 20, 1540, n=6, spread=120)
+        fx_ring(cv, t, E.PUMPKIN + 0.05, 540, 1600, (230, 120, 120), 620)     # тыква появляется
+        fx_dust(cv, t, LH - 0.02, 540, 1540)                                  # прыжок: толчок
+        fx_ring(cv, t, LH + 0.5, 540, 1545, (190, 150, 230), 520)             # приземление
+        fx_dust(cv, t, LH + 0.5, 540, 1540, n=12, spread=230)
+        fx_dust(cv, t, K + 0.12, 640, 1520, n=7, spread=140)                  # пинок
+        fx_dust(cv, t, P + 0.95, M3.tip(P + 0.95)[0], 1540, n=8, spread=150)  # отрыв от пола на графике
+        fx_ring(cv, t, P + 0.95, M3.tip(P + 0.95)[0], 1545, (200, 120, 150), 360)
+        return
+    sparkles(cv, t, 2.85, 640, 900, 150, 10, (255, 150, 190))                # хук: машет
+    sparkles(cv, t, E.CARD_GRAB + 0.45, 430, 1180, 170, 12, GOLD)            # берёт кекс
+    fx_lines(cv, t, E.CARD_SHOW + 0.3, 330, 950, n=14, r0=150, r1=300)        # кекс к камере
+    sparkles(cv, t, E.PUMPKIN + 0.2, 420, 1000, 260, 14, (255, 150, 90))      # садится на тыкву
+    sparkles(cv, t, E.PUMP_BLACK - 0.15, 470, 1050, 220, 16, GOLD)           # «на чёрном!»
+    fx_lines(cv, t, LH, 540, 1450, n=9, r0=60, r1=220, col=(150, 140, 180), up=True)   # прыжок вверх
+    sparkles(cv, t, LH + 0.15, 540, 1150, 330, 18, (255, 120, 160))          # пик прыжка
+    fx_lines(cv, t, LH + 0.5, 540, 1500, n=16, r0=180, r1=380, col=WINE)      # удар приземления
+    for g in E.GACHA:                                                          # карусель выдвигает фон
+        sparkles(cv, t, g, 540, 570, 200, 12, GOLD)
+    sparkles(cv, t, E.TEASE + 0.45, 600, 880, 110, 8, (190, 160, 230))        # «хм»
+    for i, ti in enumerate(E.ICONS):                                           # жест к спутнику
+        hx = (300, 540, 780)[i]
+        fx_arc(cv, t, ti - 0.32, 540, 1130, 230, math.pi * (1.15 if i == 0 else 1.5 if i == 1 else 1.85),
+               math.pi * (1.0 if i == 0 else 1.4 if i == 1 else 2.0), 0.4, (255, 215, 150))
+    fx_ring(cv, t, E.GLOW_PHONE + 0.2, 540, 1180, (200, 140, 255), 300)       # телефон к зрителю
+    fx_lines(cv, t, E.GLOW_SHOW + 0.05, 420, 1080, n=12, r0=110, r1=240, col=(170, 110, 255))
+    fx_arc(cv, t, K - 0.12, 470, 1330, 200, math.pi * 0.95, math.pi * 0.05, 0.35)  # пинок: след ноги
+    fx_lines(cv, t, K + 0.14, 760, 1420, n=10, r0=40, r1=160, col=(160, 160, 175))
+    fx_lines(cv, t, P + 1.0, M3.tip(P + 1.0)[0], 1300, n=9, r0=60, r1=200, col=(150, 140, 180), up=True)
+    sparkles(cv, t, E.OUTRO_PILL - 0.5, 600, 880, 160, 12, (255, 120, 170))   # подмигивание
+    fx_ring(cv, t, E.OUTRO_PILL + 0.3, 540, 1545, (226, 54, 120), 420)        # «в комментарии»
+
+
 # ------------------------------------------------------------------ живая камера и глитч-переходы
 def camera(t):
     """(zoom, точка, сдвиг x, сдвиг y) для слоя сцены. Интерфейс (заголовок, панели, субтитры) не двигается."""
@@ -1152,8 +1256,10 @@ def render_at(t):
         scene_price(cv, t)
         scene_outro(cv, t)
         wind(cv, t, False)
-    if t != AD_STOP:                         # на застывшем кадре рекламы Миты нет — она сидит под баннером
+    if t != AD_STOP:                         # на застывшем кадре рекламы Миты нет — она под баннером
+        action_fx(cv, t, False)
         draw_mita(cv, t)
+        action_fx(cv, t, True)
     if sc != 'creepy':
         wind(cv, t, True)
     cv = apply_camera(cv, t)

@@ -648,7 +648,7 @@ def background(t):
 HEADS = [
     (0.0, E.X7, 'Почему чёрный фон дороже?', None),
     (E.X7, E.PUMPKIN, 'Чёрный — самый дорогой', None),
-    (E.PUMPKIN, E.LOCKET, 'Тыква на чёрном', None),
+    (E.PUMPKIN, E.LOCKET, 'Mad Pumpkin на чёрном', None),
     (E.LOCKET, E.CREEPY, '17 миллионов ₽?!', None),
     (E.CREEPY_END, E.TEASE, 'Но он не редкий', None),
     (E.TEASE, AD_STOP + 0.1, 'Так почему?', None),

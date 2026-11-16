@@ -191,12 +191,23 @@ def pump_state(t):
     return lerp(ys), lerp(sl), lerp(cx), lerp(hh), xm, float(np.median(hh))
 
 
+CALM0, CALM_LEN, CALM_SPEED = 2.58, 0.72, 0.6     # спокойный кусок анимации (2,58 → 3,0 → 0,30 с, по кругу)
+
+
+def pumpkin_time(t):
+    """Время Lottie тыквы: только спокойный кусок, туда-обратно с плавными разворотами (без резких рывков)."""
+    u = max(0.0, t - E.PUMPKIN + 0.2) * CALM_SPEED
+    ph = (u / CALM_LEN) % 2.0
+    x = CALM_LEN * (0.5 - 0.5 * math.cos(math.pi * ph))
+    return (CALM0 + x) % PUMP_DUR
+
+
 def pump_scale(t):
     return 0.92 + 0.08 * ease((t - E.PUMPKIN + 0.15) / 0.45)
 
 
 def draw_pumpkin(cv, t, a):
-    im = R.lottie.frame(R.model_path('Mad Pumpkin', 'Red Demon'), t, size=PUMP_SIZE)
+    im = R.lottie.frame(R.model_path('Mad Pumpkin', 'Red Demon'), pumpkin_time(t), size=PUMP_SIZE)
     s = pump_scale(t)
     R.put(cv, shadow_sprite(), PUMP_C[0], PUMP_C[1] + PUMP_SIZE * 0.42, 1.6, 0.8 * a)
     R.put(cv, im, PUMP_C[0], PUMP_C[1], s, a)
@@ -206,8 +217,8 @@ def pumpkin_seat(t):
     """(x, y, наклон в радианах, сжатие) точки, где сидит Мита, — едет вместе с поверхностью тыквы.
     Небольшая инерция: Мита отстаёт от тыквы на ~0,04 с (её «подбрасывает» и она опускается обратно)."""
     k = PUMP_SIZE / PS * pump_scale(t)
-    y_now, sl, cx, hh, xm, h0 = pump_state(t)
-    y_lag = pump_state(t - 0.04)[0]
+    y_now, sl, cx, hh, xm, h0 = pump_state(pumpkin_time(t))
+    y_lag = pump_state(pumpkin_time(t - 0.04))[0]
     y = 0.65 * y_now + 0.35 * y_lag
     X = PUMP_C[0] + (xm - PS / 2) * k + cx * k * 0.3
     Y = PUMP_C[1] + (y - PS / 2) * k

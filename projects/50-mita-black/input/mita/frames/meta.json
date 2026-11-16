@@ -790,5 +790,29 @@
   "left": 177,
   "right": 568,
   "magenta": 12574
+ },
+ "phst_in_a": {
+  "sheet": "phst_b",
+  "top": 27,
+  "bottom": 989,
+  "left": 250,
+  "right": 588,
+  "magenta": 457
+ },
+ "phst_in_b": {
+  "sheet": "phst_b",
+  "top": 25,
+  "bottom": 989,
+  "left": 202,
+  "right": 550,
+  "magenta": 6267
+ },
+ "phst_hug": {
+  "sheet": "phst_b",
+  "top": 26,
+  "bottom": 989,
+  "left": 193,
+  "right": 533,
+  "magenta": 3049
  }
 }

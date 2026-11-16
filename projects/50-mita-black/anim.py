@@ -240,3 +240,10 @@ def replace_magenta(img, painter, min_area=250):
 def breathe(t, amp=1.0):
     """Лёгкое «дыхание» (масштаб по вертикали) и покачивание."""
     return 1 + 0.006 * amp * math.sin(t * 2.4), 2.5 * amp * math.sin(t * 0.9)
+
+
+def pingpong_name(names, t, period):
+    seq = list(names) + list(names[-2:0:-1])
+    n = len(seq)
+    f = (t / period * n) % n
+    return seq[int(round(f)) % n]

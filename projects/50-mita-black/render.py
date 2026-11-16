@@ -23,7 +23,7 @@ import music
 import events as E
 import anim
 import cv2
-import mita_v3 as M3
+import mita_v4 as M3
 from timeline import DUR, ON, END, AD_STOP, TAKES
 from words import WORDS
 
@@ -488,15 +488,147 @@ def creepy_bg(t):
     return cv
 
 
+# ------------------------------------------------------------------ детали фона по сценам (v4, умеренно)
+@functools.lru_cache(None)
+def bokeh_tile(gift, bd):
+    c = [v for k, v in LOTS.items() if k.startswith(gift + '|')][0]
+    im = gift_tile(gift, c['model'], bd, 160, 0.0)
+    return im.filter(ImageFilter.GaussianBlur(7))
+
+
+@functools.lru_cache(None)
+def spot_glow():
+    return fx.radial(256, (255, 214, 150), 1.4, 1.0).resize((360, 110))
+
+
+@functools.lru_cache(None)
+def soft_glow(c, w, h):
+    return fx.radial(256, c, 1.5, 1.0).resize((w, h))
+
+
+def window(t, t0, t1, d=0.4):
+    return appear(t, t0, d) * (1 - appear(t, t1 - d, d))
+
+
+def deco(cv, t, sc):
+    goth = appear(t, M3.SPIN_END - 0.3, 0.6)
+    # подиум: мягкий круг света под Митой
+    if sc in ('card', 'jump', 'rare', 'show', 'phone', 'kick', 'two', 'hook'):
+        put(cv, soft_glow((200, 170, 230) if goth < 0.5 else (230, 170, 190), 620, 120), 540, 1548, 1.0, 0.45)
+    # готика: лепестки роз и тонкие узоры в углах
+    if goth > 0:
+        def petals(d, mp, S):
+            rng = np.random.default_rng(31)
+            for j in range(12):
+                x0, sp = rng.uniform(0, W), rng.uniform(40, 80)
+                y = (rng.uniform(0, H) + t * sp) % (H + 60) - 30
+                x = x0 + math.sin(t * 0.8 + j) * 40
+                X, Y = mp(x, y)
+                r = rng.uniform(7, 12) * S
+                a2 = t * 1.5 + j
+                pts = [(X + math.cos(a2) * r * 1.5, Y + math.sin(a2) * r * 1.5), (X + math.cos(a2 + 1.6) * r * 0.6, Y + math.sin(a2 + 1.6) * r * 0.6),
+                       (X - math.cos(a2) * r * 1.5, Y - math.sin(a2) * r * 1.5), (X - math.cos(a2 + 1.6) * r * 0.6, Y - math.sin(a2 + 1.6) * r * 0.6)]
+                d.polygon(pts, fill=WINE + (int(70 * goth),))
+            for sx_ in (1, -1):                                   # узоры в верхних углах
+                cx0 = 0 if sx_ > 0 else W
+                for k in range(3):
+                    r_ = (140 + 60 * k) * S
+                    X, Y = mp(cx0, 0)
+                    d.arc([X - r_, Y - r_, X + r_, Y + r_], 0 if sx_ > 0 else 90, 90 if sx_ > 0 else 180,
+                          fill=WINE + (int(45 * goth),), width=max(1, int(2 * S)))
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), petals))
+    # тыква: луна и летучие мыши
+    a = window(t, E.PUMPKIN - 0.1, E.LOCKET + 0.1)
+    if a > 0:
+        put(cv, soft_glow((255, 236, 170), 420, 420), 830, 660, 1.0, 0.35 * a)
+        def bats(d, mp, S):
+            for j in range(5):
+                u = ((t - E.PUMPKIN) * 0.12 + j * 0.21) % 1.0
+                x = -80 + u * (W + 160)
+                y = 420 + 160 * math.sin(j * 2.1) + 30 * math.sin(t * 2 + j)
+                X, Y = mp(x, y)
+                f = math.sin(t * 14 + j * 2)
+                r = (18 + 4 * j) * S
+                d.polygon([(X, Y), (X - r, Y - r * 0.5 * f - 4 * S), (X - r * 0.5, Y), (X - r * 1.1, Y + r * 0.2),
+                           (X, Y + r * 0.25), (X + r * 1.1, Y + r * 0.2), (X + r * 0.5, Y), (X + r, Y - r * 0.5 * f - 4 * S)],
+                          fill=(50, 26, 46, int(150 * a)))
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), bats))
+    # медальон: всплывающие сердечки
+    a = window(t, E.LOCKET, E.CREEPY)
+    if a > 0:
+        def hearts(d, mp, S):
+            rng = np.random.default_rng(7)
+            for j in range(10):
+                x, sp = rng.uniform(80, W - 80), rng.uniform(50, 110)
+                y = H - ((t - E.LOCKET) * sp + rng.uniform(0, H)) % H
+                X, Y = mp(x + 20 * math.sin(t + j), y)
+                r = rng.uniform(8, 14) * S
+                c = ((236, 72, 120) if j % 2 else WINE) + (int(80 * a),)
+                d.ellipse([X - r, Y - r, X, Y], fill=c)
+                d.ellipse([X, Y - r, X + r, Y], fill=c)
+                d.polygon([(X - r, Y - r * 0.5), (X + r, Y - r * 0.5), (X, Y + r * 0.9)], fill=c)
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), hearts))
+    # карусель: свет под кольцом
+    a = window(t, E.CREEPY_END, E.TEASE)
+    if a > 0:
+        put(cv, soft_glow((255, 200, 220), 900, 240), 540, 560, 1.0, 0.5 * a)
+    # «Так почему?»: бледные знаки вопроса
+    a = window(t, E.TEASE, AD_STOP + 0.1, 0.3)
+    if a > 0:
+        for j in range(5):
+            x = 120 + j * 210 + 30 * math.sin(t + j)
+            y = 900 + 300 * math.sin(j * 1.7) - ((t - E.TEASE) * 40) % 200
+            put(cv, text('?', 70 + 15 * (j % 3), 'Heavy', (190, 170, 210)), x, y, 1.0, 0.35 * a, 0.2 * math.sin(t + j))
+    # спрос: золотые искры и тонкие линии
+    a = window(t, AD_STOP + 0.1, E.GLOW)
+    if a > 0:
+        def gold(d, mp, S):
+            for j in range(14):
+                u = (t * 0.07 + j * 0.071) % 1.0
+                X, Y = mp(60 + (j * 151) % 960, H * (1 - u))
+                tw = 0.5 + 0.5 * math.sin(t * 3 + j)
+                fx.sparkle(d, X, Y, (6 + 8 * tw) * S, GOLD + (int(120 * a * tw),))
+            for k in range(2):
+                X0, Y0 = mp(-100, 300 + 700 * k)
+                X1, Y1 = mp(W + 100, 700 + 700 * k)
+                d.line([X0, Y0, X1, Y1], fill=(220, 180, 90, int(50 * a)), width=max(1, int(2 * S)))
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), gold))
+    # телефон: фон чуть темнеет, вокруг фиолетовые искры
+    a = window(t, E.GLOW, E.PLAIN)
+    if a > 0:
+        cv[..., :3] *= 1 - 0.22 * a
+        put(cv, soft_glow((190, 120, 255), 700, 700), 540, 520, 1.0, 0.35 * a)
+    # обычный фон: всё ненадолго блекнет
+    a = window(t, E.PLAIN + 0.3, E.PRICE, 0.5)
+    if a > 0:
+        g = cv[..., :3].mean(-1, keepdims=True)
+        cv[..., :3] = cv[..., :3] * (1 - 0.6 * a) + g * 0.6 * a
+    # график: бледная клетка и стрелки вверх
+    a = window(t, E.PRICE, E.OUTRO)
+    if a > 0:
+        def grid(d, mp, S):
+            for k in range(0, W, 90):
+                X, _ = mp(k, 0)
+                d.line([X, mp(0, 280)[1], X, mp(0, 1480)[1]], fill=(170, 160, 200, int(40 * a)), width=1)
+            for k in range(280, 1480, 90):
+                _, Y = mp(0, k)
+                d.line([mp(60, 0)[0], Y, mp(1020, 0)[0], Y], fill=(170, 160, 200, int(40 * a)), width=1)
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), grid))
+        for j in range(4):
+            y = 1400 - ((t - E.PRICE) * 120 + j * 300) % 1100
+            put(cv, text('↑', 60, 'Heavy', (200, 120, 150)), 900 + 40 * (j % 2), y, 1.0, 0.3 * a)
+    # финал: слева тёплое золото (люкс), справа блёклая зелень (минимум)
+    a = appear(t, E.OUTRO, 0.5)
+    if a > 0:
+        put(cv, soft_glow((255, 200, 110), 700, 900), 260, 700, 1.0, 0.35 * a)
+        put(cv, soft_glow((150, 190, 140), 700, 900), 820, 700, 1.0, 0.3 * a)
+
+
 # ------------------------------------------------------------------ background (белый, микродетали)
 def background(t):
     sc = M3.scene_of(t)[0]
     if sc == 'creepy':
         return creepy_bg(t)
-    if sc == 'demand':
-        return room_bg('showroom', t, -40 + 0.08 * (M3.run_x(t) - 540) if t >= M3.RUN_START else -40, AD_STOP)
-    if sc == 'phone':
-        return room_bg('bedroom', t, 18 * math.sin(t * 0.4), E.GLOW)
     cv = np.empty((H, W, 4), np.float32)
     cv[..., :3] = base_bg()
     cv[..., 3] = 255
@@ -508,18 +640,19 @@ def background(t):
     put(cv, tinted_glow(c2), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.11 + 0.05 * p)
     fx.over(cv, (grid_dots(), 0, 0))
     fx.over(cv, fx.draw_rgba((0, 0, W, H), lambda d, mp, S: confetti(d, mp, S, t)))
+    deco(cv, t, sc)
     return cv
 
 
 # ------------------------------------------------------------------ заголовок
 HEADS = [
     (0.0, E.X7, 'Почему чёрный фон дороже?', None),
-    (E.X7, E.UFC, 'Чёрный — самый дорогой', None),
-    (E.UFC, E.LOCKET, 'Боец UFC на чёрном', None),
+    (E.X7, E.PUMPKIN, 'Чёрный — самый дорогой', None),
+    (E.PUMPKIN, E.LOCKET, 'Тыква на чёрном', None),
     (E.LOCKET, E.CREEPY, '17 миллионов ₽?!', None),
     (E.CREEPY_END, E.TEASE, 'Но он не редкий', None),
-    (E.TEASE, AD_STOP + 0.4, 'Так почему?', None),
-    (AD_STOP + 0.4, E.GLOW, 'Всё дело в спросе', None),
+    (E.TEASE, AD_STOP + 0.1, 'Так почему?', None),
+    (AD_STOP + 0.1, E.GLOW, 'Всё дело в спросе', None),
     (E.GLOW, E.PLAIN, 'Чёрный выделяет', None),
     (E.PLAIN, E.PRICE, 'А обычный фон…', None),
     (E.PRICE, E.OUTRO, 'Спрос — и цена растёт', None),
@@ -528,7 +661,7 @@ HEADS = [
 
 
 def headline(cv, t):
-    dark = M3.scene_of(t)[0] in ('demand', 'phone')
+    dark = False
     for t0, t1, s, sub in HEADS:
         a = appear(t, t0, 0.3) * (1 - appear(t, t1 - 0.25, 0.25))
         if a <= 0:
@@ -609,21 +742,54 @@ def scene_x7(cv, t):
         put(cv, upill(f"{c['gift']} · {rub(c['rub'])}", WINE, 30, WHITE), 540, 560, 0.8 + 0.2 * pop_in(t, E.CARD_SHOW + 0.25), a2)
 
 
-# ---- 4. боец UFC: Мита сидит у него на шее
-def scene_ufc(cv, t):
-    if not (E.UFC - 0.2 <= t < E.LOCKET + 0.2):
+# ---- 4. тыква: Мита сидит на огромной Red Demon; сверху плитка переворачивается (обычная → на чёрном)
+PUMP_LO = dict(gift='Mad Pumpkin', model='Pump King', backdrop=None, rub=1313)
+PUMP_HI = dict(gift='Mad Pumpkin', model='Red Demon', backdrop='Black', rub=43694)
+
+
+@functools.lru_cache(None)
+def pump_lo_backdrop():
+    bds = [b['name'] for b in gifts_api.backdrops('Mad Pumpkin')]
+    for name in ('Pumpkin', 'Orange', 'Tangerine', 'Carrot Juice', 'Copper'):
+        if name in bds:
+            return name
+    return bds[0]
+
+
+def flip_tile(cv, t, x, y, s, a, t_flip, lo, hi):
+    """3D-переворот плитки вокруг вертикальной оси: до t_flip — lo, после — hi; на ребре — блик."""
+    u = (t - t_flip) / 0.5
+    if u <= 0:
+        c, sq = lo, 1.0
+    elif u >= 1:
+        c, sq = hi, 1.0
+    else:
+        ang = math.pi * ease(u)
+        sq = abs(math.cos(ang))
+        c = lo if ang < math.pi / 2 else hi
+    tile = gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t)
+    put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.5), x, y + 14 * s, s * max(0.2, sq), a)
+    fx.over(cv, fx.warp(tile, x, y, s * max(0.02, sq), s * (1 + 0.06 * (1 - sq)), 0.0), a)
+    if 0 < u < 1:
+        put(cv, tinted_glow((255, 240, 200)), x, y, s * 0.9, a * (1 - sq) * 0.6)
+
+
+def scene_pumpkin(cv, t):
+    if not (E.PUMPKIN - 0.15 <= t < E.LOCKET + 0.2):
         return
-    a = appear(t, E.UFC - 0.2, 0.3) * (1 - appear(t, E.LOCKET - 0.25, 0.3))
-    put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), 540, 1290, 2.0, a)
-    put(cv, tile_bg('UFC Strike', 'Black', 300, 48), 540, 1270, 2.0, a)
-    for j, (lab, price, t0, col) in enumerate((('обычный', '≈ 2 000 ₽', E.UFC_CHEAP, (226, 220, 238)),
-                                                ('на чёрном', '≈ 15 500 ₽', E.UFC_BLACK, WINE))):
-        b = appear(t, t0, 0.25) * a
-        if b <= 0:
-            continue
-        x = 300 + 480 * j
-        put(cv, upill(f'{lab}  {price}', col, 32, INK if j == 0 else WHITE), x, 360, 0.8 + 0.2 * pop_in(t, t0), b)
-    put(cv, upill('UFC Strike · C. Oliveira', (240, 236, 248), 24, INK), 540, 270, 1.0, a)
+    a = appear(t, E.PUMPKIN, 0.35) * (1 - appear(t, E.LOCKET - 0.3, 0.3))
+    lo = dict(PUMP_LO, backdrop=pump_lo_backdrop())
+    s = 0.72 * (0.7 + 0.3 * pop_in(t, E.PUMPKIN))
+    flip_tile(cv, t, 540, 420, s, a, E.PUMP_BLACK - 0.2, lo, PUMP_HI)
+    put(cv, text('Mad Pumpkin', 26, 'Heavy'), 540, 420 - 150 * s - 26, 1.0, a)
+    k = fx.clamp01((t - (E.PUMP_BLACK - 0.2)) / 0.7)
+    price = lo['rub'] + (PUMP_HI['rub'] - lo['rub']) * ease(k)
+    col = WINE if k > 0.5 else MUTED
+    if t >= E.PUMP_CHEAP - 0.1:
+        put(cv, text(rub(int(round(price / 10) * 10)), 40, 'Heavy', col), 540, 420 + 150 * s + 34, 1.0, a * appear(t, E.PUMP_CHEAP - 0.1, 0.25))
+    lab = 'на чёрном фоне' if k > 0.5 else 'обычная'
+    put(cv, upill(lab, WINE if k > 0.5 else (226, 220, 238), 24, WHITE if k > 0.5 else INK), 540, 420 + 150 * s + 86, 1.0,
+        a * appear(t, E.PUMP_CHEAP - 0.1, 0.25))
 
 
 # ---- 5. медальон за 17 млн
@@ -668,20 +834,33 @@ def spot_pool():
 
 
 def scene_demand(cv, t):
-    if not (AD_STOP + 0.1 <= t < E.GLOW):
+    return
+
+
+# ---- 9. светится: телефон-рамка сверху (как в v2), Мита держит свой телефон внизу
+@functools.lru_cache(None)
+def phone_frame():
+    im = Image.new('RGBA', (440, 560), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([0, 0, 439, 559], 54, fill=(14, 14, 22, 255), outline=(60, 60, 75, 255), width=6)
+    d.rounded_rectangle([170, 18, 270, 34], 8, fill=(40, 40, 52, 255))
+    return im
+
+
+def scene_glow(cv, t):
+    if not (E.GLOW - 0.1 <= t < E.PLAIN + 0.3):
         return
-    for j, (name, x, y, sc) in enumerate(M3.ITEMS):
-        tj = E.ICONS[j]
-        a = appear(t, tj, 0.25)
-        put(cv, spot_pool(), x, y + 90 * sc, sc, 0.55 + 0.25 * a)
-        if a <= 0:
-            continue
-        s = sc * pop_in(t, tj) * (1 + 0.015 * beat_pulse(t, 8))
-        im = prop_img(name)
-        put(cv, ImageOps.flip(im), x, y + im.height * s * 0.98, s, a * 0.18)
-        put(cv, im, x, y, s, a)
-        put(cv, text(['карты', 'машины', 'смокинги'][j], 30, 'Heavy', WHITE, True), x, y - im.height * s / 2 - 34, 1.0, a)
-        sparkles(cv, t, tj, x, y, 150, 10, GOLD)
+    out = appear(t, E.PLAIN - 0.3, 0.3)
+    c = lot('Neko Helmet', 'black_floor')
+    a = appear(t, E.GLOW + 0.1, 0.35) * (1 - out)
+    ph = appear(t, E.GLOW_PHONE, 0.5)
+    s = (1.0 - 0.3 * ph) * (1 + 0.02 * beat_pulse(t, 8))
+    if ph > 0:
+        put(cv, phone_frame(), 540, 480, 0.68 + 0.08 * ph, a * ph)
+    glow = 0.35 + 0.25 * (0.5 + 0.5 * math.sin(t * 4))
+    put(cv, tinted_glow((210, 150, 255)), 540, 490, 1.6 * s, a * glow)
+    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - E.GLOW), 540, 490, s, a)
+    put(cv, text(c['gift'], 30, 'Heavy', WHITE if ph > 0.5 else INK), 540, 490 - 150 * s - 28, 1.0, a)
 
 
 # ---- 10. обычный фон: Мита отпинывает серый подарок
@@ -807,26 +986,21 @@ def side_panels(cv, t):
         im = utext(big, 46, 'ExtraBold', big_col)
         put(cv, im, x, SIDE_Y - 10, s * min(1.0, 230 / im.width), a)
         put(cv, utext(bot, 20, 'SemiBold', MUTED), x, SIDE_Y + 85, s, a)
-    # хук: обычный против чёрного
     txt_panel(LX, 0.9, E.SPIN - 0.3, 'обычный фон', '438 ₽', 'Whip Cupcake', MUTED)
     txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', '2 452 ₽', 'Whip Cupcake')
-    # чёрный — самый дорогой
-    txt_panel(LX, E.X7 + 0.6, E.UFC, 'коллекций', '121', 'с чёрным фоном')
-    txt_panel(RX, E.X7 + 1.0, E.UFC, 'чёрный фон', 'дороже', 'почти везде')
-    # медальон
+    txt_panel(LX, E.X7 + 0.6, E.PUMPKIN, 'коллекций', '121', 'с чёрным фоном')
+    txt_panel(RX, E.X7 + 1.0, E.PUMPKIN, 'чёрный фон', 'дороже', 'почти везде')
     txt_panel(LX, E.LOCKET + 0.6, E.CREEPY, 'самый дешёвый', '149 тыс', 'Heart Locket')
     txt_panel(RX, E.LOCKET_HIT + 0.9, E.CREEPY, 'на чёрном', '17,5 млн', 'цена продавца')
-    # редкость (автомат стоит слева — панель только одна)
     txt_panel(LX, E.GACHA[1], E.TEASE, 'чёрный', 'не редкий', 'как бордовый')
-    # тизер — загадка
+    txt_panel(RX, E.GACHA[2], E.TEASE, 'выпадает', 'так же', 'как медный')
     txt_panel(LX, E.TEASE + 0.3, AD_STOP + 0.12, 'не редкость', '?', 'тогда что')
     txt_panel(RX, E.TEASE + 0.6, AD_STOP + 0.12, 'платят', 'больше', 'за что?')
-    # обычный фон: тот же Neko Helmet
+    txt_panel(LX, E.GLOW + 0.4, E.PLAIN, 'на чёрном', 'ярче', 'контраст')
+    txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телеграм', 'фон сливается')
     txt_panel(LX, E.PLAIN + 0.4, E.PRICE, 'обычный фон', '3 940 ₽', 'Neko Helmet', MUTED)
     txt_panel(RX, E.PLAIN + 0.9, E.PRICE, 'на чёрном', '38 528 ₽', 'Neko Helmet')
-    # спрос → цена
     txt_panel(RX, E.PRICE_UP, E.OUTRO, 'продавцы', 'цена ↑', 'не снижают')
-    # финал
     txt_panel(LX, E.OUTRO_MIN + 0.3, DUR + 1, 'выбирай', 'люкс', 'на чёрном')
     txt_panel(RX, E.OUTRO_PILL, DUR + 1, 'или', 'минимум', 'на зелёном', MUTED)
 
@@ -839,21 +1013,21 @@ def big_cup():
 
 
 def ad_overlay(c, t):
+    """Во время рекламы Мита стоит внизу, под баннером, и смотрит его с попкорном (баннер ничем не закрыт)."""
     ph = BR.phase(t)
     if ph is None:
         return c
     a, bt = ph['dim'], ph['bt']
     cv = np.dstack([c.astype(np.float32), np.full(c.shape[:2], 255, np.float32)])
-    c0 = lot('Whip Cupcake', 'black_floor')
-    put(cv, M3.shadow_sprite(), 540, 1912, 1.0, 0.6 * a)
-    put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), 540, 1760, 1.15, a)
-    put(cv, gift_tile(c0['gift'], c0['model'], c0['backdrop'], TILE, max(0.0, bt)), 540, 1745, 1.15, a)
-    if bt > BR.B - 1.5:
-        k = ease((bt - (BR.B - 1.5)) / 0.35)
-        fr = anim.morph('ad_sit_2', 'ad_sit_thumb', k)
+    u = max(0.0, bt)
+    if bt > BR.B - 1.8:
+        k = ease((bt - (BR.B - 1.8)) / 0.45)
+        fr = anim.morph(anim.pingpong_name(M3.POP, BR.B - 1.8, 3.2), 'pop_wow', k)
     else:
-        fr = anim.pingpong(M3.SWING, max(0.0, bt), 1.5)
-    M3.put_mita(cv, fr, 540, 1800, 0.5, 990, a, shadow=False)
+        fr = anim.loop(M3.POP, u, 3.2)
+    put(cv, M3.shadow_sprite(), 540, 1898, 0.6, 0.6 * a)
+    by, _ = anim.breathe(t)
+    M3.put_mita(cv, fr, 540, 1900, 0.46, 988, a, sy=by, shadow=False, rot=0.006 * math.sin(t * 0.9))
     return cv[..., :3]
 
 
@@ -867,18 +1041,20 @@ def camera(t):
         k = ease((t - E.CARD_SHOW - 0.1) / 0.5) * (1 - ease((t - E.UFC + 0.5) / 0.4))
         z += 0.24 * k
         px, py = 540 * (1 - k) + 330 * k, 1100 * (1 - k) + 900 * k
-    elif sc == 'ufc':
-        u = t - E.UFC
-        z += 0.05 + 0.03 * math.sin(u * 0.8)
-        dx += 30 * math.sin(u * 0.6)
+    elif sc == 'pumpkin':
+        u = t - E.PUMPKIN
+        z += 0.04 + 0.03 * math.sin(u * 0.7)
+        dx += 25 * math.sin(u * 0.5)
+    elif sc == 'show':
+        z += 0.03 * math.sin((t - E.DEMAND) * 0.6)
     elif sc == 'jump':
         u = t - (E.LOCKET_HIT + 0.52)
         if 0 < u < 0.5:
             dy += 16 * math.sin(u * 60) * (1 - u / 0.5)
             dx += 9 * math.cos(u * 47) * (1 - u / 0.5)
     elif sc == 'phone':
-        k = ease((t - E.GLOW_SHOW) / 0.6)
-        z += 0.12 * k
+        k = ease((t - E.GLOW_SHOW) / 0.7)
+        z += 0.1 * k
         px, py = 540, 1100 * (1 - k) + 1000 * k
     elif sc == 'hang':
         x, y = M3.tip(t)
@@ -901,9 +1077,6 @@ GLITCH = [  # (время содержания, длительность, сил
     (E.CREEPY + 0.9, 0.08, 0.45, True),
     (E.CREEPY + 1.45, 0.06, 0.55, True),
     (E.CREEPY_END - 0.06, 0.2, 1.0, True),
-    (AD_STOP + 0.06, 0.22, 0.9, False),
-    (E.GLOW - 0.08, 0.2, 0.8, False),
-    (E.PLAIN - 0.08, 0.2, 0.8, False),
 ]
 
 
@@ -971,10 +1144,10 @@ def render_at(t):
     if sc != 'creepy':
         scene_hook(cv, t)
         scene_x7(cv, t)
-        scene_ufc(cv, t)
+        scene_pumpkin(cv, t)
         scene_locket(cv, t)
         scene_tease(cv, t)
-        scene_demand(cv, t)
+        scene_glow(cv, t)
         scene_plain(cv, t)
         scene_price(cv, t)
         scene_outro(cv, t)
@@ -986,10 +1159,10 @@ def render_at(t):
     cv = apply_camera(cv, t)
     if sc != 'creepy':
         headline(cv, t)
-        if sc not in ('ufc',):
+        if sc not in ('pumpkin',):
             side_panels(cv, t)
-    loading_bar(cv, t)
-    subtitles(cv, t)
+    if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):          # на застывшем кадре рекламы субтитров нет
+        subtitles(cv, t)
     img = np.clip(cv[..., :3], 0, 255).astype(np.uint8)
     g = glitch_at(t)
     if g:

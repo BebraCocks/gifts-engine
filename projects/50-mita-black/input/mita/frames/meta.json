@@ -646,5 +646,29 @@
   "left": 168,
   "right": 567,
   "magenta": 99
+ },
+ "think_1": {
+  "sheet": "think_a",
+  "top": 29,
+  "bottom": 988,
+  "left": 251,
+  "right": 593,
+  "magenta": 25
+ },
+ "think_2": {
+  "sheet": "think_a",
+  "top": 30,
+  "bottom": 989,
+  "left": 220,
+  "right": 557,
+  "magenta": 18
+ },
+ "think_3": {
+  "sheet": "think_a",
+  "top": 31,
+  "bottom": 989,
+  "left": 196,
+  "right": 534,
+  "magenta": 11
  }
 }

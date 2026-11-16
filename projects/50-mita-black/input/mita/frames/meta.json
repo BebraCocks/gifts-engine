@@ -766,5 +766,29 @@
   "left": 206,
   "right": 558,
   "magenta": 39
+ },
+ "phst_1": {
+  "sheet": "phst_a",
+  "top": 26,
+  "bottom": 989,
+  "left": 246,
+  "right": 597,
+  "magenta": 8
+ },
+ "phst_2": {
+  "sheet": "phst_a",
+  "top": 25,
+  "bottom": 990,
+  "left": 211,
+  "right": 568,
+  "magenta": 4493
+ },
+ "phst_3": {
+  "sheet": "phst_a",
+  "top": 24,
+  "bottom": 990,
+  "left": 177,
+  "right": 568,
+  "magenta": 12574
  }
 }

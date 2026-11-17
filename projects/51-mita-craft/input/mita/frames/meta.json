@@ -478,5 +478,29 @@
   "left": 181,
   "right": 521,
   "magenta": 4
+ },
+ "creep_1": {
+  "sheet": "creep_k",
+  "top": 21,
+  "bottom": 979,
+  "left": 235,
+  "right": 558,
+  "magenta": 0
+ },
+ "creep_4": {
+  "sheet": "creep_k",
+  "top": 22,
+  "bottom": 979,
+  "left": 221,
+  "right": 544,
+  "magenta": 25
+ },
+ "creep_7": {
+  "sheet": "creep_k",
+  "top": 24,
+  "bottom": 979,
+  "left": 207,
+  "right": 531,
+  "magenta": 83
  }
 }

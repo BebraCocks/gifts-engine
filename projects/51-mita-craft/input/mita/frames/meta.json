@@ -382,5 +382,29 @@
   "left": 184,
   "right": 513,
   "magenta": 0
+ },
+ "fear_2": {
+  "sheet": "fear_i1",
+  "top": 18,
+  "bottom": 981,
+  "left": 242,
+  "right": 589,
+  "magenta": 14
+ },
+ "fear_3": {
+  "sheet": "fear_i1",
+  "top": 17,
+  "bottom": 977,
+  "left": 193,
+  "right": 561,
+  "magenta": 20
+ },
+ "fear_35": {
+  "sheet": "fear_i1",
+  "top": 21,
+  "bottom": 978,
+  "left": 160,
+  "right": 545,
+  "magenta": 7
  }
 }

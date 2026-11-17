@@ -16,7 +16,7 @@ SHEETS = {
     'snap_i6': 'astro_look1 astro_look2 astro_look3', 'snap_i7': 'astro_rel1 astro_rel2 astro_rel3',
     'snap_i8': 'astro_sc1 astro_sc2 astro_sc3',
     'cast_k': 'cast_1 cast_5 cast_9', 'cast_i1': 'cast_2 cast_3 cast_4', 'cast_i2': 'cast_6 cast_7 cast_8', 'cast_i3': 'cast_h1 cast_h2 cast_h3',
-    'fear_k': 'fear_1 fear_4 fear_7',
+    'fear_k': 'fear_1 fear_4 fear_7', 'fear_i1': 'fear_2 fear_3 fear_35',
 }
 THIRDS = set()            # бюсты касаются друг друга — режем строго по третям
 CW = 768

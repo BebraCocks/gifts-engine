@@ -26,7 +26,7 @@ SHEETS = {
     'sweep_k': 'sweep_1 sweep_5 sweep_9', 'sweep_i1': 'sweep_3 sweep_7 sweep_10',
     'walk_k': 'walk_a walk_b walk_c', 'walk_i1': 'walk_ab walk_bc walk_d', 'walk_i2': 'walk_cd walk_da walk_a2',
     'walk_i3': 'walk_x1 walk_x2 walk_x3', 'walk_i4': 'walk_x4 walk_x5 walk_x6', 'walk_i5': 'walk_x7 walk_x8 walk_x9',
-    'walk_i6': 'walk_y1 walk_y2 walk_y3', 'walk_i7': 'walk_y4 walk_y5 walk_y6',
+    'walk_i6': 'walk_y1 walk_y2 walk_y3', 'walk_i7': 'walk_y4 walk_y5 walk_y6', 'walk_i8': 'walk_y7 walk_y8 walk_y9',
 }
 THIRDS = set()            # бюсты касаются друг друга — режем строго по третям
 CW = 768

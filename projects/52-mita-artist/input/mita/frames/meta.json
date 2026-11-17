@@ -1,0 +1,26 @@
+{
+ "poke_1": {
+  "sheet": "poke_k",
+  "top": 76,
+  "bottom": 983,
+  "left": 158,
+  "right": 717,
+  "magenta": 0
+ },
+ "poke_5": {
+  "sheet": "poke_k",
+  "top": 44,
+  "bottom": 983,
+  "left": 217,
+  "right": 600,
+  "magenta": 0
+ },
+ "poke_9": {
+  "sheet": "poke_k",
+  "top": 60,
+  "bottom": 982,
+  "left": 172,
+  "right": 488,
+  "magenta": 0
+ }
+}

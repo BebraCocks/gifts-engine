@@ -1030,5 +1030,29 @@
   "left": 142,
   "right": 581,
   "magenta": 295
+ },
+ "walk_y4": {
+  "sheet": "walk_i7",
+  "top": 37,
+  "bottom": 954,
+  "left": 224,
+  "right": 632,
+  "magenta": 218
+ },
+ "walk_y5": {
+  "sheet": "walk_i7",
+  "top": 36,
+  "bottom": 955,
+  "left": 211,
+  "right": 567,
+  "magenta": 243
+ },
+ "walk_y6": {
+  "sheet": "walk_i7",
+  "top": 37,
+  "bottom": 953,
+  "left": 157,
+  "right": 595,
+  "magenta": 273
  }
 }

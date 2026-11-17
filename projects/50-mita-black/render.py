@@ -793,6 +793,80 @@ def reactions(cv, t):
             fx.over(cv, fx.draw_rgba((x - 60, y - 70, x + 60, y + 60), icon))
 
 
+def lighten(c, k=0.55):
+    return tuple(v + (255 - v) * k for v in c)
+
+
+# мелкая детализация фона: у каждой части свой узор из маленьких значков, едва заметный, медленно плывёт
+PATTERNS = [  # (с какого времени, вид)
+    (0.0, 'dots'), (E.SPIN + 0.6, 'diamond'), (E.PUMPKIN, 'leaf'), (E.LOCKET, 'heart'), (E.CREEPY_END, 'circle'),
+    (E.TEASE, 'qmark'), (AD_STOP, 'crown'), (E.GLOW, 'star'), (E.PLAIN, 'dash'), (E.PRICE, 'arrow'), (E.OUTRO, 'sparkle'),
+]
+
+
+@functools.lru_cache(None)
+def pattern_tile(kind, col):
+    S = 2
+    T = 120
+    im = Image.new('RGBA', (T * S, T * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    c = col + (255,)
+    for (cx, cy, r) in ((30, 30, 7), (90, 90, 7)):
+        X, Y, R_ = cx * S, cy * S, r * S
+        if kind == 'dots':
+            d.ellipse([X - 3 * S, Y - 3 * S, X + 3 * S, Y + 3 * S], fill=c)
+        elif kind == 'diamond':
+            d.polygon([(X, Y - R_), (X + R_ * 0.7, Y), (X, Y + R_), (X - R_ * 0.7, Y)], fill=c)
+        elif kind == 'leaf':
+            d.ellipse([X - R_, Y - R_ * 0.5, X + R_, Y + R_ * 0.5], fill=c)
+        elif kind == 'heart':
+            d.ellipse([X - R_, Y - R_, X, Y], fill=c)
+            d.ellipse([X, Y - R_, X + R_, Y], fill=c)
+            d.polygon([(X - R_, Y - R_ * 0.45), (X + R_, Y - R_ * 0.45), (X, Y + R_ * 0.95)], fill=c)
+        elif kind == 'circle':
+            d.ellipse([X - R_, Y - R_, X + R_, Y + R_], outline=c, width=2 * S)
+        elif kind == 'qmark':
+            d.text((X, Y), '?', fill=c, font=ufont('ExtraBold', 18 * S), anchor='mm')
+        elif kind == 'crown':
+            d.polygon([(X - R_, Y + R_ * 0.6), (X - R_, Y - R_ * 0.4), (X - R_ * 0.5, Y), (X, Y - R_ * 0.8),
+                       (X + R_ * 0.5, Y), (X + R_, Y - R_ * 0.4), (X + R_, Y + R_ * 0.6)], fill=c)
+        elif kind == 'star':
+            fx.sparkle(d, X, Y, R_ * 1.3, c)
+        elif kind == 'dash':
+            d.line([X - R_, Y, X + R_, Y], fill=c, width=2 * S)
+        elif kind == 'arrow':
+            d.polygon([(X, Y - R_), (X + R_ * 0.8, Y), (X + R_ * 0.3, Y), (X + R_ * 0.3, Y + R_), (X - R_ * 0.3, Y + R_),
+                       (X - R_ * 0.3, Y), (X - R_ * 0.8, Y)], fill=c)
+        else:
+            fx.sparkle(d, X, Y, R_ * 1.1, c)
+    return im.resize((T, T), Image.LANCZOS)
+
+
+@functools.lru_cache(maxsize=24)
+def pattern_layer(kind, col):
+    tile = pattern_tile(kind, col)
+    big = Image.new('RGBA', (W + 120, H + 120), (0, 0, 0, 0))
+    for y in range(0, H + 120, 120):
+        for x in range(0, W + 120, 120):
+            big.alpha_composite(tile, (x, y))
+    return big
+
+
+def micro_pattern(cv, t):
+    c1, _ = tint_at(t)
+    col = tuple(int(v * 0.8) for v in c1)
+    col = tuple(int(round(v / 24) * 24) for v in col)          # квантуем цвет, чтобы слой кэшировался
+    for k, (t0, kind) in enumerate(PATTERNS):
+        t1 = PATTERNS[k + 1][0] if k + 1 < len(PATTERNS) else DUR + 5
+        a = appear(t, t0, 0.5) * (1 - appear(t, t1, 0.5))
+        if a <= 0.01:
+            continue
+        lay = pattern_layer(kind, col)
+        ox = int((t * 6) % 120)
+        oy = int((t * 10) % 120)
+        fx.over(cv, (lay, -ox, -oy), 0.13 * a)
+
+
 def background(t):
     sc = M3.scene_of(t)[0]
     if sc == 'creepy':
@@ -803,9 +877,11 @@ def background(t):
     c1, c2 = tint_at(t)
     p = beat_pulse(t, 5)
     q = lambda c: tuple(int(v) for v in c)
-    put(cv, tinted_glow(q(c1)), 230 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.8, 0.18 + 0.07 * p)
-    put(cv, tinted_glow(q(c2)), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.15 + 0.06 * p)
-    fx.over(cv, (grid_dots(), 0, 0))
+    # фон преимущественно белый: лёгкий оттенок части истории + мягкие пятна
+    cv[..., :3] = cv[..., :3] * 0.94 + np.array(lighten(c1), np.float32) * 0.06
+    put(cv, tinted_glow(q(c1)), 230 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.8, 0.10 + 0.04 * p)
+    put(cv, tinted_glow(q(c2)), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.08 + 0.04 * p)
+    micro_pattern(cv, t)
     fx.over(cv, fx.draw_rgba((0, 0, W, H), lambda d, mp, S: confetti(d, mp, S, t)))
     big_number(cv, t)
     drifting_gifts(cv, t, sc)

@@ -694,5 +694,29 @@
   "left": 137,
   "right": 606,
   "magenta": 61
+ },
+ "two_1": {
+  "sheet": "two_k",
+  "top": 33,
+  "bottom": 983,
+  "left": 184,
+  "right": 619,
+  "magenta": 0
+ },
+ "two_5": {
+  "sheet": "two_k",
+  "top": 38,
+  "bottom": 983,
+  "left": 175,
+  "right": 616,
+  "magenta": 0
+ },
+ "two_9": {
+  "sheet": "two_k",
+  "top": 39,
+  "bottom": 983,
+  "left": 176,
+  "right": 590,
+  "magenta": 12
  }
 }

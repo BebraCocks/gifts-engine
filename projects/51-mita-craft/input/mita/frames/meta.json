@@ -838,5 +838,29 @@
   "left": 130,
   "right": 584,
   "magenta": 102
+ },
+ "sweep_3": {
+  "sheet": "sweep_i1",
+  "top": 84,
+  "bottom": 951,
+  "left": 186,
+  "right": 560,
+  "magenta": 2
+ },
+ "sweep_7": {
+  "sheet": "sweep_i1",
+  "top": 81,
+  "bottom": 940,
+  "left": 130,
+  "right": 553,
+  "magenta": 2
+ },
+ "sweep_10": {
+  "sheet": "sweep_i1",
+  "top": 83,
+  "bottom": 951,
+  "left": 140,
+  "right": 567,
+  "magenta": 9
  }
 }

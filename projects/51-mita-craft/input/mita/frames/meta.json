@@ -1102,5 +1102,29 @@
   "left": 162,
   "right": 547,
   "magenta": 395
+ },
+ "walk_z4": {
+  "sheet": "walk_i10",
+  "top": 38,
+  "bottom": 953,
+  "left": 219,
+  "right": 659,
+  "magenta": 297
+ },
+ "walk_z5": {
+  "sheet": "walk_i10",
+  "top": 37,
+  "bottom": 953,
+  "left": 202,
+  "right": 562,
+  "magenta": 355
+ },
+ "walk_z6": {
+  "sheet": "walk_i10",
+  "top": 38,
+  "bottom": 953,
+  "left": 153,
+  "right": 534,
+  "magenta": 369
  }
 }

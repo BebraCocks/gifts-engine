@@ -445,23 +445,22 @@ def scene_craft(cv, t):
             put(cv, upill('до конца — никогда', RED, 20, WHITE), bx, by + 60, 0.8 + 0.2 * pop(t, E.NEVER), na)
 
 
-CREEP_NFT = [(DC, m) for m in REG] + [(DC, 'Vacation')]
+CREEP_NFT = [('Jingle Bells', 'Yule Bells', 240), (DC, 'Balloon Face', 540), ('Resistance Dog', 'Chosen One', 840)]
 
 
 def scene_creepy_nfts(cv, t):
-    """Сгоревшие NFT наверху дрожат от страха (в жуткой сцене)."""
+    """Три сгоревших подарка из разных коллекций дрожат от страха над Митой (в жуткой сцене)."""
     a = appear(t, E.CREEPY + 0.3, 0.5) * (1 - ease((t - E.CREEPY_END) / 0.9))
     if a <= 0:
         return
     rng = np.random.default_rng(int(t * 60))
-    for j, (g, m) in enumerate(CREEP_NFT):
-        x = 150 + j * 195
-        y = 330 + 26 * math.sin(j * 1.7)
-        sh = 3 + 4 * ease((t - E.CREEPY_MID) / 1.0)
+    for j, (g, m, x) in enumerate(CREEP_NFT):
+        y = 560 + (24 if j == 1 else 0)
+        sh = 3 + 5 * ease((t - E.CREEPY_MID) / 1.0)
         dx, dy = rng.normal(0, sh), rng.normal(0, sh * 0.6)
-        put(cv, glow((200, 20, 30)), x, y, 0.45, a * 0.5)
-        put(cv, nft_grey(g, m, 140, 0.7), x + dx, y + dy, 1.0, a * 0.95, rot=0.04 * math.sin(t * 31 + j))
-        put(cv, decor('ash', 110), x + dx * 0.5, y + 82, 1.0, a * 0.8)
+        put(cv, glow((200, 20, 30)), x, y, 0.62, a * 0.5)
+        put(cv, nft_grey(g, m, 210, 0.7), x + dx, y + dy, 1.0, a * 0.95, rot=0.04 * math.sin(t * 31 + j))
+        put(cv, decor('ash', 150), x + dx * 0.5, y + 118, 1.0, a * 0.8)
 
 
 TIER_ROW = [('необычная', DC, 'Vacation'), ('редкая', DC, 'Grimoire'), ('эпическая', DC, 'Kronos'),

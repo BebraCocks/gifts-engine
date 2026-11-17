@@ -603,3 +603,5 @@ Mad Pumpkin «Red Demon» и двигается вместе с её Lottie (с�
 у головы, панели-столбики. Мита крупнее (S0 0,92). Кекс в руках — сверху три самых дешёвых на чёрном (Homemade Cake,
 Whip Cupcake, Xmas Stocking ≈2 452 ₽), три «?», шкала «спрос», Neko Helmet пара на «обычном фоне». Реклама: Мита лежит под
 баннером в полный рост (lie_*). `renders/50-mita-black/mita_black_v5.mp4` (66,86 с, −16,6 LUFS), Drive «TikTok».
+
+- 51-mita-craft (2026-11-17): v1 и v2 собраны. v2 — https://drive.google.com/file/d/186aiT9VBBTf2wcuW37jrKkJAgrXvI38g/view (70,5 с с RubUp). Мита — клипы Gemini (tools/key_clips.py), ходьба 60 к/с со скоростью шага; жуть утверждена — не менять. Ждём замечаний автора.

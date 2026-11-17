@@ -226,6 +226,18 @@ def framed_nft(cv, t, g, m, x, y, t0, a=1.0, w=230, label=None, lcol=None, price
         put(cv, utext(note, 20, 'SemiBold', MUTED), x, yy, p, a)
 
 
+def empty_frame(cv, t, x, y, t0, t1, a, w=230):
+    """Пустая рамка с «?» — место под NFT, пока его не назвали (сравнение не стоит полупустым)."""
+    if t < t0 or t >= t1:
+        return
+    k = a * (1 - appear(t, t1 - 0.12, 0.12))
+    p = pop(t, t0)
+    fr = decor('frame', w)
+    put(cv, fx.rounded(int(w * 0.8), int(fr.height * 0.78), 18, (250, 246, 236, 255)), x, y, p, k)
+    put(cv, utext('?', 70, 'ExtraBold', (200, 190, 160)), x, y + 3 * math.sin(t * 3 + x), p, k)
+    put(cv, fr, x, y, p, k)
+
+
 def put_panel(cv, cx, cy, a, t0, t, h=PANEL_H):
     s = 0.7 + 0.3 * pop(t, t0)
     put(cv, panel(PANEL_W, h), cx, cy, s, a)
@@ -360,7 +372,7 @@ def headline_items():
         (E.TIERS[0], E.TEASE, '4 УРОВНЯ РЕДКОСТИ', NAVY),
         (E.TEASE, AD_STOP + 0.2, 'РЕЖЕ ЗНАЧИТ ДОРОЖЕ?', NAVY),
         (E.EPIC + 0.2, E.SHUFFLE, 'ОДНА РЕДКОСТЬ — РАЗНАЯ ЦЕНА', NAVY),
-        (E.SHUFFLE, E.CHEAP, 'НЕОБЫЧНАЯ ДОРОЖЕ ЛЕГЕНДАРКИ', NAVY),
+        (E.SHUFFLE, E.SWEEP, 'НЕОБЫЧНАЯ ДОРОЖЕ ЛЕГЕНДАРКИ', NAVY),
         (E.SWEEP, E.WHY, 'ДЕШЕВЛЕ ПОТРАЧЕННОГО', RED),
         (E.WHY, E.OUTRO, 'ЦЕНУ ДЕЛАЮТ ЛЮДИ', NAVY),
         (E.OUTRO, DUR + 5, 'А ТЫ БЫ РИСКНУЛ?', PINK),
@@ -497,7 +509,7 @@ def scene_tiers(cv, t):
 
 
 def scene_tease(cv, t):
-    a = window_a(t, E.TEASE, AD_STOP + 0.6, 0.3)
+    a = window_a(t, E.TEASE, E.EPIC_BASE + 0.3, 0.3)          # держится до первого сравнения — без пустой паузы
     if a <= 0:
         return
     for j, (lab, g, m) in enumerate(TIER_ROW):
@@ -506,16 +518,20 @@ def scene_tease(cv, t):
         put(cv, upill(lab, TIER_COL[lab], 17, WHITE), x, 560, 1.0, a)
         k = appear(t, E.TEASE + 0.25 + 0.2 * j, 0.3)
         put(cv, utext('₽' * (j + 1), 34, 'ExtraBold', GOLD), x, 625, 0.7 + 0.3 * k, a * k)
-    k = appear(t, E.TEASE + 1.2, 0.35)
+    k = appear(t, E.TEASE + 1.2, 0.35) * (1 - appear(t, E.EPIC, 0.15))
     put(cv, utext('?', 110, 'ExtraBold', PINK), 540, 740 + 8 * math.sin(t * 4), 0.6 + 0.4 * pop(t, E.TEASE + 1.2), a * k)
+    n = appear(t, E.EPIC, 0.2)                                      # «А вот и нет!» — вместо вопроса
+    put(cv, upill('А ВОТ И НЕТ!', RED, 34, WHITE, 'ExtraBold'), 540, 740, 0.7 + 0.3 * pop(t, E.EPIC, 0.35), a * n, rot=-0.06)
     txt_panel(cv, t, LX, E.TEASE + 0.3, AD_STOP + 0.5, 'реже', 'дороже', 'логично?')
     txt_panel(cv, t, RX, E.TEASE + 0.6, AD_STOP + 0.5, 'проверим', 'цены', 'с Fragment', PINK)
 
 
 def scene_epic(cv, t):
-    a = window_a(t, E.EPIC_BASE, E.SHUFFLE + 0.05, 0.3)
+    a = window_a(t, E.EPIC_BASE, E.SHUFFLE + 0.35, 0.3)
     if a <= 0:
         return
+    empty_frame(cv, t, 540, 470, E.EPIC_BASE + 0.15, E.EPIC_CHEAP, a, 220)
+    empty_frame(cv, t, 890, 470, E.EPIC_BASE + 0.3, E.EPIC_RICH, a, 220)
     framed_nft(cv, t, DC, 'Balloon Face', 190, 470, E.EPIC_BASE, a, 220, 'обычная', MUTED,
                rub(round(REG_FLOOR * RATE)), MUTED, 'не из крафта')
     framed_nft(cv, t, DC, 'Mánadagr', 540, 470, E.EPIC_CHEAP, a, 220, 'эпическая', TIER_COL['эпическая'],
@@ -528,19 +544,20 @@ def scene_epic(cv, t):
 
 
 def scene_shuffle(cv, t):
-    a = window_a(t, E.SHUFFLE, E.CHEAP + 0.1, 0.3)
+    a = window_a(t, E.SHUFFLE, E.SWEEP + 0.25, 0.3)
     if a <= 0:
         return
     framed_nft(cv, t, DC, 'Týsdagr', 190, 470, E.SHUFFLE + 0.2, a, 220, 'эпическая', TIER_COL['эпическая'],
                rub(rub_of(DC, 'Týsdagr')), MUTED)
-    framed_nft(cv, t, DC, 'Celestial Map', 540, 470, E.SHUF_LEG, a, 220, 'легендарная', TIER_COL['легендарная'],
+    framed_nft(cv, t, DC, 'Celestial Map', 540, 470, E.SHUFFLE + 0.45, a, 220, 'легендарная', TIER_COL['легендарная'],
                rub(rub_of(DC, 'Celestial Map')), INK, 'самая дорогая')
+    empty_frame(cv, t, 890, 470, E.SHUFFLE + 0.6, E.SHUF_SHOW, a, 220)
     framed_nft(cv, t, DC, 'Shuffle', 890, 470, E.SHUF_SHOW, a, 220, 'необычная', TIER_COL['необычная'],
                rub(rub_of(DC, 'Shuffle')), PINK, 'дороже всех', hi=t > E.SHUF_X2)
     sparkle_burst(cv, t, E.SHUF_X2, 890, 470, 220, 18)
-    bars(cv, t, LX, E.SHUF_LEG + 0.3, E.CHEAP, [rub_of(DC, 'Celestial Map'), rub_of(DC, 'Shuffle')],
+    bars(cv, t, LX, E.SHUF_LEG + 0.3, E.SWEEP, [rub_of(DC, 'Celestial Map'), rub_of(DC, 'Shuffle')],
          ['легенд.', 'Shuffle'], [TIER_COL['легендарная'], PINK], 'цена')
-    txt_panel(cv, t, RX, E.SHUF_X2 + 0.2, E.CHEAP, 'необычная', 'дороже', 'легендарки', PINK)
+    txt_panel(cv, t, RX, E.SHUF_X2 + 0.2, E.SWEEP, 'необычная', 'дороже', 'легендарки', PINK)
 
 
 def hand_after_sweep(t):
@@ -650,8 +667,8 @@ FLOAT = [  # (с, по, слева, справа) — NFT парят над бо
     (E.CREEPY_END + 0.5, E.TEASE, ('Desk Calendar', 'Zeus'), ('Jingle Bells', 'Fabergé')),
     (E.TEASE + 0.2, AD_STOP + 0.5, ('Resistance Dog', 'Satoshi'), ('Jingle Bells', 'Maneki Neko')),
     (E.EPIC + 0.2, E.SHUFFLE, (DC, 'Royal Flush'), (DC, 'Lucky Day')),
-    (E.SHUFFLE + 0.2, E.CHEAP, ('Resistance Dog', 'Yin Yang'), (DC, 'May the Fourth')),
-    (E.CHEAP + 0.2, E.WHY, ('Jingle Bells', 'Steampunk'), ('Jingle Bells', 'Orchestra')),
+    (E.SHUFFLE + 0.2, E.SWEEP, ('Resistance Dog', 'Yin Yang'), (DC, 'May the Fourth')),
+    (E.SWEEP, E.WHY, ('Jingle Bells', 'Steampunk'), ('Jingle Bells', 'Orchestra')),
     (E.WHY + 0.4, E.OUTRO, None, ('Jingle Bells', 'Maneki Neko')),
     (E.OUTRO + 0.2, DUR + 5, None, ('Resistance Dog', 'Satoshi')),
 ]

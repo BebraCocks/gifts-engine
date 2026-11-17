@@ -622,5 +622,29 @@
   "left": 192,
   "right": 513,
   "magenta": 26
+ },
+ "hmm_3": {
+  "sheet": "hmm_i1",
+  "top": 40,
+  "bottom": 980,
+  "left": 258,
+  "right": 588,
+  "magenta": 100
+ },
+ "hmm_7": {
+  "sheet": "hmm_i1",
+  "top": 40,
+  "bottom": 980,
+  "left": 230,
+  "right": 553,
+  "magenta": 104
+ },
+ "hmm_10": {
+  "sheet": "hmm_i1",
+  "top": 41,
+  "bottom": 980,
+  "left": 198,
+  "right": 520,
+  "magenta": 132
  }
 }

@@ -862,5 +862,29 @@
   "left": 140,
   "right": 567,
   "magenta": 9
+ },
+ "walk_a": {
+  "sheet": "walk_k",
+  "top": 36,
+  "bottom": 957,
+  "left": 221,
+  "right": 653,
+  "magenta": 29
+ },
+ "walk_b": {
+  "sheet": "walk_k",
+  "top": 33,
+  "bottom": 956,
+  "left": 210,
+  "right": 545,
+  "magenta": 57
+ },
+ "walk_c": {
+  "sheet": "walk_k",
+  "top": 37,
+  "bottom": 953,
+  "left": 148,
+  "right": 606,
+  "magenta": 22
  }
 }

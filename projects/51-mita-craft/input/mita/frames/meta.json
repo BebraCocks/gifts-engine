@@ -814,5 +814,29 @@
   "left": 183,
   "right": 544,
   "magenta": 0
+ },
+ "sweep_1": {
+  "sheet": "sweep_k",
+  "top": 74,
+  "bottom": 981,
+  "left": 181,
+  "right": 568,
+  "magenta": 43
+ },
+ "sweep_5": {
+  "sheet": "sweep_k",
+  "top": 62,
+  "bottom": 981,
+  "left": 116,
+  "right": 554,
+  "magenta": 59
+ },
+ "sweep_9": {
+  "sheet": "sweep_k",
+  "top": 30,
+  "bottom": 982,
+  "left": 130,
+  "right": 584,
+  "magenta": 102
  }
 }

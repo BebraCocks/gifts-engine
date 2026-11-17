@@ -23,6 +23,7 @@ SHEETS = {
     'down_k': 'down_1 down_5 down_9', 'down_i1': 'down_3 down_7 down_loop',
     'two_k': 'two_1 two_5 two_9', 'two_i1': 'two_3 two_7 two_10',
     'jump_k': 'jump_1 jump_5 jump_9', 'jump_i1': 'jump_2 jump_3 jump_4', 'jump_i2': 'jump_6 jump_7 jump_8',
+    'sweep_k': 'sweep_1 sweep_5 sweep_9',
 }
 THIRDS = set()            # бюсты касаются друг друга — режем строго по третям
 CW = 768

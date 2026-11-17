@@ -254,7 +254,7 @@ def mita_frame(name, t):
             a = anim.morph(anim.pingpong_name(PUMP_SWING, E.PUMP_BLACK - 0.45 - E.PUMPKIN, 2.6), 'pump_point', k)
         sx_, sy_, ang, sq = pumpkin_seat(t)
         # сжатие тыквы → Мита слегка «проседает» (по вертикали сильнее, по ширине чуть шире)
-        return a, dict(P_, cx=sx_, foot=sy_ + 34, base=570, shadow=False, sy=1 - 0.35 * (1 - sq), sx=1 + 0.12 * (1 - sq),
+        return a, dict(P_, s=0.8, cx=sx_, foot=sy_ + 34, base=570, shadow=False, sy=1 - 0.35 * (1 - sq), sx=1 + 0.12 * (1 - sq),
                        rot=ang)
     if name == 'jump':
         a = JUMP_T.frame(t)
@@ -392,7 +392,7 @@ def draw_orbit(cv, t, alpha, front):
     a0 = alpha * appear(t, E.DEMAND + 0.05, 0.4) * (1 - appear(t, E.GLOW - 0.35, 0.3))
     if a0 <= 0:
         return
-    cx, cy, rx, ry = 540, 600, 330, 90         # орбита над головой Миты — заполняет верх кадра
+    cx, cy, rx, ry = 540, 500, 330, 85         # орбита над головой Миты — заполняет верх кадра
     om = 1.25
     for i, (name, sx, sy, sc) in enumerate(ORBIT):
         rel = E.ICONS[i] - 0.25

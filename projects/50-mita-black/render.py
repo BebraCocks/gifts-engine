@@ -47,9 +47,9 @@ THEME = dict(accent=ACCENT, border=(232, 224, 246))
 UFONT = HERE / 'input' / 'fonts'
 BEATS = music.beats_in_content()
 CONF = [(236, 72, 120), (120, 90, 230), (255, 190, 60), (70, 190, 230), (150, 220, 160), (30, 24, 48)]
-PANEL_W, PANEL_H = 280, 320
+PANEL_W, PANEL_H = 240, 300
 SIDE_Y = 1150
-LX, RX = 168, 836
+LX, RX = 152, 928
 
 
 def lot(g, k):
@@ -510,6 +510,43 @@ def window(t, t0, t1, d=0.4):
     return appear(t, t0, d) * (1 - appear(t, t1 - d, d))
 
 
+FLOAT_GIFTS = ['Electric Skull', 'Neko Helmet', 'Top Hat', 'Heart Locket', 'Snow Globe', 'Big Year', 'Whip Cupcake',
+               'Bonded Ring', 'Mad Pumpkin']
+
+
+@functools.lru_cache(None)
+def float_lot(g):
+    k = f'{g}|black_floor'
+    if k in LOTS:
+        c = LOTS[k]
+        return c['gift'], c['model'], c['backdrop']
+    if g == 'Mad Pumpkin':
+        return 'Mad Pumpkin', 'Red Demon', 'Black'
+    return None
+
+
+def side_floaters(cv, t, sc):
+    """Парящие NFT на чёрном по краям (над боковыми панелями) — заполняют пустые бока, медленно плывут и покачиваются."""
+    if sc in ('creepy', 'show', 'spin'):
+        return
+    idx = [n for n, _ in M3.SCENES].index(sc) if sc in [n for n, _ in M3.SCENES] else 0
+    t0 = dict(M3.SCENES)[sc]
+    for side, x in ((0, LX), (1, RX)):
+        if (sc == 'hook' and side == 1 and t < 2.7) or (sc == 'hang' and side == 0):
+            continue
+        g = FLOAT_GIFTS[(idx * 2 + side) % len(FLOAT_GIFTS)]
+        c = float_lot(g)
+        if not c:
+            continue
+        a = appear(t, t0 + 0.2 + 0.25 * side, 0.45)
+        y = (560 if sc == 'pumpkin' else 885) + 18 * math.sin(t * 1.1 + side * 2) - (40 if side else 0)
+        s_ = 0.52 * (0.85 + 0.15 * pop_in(t, t0 + 0.2 + 0.25 * side))
+        rot = 0.08 * math.sin(t * 0.8 + side)
+        put(cv, tinted_glow((255, 215, 150)), x, y, 0.7, 0.28 * a)
+        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.4), x, y + 10, s_, 0.7 * a)
+        put(cv, gift_tile(c[0], c[1], c[2], TILE, t), x, y, s_, a, rot)
+
+
 def deco(cv, t, sc):
     goth = appear(t, M3.SPIN_END - 0.3, 0.6)
     # подиум: мягкий круг света под Митой
@@ -641,6 +678,7 @@ def background(t):
     fx.over(cv, (grid_dots(), 0, 0))
     fx.over(cv, fx.draw_rgba((0, 0, W, H), lambda d, mp, S: confetti(d, mp, S, t)))
     deco(cv, t, sc)
+    side_floaters(cv, t, sc)
     return cv
 
 
@@ -897,8 +935,27 @@ def scene_glow(cv, t):
 def scene_plain(cv, t):
     if not (E.PLAIN - 0.1 <= t < E.PRICE + 0.3):
         return
-    c = lot('Neko Helmet', 'floor')
+    hi, c = lot('Neko Helmet', 'black_floor'), lot('Neko Helmet', 'floor')
     a = appear(t, E.PLAIN + 0.05, 0.3)
+    at = a * (1 - appear(t, E.PRICE - 0.3, 0.3))
+    dim = appear(t, E.KICK - 0.6, 0.6)
+    for j, (cc, x) in enumerate(((hi, 300), (c, 780))):
+        s_ = 0.72 * (0.7 + 0.3 * pop_in(t, E.PLAIN + 0.05 + 0.15 * j))
+        tl = gift_tile(cc['gift'], cc['model'], cc['backdrop'], TILE, t - E.PLAIN)
+        if j == 1 and dim > 0:
+            gg = ImageOps.grayscale(tl.convert('RGB')).convert('RGBA')
+            gg.putalpha(tl.getchannel('A'))
+            tl = Image.blend(tl, gg, 0.8 * dim)
+        if j == 0:
+            put(cv, tinted_glow((255, 210, 140)), x, 470, 1.2 * s_, at * (0.3 + 0.1 * math.sin(t * 4)))
+        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.5), x, 470 + 12 * s_, s_, at * (1 - 0.4 * dim * j))
+        put(cv, tl, x, 470, s_ * (1 - 0.06 * dim * j), at * (1 - 0.35 * dim * j))
+        put(cv, text(cc['gift'], 24, 'Heavy'), x, 470 - 150 * s_ - 24, 1.0, at)
+        put(cv, text(rub(cc['rub']), 36, 'Heavy', WINE if j == 0 else MUTED), x, 470 + 150 * s_ + 30, 1.0, at)
+        put(cv, upill('на чёрном' if j == 0 else 'обычный фон', WINE if j == 0 else (226, 220, 238), 22, WHITE if j == 0 else INK),
+            x, 470 + 150 * s_ + 78, 1.0, at)
+    if dim > 0.5:
+        put(cv, text('просто фон…', 30, 'Heavy', MUTED), 780, 300, 1.0, at * appear(t, E.KICK - 0.2, 0.3))
     tile = gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - E.PLAIN)
     g = ImageOps.grayscale(tile.convert('RGB')).convert('RGBA')
     g.putalpha(tile.getchannel('A'))
@@ -1014,7 +1071,7 @@ def side_panels(cv, t):
         s = put_panel(cv, x, SIDE_Y, a, t0, t)
         put(cv, utext(top, 20, 'SemiBold', MUTED), x, SIDE_Y - 105, s, a)
         im = utext(big, 46, 'ExtraBold', big_col)
-        put(cv, im, x, SIDE_Y - 10, s * min(1.0, 230 / im.width), a)
+        put(cv, im, x, SIDE_Y - 10, s * min(1.0, 200 / im.width), a)
         put(cv, utext(bot, 20, 'SemiBold', MUTED), x, SIDE_Y + 85, s, a)
     txt_panel(LX, 0.9, E.SPIN - 0.3, 'обычный фон', '438 ₽', 'Whip Cupcake', MUTED)
     txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', '2 452 ₽', 'Whip Cupcake')

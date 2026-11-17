@@ -9,6 +9,22 @@ from PIL import Image, ImageDraw, ImageFilter
 
 import anim
 
+# выравнивание поз (ChatGPT ставит фигуру на листе чуть по-разному → Миту «шатало»):
+# центр ног (нижние 25 % силуэта) → x = 384, подошвы → y = 990. Высоту полёта задаём сами (FLOAT).
+AL = Path(__file__).resolve().parent / 'input' / 'mita' / 'frames_aligned'
+
+
+def align_all(names):
+    AL.mkdir(exist_ok=True)
+    for n in names:
+        a = anim.pose(n)
+        ys, xs = np.nonzero(a[..., 3] > 60)
+        y0, y1 = ys.min(), ys.max()
+        leg = ys > y1 - 0.25 * (y1 - y0)
+        dx = 384 - np.median(xs[leg])
+        dy = 990 - y1
+        Image.fromarray(anim._translate(a, np.array([dx, dy], np.float32))).save(AL / f'{n}.png')
+
 HERE = Path(__file__).resolve().parent
 W, H, FPS = 540, 960, 60
 SEQ = ['snap_idle', 'snap_up1', 'snap_up2', 'snap_up3', 'snap_pre', 'snap_click', 'snap_post', 'snap_dn1', 'snap_dn2',
@@ -16,9 +32,9 @@ SEQ = ['snap_idle', 'snap_up1', 'snap_up2', 'snap_up3', 'snap_pre', 'snap_click'
        'astro_peak', 'astro_fall1', 'astro_fall2', 'astro_fall3', 'astro_land', 'astro_look1', 'astro_look2', 'astro_look3',
        'astro_cape', 'astro_rel1', 'astro_rel2', 'astro_rel3', 'astro_sc1', 'astro_sc2', 'astro_sc3']
 # длительность перехода В кадр i (с): щелчок быстрый, полёт и приземление медленнее, на ключевых — задержка
-DUR = [0.0, 0.16, 0.12, 0.12, 0.12, 0.07, 0.08, 0.13, 0.14, 0.15, 0.15, 0.16, 0.2, 0.2, 0.22,
-       0.0, 0.2, 0.2, 0.2, 0.2, 0.16, 0.14, 0.14, 0.16, 0.18, 0.14, 0.14, 0.14, 0.12, 0.25]
-HOLD = {'snap_idle': 0.45, 'snap_peak': 0.12, 'astro_cape': 0.35, 'astro_sc2': 0.2, 'astro_sc3': 0.8}
+DUR = [0.0, 0.08, 0.07, 0.07, 0.07, 0.05, 0.06, 0.08, 0.08, 0.09, 0.09, 0.1, 0.1, 0.1, 0.11,
+       0.0, 0.11, 0.11, 0.11, 0.11, 0.09, 0.08, 0.08, 0.09, 0.1, 0.08, 0.08, 0.08, 0.08, 0.14]
+HOLD = {'snap_idle': 0.12, 'astro_cape': 0.12, 'astro_sc3': 0.35}
 T, t = [], 0.0
 for n, d in zip(SEQ, DUR):
     t += d
@@ -93,9 +109,11 @@ def frame(t):
         bg.alpha_composite(col.filter(ImageFilter.GaussianBlur(30)))
     a = mita_at(t)
     m = Image.fromarray(a)
+    rise = ease((t - T[SEQ.index('snap_wind75')]) / (FLASH - T[SEQ.index('snap_wind75')])) * (1 - ease((t - FLASH) / (T[SEQ.index('astro_land')] - FLASH)))
+    lift = int(70 * rise)                                  # плавный подъём и приземление
     s = 0.72
     m = m.resize((int(m.width * s), int(m.height * s)), Image.LANCZOS)
-    bg.alpha_composite(m, (W // 2 - m.width // 2, foot - int(988 * s)))
+    bg.alpha_composite(m, (W // 2 - m.width // 2, foot - int(990 * s) - lift))
     # искры, поднимающиеся вверх
     if c:
         d = ImageDraw.Draw(bg)
@@ -115,6 +133,9 @@ def frame(t):
 
 
 if __name__ == '__main__':
+    align_all(SEQ)
+    anim.FR = AL
+    anim.pose.cache_clear()
     out = HERE / 'build' / 'snap_preview.mp4'
     out.parent.mkdir(exist_ok=True)
     n = int((TOTAL + 0.3) * FPS)

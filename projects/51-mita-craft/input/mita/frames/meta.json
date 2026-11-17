@@ -454,5 +454,29 @@
   "left": 181,
   "right": 519,
   "magenta": 92
+ },
+ "fear_45": {
+  "sheet": "fear_x2",
+  "top": 19,
+  "bottom": 979,
+  "left": 230,
+  "right": 598,
+  "magenta": 0
+ },
+ "fear_52": {
+  "sheet": "fear_x2",
+  "top": 26,
+  "bottom": 978,
+  "left": 198,
+  "right": 569,
+  "magenta": 0
+ },
+ "fear_53": {
+  "sheet": "fear_x2",
+  "top": 32,
+  "bottom": 979,
+  "left": 181,
+  "right": 521,
+  "magenta": 4
  }
 }

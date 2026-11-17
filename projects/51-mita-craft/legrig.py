@@ -24,8 +24,9 @@ GROUND = 990.0
 STANCE = 0.6
 LIFT = 55.0            # высота подъёма стопы в махе (px холста 768×1024)
 BOB = 5.0              # покачивание таза
-TOE_OFF = 30.0         # угол отрыва пятки (носок на полу), °
+TOE_OFF = 40.0         # угол отрыва пятки (носок на полу), °
 HEEL_STRIKE = 20.0     # носок вверх при постановке на пятку, °
+HEEL_OFF = 0.62        # с какой доли опоры начинает подниматься пятка
 
 
 def _ang(v):
@@ -158,12 +159,14 @@ def _foot_at(L, pivot_name, pivot_pos, beta):
 
 def _stance(L, u):
     hx = L['H'][0] + L['xf'] - L['S'] * u                 # пятка скользит назад равномерно
-    if u < 0.12:
-        b = HEEL_STRIKE * (1 - u / 0.12)
+    if u < 0.14:                                        # перекат с пятки на всю стопу
+        x = u / 0.14
+        b = HEEL_STRIKE * (1 - x) ** 2
         return _foot_at(L, 'heel', (hx, GROUND), b), b
-    if u < 0.65:
+    if u < HEEL_OFF:
         return _foot_at(L, 'heel', (hx, GROUND), 0.0), 0.0
-    b = -TOE_OFF * (u - 0.65) / 0.35
+    x = (u - HEEL_OFF) / (1 - HEEL_OFF)                 # пятка плавно поднимается, носок на полу
+    b = -TOE_OFF * x ** 1.6
     return _foot_at(L, 'toe', (hx + L['flat'], GROUND), b), b
 
 
@@ -232,9 +235,49 @@ def _mesh(alpha, W):
     return dict(V=V, Wv=Wv.astype(np.float32), T=T[order])
 
 
-def _render_leg(L, H, phi):
-    A, beta = _leg_state(L, phi)
-    K, A = _ik(H, A, L['L1'], L['L2'])
+# Кривые походки человека (доля цикла от касания пяткой → угол, °), по данным биомеханики (Winter):
+# бедро — сгибание вперёд (+) / разгибание назад (−); колено — сгибание; стопа — наклон к полу (+ носок вверх).
+GAIT_HIP = [(0, 30), (10, 27), (20, 20), (30, 12), (40, 3), (50, -6), (55, -9), (60, -8), (65, -2), (70, 7),
+            (75, 15), (80, 22), (85, 27), (90, 30), (95, 31), (100, 30)]
+GAIT_KNEE = [(0, 4), (5, 10), (12, 17), (18, 18), (25, 13), (35, 6), (42, 4), (50, 8), (55, 18), (60, 35),
+             (65, 50), (70, 60), (73, 62), (78, 58), (85, 40), (90, 22), (95, 8), (100, 4)]
+GAIT_FOOT = [(0, 18), (4, 10), (8, 2), (12, 0), (40, 0), (45, -3), (52, -12), (58, -28), (62, -38), (67, -35),
+             (72, -22), (78, -10), (85, 0), (92, 10), (97, 16), (100, 18)]
+HIP_SCALE = 0.8        # вид три четверти: шаг в кадре короче, чем сбоку
+KNEE_SCALE = 1.0
+FOOT_SCALE = 0.85
+
+
+@functools.lru_cache(None)
+def _curves():
+    from scipy.interpolate import CubicSpline
+    out = []
+    for pts, sc in ((GAIT_HIP, HIP_SCALE), (GAIT_KNEE, KNEE_SCALE), (GAIT_FOOT, FOOT_SCALE)):
+        x = np.array([p[0] for p in pts], float) / 100
+        y = np.array([p[1] for p in pts], float) * sc
+        out.append(CubicSpline(x, y, bc_type='periodic'))
+    return out
+
+
+def _joints(L, H, phi):
+    """Прямая кинематика: таз H, фаза phi → колено, голеностоп, наклон стопы."""
+    ch, ck, cf = _curves()
+    p = phi % 1.0
+    th = math.radians(float(ch(p)))
+    ts = th - math.radians(float(ck(p)))
+    K = H + L['L1'] * np.array([math.sin(th), math.cos(th)])
+    A = K + L['L2'] * np.array([math.sin(ts), math.cos(ts)])
+    return K, A, float(cf(p))
+
+
+def _contacts(L, A, beta):
+    """Пятка и носок (нижние точки туфли) при голеностопе A и наклоне beta."""
+    Rm = _R(math.radians(beta - L['beta']))
+    return [A + Rm @ (L[n] - L['A']) for n in ('heel', 'toe')]
+
+
+def _render_leg(L, H, phi, joints=None):
+    K, A, beta = joints if joints is not None else _joints(L, H, phi)
     Ms = [_affine(_ang(K - H) - _ang(L['K'] - L['H']), L['H'], H),
           _affine(_ang(A - K) - _ang(L['A'] - L['K']), L['K'], K),
           _affine(math.radians(beta - L['beta']), L['A'], A)]
@@ -284,20 +327,209 @@ def _render_leg_lbs(L, H, phi):
     return acc / np.maximum(ws, 1e-4)
 
 
+XF = 95.0              # пятка при касании — впереди своего тазобедренного (px)
+STRIDE = 320.0         # на сколько опорная стопа уезжает назад за опору (px) — в сцене спрайт едет вперёд так же
+SWING_KNEE = 22.0      # добавочный сгиб колена в начале маха, ° (чтобы стопа прошла над полом)
+
+
+def _knee_rest(u):
+    """Желаемый сгиб колена в опоре: амортизация после касания (~15°), дальше почти прямая нога."""
+    return 4.0 + 13.0 * math.exp(-((u - 0.2) / 0.09) ** 2)
+
+
+def _reach(L, kd):
+    return math.sqrt(L['L1'] ** 2 + L['L2'] ** 2 + 2 * L['L1'] * L['L2'] * math.cos(math.radians(kd)))
+
+
+def _stance_state(L, u):
+    L = dict(L, xf=XF, S=STRIDE)
+    return _stance(L, u)
+
+
+def _hip_constraints(n=240, legs=((2, 0.0),)):
+    """Для каждой фазы — самое высокое положение таза (y), при котором каждая опорная нога достаёт пол с желаемым
+    сгибом колена (берём наибольший y среди опорных ног)."""
+    R = rig()
+    out = np.full(n, -1e9)
+    for i in range(n):
+        p = i / n
+        for k, off in legs:
+            L = R['legs'][k]
+            ph = (p + off) % 1.0
+            if ph < STANCE:
+                u = ph / STANCE
+                A, _ = _stance_state(L, u)
+                dx = A[0] - L['H'][0]
+                Lr = _reach(L, _knee_rest(u))
+                out[i] = max(out[i], A[1] - math.sqrt(max(Lr * Lr - dx * dx, 1.0)))
+    return out
+
+
+@functools.lru_cache(None)
+def _hip_fit(n=480):
+    """Таз — гладкая волна (два подъёма за цикл: выше всего в середине опоры, ниже — при переносе веса).
+    Амплитуда и фаза подбираются так, чтобы опорные ноги не отрывались от пола, а колени гнулись как можно меньше.
+    Дальняя нога на рисунке другой длины → её крепление под юбкой сдвинуто на постоянную величину d."""
+    cn = _hip_constraints(n, legs=((2, 0.0),))
+    cf = _hip_constraints(n, legs=((1, 0.5),))
+    on, of = cn > -1e8, cf > -1e8
+    P = np.arange(n) / n
+    best = None
+    for amp in np.arange(0, 30.5, 0.5):
+        for p0 in np.arange(0.0, 0.5, 0.005):
+            h = -amp * np.cos(4 * np.pi * (P - p0))
+            m = float(np.max((cn - h)[on]))
+            d = float(np.max((cf - h)[of])) - m
+            cost = float(np.mean((m + h - cn)[on])) + float(np.mean((m + d + h - cf)[of]))
+            if best is None or cost < best[0]:
+                best = (cost, amp, p0, m, d)
+    cost, amp, p0, m, d = best
+    print(f'таз: амплитуда {amp:.1f} px, фаза {p0:.3f}, лишний сгиб {cost:.1f} px, сдвиг дальней ноги {d:.1f}')
+    return m - amp * np.cos(4 * np.pi * (P - p0)), d
+
+
+def _hip_curve():
+    return _hip_fit()[0]
+
+
+def _far_offset():
+    return _hip_fit()[1]
+
+
+def _hip_y(p):
+    c = _hip_curve()
+    n = len(c)
+    f = (p % 1.0) * n
+    i = int(f)
+    return c[i % n] * (1 - (f - i)) + c[(i + 1) % n] * (f - i)
+
+
+def _angles(H, K, A):
+    th = math.atan2(K[0] - H[0], K[1] - H[1])
+    ts = math.atan2(A[0] - K[0], A[1] - K[1])
+    return th, th - ts                                  # угол бедра от вертикали (+ вперёд), сгиб колена
+
+
+def _leg_pose(L, phase, off):
+    """Колено, голеностоп, наклон стопы для ноги L в момент phase (off — сдвиг фазы ноги)."""
+    ph = (phase + off) % 1.0
+    dy = _far_offset() if off else 0.0
+    hy = lambda t: _hip_y(t) + dy
+    H = np.array([L['H'][0], hy(phase)])
+    if ph < STANCE:
+        A, b = _stance_state(L, ph / STANCE)
+        K, A = _ik(H, A, L['L1'], L['L2'])
+        return H, K, A, b
+    v = (ph - STANCE) / (1 - STANCE)
+    # концы маха: отрыв носка (u=1) и касание пяткой (u=0) — из опоры, с высотой таза в те моменты
+    t0 = phase - (ph - STANCE)
+    t1 = phase + (1 - ph)
+    H0 = np.array([L['H'][0], hy(t0)])
+    H1 = np.array([L['H'][0], hy(t1)])
+    A0, b0 = _stance_state(L, 1.0)
+    A1, b1 = _stance_state(L, 0.0)
+    K0, A0 = _ik(H0, A0, L['L1'], L['L2'])
+    K1, A1 = _ik(H1, A1, L['L1'], L['L2'])
+    th0, k0 = _angles(H0, K0, A0)
+    th1, k1 = _angles(H1, K1, A1)
+    def ss(x):
+        x = max(0.0, min(1.0, x))
+        return x * x * (3 - 2 * x)
+    e = ss(v / 0.85)                                    # бедро выносится вперёд к 85 % маха
+    th = th0 + (th1 - th0) * e
+    kn = k0 + (k1 - k0) * ss(v) + math.radians(SWING_KNEE) * math.sin(math.pi * v) * (1 - v) / 0.58
+    b = b0 + (b1 - b0) * ss(v) + 12.0 * math.sin(math.pi * v)      # в середине маха носок не цепляет пол
+    ts = th - kn
+    K = H + L['L1'] * np.array([math.sin(th), math.cos(th)])
+    A = K + L['L2'] * np.array([math.sin(ts), math.cos(ts)])
+    return H, K, A, b
+
+
+# ── верх: мах рук и вторичное движение (локальная «пластика» картинки, без вырезания) ──
+ARM_NEAR = [(446, 292), (484, 290), (500, 330), (504, 420), (556, 428), (610, 434), (650, 448), (650, 505),
+            (572, 515), (520, 497), (482, 478), (472, 440), (464, 400), (452, 360)]
+ARM_FORE = [(486, 420), (556, 428), (610, 434), (650, 448), (650, 505), (572, 515), (520, 497), (486, 480)]
+ARM_FAR = [(204, 484), (285, 480), (285, 530), (262, 610), (212, 612), (200, 560)]
+SHOULDER, ELBOW, SHOULDER_FAR = (462.0, 305.0), (488.0, 445.0), (330.0, 300.0)
+ARM_SWING = 7.0         # мах передней руки от плеча, °
+FORE_SWING = 5.0        # добавочный мах предплечья (с запаздыванием), °
+FAR_SWING = 3.5         # задняя кисть (в противофазе), °
+HAIR_SWAY = 4.0         # хвосты, px на кончиках
+CAPE_SWAY = 3.0         # край плаща, px
+
+
+@functools.lru_cache(None)
+def _upper_masks():
+    R = rig()
+    h, w = R['upper'].shape[:2]
+    def poly(pts, sig):
+        m = np.zeros((h, w), np.uint8)
+        cv2.fillPoly(m, [np.array(pts, np.int32)], 1)
+        return cv2.GaussianBlur(m.astype(np.float32), (0, 0), sig)
+    Y, X = np.mgrid[0:h, 0:w].astype(np.float32)
+    # хвосты и плащ — всё левее корпуса (x < 300), вес растёт сверху вниз
+    side = np.clip((300 - X) / 40, 0, 1)
+    hair = side * np.clip((Y - 250) / 230, 0, 1) * (Y < 500)
+    cape = side * np.clip((Y - 380) / 180, 0, 1) * (Y < 620)
+    return dict(near=poly(ARM_NEAR, 5), fore=poly(ARM_FORE, 5), far=poly(ARM_FAR, 6),
+                hair=cv2.GaussianBlur(hair.astype(np.float32), (0, 0), 8),
+                cape=cv2.GaussianBlur(cape.astype(np.float32), (0, 0), 8), X=X, Y=Y)
+
+
+def _rot_disp(X, Y, piv, ang, wgt):
+    """Смещение точек при повороте вокруг piv на угол ang·wgt (против часовой на экране)."""
+    a = ang * wgt
+    c, s = np.cos(a), np.sin(a)
+    dx, dy = X - piv[0], Y - piv[1]
+    return (c * dx + s * dy - dx) * (wgt > 1e-3), (-s * dx + c * dy - dy) * (wgt > 1e-3)
+
+
+def _upper_motion(U, phase):
+    m = _upper_masks()
+    X, Y = m['X'], m['Y']
+    # передняя рука впереди, когда впереди дальняя нога (её касание пяткой — фаза 0.5); руки чуть запаздывают
+    au = math.radians(ARM_SWING) * math.cos(2 * math.pi * (phase - 0.53))
+    af = math.radians(FORE_SWING) * math.cos(2 * math.pi * (phase - 0.6))
+    ab = -math.radians(FAR_SWING) * math.cos(2 * math.pi * (phase - 0.53))
+    dx1, dy1 = _rot_disp(X, Y, SHOULDER, au, m['near'])
+    # локоть уже повернулся вместе с плечом
+    ex = SHOULDER[0] + math.cos(au) * (ELBOW[0] - SHOULDER[0]) + math.sin(au) * (ELBOW[1] - SHOULDER[1])
+    ey = SHOULDER[1] - math.sin(au) * (ELBOW[0] - SHOULDER[0]) + math.cos(au) * (ELBOW[1] - SHOULDER[1])
+    dx2, dy2 = _rot_disp(X + dx1, Y + dy1, (ex, ey), af, m['fore'])
+    dx3, dy3 = _rot_disp(X, Y, SHOULDER_FAR, ab, m['far'])
+    sway = math.sin(4 * math.pi * phase - 1.2)
+    DX = dx1 + dx2 + dx3 + HAIR_SWAY * m['hair'] * sway + CAPE_SWAY * m['cape'] * math.sin(4 * math.pi * phase - 1.7)
+    DY = dy1 + dy2 + dy3
+    # обратное отображение: где взять пиксель для точки p (две итерации — точнее при поворотах)
+    mx, my = X - DX, Y - DY
+    for _ in range(2):
+        DXs = cv2.remap(DX.astype(np.float32), mx, my, cv2.INTER_LINEAR)
+        DYs = cv2.remap(DY.astype(np.float32), mx, my, cv2.INTER_LINEAR)
+        mx, my = X - DXs, Y - DYs
+    return cv2.remap(U, mx.astype(np.float32), my.astype(np.float32), cv2.INTER_LINEAR,
+                     borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+
+
 def leg_frame(phase):
     R = rig()
-    bob = -BOB * math.cos(4 * math.pi * (phase - STANCE / 4))   # таз выше всего на середине опоры
+    legs = [(1, 0.5), (2, 0.0)]                          # сначала дальняя нога, потом ближняя
+    hy = _hip_y(phase)
+    bob = hy - R['legs'][2]['H'][1]
     out = np.zeros_like(R['upper'])
-    for k, off in ((1, 0.5), (2, 0.0)):                 # сначала дальняя нога, потом ближняя
+    for k, off in legs:
         L = R['legs'][k]
-        H = L['H'] + np.array([0.0, bob])
-        img = _render_leg(L, H, phase + off)
+        H, K, A, b = _leg_pose(L, phase, off)
+        img = _render_leg(L, H, phase + off, (K, A, b))
         a = img[..., 3:4] / 255
         out = img + out * (1 - a)                       # премультипликация
     # верх поверх, обрезан у подола, со сдвигом таза
-    U = anim._translate(R['upper'].astype(np.uint8), np.array([0, bob], np.float32)).astype(np.float32)
+    U = _upper_motion(R['upper'].astype(np.float32), phase)
+    U = anim._translate(np.clip(U, 0, 255).astype(np.uint8), np.array([0, bob], np.float32)).astype(np.float32)
     yy = np.arange(U.shape[0], dtype=np.float32)[:, None]
+    xx = np.arange(U.shape[1], dtype=np.float32)[None, :]
     mu = np.clip((R['hem'] + bob + 4 - yy) / 6 + 0.5, 0, 1)
+    # задняя кисть свисает ниже подола (левее ног) — её не обрезаем
+    mu = np.maximum(mu, (xx < 285) * np.clip((R['hem'] + bob + 45 - yy) / 6 + 0.5, 0, 1))
     U[..., 3] *= mu
     U[..., :3] *= U[..., 3:4] / 255
     ua = U[..., 3:4] / 255

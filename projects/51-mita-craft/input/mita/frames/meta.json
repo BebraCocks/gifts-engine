@@ -982,5 +982,29 @@
   "left": 162,
   "right": 614,
   "magenta": 51
+ },
+ "walk_x7": {
+  "sheet": "walk_i5",
+  "top": 36,
+  "bottom": 962,
+  "left": 188,
+  "right": 625,
+  "magenta": 206
+ },
+ "walk_x8": {
+  "sheet": "walk_i5",
+  "top": 34,
+  "bottom": 955,
+  "left": 198,
+  "right": 596,
+  "magenta": 195
+ },
+ "walk_x9": {
+  "sheet": "walk_i5",
+  "top": 37,
+  "bottom": 961,
+  "left": 209,
+  "right": 595,
+  "magenta": 227
  }
 }

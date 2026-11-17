@@ -766,5 +766,29 @@
   "left": 198,
   "right": 545,
   "magenta": 0
+ },
+ "jump_2": {
+  "sheet": "jump_i1",
+  "top": 163,
+  "bottom": 976,
+  "left": 222,
+  "right": 562,
+  "magenta": 67
+ },
+ "jump_3": {
+  "sheet": "jump_i1",
+  "top": 91,
+  "bottom": 905,
+  "left": 152,
+  "right": 558,
+  "magenta": 55
+ },
+ "jump_4": {
+  "sheet": "jump_i1",
+  "top": 41,
+  "bottom": 653,
+  "left": 122,
+  "right": 611,
+  "magenta": 107
  }
 }

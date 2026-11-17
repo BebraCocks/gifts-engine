@@ -526,5 +526,29 @@
   "left": 203,
   "right": 525,
   "magenta": 503
+ },
+ "up_1": {
+  "sheet": "up_k",
+  "top": 25,
+  "bottom": 981,
+  "left": 250,
+  "right": 558,
+  "magenta": 0
+ },
+ "up_5": {
+  "sheet": "up_k",
+  "top": 26,
+  "bottom": 982,
+  "left": 116,
+  "right": 546,
+  "magenta": 0
+ },
+ "up_9": {
+  "sheet": "up_k",
+  "top": 26,
+  "bottom": 983,
+  "left": 126,
+  "right": 581,
+  "magenta": 0
  }
 }

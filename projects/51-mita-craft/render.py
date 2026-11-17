@@ -621,18 +621,141 @@ def scene_outro(cv, t):
 
 
 def decor_corners(cv, t):
-    """Мелкие детали звездочёта по частям ролика (не «китайский квартал»: 1–2 предмета на часть)."""
+    """Мелкие детали звездочёта в нижних углах каждой части (правило автора: пустых мест нет, как в 49)."""
     items = [
-        (E.SNAP + E.SNAP_DUR, E.BURN, 'moon', 150, 120, 330),
-        (E.CREEPY_END + 0.3, E.TEASE, 'astrolabe', 120, 960, 1680),
-        (E.EPIC, E.SHUFFLE, 'scroll', 120, 110, 1680),
-        (E.SHUFFLE, E.CHEAP, 'telescope', 130, 975, 1690),
-        (E.WHY, E.OUTRO, 'sparkles', 150, 960, 330),
+        (0.3, E.SNAP, [('moon', 130, 110, 1720), ('sparkles', 120, 975, 1720)]),
+        (E.SNAP + E.SNAP_DUR, E.CREEPY, [('moon', 150, 120, 330), ('scroll', 120, 975, 1720)]),
+        (E.CREEPY_END + 0.3, E.TEASE, [('telescope', 130, 105, 1700), ('astrolabe', 120, 975, 1700)]),
+        (E.TEASE, AD_STOP + 0.5, [('scroll', 120, 105, 1710), ('moon', 120, 975, 1710)]),
+        (E.EPIC, E.SHUFFLE, [('scroll', 120, 105, 1710), ('sparkles', 120, 975, 1720)]),
+        (E.SHUFFLE, E.CHEAP, [('moon', 120, 105, 1710), ('telescope', 130, 975, 1700)]),
+        (E.CHEAP, E.WHY, [('astrolabe', 115, 105, 1700), ('scroll', 120, 975, 1710)]),
+        (E.WHY, E.OUTRO, [('sparkles', 140, 960, 330), ('astrolabe', 115, 975, 1700)]),
+        (E.OUTRO, DUR + 5, [('scroll', 120, 975, 1710)]),
     ]
-    for t0, t1, name, w, x, y in items:
+    for t0, t1, lst in items:
         a = window_a(t, t0 + 0.3, t1, 0.4)
-        if a > 0:
-            put(cv, decor(name, w), x, y + 6 * math.sin(t * 1.6 + x), pop(t, t0 + 0.3), a * 0.9)
+        if a <= 0:
+            continue
+        for j, (name, w, x, y) in enumerate(lst):
+            if x < 300 and y > 1000 and M.x_of(t) < 450:
+                continue                                  # Мита стоит слева — угол и так занят
+            put(cv, decor(name, w), x, y + 6 * math.sin(t * 1.6 + x), pop(t, t0 + 0.3 + 0.15 * j), a * 0.9,
+                rot=0.06 * math.sin(t * 0.9 + j))
+
+
+# ------------------------------------------------------------------ заполнение: парящие NFT по бокам, дрейф по краям, реакции
+FLOAT = [  # (с, по, слева, справа) — NFT парят над боковыми панелями
+    (0.6, E.SNAP - 0.1, ('Jingle Bells', 'Golden Dice'), (DC, 'Týsdagr')),
+    (E.CREEPY_END + 0.5, E.TEASE, ('Desk Calendar', 'Zeus'), ('Jingle Bells', 'Fabergé')),
+    (E.TEASE + 0.2, AD_STOP + 0.5, ('Resistance Dog', 'Satoshi'), ('Jingle Bells', 'Maneki Neko')),
+    (E.EPIC + 0.2, E.SHUFFLE, (DC, 'Royal Flush'), (DC, 'Lucky Day')),
+    (E.SHUFFLE + 0.2, E.CHEAP, ('Resistance Dog', 'Yin Yang'), (DC, 'May the Fourth')),
+    (E.CHEAP + 0.2, E.WHY, ('Jingle Bells', 'Steampunk'), ('Jingle Bells', 'Orchestra')),
+    (E.WHY + 0.4, E.OUTRO, None, ('Jingle Bells', 'Maneki Neko')),
+    (E.OUTRO + 0.2, DUR + 5, None, ('Resistance Dog', 'Satoshi')),
+]
+
+
+def side_floaters(cv, t):
+    for t0, t1, l, r in FLOAT:
+        for side, gm in ((0, l), (1, r)):
+            if gm is None or (side == 0 and M.x_of(t) < 450):
+                continue
+            a = window_a(t, t0 + 0.25 * side, t1, 0.4)
+            if a <= 0:
+                continue
+            x = (LX, RX)[side]
+            y = 1090 + 16 * math.sin(t * 1.1 + side * 2)
+            magic_nft(cv, t, gm[0], gm[1], x, y, 135, t0 + 0.25 * side, a)
+
+
+DRIFT = [(DC, 'Space Era'), ('Jingle Bells', 'Festive Night'), (DC, 'Artwork'), ('Jingle Bells', 'Spring Knell'),
+         (DC, 'Frog Day'), (DC, 'New Year')]
+
+
+def drifting(cv, t):
+    """Маленькие NFT медленно всплывают по самым краям кадра — края никогда не пустые."""
+    for side in (0, 1):
+        for m in range(3):
+            ph = (t * 0.035 + m / 3 + side * 0.17) % 1.0
+            y = 1960 - ph * 2000
+            x = (52, 1028)[side] + math.sin(t * 0.8 + m * 2 + side) * 14
+            a = 0.5 * min(1.0, ph * 6, (1 - ph) * 6)
+            g, mm = DRIFT[(m * 2 + side) % len(DRIFT)]
+            put(cv, nft(g, mm, 84), x, y, 1.0, a, math.sin(t * 0.7 + m) * 0.15)
+
+
+VIOLET = (120, 90, 230)
+REACT = [(E.HOOK_NFT + 0.5, '?'), (E.HOOK_NO + 0.2, '!'), (E.NEVER + 0.3, '!'), (E.BURN + 0.3, '!'),
+         (E.TIER_ONLY + 0.5, 'heart'), (E.TEASE + 0.5, '?'), (E.EPIC + 0.2, '!'), (E.EPIC_RICH + 0.4, '!'),
+         (E.SHUF_X2 + 0.1, '!'), (E.FOUR + 0.4, 'dots'), (E.LOVE + 0.2, 'heart'), (E.OUTRO_PILL + 0.2, 'heart')]
+
+
+def reactions(cv, t):
+    for t0, kind in REACT:
+        k = t - t0
+        if not 0 <= k < 1.3:
+            continue
+        a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
+        p = fx.ease_out_back(fx.clamp01(k / 0.35))
+        x, y = M.x_of(t) + 190, M.FOOT - M.MITA_H + 40 - 40 * ease(k / 1.3)
+        if kind in ('!', '?'):
+            put(cv, fx.solid_pill(kind, PINK if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * p, a, -0.15)
+        else:
+            def icon(d, mp, S, kind=kind, a=a, p=p, x=x, y=y):
+                X, Y = mp(x, y)
+                r = 26 * S * (0.6 + 0.4 * p)
+                if kind == 'heart':
+                    heart(d, X, Y, r, PINK + (int(255 * a),))
+                else:
+                    for j in range(3):
+                        rr = r * 0.28
+                        d.ellipse([X - r + j * r - rr, Y - rr, X - r + j * r + rr, Y + rr], fill=INK + (int(200 * a),))
+            fx.over(cv, fx.draw_rgba((x - 60, y - 70, x + 60, y + 60), icon))
+
+
+def craft_counter(cv, t):
+    """Слева сверху (Мита стоит слева, над ней пусто): сколько подарков в крафте — 0…4, после сгорания 0."""
+    a = window_a(t, E.SLOTS[0] - 0.3, E.CREEPY + 0.05, 0.3)
+    if a <= 0:
+        return
+    n = sum(t >= ts for ts in E.SLOTS)
+    burnt = t >= E.BURN + 0.6
+    x, y = 230, 560
+    s = 0.7 + 0.3 * pop(t, E.SLOTS[0] - 0.3)
+    put(cv, panel(260, 330), x, y, s, a)
+    put(cv, utext('в крафте', 22, 'SemiBold', MUTED), x, y - 112, s, a)
+    last = max([ts for ts in E.SLOTS if t >= ts] + [E.SLOTS[0]])
+    put(cv, utext('0' if burnt else str(n), 120, 'ExtraBold', RED if burnt else GOLD), x, y - 10,
+        s * (0.8 + 0.2 * pop(t, E.BURN + 0.6 if burnt else last, 0.3)), a)
+    put(cv, utext('сгорели' if burnt else ('подарок' if n == 1 else 'подарка'), 22, 'SemiBold', RED if burnt else MUTED),
+        x, y + 100, s, a)
+
+
+def people_bubbles(cv, t):
+    """«Нравится людям»: слева сверху всплывают реплики-сердечки зрителей (Мита стоит слева, над ней пусто)."""
+    a = window_a(t, E.WHY + 0.6, E.OUTRO + 0.1, 0.3)
+    if a <= 0:
+        return
+    msgs = [('хочу такую!', 150, 330), ('какая красивая!', 300, 470), ('беру!', 140, 610), ('топ модель', 310, 750)]
+    for j, (m, x, y) in enumerate(msgs):
+        t0 = E.WHY + 0.6 + 0.45 * j
+        k = appear(t, t0, 0.3)
+        if k <= 0:
+            continue
+        im = upill(m, (255, 255, 255), 22, INK)
+        put(cv, fx.soft_shadow(im.width, im.height, im.height // 2, 14, 0.18), x, y + 6, 1.0, a * k)
+        put(cv, im, x, y + 5 * math.sin(t * 1.8 + j), 0.8 + 0.2 * pop(t, t0), a * k)
+
+
+def outro_fill(cv, t):
+    a = appear(t, E.OUTRO + 0.2, 0.4)
+    if a <= 0:
+        return
+    for j, (g, m, x, y) in enumerate([(DC, 'Celestial Map', 170, 380), ('Jingle Bells', 'Maneki Neko', 360, 560),
+                                       ('Resistance Dog', 'Satoshi', 170, 740)]):
+        magic_nft(cv, t, g, m, x, y, 150, E.OUTRO + 0.2 + 0.15 * j, a)
 
 
 # ------------------------------------------------------------------ жуть: тьма, красный туман, виньетка
@@ -653,8 +776,8 @@ def vignette():
     return np.clip((r - 0.55) / 0.6, 0, 1) ** 1.4
 
 
-FADE_DARK = 1.1          # тьма уходит постепенно (автор: «не моментально, а рассеивается»)
-FADE_FOG = 2.2           # туман рассеивается ещё дольше — редеет и уплывает вверх
+FADE_DARK = 0.8          # тьма уходит постепенно (автор: «не моментально, а рассеивается»)
+FADE_FOG = 1.6           # туман рассеивается ещё дольше — редеет и уплывает вверх
 
 
 def creepy_k(t):
@@ -783,7 +906,7 @@ def subtitles(cv, t):
 
 # ------------------------------------------------------------------ Мита: тень и щелчок
 def mita_shadow(cv, x, y):
-    put(cv, fx.radial(256, (60, 50, 110), 2.0, 1.0), x, y + 4, 1.0, 0.0)
+    put(cv, glow((255, 214, 130), 512, 2.2), x, y, 1.15, 0.35)
     def draw(d, mp, S):
         X, Y = mp(x, y + 2)
         d.ellipse([X - 150 * S, Y - 18 * S, X + 150 * S, Y + 18 * S], fill=(60, 50, 110, 46))
@@ -832,10 +955,18 @@ def render_at(t):
         scene_why(cv, t)
         scene_outro(cv, t)
         decor_corners(cv, t)
+        craft_counter(cv, t)
+        people_bubbles(cv, t)
+        outro_fill(cv, t)
+        side_floaters(cv, t)
+        if not (E.SNAP <= t < E.SNAP + E.SNAP_DUR):
+            drifting(cv, t * (1 - ck))
     scene_creepy_nfts(cv, t)
     if t != AD_STOP:
         M.draw(cv, t, put, mita_shadow if ck < 0.5 else None)
     snap_sparks(cv, t)
+    if ck < 0.5 and not (E.SNAP <= t < E.SNAP + E.SNAP_DUR):
+        reactions(cv, t)
     if fog_k(t) > 0:
         creepy_fx(cv, t, ck)
     if ck < 0.4:

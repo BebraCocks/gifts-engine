@@ -74,7 +74,7 @@ def sfx_layer(n, kit):
     a(fx, 'whoosh-organic', E.WALK2 + 0.3, gain_db=-22, label='Мита отходит')
     a(fx, 'sparkle', E.LOVE, gain_db=-18, label='нравится людям')
     for j, th in enumerate(E.KNOCK_HITS):
-        a(fx, 'impact', th, gain_db=-15, key='botanica-v4/impact-hit/hit-impact-no-fx-01.flac#0', semitones=7, fit=0.22, label=f'стук по экрану {j + 1}')
+        a(fx, 'click', th, gain_db=-11, key='knock', semitones=-6, vary=False, fit=0.25, label=f'стук по экрану {j + 1}')
     a(fx, 'confirm', E.SAVE + 0.05, gain_db=-20, label='«сохранение…»')
     a(fx, 'scan', E.LOADING + 0.05, gain_db=-21, label='«загрузка»')
     for j, tp in enumerate(E.PUNCH):

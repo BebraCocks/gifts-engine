@@ -16,6 +16,7 @@ from PIL import Image
 FR = Path(__file__).resolve().parent / 'input' / 'mita' / 'frames'
 CW, CH = 768, 1024
 Q = 24                                  # квантование доли перехода
+XFADE = 0.14                            # 52: короткая смена поз — палитра и кисть не двоятся (было 0.4)
 
 
 @functools.lru_cache(None)
@@ -120,7 +121,7 @@ def morph_q(n1, n2, qk):
     fab, fba = _flow(n1, n2), _flow_rev(n1, n2)
     wa = _translate(_warp(A, fab, k), d * k)
     wb = _translate(_warp(B, fba, 1 - k), d * k)
-    u = max(0.0, min(1.0, (k - 0.3) / 0.4))
+    u = max(0.0, min(1.0, (k - (0.5 - XFADE / 2)) / XFADE))
     s = u * u * (3 - 2 * u)                               # резкая смена в середине — меньше «двойных» контуров
     m = wa * (1 - s) + wb * s
     al = np.clip(m[..., 3:4], 1e-3, 255)

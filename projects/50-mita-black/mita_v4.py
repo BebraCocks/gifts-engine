@@ -392,7 +392,7 @@ def draw_orbit(cv, t, alpha, front):
     a0 = alpha * appear(t, E.DEMAND + 0.05, 0.4) * (1 - appear(t, E.GLOW - 0.35, 0.3))
     if a0 <= 0:
         return
-    cx, cy, rx, ry = 540, 1060, 420, 120
+    cx, cy, rx, ry = 540, 600, 330, 90         # орбита над головой Миты — заполняет верх кадра
     om = 1.25
     for i, (name, sx, sy, sc) in enumerate(ORBIT):
         rel = E.ICONS[i] - 0.25
@@ -402,7 +402,7 @@ def draw_orbit(cv, t, alpha, front):
             return cx + rx * math.cos(th), cy + ry * math.sin(th), math.sin(th)
         if t < rel:
             x, y, depth = orbit_pos(t)
-            s = sc * (0.45 + 0.25 * (depth + 1) / 2)
+            s = sc * (0.5 + 0.25 * (depth + 1) / 2)
             is_front = depth > 0
             dim = 0.6 + 0.4 * (depth + 1) / 2
         else:
@@ -410,7 +410,7 @@ def draw_orbit(cv, t, alpha, front):
             k = ease((t - rel) / 0.6)
             x = x0 + (sx - x0) * k
             y = y0 + (sy - y0) * k - 90 * math.sin(math.pi * k) + 8 * math.sin(t * 2 + i) * k
-            s0 = sc * (0.45 + 0.25 * (d0 + 1) / 2)
+            s0 = sc * (0.5 + 0.25 * (d0 + 1) / 2)
             s = s0 + (sc * 0.85 - s0) * k
             is_front = True
             dim = 1.0

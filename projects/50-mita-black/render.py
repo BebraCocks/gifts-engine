@@ -736,10 +736,17 @@ def scene_x7(cv, t):
             put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), x, y, s, a)
             put(cv, text(c['gift'], 20, 'Heavy'), x, y - 92, 1.0, a)
             put(cv, text(rub(c['rub']), 34, 'Heavy', WINE if side else MUTED), x + 190, y, 1.0, a)
-    a2 = appear(t, E.CARD_SHOW + 0.25, 0.3) * (1 - appear(t, E.UFC - 0.3, 0.3))
+    # кекс, который Мита держит, — крупно сверху (как плитка тыквы)
+    a2 = appear(t, E.CARD_GRAB + 0.15, 0.35) * (1 - appear(t, E.PUMPKIN - 0.35, 0.3))
     if a2 > 0:
         c = lot('Whip Cupcake', 'black_floor')
-        put(cv, upill(f"{c['gift']} · {rub(c['rub'])}", WINE, 30, WHITE), 540, 560, 0.8 + 0.2 * pop_in(t, E.CARD_SHOW + 0.25), a2)
+        s2 = 0.78 * (0.7 + 0.3 * pop_in(t, E.CARD_GRAB + 0.15)) * (1 + 0.02 * beat_pulse(t, 8))
+        put(cv, tinted_glow((255, 210, 140)), 540, 470, 1.25 * s2, a2 * (0.25 + 0.1 * math.sin(t * 3)))
+        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), 540, 470 + 14 * s2, s2, a2)
+        put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - E.CARD_GRAB), 540, 470, s2, a2)
+        put(cv, text(c['gift'], 26, 'Heavy'), 540, 470 - 150 * s2 - 26, 1.0, a2)
+        put(cv, text(rub(c['rub']), 40, 'Heavy', WINE), 540, 470 + 150 * s2 + 34, 1.0, a2)
+        put(cv, upill('на чёрном фоне', WINE, 24, WHITE), 540, 470 + 150 * s2 + 86, 1.0, a2)
 
 
 # ---- 4. тыква: Мита сидит на огромной Red Demon; сверху плитка переворачивается (обычная → на чёрном)
@@ -834,7 +841,30 @@ def spot_pool():
 
 
 def scene_demand(cv, t):
-    return
+    """Шкала «спрос»: наполняется на «спросе!» и с каждым предметом (карты, машины, смокинги)."""
+    if not (E.DEMAND - 0.1 <= t < E.GLOW):
+        return
+    a = appear(t, E.DEMAND + 0.15, 0.35) * (1 - appear(t, E.GLOW - 0.35, 0.3))
+    if a <= 0:
+        return
+    lv = 0.25 * appear(t, E.DEMAND + 0.3, 0.6)
+    for ti in E.ICONS:
+        lv += 0.25 * appear(t, ti, 0.5)
+    x0, x1, y = 230, 850, 300
+    def draw(d, mp, S):
+        X0, Y0 = mp(x0, y - 18)
+        X1, Y1 = mp(x1, y + 18)
+        d.rounded_rectangle([X0, Y0, X1, Y1], int(18 * S), fill=(236, 230, 246, 255))
+        Xf = X0 + (X1 - X0) * lv
+        if Xf > X0 + 36 * S:
+            d.rounded_rectangle([X0, Y0, Xf, Y1], int(18 * S), fill=WINE + (255,))
+            g = 0.5 + 0.5 * math.sin(t * 6)
+            d.ellipse([Xf - 22 * S, Y0 - 4 * S, Xf + 4 * S, Y1 + 4 * S], fill=(255, 210, 120, int(120 * g)))
+    fx.over(cv, fx.draw_rgba((x0 - 30, y - 40, x1 + 30, y + 40), draw), a)
+    put(cv, utext('спрос', 30, 'ExtraBold', WINE), x0 - 10, y - 50, 1.0, a, anchor=None)
+    put(cv, utext(f'{int(round(lv * 100))}%', 26, 'ExtraBold', INK), x1 - 20, y - 50, 1.0, a)
+    if lv > 0.97:
+        sparkles(cv, t, E.ICONS[2] + 0.45, x1, y, 120, 10, GOLD)
 
 
 # ---- 9. светится: телефон-рамка сверху (как в v2), Мита держит свой телефон внизу
@@ -996,6 +1026,8 @@ def side_panels(cv, t):
     txt_panel(RX, E.GACHA[2], E.TEASE, 'выпадает', 'так же', 'как медный')
     txt_panel(LX, E.TEASE + 0.3, AD_STOP + 0.12, 'не редкость', '?', 'тогда что')
     txt_panel(RX, E.TEASE + 0.6, AD_STOP + 0.12, 'платят', 'больше', 'за что?')
+    txt_panel(LX, E.DEMAND + 0.4, E.GLOW, 'чёрный цвет', 'люкс', 'цвет статуса')
+    txt_panel(RX, E.DEMAND + 0.8, E.GLOW, 'чёрное', 'хотят', 'все')
     txt_panel(LX, E.GLOW + 0.4, E.PLAIN, 'на чёрном', 'ярче', 'контраст')
     txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телеграм', 'фон сливается')
     txt_panel(LX, E.PLAIN + 0.4, E.PRICE, 'обычный фон', '3 940 ₽', 'Neko Helmet', MUTED)
@@ -1143,7 +1175,7 @@ def camera(t):
     sc = M3.scene_of(t)[0]
     if sc == 'card':
         k = ease((t - E.CARD_SHOW - 0.1) / 0.5) * (1 - ease((t - E.UFC + 0.5) / 0.4))
-        z += 0.24 * k
+        z += 0.16 * k
         px, py = 540 * (1 - k) + 330 * k, 1100 * (1 - k) + 900 * k
     elif sc == 'pumpkin':
         u = t - E.PUMPKIN
@@ -1252,6 +1284,7 @@ def render_at(t):
         scene_locket(cv, t)
         scene_tease(cv, t)
         scene_glow(cv, t)
+        scene_demand(cv, t)
         scene_plain(cv, t)
         scene_price(cv, t)
         scene_outro(cv, t)

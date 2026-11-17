@@ -574,5 +574,29 @@
   "left": 137,
   "right": 562,
   "magenta": 18
+ },
+ "up_3": {
+  "sheet": "up_i2",
+  "top": 45,
+  "bottom": 976,
+  "left": 182,
+  "right": 565,
+  "magenta": 0
+ },
+ "up_6": {
+  "sheet": "up_i2",
+  "top": 45,
+  "bottom": 977,
+  "left": 155,
+  "right": 542,
+  "magenta": 0
+ },
+ "up_8": {
+  "sheet": "up_i2",
+  "top": 44,
+  "bottom": 977,
+  "left": 177,
+  "right": 583,
+  "magenta": 2
  }
 }

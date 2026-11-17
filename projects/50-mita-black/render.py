@@ -662,17 +662,17 @@ def deco(cv, t, sc):
 
 
 # ------------------------------------------------------------------ background (белый, микродетали)
-TINTS = [  # (время, свечение 1, свечение 2) — свой цвет у каждой части истории
-    (0.0, (120, 70, 200), (220, 90, 160)),
-    (E.SPIN + 0.6, (170, 40, 90), (110, 60, 170)),
-    (E.PUMPKIN, (240, 110, 60), (190, 40, 70)),
-    (E.LOCKET, (236, 72, 140), (170, 60, 200)),
-    (E.CREEPY_END, (190, 120, 230), (240, 140, 190)),
-    (AD_STOP, (220, 170, 80), (160, 40, 80)),
-    (E.GLOW, (150, 90, 255), (90, 60, 200)),
-    (E.PLAIN, (170, 170, 180), (130, 160, 140)),
-    (E.PRICE, (200, 40, 80), (240, 110, 150)),
-    (E.OUTRO, (255, 190, 90), (140, 190, 140)),
+TINTS = [  # (время, свечение 1, свечение 2) — единая гамма темы: чёрный, бордовый, немного золота
+    (0.0, (120, 70, 200), (220, 90, 160)),          # до переодевания — обычная Мита
+    (E.SPIN + 0.6, (150, 30, 60), (60, 40, 80)),
+    (E.PUMPKIN, (170, 40, 50), (70, 30, 50)),
+    (E.LOCKET, (150, 30, 70), (200, 150, 90)),
+    (E.CREEPY_END, (120, 30, 60), (60, 40, 70)),
+    (AD_STOP, (200, 150, 80), (130, 30, 60)),
+    (E.GLOW, (90, 40, 110), (150, 30, 60)),
+    (E.PLAIN, (110, 100, 110), (70, 60, 70)),
+    (E.PRICE, (160, 30, 60), (90, 40, 70)),
+    (E.OUTRO, (210, 160, 80), (130, 30, 60)),
 ]
 
 
@@ -726,12 +726,14 @@ def progress(cv, t):
 
 
 # плывущие подарки по краям (живые модели текущей сцены), как в 49
-DRIFT = {
-    'hook': [('Whip Cupcake', 'black_floor'), ('Whip Cupcake', 'floor')], 'spin': [], 'card': [('Top Hat', 'black_floor'), ('Big Year', 'black_floor')],
-    'pumpkin': [('Mad Pumpkin', None), ('Mad Pumpkin', None)], 'jump': [('Heart Locket', 'black_floor'), ('Heart Locket', 'floor')],
-    'creepy': [], 'rare': [('Whip Cupcake', 'black_floor'), ('Whip Cupcake', 'floor')], 'show': [('Electric Skull', 'black_floor'), ('Bonded Ring', 'black_floor')],
-    'phone': [('Neko Helmet', 'black_floor'), ('Snow Globe', 'black_floor')], 'kick': [('Neko Helmet', 'floor'), ('Neko Helmet', 'black_floor')],
-    'hang': [('Top Hat', 'black_floor'), ('Electric Skull', 'black_floor')], 'two': [('Electric Skull', 'black_floor'), ('Snow Globe', 'floor')],
+DRIFT = {   # только NFT на чёрном фоне
+    'hook': [('Whip Cupcake', 'black_floor'), ('Top Hat', 'black_floor')], 'spin': [],
+    'card': [('Top Hat', 'black_floor'), ('Big Year', 'black_floor')],
+    'pumpkin': [('Mad Pumpkin', None), ('Mad Pumpkin', None)], 'jump': [('Heart Locket', 'black_floor'), ('Electric Skull', 'black_floor')],
+    'creepy': [], 'rare': [('Whip Cupcake', 'black_floor'), ('Snow Globe', 'black_floor')],
+    'show': [('Electric Skull', 'black_floor'), ('Bonded Ring', 'black_floor')],
+    'phone': [('Neko Helmet', 'black_floor'), ('Snow Globe', 'black_floor')], 'kick': [('Neko Helmet', 'black_floor'), ('Top Hat', 'black_floor')],
+    'hang': [('Top Hat', 'black_floor'), ('Electric Skull', 'black_floor')], 'two': [('Electric Skull', 'black_floor'), ('Bonded Ring', 'black_floor')],
 }
 
 
@@ -749,8 +751,9 @@ def drifting_gifts(cv, t, sc):
             y = 1900 - ph * 1900
             x = (58, 1022)[side] + math.sin(t * 0.9 + m * 2 + side) * 16
             a = 0.42 * min(1.0, ph * 6, (1 - ph) * 6)
-            im = lottie.frame(drift_model(g, k), t + m, size=110)
-            put(cv, im, x, y, 1.0, a, math.sin(t * 0.7 + m) * 0.15)
+            mdl = 'Red Demon' if g == 'Mad Pumpkin' else lot(g, k)['model']
+            im = gift_tile(g, mdl, 'Black', 120, t + m)
+            put(cv, im, x, y, 1.0, a * 1.4, math.sin(t * 0.7 + m) * 0.15)
 
 
 # реакции над головой Миты (как в 49)
@@ -770,7 +773,7 @@ def reactions(cv, t):
             continue
         a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
         pop = fx.ease_out_back(fx.clamp01(k / 0.35))
-        x, y = 770, 760 - 40 * ease(k / 1.3)
+        x, y = 770, 860 - 40 * ease(k / 1.3)
         if kind in ('!', '?'):
             put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
         else:
@@ -902,17 +905,26 @@ def scene_x7(cv, t):
             put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), x, y, s, a)
             put(cv, text(c['gift'], 20, 'Heavy'), x, y - 92, 1.0, a)
             put(cv, text(rub(c['rub']), 34, 'Heavy', WINE if side else MUTED), x + 190, y, 1.0, a)
-    # кекс, который Мита держит, — крупно сверху (как плитка тыквы)
+    # три самых дешёвых NFT на чёрном (Fragment, 16.11): в центре кекс, который Мита держит
     a2 = appear(t, E.CARD_GRAB + 0.15, 0.35) * (1 - appear(t, E.PUMPKIN - 0.35, 0.3))
     if a2 > 0:
-        c = lot('Whip Cupcake', 'black_floor')
-        s2 = 0.78 * (0.7 + 0.3 * pop_in(t, E.CARD_GRAB + 0.15)) * (1 + 0.02 * beat_pulse(t, 8))
-        put(cv, tinted_glow((255, 210, 140)), 540, 470, 1.25 * s2, a2 * (0.25 + 0.1 * math.sin(t * 3)))
-        put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), 540, 470 + 14 * s2, s2, a2)
-        put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - E.CARD_GRAB), 540, 470, s2, a2)
-        put(cv, text(c['gift'], 26, 'Heavy'), 540, 470 - 150 * s2 - 26, 1.0, a2)
-        put(cv, text(rub(c['rub']), 40, 'Heavy', WINE), 540, 470 + 150 * s2 + 34, 1.0, a2)
-        put(cv, upill('на чёрном фоне', WINE, 24, WHITE), 540, 470 + 150 * s2 + 86, 1.0, a2)
+        cup = lot('Whip Cupcake', 'black_floor')
+        trio = [('Homemade Cake', 'Frosted Mint', 'Black', 2452), (cup['gift'], cup['model'], cup['backdrop'], cup['rub']),
+                ('Xmas Stocking', 'Pink Faerie', 'Black', 2452)]
+        put(cv, upill('самые дешёвые на чёрном', WINE, 24, WHITE), 540, 292, 0.8 + 0.2 * pop_in(t, E.CARD_GRAB + 0.15), a2)
+        for j, (g, m, bd, price) in enumerate(trio):
+            tj = E.CARD_GRAB + 0.15 + (0.0 if j == 1 else 0.25)
+            aj = a2 * appear(t, tj, 0.3)
+            if aj <= 0:
+                continue
+            x = (200, 540, 880)[j]
+            s2 = (0.7 if j == 1 else 0.58) * (0.7 + 0.3 * pop_in(t, tj)) * (1 + 0.02 * beat_pulse(t, 8))
+            if j == 1:
+                put(cv, tinted_glow((255, 210, 140)), x, 480, 1.25 * s2, aj * (0.25 + 0.1 * math.sin(t * 3)))
+            put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), x, 480 + 14 * s2, s2, aj)
+            put(cv, gift_tile(g, m, bd, TILE, t - tj), x, 480, s2, aj)
+            put(cv, text(g, 22, 'Heavy'), x, 480 - 150 * s2 - 22, 1.0, aj)
+            put(cv, text(rub(price), 32, 'Heavy', WINE), x, 480 + 150 * s2 + 28, 1.0, aj)
 
 
 # ---- 4. тыква: Мита сидит на огромной Red Demon; сверху плитка переворачивается (обычная → на чёрном)
@@ -988,7 +1000,9 @@ def scene_tease(cv, t):
     if not (E.TEASE - 0.1 <= t < AD_STOP + 0.12):
         return
     a = appear(t, E.TEASE + 0.1, 0.3)
-    put(cv, qmark_tile(), 540, 520, 1.1 * (1 + 0.04 * math.sin(t * 6)), a, math.sin(t * 3) * 0.05)
+    for j, (x, sc_, ph) in enumerate(((220, 0.62, 1.0), (540, 1.0, 0.0), (860, 0.62, 2.0))):
+        aj = a * appear(t, E.TEASE + 0.1 + (0.2 if j != 1 else 0), 0.3)
+        put(cv, qmark_tile(), x, 500 + (40 if j != 1 else 0), sc_ * (1 + 0.04 * math.sin(t * 6 + ph)), aj, math.sin(t * 3 + ph) * 0.06)
 
 
 # ---- 8. спрос: шоурум, предметы появляются, пока Мита пробегает мимо

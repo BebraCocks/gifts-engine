@@ -646,5 +646,29 @@
   "left": 198,
   "right": 520,
   "magenta": 132
+ },
+ "down_1": {
+  "sheet": "down_k",
+  "top": 32,
+  "bottom": 982,
+  "left": 220,
+  "right": 547,
+  "magenta": 0
+ },
+ "down_5": {
+  "sheet": "down_k",
+  "top": 32,
+  "bottom": 982,
+  "left": 185,
+  "right": 582,
+  "magenta": 0
+ },
+ "down_9": {
+  "sheet": "down_k",
+  "top": 32,
+  "bottom": 982,
+  "left": 150,
+  "right": 617,
+  "magenta": 2
  }
 }

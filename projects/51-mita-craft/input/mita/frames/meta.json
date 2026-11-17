@@ -790,5 +790,29 @@
   "left": 122,
   "right": 611,
   "magenta": 107
+ },
+ "jump_6": {
+  "sheet": "jump_i2",
+  "top": 72,
+  "bottom": 812,
+  "left": 191,
+  "right": 636,
+  "magenta": 1
+ },
+ "jump_7": {
+  "sheet": "jump_i2",
+  "top": 107,
+  "bottom": 892,
+  "left": 186,
+  "right": 598,
+  "magenta": 0
+ },
+ "jump_8": {
+  "sheet": "jump_i2",
+  "top": 210,
+  "bottom": 981,
+  "left": 183,
+  "right": 544,
+  "magenta": 0
  }
 }

@@ -41,7 +41,7 @@ def body_x(a):
     return 0.5 * head + 0.5 * legs
 
 
-AIRBORNE = {'jump_5', 'jump_3', 'jump_4', 'jump_6', 'jump_7', 'jump_45', 'jump_55'}   # позы в воздухе
+AIRBORNE = {'jump_3', 'jump_4', 'jump_5', 'jump_6', 'jump_7'}   # позы в воздухе
 
 
 def align_all(names):

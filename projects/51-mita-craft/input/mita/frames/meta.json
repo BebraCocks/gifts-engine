@@ -718,5 +718,29 @@
   "left": 176,
   "right": 590,
   "magenta": 12
+ },
+ "two_3": {
+  "sheet": "two_i1",
+  "top": 51,
+  "bottom": 977,
+  "left": 186,
+  "right": 609,
+  "magenta": 24
+ },
+ "two_7": {
+  "sheet": "two_i1",
+  "top": 54,
+  "bottom": 977,
+  "left": 210,
+  "right": 602,
+  "magenta": 9
+ },
+ "two_10": {
+  "sheet": "two_i1",
+  "top": 53,
+  "bottom": 978,
+  "left": 194,
+  "right": 586,
+  "magenta": 17
  }
 }

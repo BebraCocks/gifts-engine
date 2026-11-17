@@ -41,6 +41,9 @@ def body_x(a):
     return 0.5 * head + 0.5 * legs
 
 
+AIRBORNE = {'jump_5', 'jump_3', 'jump_4', 'jump_6', 'jump_7', 'jump_45', 'jump_55'}   # позы в воздухе
+
+
 def align_all(names):
     AL.mkdir(exist_ok=True)
     order = list(names)
@@ -49,7 +52,8 @@ def align_all(names):
         x = xs[n] if n != 'astro_sc3' else xs['astro_sc2']   # в последнем кадре она наклоняется к зрителю — наклон оставляем
         a = anim.pose(n)
         ys = np.nonzero(a[..., 3] > 60)[0]
-        Image.fromarray(anim._translate(a, np.array([384 - x, 990 - ys.max()], np.float32))).save(AL / f'{n}.png')
+        dy = 0.0 if n in AIRBORNE else 990 - ys.max()      # в прыжке — высота как на листе (пол листа ≈ 990)
+        Image.fromarray(anim._translate(a, np.array([384 - x, dy], np.float32))).save(AL / f'{n}.png')
 
 
 HERE = Path(__file__).resolve().parent

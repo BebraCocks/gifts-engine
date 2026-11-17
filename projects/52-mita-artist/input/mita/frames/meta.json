@@ -22,5 +22,29 @@
   "left": 172,
   "right": 488,
   "magenta": 0
+ },
+ "poke_2": {
+  "sheet": "poke_i1",
+  "top": 77,
+  "bottom": 983,
+  "left": 159,
+  "right": 650,
+  "magenta": 0
+ },
+ "poke_3": {
+  "sheet": "poke_i1",
+  "top": 57,
+  "bottom": 983,
+  "left": 202,
+  "right": 588,
+  "magenta": 0
+ },
+ "poke_4": {
+  "sheet": "poke_i1",
+  "top": 57,
+  "bottom": 983,
+  "left": 187,
+  "right": 572,
+  "magenta": 0
  }
 }

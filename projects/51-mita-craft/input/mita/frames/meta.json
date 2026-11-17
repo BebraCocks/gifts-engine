@@ -1,0 +1,266 @@
+{
+ "astro_explain": {
+  "sheet": "astro_a",
+  "top": 27,
+  "bottom": 983,
+  "left": 243,
+  "right": 588,
+  "magenta": 0
+ },
+ "astro_scope": {
+  "sheet": "astro_a",
+  "top": 30,
+  "bottom": 983,
+  "left": 192,
+  "right": 559,
+  "magenta": 0
+ },
+ "astro_star": {
+  "sheet": "astro_a",
+  "top": 30,
+  "bottom": 983,
+  "left": 178,
+  "right": 505,
+  "magenta": 0
+ },
+ "snap_idle": {
+  "sheet": "snap_k1",
+  "top": 26,
+  "bottom": 995,
+  "left": 263,
+  "right": 575,
+  "magenta": 0
+ },
+ "snap_click": {
+  "sheet": "snap_k1",
+  "top": 29,
+  "bottom": 998,
+  "left": 228,
+  "right": 534,
+  "magenta": 0
+ },
+ "snap_wind": {
+  "sheet": "snap_k1",
+  "top": 19,
+  "bottom": 998,
+  "left": 81,
+  "right": 591,
+  "magenta": 0
+ },
+ "snap_up1": {
+  "sheet": "snap_i1",
+  "top": 27,
+  "bottom": 996,
+  "left": 212,
+  "right": 579,
+  "magenta": 0
+ },
+ "snap_up2": {
+  "sheet": "snap_i1",
+  "top": 28,
+  "bottom": 998,
+  "left": 228,
+  "right": 532,
+  "magenta": 0
+ },
+ "snap_up3": {
+  "sheet": "snap_i1",
+  "top": 27,
+  "bottom": 998,
+  "left": 197,
+  "right": 511,
+  "magenta": 0
+ },
+ "snap_dn1": {
+  "sheet": "snap_i2",
+  "top": 23,
+  "bottom": 995,
+  "left": 279,
+  "right": 580,
+  "magenta": 0
+ },
+ "snap_dn2": {
+  "sheet": "snap_i2",
+  "top": 25,
+  "bottom": 998,
+  "left": 228,
+  "right": 571,
+  "magenta": 0
+ },
+ "snap_dn3": {
+  "sheet": "snap_i2",
+  "top": 18,
+  "bottom": 997,
+  "left": 94,
+  "right": 588,
+  "magenta": 0
+ },
+ "snap_pre": {
+  "sheet": "snap_i3",
+  "top": 24,
+  "bottom": 995,
+  "left": 275,
+  "right": 580,
+  "magenta": 0
+ },
+ "snap_post": {
+  "sheet": "snap_i3",
+  "top": 26,
+  "bottom": 997,
+  "left": 211,
+  "right": 536,
+  "magenta": 0
+ },
+ "snap_wind75": {
+  "sheet": "snap_i3",
+  "top": 20,
+  "bottom": 997,
+  "left": 81,
+  "right": 590,
+  "magenta": 0
+ },
+ "snap_rise1": {
+  "sheet": "snap_i4",
+  "top": 19,
+  "bottom": 987,
+  "left": 181,
+  "right": 656,
+  "magenta": 0
+ },
+ "snap_rise2": {
+  "sheet": "snap_i4",
+  "top": 17,
+  "bottom": 986,
+  "left": 144,
+  "right": 609,
+  "magenta": 0
+ },
+ "snap_peak": {
+  "sheet": "snap_i4",
+  "top": 16,
+  "bottom": 983,
+  "left": 72,
+  "right": 631,
+  "magenta": 0
+ },
+ "astro_peak": {
+  "sheet": "snap_k2",
+  "top": 15,
+  "bottom": 956,
+  "left": 138,
+  "right": 693,
+  "magenta": 0
+ },
+ "astro_land": {
+  "sheet": "snap_k2",
+  "top": 33,
+  "bottom": 979,
+  "left": 169,
+  "right": 597,
+  "magenta": 0
+ },
+ "astro_cape": {
+  "sheet": "snap_k2",
+  "top": 35,
+  "bottom": 981,
+  "left": 133,
+  "right": 583,
+  "magenta": 0
+ },
+ "astro_fall1": {
+  "sheet": "snap_i5",
+  "top": 24,
+  "bottom": 938,
+  "left": 143,
+  "right": 666,
+  "magenta": 3
+ },
+ "astro_fall2": {
+  "sheet": "snap_i5",
+  "top": 28,
+  "bottom": 954,
+  "left": 186,
+  "right": 607,
+  "magenta": 4
+ },
+ "astro_fall3": {
+  "sheet": "snap_i5",
+  "top": 40,
+  "bottom": 982,
+  "left": 162,
+  "right": 559,
+  "magenta": 0
+ },
+ "astro_look1": {
+  "sheet": "snap_i6",
+  "top": 22,
+  "bottom": 983,
+  "left": 217,
+  "right": 567,
+  "magenta": 0
+ },
+ "astro_look2": {
+  "sheet": "snap_i6",
+  "top": 24,
+  "bottom": 983,
+  "left": 167,
+  "right": 560,
+  "magenta": 0
+ },
+ "astro_look3": {
+  "sheet": "snap_i6",
+  "top": 26,
+  "bottom": 983,
+  "left": 128,
+  "right": 585,
+  "magenta": 0
+ },
+ "astro_rel1": {
+  "sheet": "snap_i7",
+  "top": 22,
+  "bottom": 982,
+  "left": 175,
+  "right": 626,
+  "magenta": 0
+ },
+ "astro_rel2": {
+  "sheet": "snap_i7",
+  "top": 22,
+  "bottom": 983,
+  "left": 186,
+  "right": 566,
+  "magenta": 0
+ },
+ "astro_rel3": {
+  "sheet": "snap_i7",
+  "top": 23,
+  "bottom": 983,
+  "left": 171,
+  "right": 550,
+  "magenta": 0
+ },
+ "astro_sc1": {
+  "sheet": "snap_i8",
+  "top": 22,
+  "bottom": 982,
+  "left": 210,
+  "right": 595,
+  "magenta": 0
+ },
+ "astro_sc2": {
+  "sheet": "snap_i8",
+  "top": 24,
+  "bottom": 983,
+  "left": 189,
+  "right": 567,
+  "magenta": 0
+ },
+ "astro_sc3": {
+  "sheet": "snap_i8",
+  "top": 46,
+  "bottom": 983,
+  "left": 160,
+  "right": 568,
+  "magenta": 0
+ }
+}

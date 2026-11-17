@@ -18,8 +18,17 @@ import anim
 import snap_preview as SP
 
 HERE = Path(__file__).resolve().parent
-MORPH_LEGS = False
+MORPH_LEGS = True
 UPPER = ('walk_a', 'walk_a')          # верх из одной позы: морф рук между разными позами двоит кисть
+
+
+def KEYS():
+    """Ключевые позы ног (tools/walk_keys.py): самые согласованные позы цикла, между ними — морф."""
+    return json.loads((HERE / 'data' / 'walk_keys.json').read_text())['keys']
+
+
+def SEGS():
+    return json.loads((HERE / 'data' / 'walk_keys.json').read_text())['segs']
 
 
 def cycle():
@@ -45,6 +54,32 @@ def _hem(a):
     return 610
 
 
+@functools.lru_cache(maxsize=64)
+def _morph_sharp_q(n1, n2, qk):
+    """Как anim.morph, но смена позы в середине перехода короче (0.44–0.56): полупрозрачная «вторая нога» не видна."""
+    Q = anim.Q
+    k = qk / Q
+    if qk <= 0:
+        return anim.pose(n1)
+    if qk >= Q:
+        return anim.pose(n2)
+    d = anim._shift(n1, n2)
+    A = anim._premul(anim.pose(n1))
+    B = anim._premul(anim._translate(anim.pose(n2), -d))
+    wa = anim._translate(anim._warp(A, anim._flow(n1, n2), k), d * k)
+    wb = anim._translate(anim._warp(B, anim._flow_rev(n1, n2), 1 - k), d * k)
+    u = max(0.0, min(1.0, (k - 0.44) / 0.12))
+    sm = u * u * (3 - 2 * u)
+    m = wa * (1 - sm) + wb * sm
+    al = np.clip(m[..., 3:4], 1e-3, 255)
+    rgb = np.clip(m[..., :3] * 255 / al, 0, 255)
+    return np.concatenate([rgb, np.clip(m[..., 3:4], 0, 255)], -1).astype(np.uint8)
+
+
+def _morph_sharp(n1, n2, k):
+    return _morph_sharp_q(n1, n2, int(round(max(0.0, min(1.0, k)) * anim.Q)))
+
+
 def _shift_y(a, dy):
     return anim._translate(a, np.array([0, dy], np.float32)) if abs(dy) > 0.05 else a
 
@@ -52,12 +87,28 @@ def _shift_y(a, dy):
 def walk_frame(phase):
     cyc = cycle()
     N = len(cyc)
-    f = (phase % 1.0) * N
-    i = int(f)
-    k = f - i
-    n0, n1 = cyc[i], cyc[(i + 1) % N]
-    # ноги: поз на шаг столько же, сколько кадров, — показываем ближайшую настоящую позу (морф двоит ноги на больших скачках)
-    L = (anim.morph(n0, n1, k) if MORPH_LEGS else anim.pose(n0 if k < 0.5 else n1)).astype(np.float32)
+    keys = sorted(KEYS(), key=cyc.index)
+    # ключи стоят на своих местах в цикле (фаза = индекс/N); между ключами — линейный морф (без ease — иначе шаг «спотыкается»)
+    pos = [cyc.index(n) / N for n in keys]
+    p = phase % 1.0
+    K = len(keys)
+    for j in range(K):
+        a, b = pos[j], pos[(j + 1) % K] + (1.0 if j == K - 1 else 0.0)
+        pp = p if p >= pos[0] else p + 1.0
+        if a <= pp < b:
+            break
+    k = (pp - a) / (b - a)
+    n0, n1 = keys[j], keys[(j + 1) % K]
+    seg = SEGS()[KEYS().index(n0)]
+    if seg['cut']:
+        # быстрый мах ногой: настоящие позы цикла по очереди, без морфа
+        chain = [n0] + seg['mid'] + [n1]
+        f = k * (len(chain) - 1)
+        i0 = int(f)
+        n0, n1, k = chain[i0], chain[min(i0 + 1, len(chain) - 1)], f - i0
+        L = anim.pose(n0 if k < 0.5 else n1).astype(np.float32)
+    else:
+        L = (_morph_sharp(n0, n1, k) if MORPH_LEGS else anim.pose(n0 if k < 0.5 else n1)).astype(np.float32)
     bob = _bob(n0) * (1 - k) + _bob(n1) * k                 # покачивание шага (голова ног-позы)
     # верх: контакт (0) → проход (0.5) → контакт (1), плавно
     u = 0.5 - 0.5 * np.cos(2 * np.pi * (phase % 1.0))

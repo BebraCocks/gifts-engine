@@ -49,7 +49,7 @@ def _translate(a, d):
     return cv2.warpAffine(a, M, (CW, CH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
 
 
-@functools.lru_cache(None)
+@functools.lru_cache(maxsize=40)
 def _flow(n1, n2):
     """Остаточный поток n1→(n2, сдвинутая к n1 по якорю). DIS medium на 1/2 разрешения + сглаживание."""
     d = _shift(n1, n2)
@@ -68,7 +68,7 @@ def _flow(n1, n2):
     return cv2.resize(f, (CW, CH), interpolation=cv2.INTER_LINEAR) * 2
 
 
-@functools.lru_cache(None)
+@functools.lru_cache(maxsize=40)
 def _flow_rev(n1, n2):
     """Поток (n2, совмещённая с n1) → n1."""
     d = _shift(n1, n2)
@@ -102,7 +102,7 @@ def _premul(a):
     return f
 
 
-@functools.lru_cache(maxsize=512)
+@functools.lru_cache(maxsize=48)
 def morph_q(n1, n2, qk):
     k = qk / Q
     if qk <= 0:

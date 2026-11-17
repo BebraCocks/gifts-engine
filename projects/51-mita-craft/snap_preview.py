@@ -4,6 +4,7 @@ import math
 import subprocess
 from pathlib import Path
 
+import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -44,16 +45,99 @@ def body_x(a):
 AIRBORNE = {'jump_3', 'jump_4', 'jump_5', 'jump_6', 'jump_7'}   # позы в воздухе
 
 
+def _gray128(a):
+    al = a[..., 3:4].astype(np.float32) / 255
+    return (a[..., :3].astype(np.float32).mean(-1, keepdims=True) * al + 128 * (1 - al))[..., 0]
+
+
+WALK_REF = 'walk_a'
+
+
+def WALK_CYCLE():
+    p = Path(__file__).resolve().parent / 'data' / 'walk_cycle.json'
+    import json
+    return json.loads(p.read_text()) if p.exists() else []
+
+
+def _walk_boxes(a):
+    """Голова и пряжка ремня — при ходьбе почти не двигаются (ноги, руки, плащ и хвосты качаются)."""
+    al = a[..., 3] > 60
+    ys = np.nonzero(al.any(1))[0]
+    y0, h = ys.min(), ys.max() - ys.min()
+    xs = [_run_mid(al[y], 384) for y in range(int(y0 + 0.05 * h), int(y0 + 0.15 * h))]
+    hx = int(np.median([x for x in xs if x is not None]))
+    return [(int(y0), int(y0 + 0.2 * h), hx - 100, hx + 100),          # голова
+            (int(y0 + 0.31 * h), int(y0 + 0.38 * h), hx - 70, hx + 70)]   # ремень с пряжкой (без рук)
+
+
+def _walk_shift(ref, a):
+    """Сдвиг (dx, dy), совмещающий голову и ремень позы a с эталоном (субпиксельно, среднее по двум)."""
+    gr, ga = _gray128(ref), _gray128(a)
+    out = []
+    for y0, y1, x0, x1 in _walk_boxes(ref):
+        t = gr[y0:y1, x0:x1]
+        R = 60                                               # ищем только рядом (иначе шаблон цепляется не туда)
+        sy0, sx0 = max(0, y0 - R), max(0, x0 - R)
+        r = cv2.matchTemplate(ga[sy0:y1 + R, sx0:x1 + R], t, cv2.TM_CCOEFF_NORMED)
+        _, v, _, (mx, my) = cv2.minMaxLoc(r)
+        def sub(v, i, n):
+            if 0 < i < n - 1:
+                d = v[i - 1] - 2 * v[i] + v[i + 1]
+                return i + (0.5 * (v[i - 1] - v[i + 1]) / d if d else 0)
+            return i
+        sx, sy = sub(r[my], mx, r.shape[1]), sub(r[:, mx], my, r.shape[0])
+        out.append((x0 - (sx0 + sx), y0 - (sy0 + sy), v))
+    (hx_, hy_, hv), (bx_, by_, bv) = out
+    if bv < 0.5:                                             # ремень не узнан (руки/плащ) — только голова
+        return np.array([hx_, hy_])
+    return np.array([(hx_ + bx_) / 2, (hy_ + by_) / 2])
+
+
 def align_all(names):
     AL.mkdir(exist_ok=True)
-    order = list(names)
+    order = list(dict.fromkeys(names))                      # без повторов (превью передаёт цикл несколько раз)
     xs = {n: body_x(anim.pose(n)) for n in order}
+    std = {}
     for i, n in enumerate(order):
         x = xs[n] if n != 'astro_sc3' else xs['astro_sc2']   # в последнем кадре она наклоняется к зрителю — наклон оставляем
         a = anim.pose(n)
         ys = np.nonzero(a[..., 3] > 60)[0]
         dy = 0.0 if n in AIRBORNE else 990 - ys.max()      # в прыжке — высота как на листе (пол листа ≈ 990)
-        Image.fromarray(anim._translate(a, np.array([384 - x, dy], np.float32))).save(AL / f'{n}.png')
+        std[n] = anim._translate(a, np.array([384 - x, dy], np.float32))
+    walk = [n for n in order if n.startswith('walk_')]
+    if walk:
+        # ходьба: по горизонтали — голова+ремень как у эталона (иначе Миту «шатает»), по вертикали — подошвы на полу
+        # рост: ChatGPT рисует фигуру то выше, то ниже → голова «прыгает». Масштабируем вокруг точки на полу,
+        # чтобы высота головы шла по сглаженной кривой цикла (естественное покачивание шага остаётся).
+        ref = std[WALK_REF] if WALK_REF in std else _std_one(WALK_REF, body_x)
+        sh = {n: _walk_shift(ref, std[n]) for n in walk}
+        bx = _walk_boxes(ref)
+        base = 990 - np.mean([(b[0] + b[1]) / 2 for b in bx])      # высота над полом точки «голова+ремень» у эталона
+        h = {n: base + sh[n][1] for n in walk}
+        cyc = WALK_CYCLE()
+        tgt = dict(h)
+        if cyc:
+            hv = np.array([h.get(n, np.nan) if n in h else _walk_shift(ref, _std_one(n, body_x))[1] + base for n in cyc])
+            k = 3
+            for i, n in enumerate(cyc):
+                if n in h:
+                    tgt[n] = float(np.mean([hv[(i + j) % len(cyc)] for j in range(-k, k + 1)]))
+        for n in walk:
+            s = tgt[n] / h[n]
+            M = np.float32([[s, 0, 384 - 384 * s + sh[n][0]], [0, s, 990 - 990 * s]])
+            a = std[n]
+            std[n] = cv2.warpAffine(a, M, (a.shape[1], a.shape[0]), flags=cv2.INTER_LINEAR,
+                                    borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+            dx2, _ = _walk_shift(ref, std[n])                       # уточнение после масштаба
+            std[n] = anim._translate(std[n], np.array([dx2, 0], np.float32))
+    for n in order:
+        Image.fromarray(std[n]).save(AL / f'{n}.png')
+
+
+def _std_one(n, bx):
+    a = anim.pose(n)
+    ys = np.nonzero(a[..., 3] > 60)[0]
+    return anim._translate(a, np.array([384 - bx(a), 990 - ys.max()], np.float32))
 
 
 HERE = Path(__file__).resolve().parent

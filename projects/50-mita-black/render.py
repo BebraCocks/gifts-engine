@@ -662,6 +662,134 @@ def deco(cv, t, sc):
 
 
 # ------------------------------------------------------------------ background (белый, микродетали)
+TINTS = [  # (время, свечение 1, свечение 2) — свой цвет у каждой части истории
+    (0.0, (120, 70, 200), (220, 90, 160)),
+    (E.SPIN + 0.6, (170, 40, 90), (110, 60, 170)),
+    (E.PUMPKIN, (240, 110, 60), (190, 40, 70)),
+    (E.LOCKET, (236, 72, 140), (170, 60, 200)),
+    (E.CREEPY_END, (190, 120, 230), (240, 140, 190)),
+    (AD_STOP, (220, 170, 80), (160, 40, 80)),
+    (E.GLOW, (150, 90, 255), (90, 60, 200)),
+    (E.PLAIN, (170, 170, 180), (130, 160, 140)),
+    (E.PRICE, (200, 40, 80), (240, 110, 150)),
+    (E.OUTRO, (255, 190, 90), (140, 190, 140)),
+]
+
+
+def tint_at(t):
+    c1, c2 = TINTS[0][1], TINTS[0][2]
+    for k in range(1, len(TINTS)):
+        if t >= TINTS[k][0]:
+            m = ease((t - TINTS[k][0]) / 0.6)
+            p, q = TINTS[k - 1], TINTS[k]
+            c1 = tuple(a * (1 - m) + b * m for a, b in zip(p[1], q[1]))
+            c2 = tuple(a * (1 - m) + b * m for a, b in zip(p[2], q[2]))
+    return c1, c2
+
+
+# огромная цифра части истории за Митой (как «1/2/3» в 49) и чипы прогресса под заголовком
+STEPS = [('дорого', E.X7, E.CREEPY), ('не редкий', E.CREEPY_END, AD_STOP + 0.1), ('спрос', AD_STOP + 0.1, E.PRICE),
+         ('цена', E.PRICE, E.OUTRO)]
+
+
+def step_at(t):
+    for j, (_, t0, t1) in enumerate(STEPS):
+        if t0 <= t < t1:
+            return j
+    return -1
+
+
+@functools.lru_cache(None)
+def big_digit(d):
+    return text(d, 760, 'Heavy', (236, 228, 242))
+
+
+def big_number(cv, t):
+    for j, (_, t0, t1) in enumerate(STEPS):
+        a = window(t, t0, t1, 0.4)
+        if a > 0:
+            put(cv, big_digit(str(j + 1)), 540, 1100 + 30 * (1 - a), 1.0 + 0.015 * beat_pulse(t, 6), a)
+
+
+def progress(cv, t):
+    a = window(t, E.X7 - 0.2, E.OUTRO + 0.4, 0.4) * (0 if M3.scene_of(t)[0] == 'creepy' else 1)
+    if a <= 0:
+        return
+    cur = step_at(t)
+    xs = (-1.5, -0.5, 0.5, 1.5)
+    for j, (lab, _, _) in enumerate(STEPS):
+        on = j == cur
+        done = cur > j or t >= E.OUTRO
+        fill = WINE if on else ((30, 24, 48) if done else (226, 220, 238))
+        tc = WHITE if (on or done) else MUTED
+        put(cv, fx.solid_pill(lab, fill, 20, tc), 540 + xs[j] * 200, 214, 1.0 + (0.06 * beat_pulse(t, 8) if on else 0), a)
+
+
+# плывущие подарки по краям (живые модели текущей сцены), как в 49
+DRIFT = {
+    'hook': [('Whip Cupcake', 'black_floor'), ('Whip Cupcake', 'floor')], 'spin': [], 'card': [('Top Hat', 'black_floor'), ('Big Year', 'black_floor')],
+    'pumpkin': [('Mad Pumpkin', None), ('Mad Pumpkin', None)], 'jump': [('Heart Locket', 'black_floor'), ('Heart Locket', 'floor')],
+    'creepy': [], 'rare': [('Whip Cupcake', 'black_floor'), ('Whip Cupcake', 'floor')], 'show': [('Electric Skull', 'black_floor'), ('Bonded Ring', 'black_floor')],
+    'phone': [('Neko Helmet', 'black_floor'), ('Snow Globe', 'black_floor')], 'kick': [('Neko Helmet', 'floor'), ('Neko Helmet', 'black_floor')],
+    'hang': [('Top Hat', 'black_floor'), ('Electric Skull', 'black_floor')], 'two': [('Electric Skull', 'black_floor'), ('Snow Globe', 'floor')],
+}
+
+
+@functools.lru_cache(None)
+def drift_model(g, k):
+    if g == 'Mad Pumpkin':
+        return model_path('Mad Pumpkin', 'Red Demon')
+    return model_path(g, lot(g, k)['model'])
+
+
+def drifting_gifts(cv, t, sc):
+    for side, (g, k) in enumerate(DRIFT.get(sc, [])):
+        for m in range(2):
+            ph = (t * 0.045 + m * 0.5 + side * 0.25) % 1.0
+            y = 1900 - ph * 1900
+            x = (58, 1022)[side] + math.sin(t * 0.9 + m * 2 + side) * 16
+            a = 0.42 * min(1.0, ph * 6, (1 - ph) * 6)
+            im = lottie.frame(drift_model(g, k), t + m, size=110)
+            put(cv, im, x, y, 1.0, a, math.sin(t * 0.7 + m) * 0.15)
+
+
+# реакции над головой Миты (как в 49)
+VIOLET = (120, 90, 230)
+REACT = [(E.HOOK_PRICE + 0.5, '!'), (E.PUMP_BLACK + 0.1, '!'), (E.LOCKET_HIT + 0.6, '!'), (E.GACHA[1], '?'),
+         (E.TEASE + 0.5, '?'), (E.ICONS[1] + 0.2, 'heart'), (E.GLOW_SHOW + 0.2, 'heart'), (E.KICK + 0.3, 'dots'),
+         (E.PRICE_UP + 0.2, '!'), (E.OUTRO_LUX + 0.3, 'heart')]
+
+
+def reactions(cv, t):
+    sc = M3.scene_of(t)[0]
+    if sc in ('creepy', 'hang', 'pumpkin'):
+        return
+    for t0, kind in REACT:
+        k = t - t0
+        if not 0 <= k < 1.3:
+            continue
+        a = min(1.0, k * 6) * (1 - fx.clamp01((k - 0.9) / 0.4))
+        pop = fx.ease_out_back(fx.clamp01(k / 0.35))
+        x, y = 770, 760 - 40 * ease(k / 1.3)
+        if kind in ('!', '?'):
+            put(cv, fx.solid_pill(kind, ACCENT if kind == '!' else VIOLET, 44), x, y, 0.6 + 0.4 * pop, a, -0.15)
+        else:
+            def icon(d, mp, S, kind=kind, a=a, pop=pop, x=x, y=y):
+                X, Y = mp(x, y)
+                r = 26 * S * (0.6 + 0.4 * pop)
+                if kind == 'heart':
+                    col = (236, 72, 120, int(255 * a))
+                    d.ellipse([X - r, Y - r, X, Y], fill=col)
+                    d.ellipse([X, Y - r, X + r, Y], fill=col)
+                    d.polygon([(X - r, Y - r * 0.45), (X + r, Y - r * 0.45), (X, Y + r * 0.95)], fill=col)
+                else:
+                    for j in range(3):
+                        rr = r * 0.28
+                        cxx = X - r + j * r
+                        d.ellipse([cxx - rr, Y - rr, cxx + rr, Y + rr], fill=(30, 24, 48, int(200 * a)))
+            fx.over(cv, fx.draw_rgba((x - 60, y - 70, x + 60, y + 60), icon))
+
+
 def background(t):
     sc = M3.scene_of(t)[0]
     if sc == 'creepy':
@@ -669,16 +797,16 @@ def background(t):
     cv = np.empty((H, W, 4), np.float32)
     cv[..., :3] = base_bg()
     cv[..., 3] = 255
-    goth = fx.smooth(fx.clamp01((t - E.SPIN - 0.6) / 0.8))
-    c1 = tuple(int(a * (1 - goth) + b * goth) for a, b in zip((120, 70, 200), (150, 40, 80)))
-    c2 = tuple(int(a * (1 - goth) + b * goth) for a, b in zip((220, 90, 160), (60, 50, 90)))
+    c1, c2 = tint_at(t)
     p = beat_pulse(t, 5)
-    put(cv, tinted_glow(c1), 230 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.8, 0.14 + 0.06 * p)
-    put(cv, tinted_glow(c2), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.11 + 0.05 * p)
+    q = lambda c: tuple(int(v) for v in c)
+    put(cv, tinted_glow(q(c1)), 230 + 80 * math.sin(t * 0.31), 560 + 60 * math.cos(t * 0.27), 2.8, 0.18 + 0.07 * p)
+    put(cv, tinted_glow(q(c2)), 860 + 70 * math.cos(t * 0.23), 1300 + 90 * math.sin(t * 0.29), 3.0, 0.15 + 0.06 * p)
     fx.over(cv, (grid_dots(), 0, 0))
     fx.over(cv, fx.draw_rgba((0, 0, W, H), lambda d, mp, S: confetti(d, mp, S, t)))
+    big_number(cv, t)
+    drifting_gifts(cv, t, sc)
     deco(cv, t, sc)
-    side_floaters(cv, t, sc)
     return cv
 
 
@@ -766,7 +894,7 @@ def scene_x7(cv, t):
         a = appear(t, tj, 0.3) * (1 - out)
         if a <= 0:
             continue
-        y = 340 + j * 205
+        y = 355 + j * 205
         s = 0.5 * (0.6 + 0.4 * pop_in(t, tj))
         for side, c in enumerate((L, R)):
             x = 170 + side * 470
@@ -825,15 +953,15 @@ def scene_pumpkin(cv, t):
     a = appear(t, E.PUMPKIN, 0.35) * (1 - appear(t, E.LOCKET - 0.3, 0.3))
     lo = dict(PUMP_LO, backdrop=pump_lo_backdrop())
     s = 0.72 * (0.7 + 0.3 * pop_in(t, E.PUMPKIN))
-    flip_tile(cv, t, 540, 420, s, a, E.PUMP_BLACK - 0.2, lo, PUMP_HI)
-    put(cv, text('Mad Pumpkin', 26, 'Heavy'), 540, 420 - 150 * s - 26, 1.0, a)
+    flip_tile(cv, t, 540, 470, s, a, E.PUMP_BLACK - 0.2, lo, PUMP_HI)
+    put(cv, text('Mad Pumpkin', 26, 'Heavy'), 540, 470 - 150 * s - 26, 1.0, a)
     k = fx.clamp01((t - (E.PUMP_BLACK - 0.2)) / 0.7)
     price = lo['rub'] + (PUMP_HI['rub'] - lo['rub']) * ease(k)
     col = WINE if k > 0.5 else MUTED
     if t >= E.PUMP_CHEAP - 0.1:
-        put(cv, text(rub(int(round(price / 10) * 10)), 40, 'Heavy', col), 540, 420 + 150 * s + 34, 1.0, a * appear(t, E.PUMP_CHEAP - 0.1, 0.25))
+        put(cv, text(rub(int(round(price / 10) * 10)), 40, 'Heavy', col), 540, 470 + 150 * s + 34, 1.0, a * appear(t, E.PUMP_CHEAP - 0.1, 0.25))
     lab = 'на чёрном фоне' if k > 0.5 else 'обычная'
-    put(cv, upill(lab, WINE if k > 0.5 else (226, 220, 238), 24, WHITE if k > 0.5 else INK), 540, 420 + 150 * s + 86, 1.0,
+    put(cv, upill(lab, WINE if k > 0.5 else (226, 220, 238), 24, WHITE if k > 0.5 else INK), 540, 470 + 150 * s + 86, 1.0,
         a * appear(t, E.PUMP_CHEAP - 0.1, 0.25))
 
 
@@ -888,7 +1016,7 @@ def scene_demand(cv, t):
     lv = 0.25 * appear(t, E.DEMAND + 0.3, 0.6)
     for ti in E.ICONS:
         lv += 0.25 * appear(t, ti, 0.5)
-    x0, x1, y = 230, 850, 300
+    x0, x1, y = 230, 850, 352
     def draw(d, mp, S):
         X0, Y0 = mp(x0, y - 18)
         X1, Y1 = mp(x1, y + 18)
@@ -1063,6 +1191,26 @@ def subtitles(cv, t):
 
 
 # ------------------------------------------------------------------ боковые панели (заполняют кадр, без процентов и «×»)
+def bars(cv, t, t0, t1, lo, hi, lo_lab, hi_lab, top='обычный  ·  чёрный'):
+    """Панель-столбики (как в 49): обычный (серый) и чёрный (бордовый), высота — по цене, без множителей."""
+    a = window_a(t, t0, t1, 0.3)
+    if a <= 0:
+        return
+    put_panel(cv, LX, SIDE_Y, a, t0, t)
+    g = ease((t - t0 - 0.2) / 0.8)
+    base, maxh = SIDE_Y + 100, 150
+    for j, (v, lab, col) in enumerate(((lo, lo_lab, (190, 184, 210)), (hi, hi_lab, WINE))):
+        h = max(8, maxh * (v / hi) ** 0.5 * g)
+        x = LX - 52 + 104 * j
+        def bar(d, mp, S, h=h, x=x, col=col):
+            x0, y0 = mp(x - 32, base - h)
+            x1, y1 = mp(x + 32, base)
+            d.rounded_rectangle([x0, y0, x1, y1], int(10 * S), fill=col + (int(255 * a),))
+        fx.over(cv, fx.draw_rgba((x - 40, base - maxh - 10, x + 40, base + 4), bar))
+        put(cv, text(lab, 20, 'Bold', INK if j == 0 else WINE), x, base + 24, 1.0, a)
+    put(cv, text(top, 18, 'Semibold', MUTED), LX, SIDE_Y - 125, 1.0, a)
+
+
 def side_panels(cv, t):
     def txt_panel(x, t0, t1, top, big, bot, big_col=WINE):
         a = window_a(t, t0, t1, 0.3)
@@ -1073,11 +1221,11 @@ def side_panels(cv, t):
         im = utext(big, 46, 'ExtraBold', big_col)
         put(cv, im, x, SIDE_Y - 10, s * min(1.0, 200 / im.width), a)
         put(cv, utext(bot, 20, 'SemiBold', MUTED), x, SIDE_Y + 85, s, a)
-    txt_panel(LX, 0.9, E.SPIN - 0.3, 'обычный фон', '438 ₽', 'Whip Cupcake', MUTED)
-    txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', '2 452 ₽', 'Whip Cupcake')
+    bars(cv, t, 0.9, E.SPIN - 0.3, 438, 2452, '438 ₽', '2 452 ₽')
+    txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', 'дороже', 'Whip Cupcake')
     txt_panel(LX, E.X7 + 0.6, E.PUMPKIN, 'коллекций', '121', 'с чёрным фоном')
     txt_panel(RX, E.X7 + 1.0, E.PUMPKIN, 'чёрный фон', 'дороже', 'почти везде')
-    txt_panel(LX, E.LOCKET + 0.6, E.CREEPY, 'самый дешёвый', '149 тыс', 'Heart Locket')
+    bars(cv, t, E.LOCKET + 0.6, E.CREEPY, 148858, 17512690, '149 тыс', '17,5 млн')
     txt_panel(RX, E.LOCKET_HIT + 0.9, E.CREEPY, 'на чёрном', '17,5 млн', 'цена продавца')
     txt_panel(LX, E.GACHA[1], E.TEASE, 'чёрный', 'не редкий', 'как бордовый')
     txt_panel(RX, E.GACHA[2], E.TEASE, 'выпадает', 'так же', 'как медный')
@@ -1087,8 +1235,8 @@ def side_panels(cv, t):
     txt_panel(RX, E.DEMAND + 0.8, E.GLOW, 'чёрное', 'хотят', 'все')
     txt_panel(LX, E.GLOW + 0.4, E.PLAIN, 'на чёрном', 'ярче', 'контраст')
     txt_panel(RX, E.GLOW_PHONE, E.PLAIN, 'тёмная тема', 'телеграм', 'фон сливается')
-    txt_panel(LX, E.PLAIN + 0.4, E.PRICE, 'обычный фон', '3 940 ₽', 'Neko Helmet', MUTED)
-    txt_panel(RX, E.PLAIN + 0.9, E.PRICE, 'на чёрном', '38 528 ₽', 'Neko Helmet')
+    bars(cv, t, E.PLAIN + 0.4, E.PRICE, 3940, 38528, '3 940 ₽', '38 528 ₽')
+    txt_panel(RX, E.PLAIN + 0.9, E.PRICE, 'обычный фон', 'просто', 'не цепляет', MUTED)
     txt_panel(RX, E.PRICE_UP, E.OUTRO, 'продавцы', 'цена ↑', 'не снижают')
     txt_panel(LX, E.OUTRO_MIN + 0.3, DUR + 1, 'выбирай', 'люкс', 'на чёрном')
     txt_panel(RX, E.OUTRO_PILL, DUR + 1, 'или', 'минимум', 'на зелёном', MUTED)
@@ -1363,7 +1511,9 @@ def render_at(t):
         wind(cv, t, True)
     cv = apply_camera(cv, t)
     if sc != 'creepy':
+        reactions(cv, t)
         headline(cv, t)
+        progress(cv, t)
         if sc not in ('pumpkin',):
             side_panels(cv, t)
     if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):          # на застывшем кадре рекламы субтитров нет

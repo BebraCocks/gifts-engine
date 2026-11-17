@@ -1118,9 +1118,9 @@ def ad_overlay(c, t):
     cv = np.dstack([c.astype(np.float32), np.full(c.shape[:2], 255, np.float32)])
     u = max(0.0, bt)
     names = lie_frames()
-    if bt > BR.B - 1.4:
-        k = ease((bt - (BR.B - 1.4)) / 0.5)
-        fr = anim.morph('lie_1', 'lie_3', k)
+    if bt > BR.B - 1.5:
+        k = (bt - (BR.B - 1.5)) / 0.6
+        fr = anim.morph('lie_1', 'lie_half', ease(k * 2)) if k < 0.5 else anim.morph('lie_half', 'lie_3', ease(k * 2 - 1))
     else:
         fr = anim.pingpong(names, u, 3.4)
     put(cv, soft_glow((200, 170, 230), 1000, 120), 540, 1595, 1.0, 0.6 * a)

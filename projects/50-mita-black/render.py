@@ -1044,22 +1044,31 @@ def big_cup():
     return lottie.frame(model_path(c['gift'], c['model']), 0.0, size=560)
 
 
+LIE = ['lie_1', 'lie_2']             # поза лёжа: колено плавно поднимается и опускается (+ промежуточные, если есть)
+
+
+def lie_frames():
+    names = ['lie_1', 'lie_in_a', 'lie_2', 'lie_in_b'] if (anim.FR / 'lie_in_a.png').exists() else ['lie_1', 'lie_2']
+    return names
+
+
 def ad_overlay(c, t):
-    """Во время рекламы Мита стоит внизу, под баннером, и смотрит его с попкорном (баннер ничем не закрыт)."""
+    """Во время рекламы Мита лежит на боку под баннером в полный рост (баннер ничем не закрыт)."""
     ph = BR.phase(t)
     if ph is None:
         return c
     a, bt = ph['dim'], ph['bt']
     cv = np.dstack([c.astype(np.float32), np.full(c.shape[:2], 255, np.float32)])
     u = max(0.0, bt)
-    if bt > BR.B - 1.8:
-        k = ease((bt - (BR.B - 1.8)) / 0.45)
-        fr = anim.morph(anim.pingpong_name(M3.POP, BR.B - 1.8, 3.2), 'pop_wow', k)
+    names = lie_frames()
+    if bt > BR.B - 1.4:
+        k = ease((bt - (BR.B - 1.4)) / 0.5)
+        fr = anim.morph('lie_1', 'lie_3', k)
     else:
-        fr = anim.loop(M3.POP, u, 3.2)
-    put(cv, M3.shadow_sprite(), 540, 1898, 0.6, 0.6 * a)
+        fr = anim.pingpong(names, u, 3.4)
+    put(cv, soft_glow((200, 170, 230), 1000, 120), 540, 1595, 1.0, 0.6 * a)
     by, _ = anim.breathe(t)
-    M3.put_mita(cv, fr, 540, 1900, 0.46, 988, a, sy=by, shadow=False, rot=0.006 * math.sin(t * 0.9))
+    M3.put_mita(cv, fr, 540, 1600, 1.0, 333, a, sy=1 + 0.5 * (by - 1), shadow=False, anchor_x=768)
     return cv[..., :3]
 
 

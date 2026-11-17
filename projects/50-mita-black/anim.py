@@ -46,7 +46,7 @@ def _shift(n1, n2):
 
 def _translate(a, d):
     M = np.float32([[1, 0, d[0]], [0, 1, d[1]]])
-    return cv2.warpAffine(a, M, (CW, CH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+    return cv2.warpAffine(a, M, (a.shape[1], a.shape[0]), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
 
 
 @functools.lru_cache(maxsize=40)
@@ -55,7 +55,8 @@ def _flow(n1, n2):
     d = _shift(n1, n2)
     a = _gray(pose(n1))
     b = _gray(_translate(pose(n2), -d))
-    a2, b2 = cv2.resize(a, (CW // 2, CH // 2), interpolation=cv2.INTER_AREA), cv2.resize(b, (CW // 2, CH // 2), interpolation=cv2.INTER_AREA)
+    h_, w_ = a.shape[:2]
+    a2, b2 = cv2.resize(a, (w_ // 2, h_ // 2), interpolation=cv2.INTER_AREA), cv2.resize(b, (w_ // 2, h_ // 2), interpolation=cv2.INTER_AREA)
     dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
     dis.setFinestScale(0)
     dis.setPatchSize(12)
@@ -65,7 +66,7 @@ def _flow(n1, n2):
     dis.setVariationalRefinementAlpha(30.0)
     f = dis.calc(a2, b2, None)
     f = cv2.GaussianBlur(f, (0, 0), 1.5)
-    return cv2.resize(f, (CW, CH), interpolation=cv2.INTER_LINEAR) * 2
+    return cv2.resize(f, (w_, h_), interpolation=cv2.INTER_LINEAR) * 2
 
 
 @functools.lru_cache(maxsize=40)
@@ -74,7 +75,8 @@ def _flow_rev(n1, n2):
     d = _shift(n1, n2)
     a = _gray(_translate(pose(n2), -d))
     b = _gray(pose(n1))
-    a2, b2 = cv2.resize(a, (CW // 2, CH // 2), interpolation=cv2.INTER_AREA), cv2.resize(b, (CW // 2, CH // 2), interpolation=cv2.INTER_AREA)
+    h_, w_ = a.shape[:2]
+    a2, b2 = cv2.resize(a, (w_ // 2, h_ // 2), interpolation=cv2.INTER_AREA), cv2.resize(b, (w_ // 2, h_ // 2), interpolation=cv2.INTER_AREA)
     dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
     dis.setFinestScale(0)
     dis.setPatchSize(12)
@@ -84,15 +86,18 @@ def _flow_rev(n1, n2):
     dis.setVariationalRefinementAlpha(30.0)
     f = dis.calc(a2, b2, None)
     f = cv2.GaussianBlur(f, (0, 0), 1.5)
-    return cv2.resize(f, (CW, CH), interpolation=cv2.INTER_LINEAR) * 2
+    return cv2.resize(f, (w_, h_), interpolation=cv2.INTER_LINEAR) * 2
 
 
-_GX, _GY = np.meshgrid(np.arange(CW, dtype=np.float32), np.arange(CH, dtype=np.float32))
+@functools.lru_cache(None)
+def _grid(h, w):
+    return np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
 
 
 def _warp(img, flow, k):
-    mx = _GX - flow[..., 0] * k
-    my = _GY - flow[..., 1] * k
+    gx, gy = _grid(img.shape[0], img.shape[1])
+    mx = gx - flow[..., 0] * k
+    my = gy - flow[..., 1] * k
     return cv2.remap(img, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
 
 

@@ -46,5 +46,29 @@
   "left": 187,
   "right": 572,
   "magenta": 0
+ },
+ "poke_6": {
+  "sheet": "poke_i2",
+  "top": 58,
+  "bottom": 982,
+  "left": 209,
+  "right": 602,
+  "magenta": 0
+ },
+ "poke_7": {
+  "sheet": "poke_i2",
+  "top": 57,
+  "bottom": 982,
+  "left": 219,
+  "right": 557,
+  "magenta": 0
+ },
+ "poke_8": {
+  "sheet": "poke_i2",
+  "top": 61,
+  "bottom": 980,
+  "left": 220,
+  "right": 536,
+  "magenta": 0
  }
 }

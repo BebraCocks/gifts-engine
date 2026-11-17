@@ -70,5 +70,29 @@
   "left": 220,
   "right": 536,
   "magenta": 0
+ },
+ "poke_2a": {
+  "sheet": "poke_i3",
+  "top": 76,
+  "bottom": 981,
+  "left": 160,
+  "right": 637,
+  "magenta": 0
+ },
+ "poke_2b": {
+  "sheet": "poke_i3",
+  "top": 60,
+  "bottom": 981,
+  "left": 213,
+  "right": 583,
+  "magenta": 0
+ },
+ "poke_2c": {
+  "sheet": "poke_i3",
+  "top": 56,
+  "bottom": 981,
+  "left": 194,
+  "right": 570,
+  "magenta": 0
  }
 }

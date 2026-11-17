@@ -9,7 +9,7 @@ from PIL import Image
 
 M = Path(__file__).resolve().parents[1] / 'input' / 'mita'
 SHEETS = {
-    'poke_k': 'poke_1 poke_5 poke_9', 'poke_i1': 'poke_2 poke_3 poke_4', 'poke_i2': 'poke_6 poke_7 poke_8',
+    'poke_k': 'poke_1 poke_5 poke_9', 'poke_i1': 'poke_2 poke_3 poke_4', 'poke_i2': 'poke_6 poke_7 poke_8', 'poke_i3': 'poke_2a poke_2b poke_2c',
 }
 THIRDS = set()            # бюсты касаются друг друга — режем строго по третям
 CW = 768

@@ -19,6 +19,7 @@ SHEETS = {
     'fear_k': 'fear_1 fear_4 fear_7', 'fear_i1': 'fear_2 fear_3 fear_35', 'fear_i2': 'fear_5 fear_6 fear_65', 'fear_x1': 'fear_37 fear_55 fear_62', 'fear_x2': 'fear_45 fear_52 fear_53',
     'creep_k': 'creep_1 creep_4 creep_7', 'creep_i1': 'creep_2 creep_5 creep_8',
     'up_k': 'up_1 up_5 up_9', 'up_i1': 'up_2 up_4 up_7', 'up_i2': 'up_3 up_6 up_8',
+    'hmm_k': 'hmm_1 hmm_5 hmm_9',
 }
 THIRDS = set()            # бюсты касаются друг друга — режем строго по третям
 CW = 768

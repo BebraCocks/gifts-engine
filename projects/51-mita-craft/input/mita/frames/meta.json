@@ -598,5 +598,29 @@
   "left": 177,
   "right": 583,
   "magenta": 2
+ },
+ "hmm_1": {
+  "sheet": "hmm_k",
+  "top": 26,
+  "bottom": 982,
+  "left": 259,
+  "right": 583,
+  "magenta": 12
+ },
+ "hmm_5": {
+  "sheet": "hmm_k",
+  "top": 31,
+  "bottom": 982,
+  "left": 225,
+  "right": 547,
+  "magenta": 39
+ },
+ "hmm_9": {
+  "sheet": "hmm_k",
+  "top": 32,
+  "bottom": 982,
+  "left": 192,
+  "right": 513,
+  "magenta": 26
  }
 }

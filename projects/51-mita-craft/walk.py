@@ -1,0 +1,113 @@
+"""Ходьба Миты без «мерцания» верха.
+
+Позы ходьбы с разных листов ChatGPT отличаются руками, плащом, хвостами и оттенком ткани → на 60 к/с верх «дёргается».
+Поэтому кадр собирается из двух слоёв:
+  • ноги — из плотного цикла (data/walk_cycle.json, морф соседних поз);
+  • верх (голова, руки, плащ, юбка) — плавный морф двух согласованных поз UPPER (контакт → проход → контакт за шаг),
+    сдвинутый по вертикали вместе с покачиванием ног.
+Шов прячется под подолом юбки. Позы берутся из frames_aligned (snap_preview.align_all — голова+ремень, рост).
+walk_frame(phase) → RGBA 768×1024, phase — доля ШАГА (0..1, цикл из одного шага повторяется)."""
+import functools
+import json
+from pathlib import Path
+
+import cv2
+import numpy as np
+
+import anim
+import snap_preview as SP
+
+HERE = Path(__file__).resolve().parent
+MORPH_LEGS = False
+UPPER = ('walk_a', 'walk_a')          # верх из одной позы: морф рук между разными позами двоит кисть
+
+
+def cycle():
+    return json.loads((HERE / 'data' / 'walk_cycle.json').read_text())
+
+
+@functools.lru_cache(None)
+def _bob(n):
+    """Вертикальное смещение головы позы n относительно walk_a (после выравнивания)."""
+    return float(SP._walk_shift(anim.pose('walk_a'), anim.pose(n))[1])
+
+
+def _hem(a):
+    """Строка подола юбки: первая строка ниже 560, где силуэт уже 60 % ширины юбки."""
+    al = a[..., 3] > 60
+    def width(y):
+        xs = np.nonzero(al[y])[0]
+        return (xs.max() - xs.min()) if len(xs) else 0
+    w0 = max(width(y) for y in range(530, 560))
+    for y in range(560, 700):
+        if width(y) < 0.6 * w0:
+            return y
+    return 610
+
+
+def _shift_y(a, dy):
+    return anim._translate(a, np.array([0, dy], np.float32)) if abs(dy) > 0.05 else a
+
+
+def walk_frame(phase):
+    cyc = cycle()
+    N = len(cyc)
+    f = (phase % 1.0) * N
+    i = int(f)
+    k = f - i
+    n0, n1 = cyc[i], cyc[(i + 1) % N]
+    # ноги: поз на шаг столько же, сколько кадров, — показываем ближайшую настоящую позу (морф двоит ноги на больших скачках)
+    L = (anim.morph(n0, n1, k) if MORPH_LEGS else anim.pose(n0 if k < 0.5 else n1)).astype(np.float32)
+    bob = _bob(n0) * (1 - k) + _bob(n1) * k                 # покачивание шага (голова ног-позы)
+    # верх: контакт (0) → проход (0.5) → контакт (1), плавно
+    u = 0.5 - 0.5 * np.cos(2 * np.pi * (phase % 1.0))
+    U = anim.morph(UPPER[0], UPPER[1], u)
+    ub = _bob(UPPER[0]) * (1 - u) + _bob(UPPER[1]) * u
+    U = _shift_y(U, -(bob - ub)).astype(np.float32)
+    h = _hem(U.astype(np.uint8))
+    H, W = U.shape[:2]
+    yy = np.arange(H, dtype=np.float32)[:, None]
+    # верх — до подола (мягкий край 6 px)
+    mu = np.clip((h + 4 - yy) / 6 + 0.5, 0, 1)
+    # ноги — от 30 px над подолом; в полосе у подола только в ширину бёдер (чтобы не вылезла кисть/плащ ног-позы)
+    al = L[..., 3] > 60
+    xs = np.nonzero(al[min(H - 1, h + 12)])[0]
+    x0, x1 = (xs.min() - 15, xs.max() + 15) if len(xs) else (0, W)
+    xx = np.arange(W, dtype=np.float32)[None, :]
+    band = ((xx >= x0) & (xx <= x1)).astype(np.float32)
+    ml = np.clip((yy - (h - 30)) / 8, 0, 1) * np.maximum(band, np.clip((yy - (h + 40)) / 8, 0, 1))
+    Lm = L.copy()
+    Lm[..., 3] *= ml[..., 0] if ml.ndim == 3 else ml
+    Um = U.copy()
+    Um[..., 3] *= mu if mu.ndim == 2 and mu.shape[1] == W else np.broadcast_to(mu, (H, W))
+    # U поверх L (премультипликация)
+    ua = Um[..., 3:4] / 255
+    la = Lm[..., 3:4] / 255
+    oa = ua + la * (1 - ua)
+    rgb = (Um[..., :3] * ua + Lm[..., :3] * la * (1 - ua)) / np.maximum(oa, 1e-4)
+    return np.clip(np.concatenate([rgb, oa * 255], -1), 0, 255).astype(np.uint8)
+
+
+if __name__ == '__main__':
+    import subprocess
+    import sys
+    from PIL import Image
+    SP.align_all(list(dict.fromkeys(cycle() + list(UPPER))))
+    anim.FR = SP.AL
+    anim.pose.cache_clear()
+    step = float(sys.argv[1]) if len(sys.argv) > 1 else 0.5     # длительность шага, с
+    secs = float(sys.argv[2]) if len(sys.argv) > 2 else 3.0
+    W, H, FPS = 540, 960, 60
+    out = HERE / 'build' / 'walk_layered.mp4'
+    p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
+                          '-c:v', 'libx264', '-crf', '18', '-pix_fmt', 'yuv420p', str(out)], stdin=subprocess.PIPE)
+    for fi in range(int(secs * FPS)):
+        a = walk_frame(fi / FPS / step)
+        bg = Image.new('RGBA', (W, H), (250, 248, 255, 255))
+        m = Image.fromarray(a)
+        m = m.resize((int(m.width * 0.72), int(m.height * 0.72)), Image.LANCZOS)
+        bg.alpha_composite(m, (W // 2 - m.width // 2, 830 - int(990 * 0.72)))
+        p.stdin.write(np.array(bg.convert('RGB')).tobytes())
+    p.stdin.close()
+    p.wait()
+    print(out)

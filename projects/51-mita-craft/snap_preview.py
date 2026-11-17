@@ -14,16 +14,43 @@ import anim
 AL = Path(__file__).resolve().parent / 'input' / 'mita' / 'frames_aligned'
 
 
+def _run_mid(row, x0):
+    xs = np.nonzero(row)[0]
+    if len(xs) == 0:
+        return None
+    runs = np.split(xs, np.nonzero(np.diff(xs) > 3)[0] + 1)
+    r = min(runs, key=lambda r: 0 if r[0] <= x0 <= r[-1] else min(abs(r[0] - x0), abs(r[-1] - x0)))
+    return (r[0] + r[-1]) / 2
+
+
+def body_x(a):
+    """Центр тела: голова (5–15 % высоты, отрезок у центра — без разлетающихся волос), талия (38–46 %), обе ноги (низ 12 %)."""
+    al = a[..., 3] > 60
+    ys = np.nonzero(al.any(1))[0]
+    y0, y1 = ys.min(), ys.max()
+    h = y1 - y0
+    def band(f0, f1, x0):
+        v = [_run_mid(al[y], x0) for y in range(int(y0 + f0 * h), int(y0 + f1 * h))]
+        v = [x for x in v if x is not None]
+        return float(np.median(v))
+    cx = float(np.median(np.nonzero(al)[1]))
+    head = band(0.05, 0.15, cx)
+    waist = band(0.38, 0.46, head)
+    lx = np.nonzero(al[int(y1 - 0.12 * h):y1 + 1].any(0))[0]
+    legs = (lx.min() + lx.max()) / 2
+    return 0.5 * head + 0.5 * legs
+
+
 def align_all(names):
     AL.mkdir(exist_ok=True)
-    for n in names:
+    order = list(names)
+    xs = {n: body_x(anim.pose(n)) for n in order}
+    for i, n in enumerate(order):
+        x = xs[n] if n != 'astro_sc3' else xs['astro_sc2']   # в последнем кадре она наклоняется к зрителю — наклон оставляем
         a = anim.pose(n)
-        ys, xs = np.nonzero(a[..., 3] > 60)
-        y0, y1 = ys.min(), ys.max()
-        leg = ys > y1 - 0.25 * (y1 - y0)
-        dx = 384 - np.median(xs[leg])
-        dy = 990 - y1
-        Image.fromarray(anim._translate(a, np.array([dx, dy], np.float32))).save(AL / f'{n}.png')
+        ys = np.nonzero(a[..., 3] > 60)[0]
+        Image.fromarray(anim._translate(a, np.array([384 - x, 990 - ys.max()], np.float32))).save(AL / f'{n}.png')
+
 
 HERE = Path(__file__).resolve().parent
 W, H, FPS = 540, 960, 60

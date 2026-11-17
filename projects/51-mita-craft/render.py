@@ -220,6 +220,10 @@ def framed_nft(cv, t, g, m, x, y, t0, a=1.0, w=230, label=None, lcol=None, price
         put(cv, upill(label, lcol or MUTED, 20, WHITE), x, yy, p, a)
         yy += 52
     if price:
+        if isinstance(price, (int, float)):                      # фишка: цена докручивается счётчиком
+            k = fx.ease_out(fx.clamp01((t - t0 - 0.15) / 0.7))
+            v = int(round(price * k / (10 if price > 5000 else 1))) * (10 if price > 5000 else 1) if k < 1 else int(price)
+            price = rub(v)
         put(cv, utext(price, 30, 'ExtraBold', pcol), x, yy, p, a)
         yy += 44
     if note:
@@ -530,6 +534,45 @@ def scene_tease(cv, t):
     txt_panel(cv, t, RX, E.TEASE + 0.6, AD_STOP + 0.5, 'проверим', 'цены', 'с Fragment', PINK)
 
 
+def nft_sweat(cv, t, x, y, t0, t1, a):
+    """Капелька пота у NFT (реакция «неловко»): падает и появляется снова."""
+    k = window_a(t, t0, t1, 0.2) * a
+    if k <= 0:
+        return
+    u = ((t - t0) % 1.1) / 1.1
+    def draw(d, mp, S):
+        X, Y = mp(x, y + 30 * u)
+        r = 11 * S
+        col = (120, 190, 250, int(235 * k * (1 - u * 0.6)))
+        d.polygon([(X, Y - r * 1.8), (X - r * 0.8, Y), (X + r * 0.8, Y)], fill=col)
+        d.ellipse([X - r * 0.85, Y - r * 0.6, X + r * 0.85, Y + r * 1.0], fill=col)
+    fx.over(cv, fx.draw_rgba((x - 30, y - 40, x + 30, y + 60), draw))
+
+
+def crown(cv, t, x, y, t0, t1, a):
+    k = window_a(t, t0, t1, 0.25) * a
+    if k <= 0:
+        return
+    p = pop(t, t0)
+    def draw(d, mp, S):
+        X, Y = mp(x, y + 4 * math.sin(t * 4))
+        w, h = 46 * S * p, 30 * S * p
+        pts = [(X - w, Y + h), (X - w, Y - h * 0.3), (X - w * 0.5, Y + h * 0.2), (X, Y - h), (X + w * 0.5, Y + h * 0.2),
+               (X + w, Y - h * 0.3), (X + w, Y + h)]
+        d.polygon(pts, fill=GOLD + (int(255 * k),), outline=(160, 110, 20, int(255 * k)))
+        for cx_ in (X - w, X, X + w):
+            d.ellipse([cx_ - 5 * S, Y - h * (1.0 if cx_ == X else 0.3) - 9 * S, cx_ + 5 * S, Y - h * (1.0 if cx_ == X else 0.3) + 1 * S],
+                      fill=PINK + (int(255 * k),))
+    fx.over(cv, fx.draw_rgba((x - 70, y - 60, x + 70, y + 50), draw))
+
+
+def fragment_note(cv, t, t0, t1, a):
+    """Плашка источника цен под сравнениями (доверие к цифрам)."""
+    k = window_a(t, t0, t1, 0.3) * a
+    if k > 0:
+        put(cv, upill('цены: Fragment · 17.11', (244, 240, 252), 16, MUTED), 540, 780, 1.0, k)
+
+
 def scene_epic(cv, t):
     a = window_a(t, E.EPIC_BASE, E.SHUFFLE + 0.35, 0.3)
     if a <= 0:
@@ -537,11 +580,13 @@ def scene_epic(cv, t):
     empty_frame(cv, t, 540, 470, E.EPIC_BASE + 0.15, E.EPIC_CHEAP, a, 220)
     empty_frame(cv, t, 890, 470, E.EPIC_BASE + 0.3, E.EPIC_RICH, a, 220)
     framed_nft(cv, t, DC, 'Balloon Face', 190, 470, E.EPIC_BASE, a, 220, 'обычная', MUTED,
-               rub(round(REG_FLOOR * RATE)), MUTED, 'не из крафта')
+               round(REG_FLOOR * RATE), MUTED, 'не из крафта')
     framed_nft(cv, t, DC, 'Mánadagr', 540, 470, E.EPIC_CHEAP, a, 220, 'эпическая', TIER_COL['эпическая'],
-               rub(rub_of(DC, 'Mánadagr')), INK, '≈ как кружка')
+               rub_of(DC, 'Mánadagr'), INK, '≈ как кружка')
     framed_nft(cv, t, DC, 'Týsdagr', 890, 470, E.EPIC_RICH, a, 220, 'эпическая', TIER_COL['эпическая'],
-               rub(rub_of(DC, 'Týsdagr')), PINK, '≈ как AirPods', hi=t > E.EPIC_RICH + 0.4)
+               rub_of(DC, 'Týsdagr'), PINK, '≈ как AirPods', hi=t > E.EPIC_RICH + 0.4)
+    nft_sweat(cv, t, 540 + 70, 470 - 80, E.EPIC_RICH + 0.2, E.SHUFFLE, a)      # дешёвая эпическая «потеет» рядом с дорогой
+    fragment_note(cv, t, E.EPIC_CHEAP, E.SHUFFLE + 0.35, a)
     bars(cv, t, LX, E.EPIC_CHEAP + 0.4, E.SHUFFLE, [rub_of(DC, 'Mánadagr'), rub_of(DC, 'Týsdagr')],
          ['Mánadagr', 'Týsdagr'], [TIER_COL['эпическая'], PINK], 'обе эпические')
     txt_panel(cv, t, RX, E.EPIC_RICH + 0.5, E.SHUFFLE, 'редкость', 'одна', 'цена — разная', PINK)
@@ -552,13 +597,16 @@ def scene_shuffle(cv, t):
     if a <= 0:
         return
     framed_nft(cv, t, DC, 'Týsdagr', 190, 470, E.SHUFFLE + 0.2, a, 220, 'эпическая', TIER_COL['эпическая'],
-               rub(rub_of(DC, 'Týsdagr')), MUTED)
+               rub_of(DC, 'Týsdagr'), MUTED)
     framed_nft(cv, t, DC, 'Celestial Map', 540, 470, E.SHUFFLE + 0.45, a, 220, 'легендарная', TIER_COL['легендарная'],
-               rub(rub_of(DC, 'Celestial Map')), INK, 'самая дорогая')
+               rub_of(DC, 'Celestial Map'), INK, 'самая дорогая')
     empty_frame(cv, t, 890, 470, E.SHUFFLE + 0.6, E.SHUF_SHOW, a, 220)
     framed_nft(cv, t, DC, 'Shuffle', 890, 470, E.SHUF_SHOW, a, 220, 'необычная', TIER_COL['необычная'],
-               rub(rub_of(DC, 'Shuffle')), PINK, 'дороже всех', hi=t > E.SHUF_X2)
+               rub_of(DC, 'Shuffle'), PINK, 'дороже всех', hi=t > E.SHUF_X2)
     sparkle_burst(cv, t, E.SHUF_X2, 890, 470, 220, 18)
+    crown(cv, t, 890, 470 - 118, E.SHUF_X2, E.SWEEP, a)                          # Shuffle гордится — коронка
+    nft_sweat(cv, t, 540 + 70, 470 - 80, E.SHUF_X2 + 0.3, E.SWEEP, a)            # легендарка «потеет»
+    fragment_note(cv, t, E.SHUFFLE + 0.4, E.SWEEP + 0.25, a)
     bars(cv, t, LX, E.SHUF_LEG + 0.3, E.SWEEP, [rub_of(DC, 'Celestial Map'), rub_of(DC, 'Shuffle')],
          ['легенд.', 'Shuffle'], [TIER_COL['легендарная'], PINK], 'цена')
     txt_panel(cv, t, RX, E.SHUF_X2 + 0.2, E.SWEEP, 'необычная', 'дороже', 'легендарки', PINK)
@@ -637,9 +685,8 @@ def scene_outro(cv, t):
              ('Resistance Dog', 'Yin Yang', 660, 600, 175), (DC, 'Týsdagr', 900, 600, 175)]
     for j, (g, m, x, y, sz) in enumerate(cloud):
         magic_nft(cv, t, g, m, x, y, sz, E.OUTRO + 0.12 * j, a)
-    txt_panel(cv, t, 770, E.OUTRO + 0.3, DUR + 5, 'а ты бы', 'рискнул?', 'крафт — лотерея', PINK)
-    k = appear(t, E.OUTRO_PILL, 0.3)
-    put(cv, upill('Пиши в комментариях', PINK, 28, WHITE), 780, 790, 0.8 + 0.2 * pop(t, E.OUTRO_PILL), k)
+    txt_panel(cv, t, 770, E.OUTRO + 0.3, DUR + 5, 'а ты?', 'выбирай', 'и пиши ответ', PINK)
+    game_choice(cv, t)
 
 
 def decor_corners(cv, t):
@@ -776,6 +823,151 @@ def outro_fill(cv, t):
     for j, (g, m, x, y) in enumerate([(DC, 'Celestial Map', 170, 380), ('Jingle Bells', 'Maneki Neko', 360, 560),
                                        ('Resistance Dog', 'Satoshi', 170, 740)]):
         magic_nft(cv, t, g, m, x, y, 150, E.OUTRO + 0.2 + 0.15 * j, a)
+
+
+# ------------------------------------------------------------------ фишки: игровой интерфейс (четвёртая стена)
+@functools.lru_cache(None)
+def choice_box(label, hot):
+    """Кнопка-реплика выбора в стиле диалогов игры: тёмная плашка, светлый текст, розовая рамка у выбранной."""
+    w, h, S = 420, 74, 2
+    im = Image.new('RGBA', (w * S, h * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([0, 0, w * S - 1, h * S - 1], 18 * S, fill=(34, 26, 58, 228),
+                        outline=(PINK if hot else (150, 140, 190)) + (255,), width=(5 if hot else 3) * S)
+    d.text((w * S / 2, h * S / 2), label, font=ufont('SemiBold', 30 * S), fill=(255, 255, 255, 255), anchor='mm')
+    return im.resize((w, h), Image.LANCZOS)
+
+
+def game_choice(cv, t):
+    """Финал: два варианта, как выбор в игре; курсор-сердечко перебегает между ними."""
+    a = appear(t, E.CHOICE, 0.3)
+    if a <= 0:
+        return
+    opts = ['Рискнуть', 'Не рисковать']
+    hot = int(((t - E.CHOICE) / 0.75)) % 2
+    for j, lab in enumerate(opts):
+        y = 800 + j * 92
+        p = pop(t, E.CHOICE + 0.12 * j)
+        put(cv, choice_box(lab, j == hot), 780, y, 0.8 + 0.2 * p, a * appear(t, E.CHOICE + 0.12 * j, 0.25))
+    hy = 800 + hot * 92
+    def draw(d, mp, S):
+        X, Y = mp(560 + 6 * math.sin(t * 8), hy)
+        heart(d, X, Y, 16 * S, PINK + (int(255 * a),))
+    fx.over(cv, fx.draw_rgba((520, hy - 40, 600, hy + 40), draw))
+
+
+def save_icon(cv, t):
+    """После переодевания в углу мигает «сохранение…» — как в игре."""
+    a = window_a(t, E.SAVE, E.SAVE + 1.9, 0.25)
+    if a <= 0:
+        return
+    x, y = 905, 1795
+    blink = 0.6 + 0.4 * math.sin(t * 9)
+    def draw(d, mp, S):
+        X, Y = mp(x - 105, y)
+        r = 15 * S
+        ang = t * 5
+        pts = [(X + math.cos(ang + k * math.pi / 2) * r, Y + math.sin(ang + k * math.pi / 2) * r) for k in range(4)]
+        d.polygon(pts, fill=PINK + (int(255 * a * blink),))
+    fx.over(cv, fx.draw_rgba((x - 140, y - 30, x - 70, y + 30), draw))
+    put(cv, utext('сохранение…', 30, 'SemiBold', INK), x + 15, y, 1.0, a * (0.75 + 0.25 * blink))
+
+
+def loading_bar(cv, t):
+    """Выход из жути: короткая «загрузка», как переход между комнатами в игре."""
+    u = (t - E.LOADING) / 0.9
+    if not 0 <= u < 1:
+        return
+    a = min(1.0, u * 6) * (1 - fx.clamp01((u - 0.8) / 0.2))
+    ck = creepy_k(t)
+    col = tuple(int(255 * ck + c * (1 - ck)) for c in INK)        # на тёмном — белая, на светлом — тёмная
+    def draw(d, mp, S):
+        x0, y0 = mp(400, 1866)
+        x1, y1 = mp(800, 1892)
+        d.rectangle([x0, y0, x1, y1], outline=col + (int(230 * a),), width=int(3 * S))
+        n = int(10 * min(1, u * 1.3))
+        for i in range(n):
+            X0 = x0 + (6 + i * 39) * S
+            d.rectangle([X0, y0 + 6 * S, X0 + 33 * S, y1 - 6 * S], fill=col + (int(230 * a),))
+    fx.over(cv, fx.draw_rgba((380, 1850, 820, 1905), draw), 1.0)
+    put(cv, utext('ЗАГРУЗКА', 22, 'ExtraBold', col), 300, 1879, 1.0, a)
+
+
+def knock_point(t):
+    g = M.GEO['knock']
+    s_ = M.MITA_H / (g['bot'] - g['top'])
+    return 540 + (215 - g['hx']) * s_, M.FOOT + (540 - g['bot']) * s_
+
+
+def knock_glass(cv, t):
+    """Мита стучит по экрану изнутри: от костяшек расходятся круги по «стеклу», мелькает блик."""
+    for th in E.KNOCK_HITS:
+        u = (t - th) / 0.7
+        if not 0 <= u < 1:
+            continue
+        x, y = knock_point(th)
+        def draw(d, mp, S, u=u, x=x, y=y):
+            X, Y = mp(x, y)
+            for k_, a_ in ((0, 1.0), (0.18, 0.6), (0.36, 0.35)):
+                uu = max(0.0, u - k_)
+                r = (20 + 260 * ease(uu)) * S
+                al = int(200 * a_ * (1 - uu))
+                if al > 0:                                    # на белом фоне круги должны читаться: сиреневый край + белый блик
+                    d.ellipse([X - r, Y - r, X + r, Y + r], outline=(120, 110, 220, al), width=max(1, int((7 - 4 * uu) * S)))
+                    rr = r - 5 * S
+                    d.ellipse([X - rr, Y - rr, X + rr, Y + rr], outline=(255, 255, 255, al), width=max(1, int(3 * S)))
+        fx.over(cv, fx.draw_rgba((x - 320, y - 320, x + 320, y + 320), draw))
+        put(cv, glow((170, 160, 255), 512, 2.5), x, y, 0.55, 0.8 * (1 - u))
+    # блик по всему «стеклу» после первого удара
+    u = (t - E.KNOCK_HITS[0]) / 0.5
+    if 0 <= u < 1:
+        def shine(d, mp, S):
+            xx = -300 + 1700 * u
+            pts = [mp(xx, 0), mp(xx + 140, 0), mp(xx - 260, 1920), mp(xx - 400, 1920)]
+            d.polygon(pts, fill=(200, 210, 255, int(70 * math.sin(math.pi * u))))
+        fx.over(cv, fx.draw_rgba((0, 0, W, H), shine))
+
+
+def easter_eggs(cv, t):
+    """Пасхалки на 1–2 с, без объявления: ободок Миты, картридж, ножик (🔪 из описания канала)."""
+    eggs = [('headband', 120, 960, 1470, 2.1, 1.6, 0.25), ('cartridge', 120, 960, 1480, E.TEASE + 0.3, 1.8, -0.2),
+            ('knife', 100, 0, 0, E.SWEEP + 1.2, 1.5, -0.6)]
+    for name, w, x, y, t0, d_, rot in eggs:
+        a = window_a(t, t0, t0 + d_, 0.25)
+        if a <= 0:
+            continue
+        if name == 'knife':                                   # прячется среди дешёвых NFT
+            x, y = GRID[13]
+        put(cv, decor(name, w), x, y + 4 * math.sin(t * 3), 0.85 + 0.15 * pop(t, t0, 0.35), a * 0.95, rot=rot)
+
+
+# ------------------------------------------------------------------ фишки: наезды камеры и петля
+def punch(t):
+    z = 1.0
+    for t0 in E.PUNCH:
+        u = (t - t0) / 0.55
+        if 0 <= u < 1:
+            z = max(z, 1 + 0.07 * math.sin(math.pi * min(1.0, u * 1.6)) * (1 - u) ** 0.5)
+    return z
+
+
+def apply_punch(cv, t):
+    z = punch(t)
+    if z <= 1.0005:
+        return cv
+    px, py = M.x_of(t), 960
+    Mx = np.float32([[z, 0, (1 - z) * px], [0, z, (1 - z) * py]])
+    return cv2.warpAffine(cv, Mx, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+
+LOOP_IN, LOOP_OUT = 0.3, 0.4
+
+
+def loop_flash(t_out, total):
+    """Петля: ролик кончается белой вспышкой и из неё же начинается — при повторе стык незаметен."""
+    a = 1 - ease(t_out / LOOP_IN)
+    b = ease((t_out - (total - LOOP_OUT)) / LOOP_OUT)
+    return max(a, b)
 
 
 # ------------------------------------------------------------------ жуть: тьма, красный туман, виньетка
@@ -980,10 +1172,13 @@ def render_at(t):
         outro_fill(cv, t)
         side_floaters(cv, t)
         drifting(cv, t * (1 - ck))
+        easter_eggs(cv, t)
     scene_creepy_nfts(cv, t)
     if t != AD_STOP:
         M.draw(cv, t, put, mita_shadow if ck < 0.5 else None)
     snap_sparks(cv, t)
+    knock_glass(cv, t)
+    cv = apply_punch(cv, t)
     if ck < 0.5 and not (E.SNAP <= t < E.SNAP + E.SNAP_DUR):
         reactions(cv, t)
     if fog_k(t) > 0:
@@ -992,6 +1187,8 @@ def render_at(t):
         headline(cv, t)
     if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):
         subtitles(cv, t)
+    save_icon(cv, t)
+    loading_bar(cv, t)
     f = M.snap_flash(t) if E.SNAP <= t < E.SNAP + E.SNAP_DUR else 0.0
     if f > 0.01:
         cv[..., :3] = cv[..., :3] * (1 - min(1, f * 1.1)) + np.array([255, 252, 235], np.float32) * min(1, f * 1.1)
@@ -1041,8 +1238,15 @@ def ad_overlay(c, t):
     return cv[..., :3]
 
 
+TOTAL = BR.out_dur(DUR)
+
+
 def out_frame(t, i=None):
-    return np.clip(ad_overlay(BR.render(render_at, t, i).astype(np.float32), t), 0, 255).astype(np.uint8)
+    img = ad_overlay(BR.render(render_at, t, i).astype(np.float32), t)
+    f = loop_flash(t, TOTAL)
+    if f > 0.003:
+        img = img * (1 - f) + np.array([255, 252, 240], np.float32) * f
+    return np.clip(img, 0, 255).astype(np.uint8)
 
 
 def frame_bytes(i):

@@ -73,7 +73,15 @@ def sfx_layer(n, kit):
     a(fx, 'counter', E.FOUR + 0.1, gain_db=-19, label='4 подарка — потратили')
     a(fx, 'whoosh-organic', E.WALK2 + 0.3, gain_db=-22, label='Мита отходит')
     a(fx, 'sparkle', E.LOVE, gain_db=-18, label='нравится людям')
-    a(fx, 'select-soft', E.OUTRO_PILL, gain_db=-16, label='пиши в комментариях')
+    for j, th in enumerate(E.KNOCK_HITS):
+        a(fx, 'impact', th, gain_db=-15, key='botanica-v4/impact-hit/hit-impact-no-fx-01.flac#0', semitones=7, fit=0.22, label=f'стук по экрану {j + 1}')
+    a(fx, 'confirm', E.SAVE + 0.05, gain_db=-20, label='«сохранение…»')
+    a(fx, 'scan', E.LOADING + 0.05, gain_db=-21, label='«загрузка»')
+    for j, tp in enumerate(E.PUNCH):
+        a(fx, 'whoosh-short', tp + 0.05, align='peak', gain_db=-22, label=f'наезд камеры {j + 1}')
+    a(fx, 'select-soft', E.CHOICE, gain_db=-16, label='выбор как в игре')
+    for k in range(1, 3):
+        a(fx, 'click', E.CHOICE + 0.75 * k, gain_db=-22, label=f'курсор выбора {k}')
     return fx * 10 ** (-1 / 20)
 
 

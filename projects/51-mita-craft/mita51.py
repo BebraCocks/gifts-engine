@@ -54,7 +54,9 @@ def clip_index(name, lt, mode):
 # ------------------------------------------------------------------ дорожка: (начало, конец, вид, параметры)
 def _track():
     T = []
-    T.append(dict(t0=-1, t1=E.SNAP, kind='clip', name='hook_normal', x=540, off=0.0, mode='once'))
+    T.append(dict(t0=-1, t1=E.KNOCK, kind='clip', name='hook_normal', x=540, off=1.0, mode='once'))
+    T.append(dict(t0=E.KNOCK, t1=E.KNOCK + 3.1, kind='clip', name='knock', x=540, off=0.0, mode='once'))
+    T.append(dict(t0=E.KNOCK + 3.1, t1=E.SNAP, kind='clip', name='hook_normal', x=540, off=E.KNOCK + 4.1, mode='once'))
     T.append(dict(t0=E.SNAP, t1=E.SNAP + E.SNAP_DUR, kind='snap', x=540))
     if E.WALK1 > E.SNAP + E.SNAP_DUR + 0.05:
         T.append(dict(t0=E.SNAP + E.SNAP_DUR, t1=E.WALK1, kind='clip', name='talk', x=540, off=0.0, mode='pp'))
@@ -239,7 +241,7 @@ def snap_flash(t):
 # ------------------------------------------------------------------ рисование
 def _draw_seg(cv, s, t, put, a=1.0):
     if s['kind'] == 'clip':
-        lt = t - s['t0'] + s['off']
+        lt = (t - s['t0'] + s['off']) if s['t0'] > -1 else (t + s['off'])
         im, anc = clip_img(s['name'], clip_index(s['name'], lt, s['mode']))
         put(cv, im, seg_x(s, t), FOOT, 1.0, a, anchor=anc)
     elif s['kind'] == 'walk':
@@ -257,10 +259,14 @@ def draw(cv, t, put, shadow=None):
     i, s = seg_at(t)
     if shadow and s['kind'] not in ('creepy',):
         shadow(cv, x_of(t), FOOT)
-    _draw_seg(cv, s, t, put)
-    # после жути крупный план не пропадает разом, а растворяется (≈ 0,9 с) поверх обычной Миты
-    if i > 0 and TRACK[i - 1]['kind'] == 'creepy' and t - s['t0'] < CREEP_OUT:
-        draw_creepy(cv, min(t, s['t0'] - 1e-3), put, 1 - ease((t - s['t0']) / CREEP_OUT))
+    after_creepy = i > 0 and TRACK[i - 1]['kind'] == 'creepy' and t - s['t0'] < CREEP_OUT + 0.5
+    if after_creepy:
+        # Мита стоит выше крупного плана: сначала растворяется крупный план, потом проявляется обычная Мита
+        _draw_seg(cv, s, t, put, ease((t - s['t0'] - 0.35) / 0.5))
+        if t - s['t0'] < CREEP_OUT:
+            draw_creepy(cv, s['t0'] - 1e-3, put, 1 - ease((t - s['t0']) / CREEP_OUT))
+    else:
+        _draw_seg(cv, s, t, put)
     # растворение: предыдущий сегмент поверх, гаснет за XF (кроме входа/выхода жути и щелчка — там свои переходы)
     if i > 0 and t - s['t0'] < XF:
         p = TRACK[i - 1]

@@ -9,7 +9,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RAW, OUT = HERE / 'voice' / 'raw', HERE / 'voice'
 SR = 48000
-PICK = {}            # 'L05': 1 — номер дубля, по умолчанию 0
+PICK = {'L11': 1}            # 'L05': 1 — номер дубля, по умолчанию 0
 TEMPO = 1.08         # чуть быстрее, тон не меняется
 MAX_GAP = 0.2
 GAP_LINE = {4: 0.32}    # жуткий шёпот — паузы короче (автор: «жуткую сцену покороче»)

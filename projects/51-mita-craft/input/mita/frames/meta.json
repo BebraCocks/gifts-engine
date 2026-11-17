@@ -910,5 +910,29 @@
   "left": 193,
   "right": 522,
   "magenta": 208
+ },
+ "walk_cd": {
+  "sheet": "walk_i2",
+  "top": 50,
+  "bottom": 981,
+  "left": 227,
+  "right": 610,
+  "magenta": 344
+ },
+ "walk_da": {
+  "sheet": "walk_i2",
+  "top": 50,
+  "bottom": 973,
+  "left": 198,
+  "right": 660,
+  "magenta": 367
+ },
+ "walk_a2": {
+  "sheet": "walk_i2",
+  "top": 52,
+  "bottom": 980,
+  "left": 210,
+  "right": 559,
+  "magenta": 360
  }
 }

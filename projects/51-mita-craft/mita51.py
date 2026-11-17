@@ -17,8 +17,8 @@ from timeline import ON, END, AD_STOP, DUR
 HERE = Path(__file__).resolve().parent
 CLIPS = HERE / 'build' / 'clips'
 GEO = json.loads((CLIPS / 'geom.json').read_text())
-MITA_H = 930              # рост Миты в кадре (макушка → подошва)
-FOOT = 1890
+MITA_H = 820              # рост Миты в кадре (макушка → подошва)
+FOOT = 1560
 CFPS = 24                 # клипы Gemini — 24 к/с (аниме-темп)
 CREEP_OUT = 0.7
 XF = 0.28                 # длительность растворения между клипами
@@ -42,7 +42,7 @@ def clip_img(name, idx, h=MITA_H):
 
 def clip_index(name, lt, mode):
     n = GEO[name]['n']
-    f = max(0, int(lt * CFPS))
+    f = max(0, int(lt * GEO[name].get('fps', CFPS)))
     if mode == 'once':
         return min(n - 1, f)
     if mode == 'loop':
@@ -56,24 +56,24 @@ def _track():
     T = []
     T.append(dict(t0=-1, t1=E.SNAP, kind='clip', name='hook_normal', x=540, off=0.0, mode='once'))
     T.append(dict(t0=E.SNAP, t1=E.SNAP + E.SNAP_DUR, kind='snap', x=540))
-    T.append(dict(t0=E.SNAP + E.SNAP_DUR, t1=E.WALK1, kind='clip', name='talk', x=540, off=0.0, mode='pp'))
+    if E.WALK1 > E.SNAP + E.SNAP_DUR + 0.05:
+        T.append(dict(t0=E.SNAP + E.SNAP_DUR, t1=E.WALK1, kind='clip', name='talk', x=540, off=0.0, mode='pp'))
     # отходит влево: разворот ≈ 1 с, потом шаги
-    T.append(dict(t0=E.WALK1, t1=E.WALK1 + 2.35, kind='walk', name='walk_left', x0=540, x1=LEFT,
-                  m0=E.WALK1 + 0.75, m1=E.WALK1 + 2.3, off=0.0))
-    T.append(dict(t0=E.WALK1 + 2.35, t1=E.CREEPY, kind='clip', name='talk', x=LEFT, off=2.0, mode='pp'))
+    w1 = 0.95 + walk_len(540, LEFT) + 0.15
+    T.append(dict(t0=E.WALK1, t1=E.WALK1 + w1, kind='walk', name='walk_left', x0=540, x1=LEFT,
+                  m0=E.WALK1 + 0.95, off=0.0))
+    T.append(dict(t0=E.WALK1 + w1, t1=E.CREEPY, kind='clip', name='talk', x=LEFT, off=2.0, mode='pp'))
     T.append(dict(t0=E.CREEPY, t1=E.CREEPY_END, kind='creepy', x=LEFT))
     T.append(dict(t0=E.CREEPY_END, t1=E.TEASE, kind='clip', name='palm', x=540, off=0.6, mode='pp'))
     T.append(dict(t0=E.TEASE, t1=E.EPIC, kind='clip', name='think', x=540, off=0.0, mode='once'))
     T.append(dict(t0=E.EPIC, t1=E.EPIC + 1.9, kind='clip', name='nope', x=540, off=0.35, mode='once'))
     T.append(dict(t0=E.EPIC + 1.9, t1=E.SWEEP - 2.55, kind='clip', name='talk', x=540, off=4.0, mode='pp'))
     T.append(dict(t0=E.SWEEP - 2.55, t1=E.WALK2, kind='clip', name='sweep', x=540, off=0.0, mode='once'))
-    T.append(dict(t0=E.WALK2, t1=E.WALK2 + 2.35, kind='walk', name='walk_left', x0=540, x1=LEFT,
-                  m0=E.WALK2 + 0.75, m1=E.WALK2 + 2.3, off=0.0))
-    T.append(dict(t0=E.WALK2 + 2.35, t1=DUR + 5, kind='clip', name='talk', x=LEFT, off=6.0, mode='pp'))
+    T.append(dict(t0=E.WALK2, t1=E.WALK2 + w1, kind='walk', name='walk_left', x0=540, x1=LEFT,
+                  m0=E.WALK2 + 0.95, off=0.0))
+    T.append(dict(t0=E.WALK2 + w1, t1=DUR + 5, kind='clip', name='talk', x=LEFT, off=6.0, mode='pp'))
     return T
 
-
-TRACK = _track()
 
 
 def seg_at(t):
@@ -83,12 +83,44 @@ def seg_at(t):
     return len(TRACK) - 1, TRACK[-1]
 
 
+WALK_V = 285.0            # px/с — скорость опорной стопы в клипе ходьбы (замер): так ноги не скользят по полу
+WALK_ACC = 0.18           # с — разгон и торможение
+
+
+def walk_pos(s, t):
+    """Сдвиг по трапеции скорости: разгон WALK_ACC, ровно WALK_V, торможение — стопы «стоят» на полу."""
+    D = abs(s['x1'] - s['x0'])
+    v, a_t = WALK_V, WALK_ACC
+    cruise = max(0.0, (D - v * a_t) / v)
+    u = t - s['m0']
+    if u <= 0:
+        d = 0.0
+    elif u < a_t:
+        d = 0.5 * v / a_t * u * u
+    elif u < a_t + cruise:
+        d = 0.5 * v * a_t + v * (u - a_t)
+    elif u < 2 * a_t + cruise:
+        w = u - a_t - cruise
+        d = 0.5 * v * a_t + v * cruise + v * w - 0.5 * v / a_t * w * w
+    else:
+        d = D
+    return s['x0'] + math.copysign(min(d, D), s['x1'] - s['x0'])
+
+
+def walk_len(x0, x1):
+    D = abs(x1 - x0)
+    return WALK_ACC * 2 + max(0.0, (D - WALK_V * WALK_ACC) / WALK_V)
+
+
 def seg_x(s, t):
     if s['kind'] == 'walk':
-        return s['x0'] + (s['x1'] - s['x0']) * ease((t - s['m0']) / (s['m1'] - s['m0']))
+        return walk_pos(s, t)
     if s['kind'] == 'creepy':
         return s['x'] + (540 - s['x']) * ease((t - E.CREEPY - 0.4) / (E.CREEPY_CLOSE - E.CREEPY))
     return s['x']
+
+
+TRACK = _track()
 
 
 def x_of(t):
@@ -238,7 +270,7 @@ def draw(cv, t, put, shadow=None):
             _draw_seg(cv, p, t, put, 1 - ease((t - s['t0']) / 0.18))
         elif p['kind'] == 'creepy':
             pass
-        elif p['kind'] == 'snap' and s['kind'] == 'clip':
+        elif p['kind'] == 'snap' and s['kind'] in ('clip', 'walk'):
             _draw_seg(cv, p, t, put, 1 - ease((t - s['t0']) / XF))
 
 

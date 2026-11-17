@@ -39,10 +39,10 @@ PINK = (226, 54, 120)
 RED = (200, 36, 52)
 TIER_COL = {'необычная': (60, 170, 110), 'редкая': (60, 120, 220), 'эпическая': (140, 80, 210), 'легендарная': (226, 160, 30)}
 PANEL_W, PANEL_H = 240, 300
-SIDE_Y = 1420
+SIDE_Y = 1170
 LX, RX = 150, 930
-SUB_Y = 872
-SUB_Y_CREEPY = 1800
+SUB_Y = 1628
+SUB_Y_CREEPY = 1800          # жуть — как утверждено (автор: «жуткую сцену не меняй»)
 DC = 'Desk Calendar'
 REG = ['Balloon Face', 'Burning Time', 'Deadline', 'Fawkes Night']          # обычные модели календаря (не крафт)
 CHEAP_MODELS = [(DC, m) for m in ('Vacation', 'April Fools', 'Launch Date', 'New Year', 'Space Era', 'Artwork',
@@ -365,8 +365,9 @@ def background(t):
 # ------------------------------------------------------------------ заголовок
 def headline_items():
     return [
-        (E.HOOK_NFT, E.SNAP, 'ПОДАРКИ ТОЛЬКО ИЗ КРАФТА', PINK),
-        (E.SNAP + E.SNAP_DUR, E.BURN - 0.1, 'КРАФТ: ОТ 1 ДО 4 ПОДАРКОВ', NAVY),
+        (E.HOOK_NFT, E.SNAP + 0.25, 'ПОДАРКИ ТОЛЬКО ИЗ КРАФТА', PINK),
+        (E.SNAP + 0.25, E.CRAFT_IN, 'НАРЯД — ПО КРАФТОВОЙ МОДЕЛИ', NAVY),
+        (E.CRAFT_IN, E.BURN - 0.1, 'КРАФТ: ОТ 1 ДО 4 ПОДАРКОВ', NAVY),
         (E.BURN - 0.1, E.CREEPY, 'НЕ ПОВЕЗЛО — ВСЁ СГОРЕЛО', RED),
         (E.CREEPY_END + 0.3, E.TIERS[0], 'ЕСТЬ ТОЛЬКО В КРАФТЕ', NAVY),
         (E.TIERS[0], E.TEASE, '4 УРОВНЯ РЕДКОСТИ', NAVY),
@@ -389,7 +390,7 @@ def headline(cv, t):
 
 # ------------------------------------------------------------------ сцены
 def scene_hook(cv, t):
-    a = 1 - appear(t, E.SNAP - 0.1, 0.35)
+    a = 1 - appear(t, E.CRAFT_IN - 0.2, 0.4)
     if a <= 0 or t < E.HOOK_NFT:
         return
     trio = [(DC, 'Celestial Map', 250, 560), ('Jingle Bells', 'Maneki Neko', 540, 450), ('Resistance Dog', 'Satoshi', 830, 560)]
@@ -403,15 +404,18 @@ def scene_hook(cv, t):
             u = fx.ease_in(k)
             put(cv, nft(DC, m, 110), sx + (540 - sx) * u, sy + (450 - sy) * u, 1 - 0.6 * u, a * (1 - 0.3 * u))
     sparkle_burst(cv, t, E.HOOK_CRAFT + 0.8, 540, 450, 200, 18)
-    txt_panel(cv, t, LX, E.HOOK_NO, E.SNAP - 0.05, 'улучшить', 'нельзя', 'не выпадут')
-    txt_panel(cv, t, RX, E.HOOK_CRAFT + 0.2, E.SNAP - 0.05, 'только', 'крафт', 'из подарков', PINK)
+    txt_panel(cv, t, LX, E.HOOK_NO, E.SNAP + 0.1, 'улучшить', 'нельзя', 'не выпадут')
+    txt_panel(cv, t, RX, E.HOOK_CRAFT + 0.2, E.SNAP + 0.1, 'только', 'крафт', 'из подарков', PINK)
+    # пока Мита переодевается: наряд звездочёта — по крафтовой модели Celestial Map
+    txt_panel(cv, t, LX, E.SNAP + 0.1, E.CRAFT_IN + 0.6, 'наряд', 'звездочёт', 'новый образ')
+    txt_panel(cv, t, RX, E.SNAP + 0.1, E.CRAFT_IN + 0.6, 'по модели', 'Celestial Map', 'из крафта', PINK)
 
 
 SLOT_XY = [(700, 500), (900, 500), (700, 700), (900, 700)]
 
 
 def scene_craft(cv, t):
-    t0, t1 = E.SNAP + E.SNAP_DUR + 0.3, E.CREEPY + 0.05
+    t0, t1 = E.CRAFT_IN, E.CREEPY + 0.05
     a = window_a(t, t0, t1, 0.3)
     if a <= 0:
         return
@@ -621,27 +625,28 @@ def scene_why(cv, t):
                 heart(d, X, Y, (12 + 8 * rng.random()) * S, PINK + (int(220 * la * (1 - u)),))
         fx.over(cv, fx.draw_rgba((x - 260, y - 300, x + 260, y + 220), draw))
     put(cv, upill('нравится — значит дорого', NAVY, 21, WHITE), x, 770, pop(t, E.LOVE), la)
-    txt_panel(cv, t, RX, E.WHY + 0.8, E.OUTRO, 'цену делает', 'не шанс', 'а люди', PINK)
+    txt_panel(cv, t, 770, E.WHY + 0.8, E.OUTRO + 0.3, 'цену делает', 'не шанс', 'а люди', PINK)
 
 
 def scene_outro(cv, t):
+    """Финал: справа сверху — облако крафтовых моделей (а не предметы декора), под ними «Пиши в комментариях»."""
     a = appear(t, E.OUTRO, 0.35)
     if a <= 0:
         return
-    put(cv, glow((255, 200, 90)), 770, 540, 0.7, a * 0.5)
-    put(cv, decor('sigil', 280), 770, 540, pop(t, E.OUTRO), a, rot=t * 0.5)
-    put(cv, utext('?', 100, 'ExtraBold', PINK), 770, 520 + 6 * math.sin(t * 4), pop(t, E.OUTRO + 0.2), a)
+    cloud = [(DC, 'Shuffle', 660, 370, 175), ('Jingle Bells', 'Golden Dice', 900, 370, 175),
+             ('Resistance Dog', 'Yin Yang', 660, 600, 175), (DC, 'Týsdagr', 900, 600, 175)]
+    for j, (g, m, x, y, sz) in enumerate(cloud):
+        magic_nft(cv, t, g, m, x, y, sz, E.OUTRO + 0.12 * j, a)
+    txt_panel(cv, t, 770, E.OUTRO + 0.3, DUR + 5, 'а ты бы', 'рискнул?', 'крафт — лотерея', PINK)
     k = appear(t, E.OUTRO_PILL, 0.3)
-    put(cv, upill('Пиши в комментариях', PINK, 28, WHITE), 740, 760, 0.8 + 0.2 * pop(t, E.OUTRO_PILL), k)
-    put(cv, decor('moon', 150), 960, 330, 1.0, a * 0.9, rot=0.08 * math.sin(t))
-    put(cv, decor('telescope', 170), 600, 330, 1.0, a * 0.9)
+    put(cv, upill('Пиши в комментариях', PINK, 28, WHITE), 780, 790, 0.8 + 0.2 * pop(t, E.OUTRO_PILL), k)
 
 
 def decor_corners(cv, t):
     """Мелкие детали звездочёта в нижних углах каждой части (правило автора: пустых мест нет, как в 49)."""
     items = [
-        (0.3, E.SNAP, [('moon', 130, 110, 1720), ('sparkles', 120, 975, 1720)]),
-        (E.SNAP + E.SNAP_DUR, E.CREEPY, [('moon', 150, 120, 330), ('scroll', 120, 975, 1720)]),
+        (0.3, E.CRAFT_IN, [('moon', 130, 110, 1720), ('sparkles', 120, 975, 1720)]),
+        (E.CRAFT_IN, E.CREEPY, [('moon', 150, 120, 330), ('scroll', 120, 975, 1720)]),
         (E.CREEPY_END + 0.3, E.TEASE, [('telescope', 130, 105, 1700), ('astrolabe', 120, 975, 1700)]),
         (E.TEASE, AD_STOP + 0.5, [('scroll', 120, 105, 1710), ('moon', 120, 975, 1710)]),
         (E.EPIC, E.SHUFFLE, [('scroll', 120, 105, 1710), ('sparkles', 120, 975, 1720)]),
@@ -663,14 +668,12 @@ def decor_corners(cv, t):
 
 # ------------------------------------------------------------------ заполнение: парящие NFT по бокам, дрейф по краям, реакции
 FLOAT = [  # (с, по, слева, справа) — NFT парят над боковыми панелями
-    (0.6, E.SNAP - 0.1, ('Jingle Bells', 'Golden Dice'), (DC, 'Týsdagr')),
+    (0.6, E.CRAFT_IN + 0.6, ('Jingle Bells', 'Golden Dice'), (DC, 'Týsdagr')),
     (E.CREEPY_END + 0.5, E.TEASE, ('Desk Calendar', 'Zeus'), ('Jingle Bells', 'Fabergé')),
     (E.TEASE + 0.2, AD_STOP + 0.5, ('Resistance Dog', 'Satoshi'), ('Jingle Bells', 'Maneki Neko')),
     (E.EPIC + 0.2, E.SHUFFLE, (DC, 'Royal Flush'), (DC, 'Lucky Day')),
     (E.SHUFFLE + 0.2, E.SWEEP, ('Resistance Dog', 'Yin Yang'), (DC, 'May the Fourth')),
     (E.SWEEP, E.WHY, ('Jingle Bells', 'Steampunk'), ('Jingle Bells', 'Orchestra')),
-    (E.WHY + 0.4, E.OUTRO, None, ('Jingle Bells', 'Maneki Neko')),
-    (E.OUTRO + 0.2, DUR + 5, None, ('Resistance Dog', 'Satoshi')),
 ]
 
 
@@ -683,7 +686,7 @@ def side_floaters(cv, t):
             if a <= 0:
                 continue
             x = (LX, RX)[side]
-            y = 1090 + 16 * math.sin(t * 1.1 + side * 2)
+            y = 830 + 16 * math.sin(t * 1.1 + side * 2)
             magic_nft(cv, t, gm[0], gm[1], x, y, 135, t0 + 0.25 * side, a)
 
 
@@ -976,8 +979,7 @@ def render_at(t):
         people_bubbles(cv, t)
         outro_fill(cv, t)
         side_floaters(cv, t)
-        if not (E.SNAP <= t < E.SNAP + E.SNAP_DUR):
-            drifting(cv, t * (1 - ck))
+        drifting(cv, t * (1 - ck))
     scene_creepy_nfts(cv, t)
     if t != AD_STOP:
         M.draw(cv, t, put, mita_shadow if ck < 0.5 else None)
@@ -1015,7 +1017,7 @@ def ad_overlay(c, t):
     # под баннером: золотой круг, искры и маленькие крафтовые NFT вылетают из него (баннер не закрыт)
     on = a * ease((lt - 1.6) / 0.6)
     if on > 0:
-        cy = BAN_BOT + 120
+        cy = BAN_BOT + 250
         put(cv, glow((255, 200, 90)), 540, cy, 1.4, on * 0.55)
         sig = decor('sigil', 520).resize((520, 170), Image.LANCZOS)
         put(cv, sig, 540, cy, 1.0, on, rot=0.0)

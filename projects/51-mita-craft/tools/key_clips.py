@@ -14,6 +14,7 @@ from PIL import Image
 HERE = Path(__file__).resolve().parents[1]
 SRC = HERE / 'input' / 'mita' / 'video'
 OUT = HERE / 'build' / 'clips'
+FPS60 = {'walk_left'}
 CLIPS = ['hook_normal', 'talk', 'cast_down', 'sweep', 'nope', 'palm', 'think', 'walk_left', 'creep_gemini_try1']
 
 
@@ -59,16 +60,36 @@ def head_dx(fs, bg):
     return out
 
 
+def interp60(path):
+    """24 → 60 к/с досчётом по движению (как walk_video.py): ходьба плавная, без рывков 24-кадровых шагов."""
+    out = OUT / f'_{path.stem}_60.mp4'
+    if not out.exists():
+        import subprocess
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(path), '-an', '-vf',
+                        'minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1',
+                        '-c:v', 'libx264', '-crf', '12', '-pix_fmt', 'yuv444p', str(out)], check=True)
+    return out
+
+
 def run(name):
     path = SRC / f'{name}_gemini.mp4' if (SRC / f'{name}_gemini.mp4').exists() else SRC / f'{name}.mp4'
+    if name in FPS60:
+        path = interp60(path)
     fs = list(frames(path))
     bg = np.median(np.stack([fs[0][:20, :20].reshape(-1, 3), fs[0][:20, -20:].reshape(-1, 3)]).reshape(-1, 3), 0).astype(np.float32)
-    dx = head_dx(fs, bg) if name.startswith('walk') else [0] * len(fs)
+    if name.startswith('walk'):
+        # голова на месте, но без покадровых ±1–2 px: сдвиг сглажен (убирается только медленный уход Gemini)
+        d = np.array(head_dx(fs, bg), np.float32)
+        k = 15
+        d = np.convolve(np.pad(d, k, mode='edge'), np.ones(2 * k + 1) / (2 * k + 1), 'valid')
+        dx = list(d)
+    else:
+        dx = [0] * len(fs)
     od = OUT / name
     od.mkdir(parents=True, exist_ok=True)
     for i, (f, x) in enumerate(zip(fs, dx), 1):
-        if x:
-            f = cv2.warpAffine(f, np.float32([[1, 0, x], [0, 1, 0]]), (f.shape[1], f.shape[0]),
+        if abs(x) > 0.01:
+            f = cv2.warpAffine(f, np.float32([[1, 0, x], [0, 1, 0]]), (f.shape[1], f.shape[0]), flags=cv2.INTER_LINEAR,
                                borderMode=cv2.BORDER_CONSTANT, borderValue=tuple(int(c) for c in bg))
         Image.fromarray(key(f, bg)).save(od / f'f{i:04d}.png', compress_level=1)
     print(name, len(fs), 'кадров, фон', bg.astype(int).tolist())

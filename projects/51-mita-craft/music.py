@@ -9,7 +9,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 TRACK = HERE / 'input' / 'music' / 'okay_everyone_natsuki.mp3'
 OFFSET = 0.0          # трек с начала
-LEVEL_DB = -27.5       # автор: ещё чуть тише (v4: −26 → −27,5 дБ)
+LEVEL_DB = -28.3       # 51: как в 50 по громкости (−24,9 LUFS; Natsuki ярче Yuri на 0,8 дБ)
 DUCK_DB = -7.0         # дополнительное приглушение под речью
 
 

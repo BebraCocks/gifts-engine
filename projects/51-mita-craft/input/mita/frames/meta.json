@@ -670,5 +670,29 @@
   "left": 150,
   "right": 617,
   "magenta": 2
+ },
+ "down_3": {
+  "sheet": "down_i1",
+  "top": 49,
+  "bottom": 980,
+  "left": 221,
+  "right": 547,
+  "magenta": 14
+ },
+ "down_7": {
+  "sheet": "down_i1",
+  "top": 48,
+  "bottom": 980,
+  "left": 170,
+  "right": 578,
+  "magenta": 20
+ },
+ "down_loop": {
+  "sheet": "down_i1",
+  "top": 49,
+  "bottom": 980,
+  "left": 137,
+  "right": 606,
+  "magenta": 61
  }
 }

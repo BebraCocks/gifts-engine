@@ -450,7 +450,7 @@ CREEP_NFT = [(DC, m) for m in REG] + [(DC, 'Vacation')]
 
 def scene_creepy_nfts(cv, t):
     """Сгоревшие NFT наверху дрожат от страха (в жуткой сцене)."""
-    a = window_a(t, E.CREEPY + 0.3, E.CREEPY_END, 0.5)
+    a = appear(t, E.CREEPY + 0.3, 0.5) * (1 - ease((t - E.CREEPY_END) / 0.9))
     if a <= 0:
         return
     rng = np.random.default_rng(int(t * 60))
@@ -654,8 +654,16 @@ def vignette():
     return np.clip((r - 0.55) / 0.6, 0, 1) ** 1.4
 
 
+FADE_DARK = 1.1          # тьма уходит постепенно (автор: «не моментально, а рассеивается»)
+FADE_FOG = 2.2           # туман рассеивается ещё дольше — редеет и уплывает вверх
+
+
 def creepy_k(t):
-    return window_a(t, E.CREEPY, E.CREEPY_END + 0.05, 0.35)
+    return appear(t, E.CREEPY, 0.35) * (1 - ease((t - E.CREEPY_END) / FADE_DARK))
+
+
+def fog_k(t):
+    return appear(t, E.CREEPY, 0.5) * (1 - ease((t - E.CREEPY_END) / FADE_FOG))
 
 
 def creepy_bg(cv, t, k):
@@ -666,19 +674,27 @@ def creepy_bg(cv, t, k):
 
 
 def creepy_fx(cv, t, k):
+    fk = fog_k(t)
     f = fog_tex()
     off = int(t * 40) % W
     fog = f[:, off:off + W]
+    lift = max(0.0, t - E.CREEPY_END)                     # при рассеивании туман уплывает вверх и редеет клочьями
+    if lift > 0:
+        fog = np.roll(fog, -int(lift * 160), axis=0)
+        fog = np.clip((fog - 0.35 * ease(lift / FADE_FOG)) / (1 - 0.35 * ease(lift / FADE_FOG)), 0, 1)
     yy = _yy()[..., 0]
-    alpha = (0.25 + 0.55 * yy) * fog * k
-    cv[..., :3] = cv[..., :3] * (1 - alpha[..., None] * 0.8) + np.array([170, 14, 30], np.float32) * alpha[..., None] * 0.8
+    alpha = (0.25 + 0.55 * yy) * fog * fk
+    # пока светлеет, красный туман бледнеет до лёгкой белёсой дымки (на белом фоне — не «розовые пятна»)
+    col = np.array([170, 14, 30], np.float32) * k + np.array([250, 244, 252], np.float32) * (1 - k)
+    alpha = alpha * (0.45 + 0.55 * k)
+    cv[..., :3] = cv[..., :3] * (1 - alpha[..., None] * 0.8) + col * alpha[..., None] * 0.8
     v = vignette() * k * 0.9
     cv[..., :3] *= (1 - v[..., None])
 
 
 # ------------------------------------------------------------------ глитчи (вход и выход жути)
 GLITCH = [(E.CREEPY - 0.04, 0.22, 0.9, True), (E.CREEPY + 1.2, 0.06, 0.4, True),
-          (E.CREEPY_FULL + 0.1, 0.08, 0.5, True), (E.CREEPY_END - 0.05, 0.2, 1.0, True)]
+          (E.CREEPY_FULL + 0.1, 0.08, 0.5, True), (E.CREEPY_END - 0.05, 0.14, 0.45, True)]
 
 
 def glitch_at(t):
@@ -821,9 +837,9 @@ def render_at(t):
     if t != AD_STOP:
         M.draw(cv, t, put, mita_shadow if ck < 0.5 else None)
     snap_sparks(cv, t)
-    if ck > 0:
+    if fog_k(t) > 0:
         creepy_fx(cv, t, ck)
-    else:
+    if ck < 0.4:
         headline(cv, t)
     if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):
         subtitles(cv, t)

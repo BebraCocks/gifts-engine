@@ -20,6 +20,7 @@ GEO = json.loads((CLIPS / 'geom.json').read_text())
 MITA_H = 930              # рост Миты в кадре (макушка → подошва)
 FOOT = 1890
 CFPS = 24                 # клипы Gemini — 24 к/с (аниме-темп)
+CREEP_OUT = 0.9
 XF = 0.28                 # длительность растворения между клипами
 LEFT = 320                # Мита стоит слева (справа — сравнения)
 
@@ -148,7 +149,7 @@ CLOSE_H = 1000            # высота картинки крупного пл�
 CLOSE_BOTTOM = 1920       # низ картинки (подол юбки) — над субтитрами она растворяется
 
 
-def draw_creepy(cv, t, put):
+def draw_creepy(cv, t, put, mult=1.0):
     """Возвращает True, если Миту нарисовала жуть."""
     z = creep_zoom(t)
     x = seg_x(TRACK[seg_at(t)[0]], t)
@@ -172,7 +173,7 @@ def draw_creepy(cv, t, put):
             a = ease((t - t0) / d)
             if a <= 0:
                 break
-            put(cv, closeup(name), 540, y_bot, s, a * (a_close if name == 'creep_closeup_calm' else 1.0),
+            put(cv, closeup(name), 540, y_bot, s, mult * a * (a_close if name == 'creep_closeup_calm' else 1.0),
                 anchor=(512, 1536))
     return True
 
@@ -225,6 +226,9 @@ def draw(cv, t, put, shadow=None):
     if shadow and s['kind'] not in ('creepy',):
         shadow(cv, x_of(t), FOOT)
     _draw_seg(cv, s, t, put)
+    # после жути крупный план не пропадает разом, а растворяется (≈ 0,9 с) поверх обычной Миты
+    if i > 0 and TRACK[i - 1]['kind'] == 'creepy' and t - s['t0'] < CREEP_OUT:
+        draw_creepy(cv, min(t, s['t0'] - 1e-3), put, 1 - ease((t - s['t0']) / CREEP_OUT))
     # растворение: предыдущий сегмент поверх, гаснет за XF (кроме входа/выхода жути и щелчка — там свои переходы)
     if i > 0 and t - s['t0'] < XF:
         p = TRACK[i - 1]
@@ -232,6 +236,8 @@ def draw(cv, t, put, shadow=None):
             _draw_seg(cv, p, t, put, 1 - ease((t - s['t0']) / XF))
         elif p['kind'] == 'clip' and s['kind'] == 'snap':
             _draw_seg(cv, p, t, put, 1 - ease((t - s['t0']) / 0.18))
+        elif p['kind'] == 'creepy':
+            pass
         elif p['kind'] == 'snap' and s['kind'] == 'clip':
             _draw_seg(cv, p, t, put, 1 - ease((t - s['t0']) / XF))
 

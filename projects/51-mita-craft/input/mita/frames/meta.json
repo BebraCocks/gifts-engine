@@ -550,5 +550,29 @@
   "left": 126,
   "right": 581,
   "magenta": 0
+ },
+ "up_2": {
+  "sheet": "up_i1",
+  "top": 29,
+  "bottom": 980,
+  "left": 240,
+  "right": 558,
+  "magenta": 18
+ },
+ "up_4": {
+  "sheet": "up_i1",
+  "top": 29,
+  "bottom": 981,
+  "left": 132,
+  "right": 541,
+  "magenta": 32
+ },
+ "up_7": {
+  "sheet": "up_i1",
+  "top": 29,
+  "bottom": 981,
+  "left": 137,
+  "right": 562,
+  "magenta": 18
  }
 }

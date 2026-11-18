@@ -223,6 +223,8 @@ def bauble(kind, d):
 def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, kind='hat'):
     d = int(max(im.size) * 1.08)
     fr, anc = bauble(KIND.get(kind, 0), d)
+    hw = max(anc[0], fr.width - anc[0]) * s + 10           # рамка целиком в кадре: не обрезается краем экрана
+    x = min(max(x, hw), W - hw)
     put(cv, radial(128, (20, 30, 70)), x, y + 18 * s, d / 128 * 1.25 * s, 0.25 * a)     # мягкая тень
     put(cv, fr, x, y, s, a, rot * 0.5, anchor=anc)
     put(cv, im, x, y, s * 0.86, a, rot)

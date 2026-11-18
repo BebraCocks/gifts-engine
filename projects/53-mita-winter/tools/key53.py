@@ -17,7 +17,8 @@ OUT = HERE / 'build' / 'clips'
 KEYED = HERE / 'build' / 'keyed'
 CLIPS = {'hook': VID / 'hook_gemini.mp4', 'box_a': VID / 'box_a_gemini.mp4', 'box_b': VID / 'box_b_gemini.mp4',
          'talk': VID / 'talk_gemini.mp4', 'breath': VID / 'breath_gemini.mp4', 'tree': VID / 'tree_gemini.mp4',
-         'choice': VID / 'choice_gemini.mp4', 'santa': HERE / 'input' / 'decor' / 'santa_gemini.mp4'}
+         'choice': VID / 'choice_gemini.mp4', 'santa': HERE / 'input' / 'decor' / 'santa_gemini.mp4',
+         'glass': VID / 'glass_gemini.mp4', 'globe': VID / 'globe_gemini.mp4'}
 IMAGES = {'ginger': 'input/mita/sheets/ginger_ref.png', 'creep_a': 'input/mita/sheets/creep_a.png',
           'creep_b': 'input/mita/sheets/creep_b.png', 'creep_c': 'input/mita/sheets/creep_c.png',
           'window': 'input/decor/window.png', 'thermo': 'input/decor/thermo.png', 'globe': 'input/decor/globe.png',

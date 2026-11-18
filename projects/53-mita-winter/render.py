@@ -129,6 +129,14 @@ def gift_path(key):
     return str(gifts_api.original_file(GIFT[key], 'tgs'))
 
 
+TON_RUB = 86          # ≈ $1,04 за TON × ≈83 ₽ за $ (18.11.2026)
+
+
+def rub(ton):
+    v = int(round(ton * TON_RUB / 10.0) * 10)
+    return '~' + f'{v:,}'.replace(',', ' ') + ' ₽'
+
+
 def gift_frame(key, t, size, off=0.0):
     return lottie.frame(gift_path(key), t, size=size, offset=off)
 
@@ -223,83 +231,72 @@ def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, kind='hat'):
 # ------------------------------------------------------------------ городок за окном
 SKY0, SKY1 = (20, 28, 70), (52, 66, 128)
 WALL, FLOOR = (46, 58, 112), (64, 80, 140)
-WIN_BOX = (200, 180, 880, 680)           # окно: x0, y0, x1, y1 (низ = подоконник) — компактное, над головой Миты
-SILL_Y = 680
-TREE_X = 790
-ORNAMENTS = [(TREE_X - 18, SILL_Y - 235), (TREE_X + 22, SILL_Y - 185), (TREE_X - 34, SILL_Y - 135),
-             (TREE_X + 40, SILL_Y - 85), (TREE_X - 4, SILL_Y - 45)]
-STAR = (TREE_X, SILL_Y - 345)
-WIN_MID_Y = (180 + 680) // 2
+# ------------------------------------------------------------------ фон: стена и окно с городком (картинки автора)
+WIN_S = 0.56                                  # окно 1254×1254 → ≈702 px
+WIN_X0, WIN_Y0 = 540 - 1254 * WIN_S / 2, 46
+GLASS = (110, 262, 1145, 1030)                # стекло в координатах window_min.png
+ORN_SRC = [(978, 693), (1035, 768), (955, 862), (1073, 910), (1003, 966)]
+STAR_SRC = (1000, 495)
+GROUND_Y = 1475
+SILL_Y = int(WIN_Y0 + 1100 * WIN_S)
+
+
+def wpt(x, y):
+    return WIN_X0 + x * WIN_S, WIN_Y0 + y * WIN_S
+
+
+GLASS_F = (*wpt(GLASS[0], GLASS[1]), *wpt(GLASS[2], GLASS[3]))
 
 
 @functools.lru_cache(None)
-def town_layers():
-    """Минимализм: плоское небо-градиент, луна, звёзды, силуэты домов с окнами, ёлка из треугольников."""
-    yy = np.linspace(0, 1, H, dtype=np.float32)[:, None, None]
-    sky = np.array(SKY0, np.float32) + (np.array(SKY1, np.float32) - np.array(SKY0, np.float32)) * np.clip(yy * 2.1, 0, 1)
-    base = np.broadcast_to(sky, (H, W, 3)).copy()
-    img = Image.fromarray(base.astype(np.uint8))
-    d = ImageDraw.Draw(img)
-    rng = np.random.default_rng(8)
-    for _ in range(26):                                      # звёзды
-        x, y = rng.uniform(215, 865), rng.uniform(195, 470)
-        r = rng.uniform(1.2, 2.6)
-        d.ellipse((x - r, y - r, x + r, y + r), fill=(235, 238, 255))
-    d.ellipse((288, 222, 368, 302), fill=(250, 244, 214))   # луна
-    d.ellipse((150, 230, 250, 330), fill=tuple(int(v) for v in sky[int(290)][0][0] * 0 + np.array(SKY0) * 0 + (0, 0, 0))) if False else None
-    lab = Image.new('I', (W, H), 0)
-    dl = ImageDraw.Draw(lab)
-    houses = []
-    x = 200
-    while x < 880:
-        w_ = int(rng.uniform(85, 125))
-        h_ = int(rng.uniform(90, 170))
-        houses.append((x, SILL_Y - h_, x + w_, SILL_Y))
-        x += w_ + int(rng.uniform(-6, 10))
-    off_c, on_c = (40, 50, 104), (255, 204, 120)
-    on_img = img.copy()
-    don = ImageDraw.Draw(on_img)
-    k = 0
-    for j, (x0, y0, x1, y1) in enumerate(houses):
-        col = (30, 38, 86) if j % 2 else (36, 45, 96)
-        for dd in (d, don):
-            dd.rectangle((x0, y0, x1, y1), fill=col)
-            dd.polygon([(x0 - 8, y0), ((x0 + x1) / 2, y0 - 46), (x1 + 8, y0)], fill=col)
-            dd.polygon([(x0 - 12, y0 + 2), ((x0 + x1) / 2, y0 - 50), (x1 + 12, y0 + 2), ((x0 + x1) / 2, y0 - 34)],
-                       fill=(226, 234, 252))
-        for wy in range(y0 + 26, y1 - 40, 54):
-            for wx in range(x0 + 18, x1 - 30, 42):
-                k += 1
-                d.rectangle((wx, wy, wx + 20, wy + 26), fill=off_c)
-                don.rectangle((wx, wy, wx + 20, wy + 26), fill=on_c)
-                dl.rectangle((wx - 3, wy - 3, wx + 23, wy + 29), fill=k)
-    # ёлка
-    for dd in (d, don):
-        for i, (top, half, bot) in enumerate(((SILL_Y - 330, 52, SILL_Y - 200), (SILL_Y - 262, 76, SILL_Y - 112),
-                                              (SILL_Y - 186, 100, SILL_Y - 16))):
-            dd.polygon([(TREE_X, top), (TREE_X - half, bot), (TREE_X + half, bot)], fill=(24, 72, 84))
-            dd.polygon([(TREE_X, top), (TREE_X - half, bot), (TREE_X - half + 18, bot - 6), (TREE_X, top + 16)],
-                       fill=(228, 236, 252))
-        dd.rectangle((TREE_X - 10, SILL_Y - 18, TREE_X + 10, SILL_Y), fill=(60, 44, 50))
-        for (ox, oy) in ORNAMENTS:
-            dd.ellipse((ox - 12, oy - 12, ox + 12, oy + 12), fill=(196, 206, 228))
-        sx, sy = STAR
-        dd.polygon([(sx + 22 * math.cos(-math.pi / 2 + q * math.pi / 5) * (1 if q % 2 == 0 else 0.45),
-                     sy + 22 * math.sin(-math.pi / 2 + q * math.pi / 5) * (1 if q % 2 == 0 else 0.45)) for q in range(10)],
-                   fill=(214, 220, 236))
-    full_off = np.array(img, np.float32)
-    full_on = np.array(on_img, np.float32)
-    labs = np.array(lab, np.int32)
-    n = k + 1
+def wall():
+    im = Image.open(DECOR / 'wall.png').convert('RGB')
+    im = im.resize((round(im.width * H / im.height), H), Image.LANCZOS)
+    x0 = (im.width - W) // 2
+    a = np.array(im.crop((x0, 0, x0 + W, H))).astype(np.float32)
+    return a * 0.9 + 255 * 0.1                 # снежинки на стене чуть бледнее
+
+
+@functools.lru_cache(None)
+def window_layers():
+    src = Image.open(KEYED / 'window_min.png').convert('RGBA')
+    raw = np.array(Image.open(DECOR / 'window_min.png').convert('RGB')).astype(np.float32)
+    w_ = round(src.width * WIN_S)
+    h_ = round(src.height * WIN_S)
+    im = np.array(src.resize((w_, h_), Image.LANCZOS)).astype(np.float32)
+    rr = cv2.resize(raw, (w_, h_), interpolation=cv2.INTER_AREA)
+    r, g, b = rr[..., 0], rr[..., 1], rr[..., 2]
+    lit = np.clip((r - 185) / 40, 0, 1) * np.clip((g - 150) / 40, 0, 1) * np.clip((150 - b) / 50 + 0.3, 0, 1)
+    gy0, gy1 = int(GLASS[1] * WIN_S), int(GLASS[3] * WIN_S)
+    lit[:int(600 * WIN_S)] = 0                                 # только окна домов (не луна, не гирлянда)
+    lit = cv2.GaussianBlur(lit, (0, 0), 0.8)
+    rgb = im[..., :3]
+    dark = rgb * (1 - 0.9 * lit[..., None]) + np.array([38, 44, 92], np.float32) * 0.9 * lit[..., None]
+    m = (lit > 0.3).astype(np.uint8)
+    n, lab, st, cen = cv2.connectedComponentsWithStats(cv2.dilate(m, np.ones((5, 5), np.uint8)))
     order = np.zeros(n, np.float32)
-    ys, xs = np.nonzero(labs)
-    sums = np.bincount(labs[ys, xs], weights=xs, minlength=n)
-    cnt = np.bincount(labs[ys, xs], minlength=n) + 1e-6
-    order = (sums / cnt) / W
+    if n > 1:
+        order[1:] = cen[1:, 0] / w_
+        order = (order - order[1:].min()) / max(1e-6, order[1:].max() - order[1:].min())
     order[0] = 0
-    order = (order - order[1:].min()) / max(1e-6, order[1:].max() - order[1:].min())
-    order[0] = 0
-    return full_on, full_off, labs, order, None
+    # стекло: скруглённый прямоугольник
+    gm = Image.new('L', (w_, h_), 0)
+    ImageDraw.Draw(gm).rounded_rectangle((GLASS[0] * WIN_S, GLASS[1] * WIN_S, GLASS[2] * WIN_S, GLASS[3] * WIN_S),
+                                         int(70 * WIN_S), fill=255)
+    gmask = np.array(gm, np.float32) / 255
+    X0, Y0 = int(round(WIN_X0)), WIN_Y0
+    def place(arr, fill=0.0):
+        out = np.full((H, W) + arr.shape[2:], fill, np.float32)
+        xs0, xs1 = max(0, X0), min(W, X0 + w_)
+        out[Y0:Y0 + h_, xs0:xs1] = arr[:, xs0 - X0:xs1 - X0]
+        return out
+    alpha = place(im[..., 3] / 255)
+    return dict(on=place(rgb), off=place(dark), alpha=alpha, labs=place(lab.astype(np.float32)).astype(np.int32),
+                order=order, glass=place(gmask))
+
+
+ORNAMENTS = [wpt(*p) for p in ORN_SRC]
+STAR = wpt(*STAR_SRC)
 
 
 def orn_xy(j):
@@ -307,7 +304,7 @@ def orn_xy(j):
 
 
 def lights_state(t):
-    """Состояние окон городка: функция (порядок кластера) → 0..1."""
+    """Окна домов за стеклом: функция (порядок окна) → 0..1."""
     ck = creepy_k(t)
     if E.SPREAD - 0.2 <= t < E.PRICE + 1.5:
         u0 = ease((t - (E.SPREAD - 0.2)) / 0.35)          # быстро гаснут
@@ -319,19 +316,9 @@ def lights_state(t):
     return lambda order: np.full_like(order, 1 - 0.92 * ck)
 
 
-def town(t):
-    on, off, labs, order, litm = town_layers()
-    st = lights_state(t)(order)
-    st[0] = 1.0
-    k = st[labs][..., None]
-    img = off + (on - off) * k
-    # мерцание окон (кое-где свет «живой»)
-    return img
-
-
-def snowfall(cv, t, n=90, seed=7, y0=0, y1=1180, speed=(70, 150), alpha=0.85, scale=1.0, freeze=0.0):
+def snowfall(cv, t, n=90, seed=7, y0=0, y1=1180, speed=(70, 150), alpha=0.85, scale=1.0, freeze=0.0, x0=0, x1=W):
     rng = np.random.default_rng(seed)
-    xs = rng.uniform(0, W, n)
+    xs = rng.uniform(x0, x1, n)
     ph = rng.uniform(0, 1, n)
     sp = rng.uniform(*speed, n)
     rs = rng.uniform(1.6, 4.6, n) * scale
@@ -342,56 +329,58 @@ def snowfall(cv, t, n=90, seed=7, y0=0, y1=1180, speed=(70, 150), alpha=0.85, sc
         span = y1 - y0 + 40
         for i in range(n):
             y = y0 - 20 + (ph[i] * span + tt * sp[i]) % span
-            x = (xs[i] + 22 * math.sin(tt * sw[i] + ph[i] * 6)) % W
+            x = x0 + (xs[i] - x0 + 18 * math.sin(tt * sw[i] + ph[i] * 6)) % (x1 - x0)
             X, Y = mp(x, y)
             r = rs[i] * S
             d.ellipse((X - r, Y - r, X + r, Y + r), fill=(255, 255, 255, int(200 * alpha)))
-    fx.over(cv, fx.draw_rgba((0, y0, W, y1), draw))
+    fx.over(cv, fx.draw_rgba((x0, y0, x1, y1), draw))
 
 
 def fireworks(cv, t):
     """Салют за окном в момент превращения."""
-    for j, (t0, x, y, col) in enumerate(((E.FLASH - 0.05, 340, 330, (255, 214, 140)), (E.FLASH + 0.3, 720, 270, ICE),
-                                         (E.FLASH + 0.65, 560, 400, (255, 240, 250)))):
+    gx0, gy0, gx1, gy1 = GLASS_F
+    pts = ((E.FLASH - 0.05, gx0 + 0.3 * (gx1 - gx0), gy0 + 120, (255, 214, 140)),
+           (E.FLASH + 0.3, gx0 + 0.72 * (gx1 - gx0), gy0 + 90, ICE),
+           (E.FLASH + 0.65, gx0 + 0.52 * (gx1 - gx0), gy0 + 170, (255, 240, 250)))
+    for j, (t0, x, y, col) in enumerate(pts):
         u = (t - t0) / 1.4
         if not 0 <= u < 1:
             continue
         rng = np.random.default_rng(j + 3)
-        ang = rng.uniform(0, 2 * math.pi, 26)
-        sp = rng.uniform(90, 170, 26)
+        ang = rng.uniform(0, 2 * math.pi, 22)
+        sp = rng.uniform(55, 110, 22)
         r_ = fx.ease_out(u)
 
         def draw(d, mp, S, ang=ang, sp=sp, r_=r_, u=u, x=x, y=y, col=col):
             for a_, s_ in zip(ang, sp):
-                px, py = x + math.cos(a_) * s_ * r_, y + math.sin(a_) * s_ * r_ + 40 * u * u
+                px, py = x + math.cos(a_) * s_ * r_, y + math.sin(a_) * s_ * r_ + 30 * u * u
                 X, Y = mp(px, py)
-                rr = (4.5 - 3 * u) * S
+                rr = (4 - 2.6 * u) * S
                 d.ellipse((X - rr, Y - rr, X + rr, Y + rr), fill=col + (int(255 * (1 - u) ** 1.2),))
-        fx.over(cv, fx.draw_rgba((x - 220, y - 220, x + 220, y + 260), draw))
-        put(cv, radial(256, col), x, y, 1.6, 0.35 * (1 - u))
+        fx.over(cv, fx.draw_rgba((x - 160, y - 160, x + 160, y + 190), draw))
+        put(cv, radial(256, col), x, y, 1.1, 0.35 * (1 - u))
 
 
 def aurora(cv, t, a):
     if a <= 0:
         return
+    gx0, gy0, gx1, gy1 = GLASS_F
     def draw(d, mp, S):
-        for k, (col, yb) in enumerate((((90, 220, 210), 200), ((150, 120, 255), 260), ((120, 200, 255), 330))):
+        for k, (col, yb) in enumerate((((90, 220, 210), gy0 + 40), ((150, 120, 255), gy0 + 80), ((120, 200, 255), gy0 + 120))):
             pts = []
-            for i in range(0, 41):
-                x = i * W / 40
-                y = yb + 50 * math.sin(i * 0.35 + t * 0.9 + k) + 25 * math.sin(i * 0.9 - t * 1.3)
+            for i in range(0, 31):
+                x = gx0 + i * (gx1 - gx0) / 30
+                y = yb + 30 * math.sin(i * 0.4 + t * 0.9 + k) + 14 * math.sin(i * 0.9 - t * 1.3)
                 pts.append(mp(x, y))
             for j in range(len(pts) - 1):
                 (x0, y0), (x1, y1) = pts[j], pts[j + 1]
-                d.polygon([(x0, y0), (x1, y1), (x1, y1 + 120 * S), (x0, y0 + 120 * S)],
-                          fill=col + (int(70 * a),))
-    im = fx.draw_rgba((0, 100, W, 560), draw)
-    fx.over(cv, im)
+                d.polygon([(x0, y0), (x1, y1), (x1, y1 + 80 * S), (x0, y0 + 80 * S)], fill=col + (int(70 * a),))
+    fx.over(cv, fx.draw_rgba((gx0, gy0, gx1, gy0 + 300), draw))
 
 
 def tree_lights(cv, t):
     """Шары на ёлке за окном загораются: шапка, пряник, колокольчик — тёплым; носок — холодным, слабо."""
-    seq = [(E.HAT + 0.5, WARM, 1.0), (E.COOKIE + 0.5, (255, 220, 160), 1.0), (E.BELL + 0.5, GOLD, 1.0),
+    seq = [(GIFTS[0][1] + 0.5, WARM, 1.0), (E.COOKIE + 0.5, (255, 220, 160), 1.0), (E.BELL + 0.5, GOLD, 1.0),
            (E.STOCK + 0.5, ICE, 0.45), (E.TEASE + 0.3, (255, 250, 255), 1.0)]
     ck = creepy_k(t)
     for j, (t0, col, k) in enumerate(seq):
@@ -400,16 +389,14 @@ def tree_lights(cv, t):
             continue
         x, y = orn_xy(j)
         tw = 0.85 + 0.15 * math.sin(t * 3 + j)
-        put(cv, radial(128, col), x, y, 0.75 * tw, a)
-        put(cv, radial(64, WHITE), x, y, 0.35, a * 0.8)
-    # звезда на макушке — в финале
+        put(cv, radial(128, col), x, y, 0.55 * tw, a)
+        put(cv, radial(64, WHITE), x, y, 0.28, a * 0.8)
     a = appear(t, E.MOVE2 + 0.2, 0.5)
     if a > 0:
         x, y = STAR
-        put(cv, radial(128, (255, 236, 170)), x, y, 1.1 + 0.15 * math.sin(t * 4), a)
+        put(cv, radial(128, (255, 236, 170)), x, y, 0.9 + 0.12 * math.sin(t * 4), a)
 
 
-# ------------------------------------------------------------------ комната (минимализм: рама-линии, подоконник, гирлянда)
 def snowflake(d, x, y, r, col, w):
     for q in range(6):
         ang = q * math.pi / 3
@@ -422,81 +409,22 @@ def snowflake(d, x, y, r, col, w):
                 d.line((mx, my, mx + r * 0.28 * math.cos(a2), my + r * 0.28 * math.sin(a2)), fill=col, width=w)
 
 
-GROUND_Y = 1490
-
-
-@functools.lru_cache(None)
-def window_layer():
-    """Белая стена с бледными снежинками, окно-«картина» с голубой рамой, подоконник, снежный сугроб внизу."""
-    S = 2
-    im = Image.new('RGBA', (W * S, H * S), (250, 252, 255, 255))
-    d = ImageDraw.Draw(im)
-    rng = np.random.default_rng(14)
-    for _ in range(16):                                    # бледные снежинки на стене (редко и очень бледно)
-        x, y = rng.uniform(0, W), rng.uniform(0, H)
-        x0, y0, x1, y1 = WIN_BOX
-        if x0 - 30 < x < x1 + 30 and y0 - 30 < y < y1 + 40:
-            continue
-        snowflake(d, x * S, y * S, rng.uniform(18, 38) * S, (236, 241, 251, 255), int(2.5 * S))
-    x0, y0, x1, y1 = WIN_BOX
-    d.rounded_rectangle(((x0 - 10) * S, (y0 - 6) * S, (x1 + 10) * S, (y1 + 16) * S), 34 * S, fill=(214, 224, 244, 255))
-    d.rounded_rectangle((x0 * S, y0 * S, x1 * S, y1 * S), 28 * S, fill=(0, 0, 0, 0))
-    lw = 9
-    col = (180, 198, 232, 255)
-    d.rounded_rectangle((x0 * S, y0 * S, x1 * S, y1 * S), 28 * S, outline=col, width=lw * S)
-    d.rectangle(((540 - lw / 2) * S, y0 * S, (540 + lw / 2) * S, y1 * S), fill=col)
-    d.rectangle((x0 * S, (WIN_MID_Y - lw / 2) * S, x1 * S, (WIN_MID_Y + lw / 2) * S), fill=col)
-    d.rounded_rectangle(((x0 - 34) * S, SILL_Y * S, (x1 + 34) * S, (SILL_Y + 30) * S), 12 * S, fill=(232, 238, 252, 255),
-                        outline=(196, 210, 238, 255), width=3 * S)
-    for k in range(34):                                    # снег на подоконнике
-        x = rng.uniform(x0 - 20, x1 + 20)
-        r = rng.uniform(9, 20)
-        d.ellipse(((x - r) * S, (SILL_Y - r * 0.55) * S, (x + r) * S, (SILL_Y + r * 0.45) * S), fill=(255, 255, 255, 255),
-                  outline=(214, 226, 248, 255), width=S)
-    # сугроб: волнистый край, голубая тень снизу
-    pts = [(0, H * S)]
-    for i in range(0, 41):
-        x = i * W / 40
-        y = GROUND_Y + 26 * math.sin(i * 0.55) + 14 * math.sin(i * 1.3 + 1)
-        pts.append((x * S, y * S))
-    pts.append((W * S, H * S))
-    d.polygon(pts, fill=(236, 243, 255, 255))
-    d.line(pts[1:-1], fill=(196, 212, 242, 255), width=4 * S)
-    for i in range(18):                                    # блёстки на снегу
-        x, y = rng.uniform(0, W), rng.uniform(GROUND_Y + 50, H - 20)
-        snowflake(d, x * S, y * S, rng.uniform(6, 12) * S, (206, 220, 248, 255), 2 * S)
-    im = im.resize((W, H), Image.LANCZOS)
-    out = np.array(im).astype(np.float32)
-    out[..., 3] /= 255
-    out[..., :3] *= out[..., 3:4]
-    return out
-
 
 @functools.lru_cache(None)
 def garland_points():
-    pts = []
-    for i in range(17):
-        x = 60 + i * 60
-        y = 112 + 24 * math.sin(math.pi * ((x - 60) % 240) / 240)
-        pts.append((x, y))
+    w = np.array(Image.open(DECOR / 'window_min.png').convert('RGB')).astype(int)
+    br = (w[..., 0] + w[..., 1] + w[..., 2] > 600)
+    br[240:] = False
+    n, lab, st, cen = cv2.connectedComponentsWithStats(br.astype(np.uint8))
+    pts = [wpt(cx, cy) for (cx, cy), s_ in zip(cen[1:], st[1:, 4]) if s_ >= 40]
     return pts
 
 
 def room(cv, t):
-    wl = window_layer()
-    cv[..., :3] = cv[..., :3] * (1 - wl[..., 3:4]) + wl[..., :3]
     ck = creepy_k(t)
-    pts = garland_points()
-
-    def wire(d, mp, S):
-        d.line([mp(x, y) for x, y in pts], fill=(200, 210, 235, 255), width=int(3 * S))
-        for j, (x, y) in enumerate(pts):
-            X, Y = mp(x, y + 8)
-            d.ellipse((X - 7 * S, Y - 9 * S, X + 7 * S, Y + 9 * S), fill=(255, 214, 130, 255) if j % 2 else (190, 220, 255, 255))
-    fx.over(cv, fx.draw_rgba((0, 80, W, 160), wire))
-    for j, (x, y) in enumerate(pts):
+    for j, (x, y) in enumerate(garland_points()):
         tw = 0.55 + 0.45 * math.sin(t * 2.6 + j * 1.7) ** 2
-        put(cv, radial(64, WARM if j % 2 else ICE), x, y + 8, 0.7, tw * 0.8 * (1 - 0.8 * ck))
+        put(cv, radial(64, WARM if j % 2 else ICE), x, y, 0.75, tw * 0.75 * (1 - 0.85 * ck))
 
 
 @functools.lru_cache(None)
@@ -553,14 +481,25 @@ def mita_shadow(cv, x, y):
 
 def background(t):
     cv = np.zeros((H, W, 4), np.float32)
-    cv[..., :3] = town(t)
+    cv[..., :3] = wall()
+    L = window_layers()
     ck = creepy_k(t)
-    put(cv, radial(256, (250, 240, 200)), 328, 262, 0.8, 0.3 * (1 - 0.7 * ck))
+    st = lights_state(t)(L['order'])
+    st[0] = 1.0
+    k = st[L['labs']][..., None]
+    win = L['off'] + (L['on'] - L['off']) * k
+    a = L['alpha'][..., None]
+    cv[..., :3] = cv[..., :3] * (1 - a) + win * a
+    gx0, gy0, gx1, gy1 = GLASS_F
+    put(cv, radial(256, (250, 240, 200)), *wpt(320, 390), 0.7, 0.25 * (1 - 0.7 * ck))
     aurora(cv, t, appear(t, E.MOVE2, 1.0))
     fireworks(cv, t)
     tree_lights(cv, t)
-    snowfall(cv, t, 34, 7, 180, 680, (40, 80), 0.6, 0.75, ck)
-    snowfall(cv, t, 16, 11, 180, 680, (80, 140), 0.85, 1.1, ck)
+    snowfall(cv, t, 30, 7, gy0, gy1, (35, 70), 0.6, 0.7, ck, gx0, gx1)
+    snowfall(cv, t, 14, 11, gy0, gy1, (70, 120), 0.85, 1.0, ck, gx0, gx1)
+    # рама поверх эффектов (всё, что вне стекла)
+    fa = (L['alpha'] * (1 - L['glass']))[..., None]
+    cv[..., :3] = cv[..., :3] * (1 - fa) + L['on'] * fa
     room(cv, t)
     stockings(cv, t)
     cv[..., 3] = 255
@@ -657,7 +596,8 @@ def scene_gifts(cv, t):
     c = tuple(int(v) for v in c0 + (np.array(col, np.float32) - c0) * u)
     ta = appear(t, GIFTS[0][1] - 0.05, 0.4) * a_all
     thermo(cv, 150, 960, THERMO_H, lv, c, ta, frost * u)
-    put(cv, pill(f'{price:g} TON', (40, 52, 104), 40), 150, 600 + 6 * math.sin(t * 2), pop(t, t0 + 0.3), ta)
+    put(cv, pill(f'{price:g} TON', (40, 52, 104), 40), 150, 590 + 6 * math.sin(t * 2), pop(t, t0 + 0.3), ta)
+    put(cv, pill(rub(price), (196, 128, 70), 26), 150, 652 + 6 * math.sin(t * 2), pop(t, t0 + 0.45), ta)
     put(cv, pill(tag, (230, 80, 70) if j in (0, 2) else (90, 130, 200) if j == 3 else (130, 110, 90), 26),
         215, 1310, pop(t, t0 + 0.9), ta * appear(t, t0 + 0.9))
     # подарок — «ёлочная игрушка» на нитке справа, качается
@@ -732,7 +672,7 @@ def breath_glass(cv, t):
     if not (t0 <= t < E.BELL + 0.6):
         return
     fa = ease((t - t0 - 0.5) / 1.0) * (1 - appear(t, E.BELL + 0.1, 0.5))
-    put(cv, fog_patch(), FOG_X, FOG_Y, 0.45 + 0.1 * ease((t - t0 - 0.5) / 1.4), fa * 0.55)
+    put(cv, keyed('fog', w=420), FOG_X, FOG_Y, 0.85 + 0.15 * ease((t - t0 - 0.5) / 1.4), fa * 0.6)
     # «пишет пальцем»: цифры проявляются слева направо
     k = ease((t - t0 - 2.0) / 2.2)
     if k > 0:
@@ -749,56 +689,6 @@ def creepy_k(t):
 
 
 @functools.lru_cache(None)
-def frost_tex():
-    """Иней: дымка у краёв + веточки-«папоротники», растущие от краёв внутрь."""
-    rng = np.random.default_rng(31)
-    base = np.zeros((H // 8, W // 8), np.float32)
-    for k, sc in enumerate((5, 11, 23)):
-        n = rng.random((max(2, sc * 16 // 9), sc)).astype(np.float32)
-        base += cv2.resize(n, (W // 8, H // 8), interpolation=cv2.INTER_CUBIC) * (0.6 ** k)
-    base = (base - base.min()) / (base.max() - base.min())
-    base = cv2.resize(base, (W, H), interpolation=cv2.INTER_CUBIC)
-    yy, xx = np.mgrid[:H, :W].astype(np.float32)
-    edge = np.minimum(np.minimum(xx, W - xx) / W, np.minimum(yy, H - yy) / H * 0.9) + (base - 0.5) * 0.035
-    ferns = Image.new('L', (W, H), 0)
-    d = ImageDraw.Draw(ferns)
-
-    def branch(x, y, ang, ln, depth):
-        if depth == 0 or ln < 6:
-            return
-        x2, y2 = x + math.cos(ang) * ln, y + math.sin(ang) * ln
-        d.line((x, y, x2, y2), fill=200 - 30 * (4 - depth), width=max(1, depth - 1))
-        for side in (-1, 1):
-            branch(x + (x2 - x) * 0.5, y + (y2 - y) * 0.5, ang + side * rng.uniform(0.6, 1.0), ln * 0.45, depth - 1)
-        branch(x2, y2, ang + rng.uniform(-0.25, 0.25), ln * 0.7, depth - 1)
-    for i in range(170):
-        side = rng.integers(4)
-        if side == 0:
-            x, y, ang = rng.uniform(0, W), 0, math.pi / 2
-        elif side == 1:
-            x, y, ang = rng.uniform(0, W), H, -math.pi / 2
-        elif side == 2:
-            x, y, ang = 0, rng.uniform(0, H), 0.0
-        else:
-            x, y, ang = W, rng.uniform(0, H), math.pi
-        branch(x, y, ang + rng.uniform(-0.6, 0.6), rng.uniform(60, 150), 4)
-    ferns = cv2.GaussianBlur(np.array(ferns, np.float32) / 255, (0, 0), 0.8)
-    return edge, ferns
-
-
-def frost(cv, t, k):
-    """Иней ползёт от краёв экрана к центру (кромка неровная, с веточками)."""
-    if k <= 0:
-        return
-    edge, ferns = frost_tex()
-    reach = 0.02 + 0.10 * k
-    m = np.clip((reach - edge) / 0.045, 0, 1)
-    m = np.clip(m * 0.5 + ferns * np.clip((reach * 1.6 - edge) / 0.05, 0, 1) * 0.9, 0, 0.92)
-    col = np.array([228, 242, 255], np.float32)
-    cv[..., :3] = cv[..., :3] * (1 - m[..., None]) + col * m[..., None]
-
-
-@functools.lru_cache(None)
 def vignette():
     yy, xx = np.mgrid[:H, :W].astype(np.float32)
     r = np.sqrt(((xx - W / 2) / (W * 0.62)) ** 2 + ((yy - H * 0.48) / (H * 0.6)) ** 2)
@@ -806,57 +696,120 @@ def vignette():
 
 
 def creepy_room(cv, t, k):
+    """Комната темнеет и холодеет: синий оттенок + виньетка."""
     if k <= 0:
         return
-    tint = np.array([0.42, 0.5, 0.78], np.float32)
+    tint = np.array([0.36, 0.42, 0.7], np.float32)
     cv[..., :3] *= (1 - k) + k * tint
-    cv[..., :3] *= 1 - 0.75 * k * vignette()
-    # отпечаток ладони на стекле (снаружи)
-    ha = appear(t, E.HANDPRINT, 1.4) * k
-    if ha > 0:
-        im = keyed('handprint', h=170)
-        arr = np.array(im).astype(np.float32)
-        lum = arr[..., :3].mean(-1, keepdims=True)
-        arr[..., :3] = np.clip(lum * np.array([0.82, 0.93, 1.08]) + np.array([10, 20, 40]), 0, 255)
-        put(cv, Image.fromarray(arr.astype(np.uint8)), 340, 320, 0.92 + 0.08 * ha, ha * 0.9, -0.12)
+    cv[..., :3] *= 1 - 0.7 * k * vignette()
 
 
-def ice_particles(cv, t, k):
-    if k <= 0:
+BALL_D = 600                      # диаметр пустой середины шара
+BALL_TOP = 400                    # верх рамки шара, когда он опустился
+
+
+@functools.lru_cache(None)
+def ball_frame():
+    """Стеклянный ёлочный шар (рамка автора) с прозрачной серединой — внутри будет Мита."""
+    im, (cx, cy) = bauble(0, BALL_D)
+    arr = np.array(im).astype(np.float32)
+    yy, xx = np.mgrid[:arr.shape[0], :arr.shape[1]].astype(np.float32)
+    r = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) / (BALL_D / 2)
+    inner = np.clip((1.0 - r) / 0.04, 0, 1)
+    arr[..., 3] *= 1 - inner * 0.9                 # середина почти прозрачная, лёгкий отлив стекла
+    return Image.fromarray(arr.clip(0, 255).astype(np.uint8)), (cx, cy)
+
+
+@functools.lru_cache(None)
+def frost_ring():
+    rng = np.random.default_rng(5)
+    n = cv2.resize(rng.random((24, 24)).astype(np.float32), (BALL_D, BALL_D), interpolation=cv2.INTER_CUBIC)
+    yy, xx = np.mgrid[:BALL_D, :BALL_D].astype(np.float32)
+    r = np.sqrt((xx - BALL_D / 2) ** 2 + (yy - BALL_D / 2) ** 2) / (BALL_D / 2)
+    a = np.clip((r - 0.55 - 0.15 * n) / 0.3, 0, 1) * (r < 1)
+    return a
+
+
+@functools.lru_cache(maxsize=48)
+def glass_mita(idx):
+    im = Image.open(HERE / 'build' / 'clips' / 'glass' / f'f{idx + 1:04d}.png').convert('RGBA')
+    s = 520 / 998.0
+    im = im.resize((round(im.width * s), round(im.height * s)), Image.BILINEAR)
+    return im, (360 * s, 1179 * s)
+
+
+def creepy_ball(cv, t):
+    """Жуть: Мита внутри огромного ёлочного шара — висит на нитке, качается, стекло затягивает иней, трещина."""
+    if not (E.CREEPY <= t < E.CREEPY_END):
         return
-    def draw(d, mp, S):
-        rng = np.random.default_rng(9)
-        for i in range(60):
-            x = rng.uniform(0, W)
-            y = (rng.uniform(0, H) - t * rng.uniform(10, 30)) % H
-            X, Y = mp(x + 10 * math.sin(t + i), y)
-            r = rng.uniform(1.5, 3.5) * S
-            d.ellipse((X - r, Y - r, X + r, Y + r), fill=(220, 240, 255, int(200 * k)))
-    fx.over(cv, fx.draw_rgba((0, 0, W, H), draw))
+    u = ease((t - E.CREEPY) / 0.9)
+    frame, (fcx, fcy) = ball_frame()
+    D = BALL_D
+    # внутренность шара: тёмное стекло + Мита + снежинки, по кругу
+    inside = np.zeros((D, D, 4), np.float32)
+    yy, xx = np.mgrid[:D, :D].astype(np.float32)
+    rr = np.sqrt((xx - D / 2) ** 2 + (yy - D / 2) ** 2) / (D / 2)
+    disc = np.clip((1 - rr) / 0.01, 0, 1)
+    inside[..., :3] = np.array([24, 32, 70], np.float32) + np.array([40, 50, 90], np.float32) * (1 - rr[..., None])
+    inside[..., 3] = disc * 0.9
+    lt = t - E.CREEPY
+    idx = min(239, int(lt * 24))
+    mi, (ax, ay) = glass_mita(idx)
+    tmp = Image.new('RGBA', (D, D), (0, 0, 0, 0))
+    tmp.alpha_composite(mi, (int(D / 2 - ax), int(D * 0.94 - ay)))
+    m = np.array(tmp).astype(np.float32)
+    ma = m[..., 3:4] / 255 * disc[..., None]
+    cold = ease((t - E.CREEP_B) / 1.5)
+    mrgb = m[..., :3] * (1 - 0.35 * cold) + np.array([150, 190, 255]) * 0.35 * cold
+    inside[..., :3] = inside[..., :3] * (1 - ma) + mrgb * ma
+    inside[..., 3] = np.maximum(inside[..., 3], ma[..., 0])
+    # иней по краю стекла
+    fk = 0.25 + 0.75 * ease((t - E.CREEP_B) / 2.5)
+    fr = frost_ring()[..., None] * fk
+    inside[..., :3] = inside[..., :3] * (1 - fr * 0.85) + np.array([232, 244, 255]) * fr * 0.85
+    inside[..., 3] = np.maximum(inside[..., 3], fr[..., 0] * disc)
+    ball = Image.new('RGBA', frame.size, (0, 0, 0, 0))
+    inside[..., 3] *= 255
+    ball.alpha_composite(Image.fromarray(inside.clip(0, 255).astype(np.uint8)), (int(fcx - D / 2), int(fcy - D / 2)))
+    ck_ = appear(t, E.CREEP_C, 0.25)
+    if ck_ > 0:                                   # трещина
+        cr = keyed('crack', w=int(D * 0.95))
+        ball.alpha_composite(Image.fromarray((np.array(cr).astype(np.float32) * [1, 1, 1, ck_]).astype(np.uint8)),
+                             (int(fcx - cr.width / 2 + 40), int(fcy - cr.height / 2 - 60)))
+    ball.alpha_composite(frame)
+    # висит на нитке и качается
+    rot = 0.05 * math.sin((t - E.CREEPY) * 1.3)
+    top_y = -frame.height + (BALL_TOP + frame.height) * u
+    piv = (fcx, 0)
+    def string(d, mp, S):
+        X0, Y0 = mp(540, -10)
+        X1, Y1 = mp(540 + math.sin(rot) * 0, top_y + 6)
+        d.line((X0, Y0, X1, Y1), fill=(200, 210, 235, 255), width=int(3 * S))
+    fx.over(cv, fx.draw_rgba((520, -20, 560, max(10, top_y + 20)), string))
+    put(cv, radial(256, (120, 170, 255)), 540, top_y + fcy, 3.2, 0.35 * u)
+    put(cv, ball, 540, top_y, 1.0, 1.0, rot, anchor=piv)
+    if E.CREEP_C <= t < E.CREEP_C + 0.25:
+        cv[..., :3] += (255 - cv[..., :3]) * 0.35 * (1 - (t - E.CREEP_C) / 0.25)
 
 
 def ice_burst(cv, t):
-    """Выход из жути: ледяная статуя разлетается осколками + вспышка."""
-    u = (t - E.CREEPY_END) / 0.9
+    """Выход из жути: шар разлетается осколками (картинки автора) + снежный взрыв + вспышка."""
+    u = (t - E.CREEPY_END) / 1.0
     if not 0 <= u < 1:
         return
+    frame, (fcx, fcy) = ball_frame()
+    cx, cy = 540, BALL_TOP + fcy
+    put(cv, keyed('burst', w=700), cx, cy, 0.6 + 1.0 * fx.ease_out(u), (1 - u) ** 1.5)
     rng = np.random.default_rng(12)
-
-    def draw(d, mp, S):
-        for i in range(46):
-            ang = rng.uniform(0, 2 * math.pi)
-            sp = rng.uniform(250, 700)
-            x0, y0 = 540 + rng.uniform(-120, 120), 1150 + rng.uniform(-380, 380)
-            x = x0 + math.cos(ang) * sp * fx.ease_out(u)
-            y = y0 + math.sin(ang) * sp * fx.ease_out(u) + 500 * u * u
-            X, Y = mp(x, y)
-            r = rng.uniform(8, 20) * S
-            rot = ang + u * 6
-            pts = [(X + r * math.cos(rot + q * 2.1), Y + r * math.sin(rot + q * 2.1) * 0.7) for q in range(3)]
-            d.polygon(pts, fill=(205, 235, 255, int(240 * (1 - u))), outline=(255, 255, 255, int(255 * (1 - u))))
-    fx.over(cv, fx.draw_rgba((0, 200, W, H), draw))
-    if u < 0.3:
-        cv[..., :3] += (255 - cv[..., :3]) * (0.55 * (1 - u / 0.3))
+    for i in range(14):
+        sh = keyed(f'shard_{i % 6}', w=int(rng.uniform(70, 150)))
+        ang = rng.uniform(0, 2 * math.pi)
+        sp = rng.uniform(300, 650)
+        x = cx + math.cos(ang) * sp * fx.ease_out(u)
+        y = cy + math.sin(ang) * sp * fx.ease_out(u) + 600 * u * u
+        put(cv, sh, x, y, 1.0, 1 - u, ang + u * rng.uniform(-6, 6))
+    if u < 0.25:
+        cv[..., :3] += (255 - cv[..., :3]) * (0.6 * (1 - u / 0.25))
 
 
 # ------------------------------------------------------------------ заполнение боков (правило автора: без пустот)
@@ -872,6 +825,7 @@ def side_free(t):
     g0 = GIFTS[0][1]
     a = 1 - appear(t, g0 - 0.4, 0.4)                               # хук + превращение
     a += appear(t, E.CREEPY_END + 0.2, 0.5) * (1 - appear(t, E.MOVE1 - 0.2, 0.3))   # перед рекламой
+    a += appear(t, E.MOVE2 + 0.4, 0.5)                                              # финал
     return fx.clamp01(a)
 
 
@@ -890,7 +844,7 @@ def side_fill(cv, t):
         ia = a * appear(t, 0.5 + 0.15 * j, 0.3)
         cx_ = min(max(x + dx, 120), 960)
         put(cv, pill(nm, (60, 76, 140), 22), cx_, y + dy + 98, 1.0, ia)
-        put(cv, pill(f'{pr} TON', (196, 128, 70), 22), cx_, y + dy + 142, 1.0, ia)
+        put(cv, pill(f'{pr} TON · {rub(pr)}', (196, 128, 70), 20), cx_, y + dy + 142, 1.0, ia)
     # искорки-снежинки между ними
     def sp(d, mp, S):
         for k in range(10):
@@ -931,17 +885,7 @@ def poof(cv, t, t0, x, y, n=22, col=(255, 255, 255), spread=180):
     u = (t - t0) / 0.6
     if not 0 <= u < 1:
         return
-    rng = np.random.default_rng(int(t0 * 10))
-
-    def draw(d, mp, S):
-        for i in range(n):
-            ang = rng.uniform(0, 2 * math.pi)
-            r0 = rng.uniform(0.3, 1.0) * spread
-            X, Y = mp(x + math.cos(ang) * r0 * fx.ease_out(u), y + math.sin(ang) * r0 * fx.ease_out(u) * 0.8)
-            r = rng.uniform(5, 12) * (1 - u) * S
-            fx.sparkle(d, X, Y, r * 1.6, col + (int(255 * (1 - u)),))
-    fx.over(cv, fx.draw_rgba((x - spread - 40, y - spread - 40, x + spread + 40, y + spread + 40), draw))
-    put(cv, radial(256, col), x, y, 1.2 * (0.5 + u), 0.5 * (1 - u))
+    put(cv, keyed('burst', w=520), x, y, (spread / 240) * (0.4 + 0.9 * fx.ease_out(u)), (1 - u) ** 1.3, u * 0.6)
 
 
 def transform_fx(cv, t):
@@ -1011,40 +955,30 @@ def scene_rumor(cv, t):
         return
     cx, cy = CARD_X, CARD_Y + 8 * math.sin(t * 1.6)
     flip = ease((t - E.RUMOR_POST) / 0.5)
-    sx = abs(math.cos(math.pi * flip))
+    sx = max(0.02, abs(math.cos(math.pi * flip)))
     post = flip >= 0.5
-    deleted = t >= E.RUMOR_DEL + 0.6
+    deleted = t >= E.RUMOR_DEL + 0.4
     tilt = -0.04
     if not post:
-        put(cv, card_base(True), cx, cy, 1.0, a, tilt)
-        gi = gift_frame('mitt', t, 512).resize((280, 280), Image.LANCZOS)
-        put(cv, gi, cx, cy - 20 + 25 * abs(math.sin(t * 3.2)), sx, a, tilt)
-        put(cv, utext('СЛИВ?!', 52, 'ExtraBold', WHITE, 4, RED), cx, cy - 290, sx * pop(t, E.RUMOR_VIDEO + 0.2), a, tilt)
-        for k in range(3):                                       # кнопки справа: сердце, коммент, «поделиться»
-            put(cv, radial(64, WHITE), cx + 170, cy + 80 + k * 90, 0.5 * sx, a * 0.9)
-        prog = ((t - E.MOVE1) / 3.0) % 1
-        put(cv, fx.rounded(int(360 * prog) + 4, 10, 5, (255, 80, 110, 255)), cx - 180 + 180 * prog, cy + 330, sx, a)
-        put(cv, utext('▶', 70, 'ExtraBold', WHITE), cx - 150, cy + 250, sx, a * 0.8)
+        card = keyed('card_video', w=440)
+        fx.over(cv, fx.warp(card, cx, cy, sx, 1.0, tilt), a)
+        gi = gift_frame('mitt', t, 512).resize((270, 270), Image.LANCZOS)
+        fx.over(cv, fx.warp(gi, cx - 20, cy - 40 + 22 * abs(math.sin(t * 3.2)), sx, 1.0, tilt), a)
+        put(cv, utext('СЛИВ?!', 52, 'ExtraBold', WHITE, 4, RED), cx - 20, cy - 250, sx * pop(t, E.RUMOR_VIDEO + 0.2), a, tilt)
     elif not deleted:
-        put(cv, card_base(False), cx, cy, 1.0, a, tilt)
-        put(cv, radial(64, (90, 120, 200)), cx - 150, cy - 300, 1.0 * sx, a)
-        put(cv, utext('КАНАЛ', 30, 'ExtraBold', INK), cx - 40, cy - 300, sx, a, tilt)
-        for k in range(4):
-            put(cv, fx.rounded(300 - 50 * (k % 2), 22, 11, (190, 196, 220, 255)), cx - 10, cy - 200 + k * 46, sx,
-                a * 0.95, tilt)
+        card = keyed('card_post', w=460)
+        fx.over(cv, fx.warp(card, cx, cy, sx, 1.0, tilt), a)
         gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
-        put(cv, gi, cx, cy + 90, sx, a, tilt)
-        put(cv, utext('ЗИМНИЙ КРАФТ?', 34, 'ExtraBold', (60, 90, 170)), cx, cy + 260, sx, a, tilt)
-        # «пара минут»: таймер тает
-        k = fx.clamp01((t - E.RUMOR_POST) / max(0.5, E.RUMOR_DEL - E.RUMOR_POST))
-        put(cv, fx.rounded(int(300 * (1 - k)) + 6, 12, 6, (232, 70, 64, 255)), cx, cy + 330, 1.0, a, tilt)
-        # удаление: пост рассыпается снежинками
+        fx.over(cv, fx.warp(gi, cx, cy + 110, sx, 1.0, tilt), a)
+        put(cv, pill('ЗИМНИЙ КРАФТ?', (60, 90, 170), 30), cx, cy + 340, sx * pop(t, E.RUMOR_POST + 0.4), a, tilt)
         if t >= E.RUMOR_DEL:
-            poof(cv, t, E.RUMOR_DEL, cx, cy, 30, (230, 240, 255), 260)
+            poof(cv, t, E.RUMOR_DEL, cx, cy, 30, (230, 240, 255), 300)
     if deleted:
-        da = appear(t, E.RUMOR_DEL + 0.6, 0.3)
-        put(cv, pill('ПОСТ УДАЛЁН', (110, 116, 140), 34), cx, cy - 20, pop(t, E.RUMOR_DEL + 0.6), a * da, tilt)
-        put(cv, utext('×', 120, 'ExtraBold', (232, 70, 64), 6, WHITE), cx, cy - 170, pop(t, E.RUMOR_DEL + 0.7), a * da)
+        da = appear(t, E.RUMOR_DEL + 0.4, 0.3)
+        card = keyed('card_deleted', w=470)
+        put(cv, card, cx, cy, pop(t, E.RUMOR_DEL + 0.4), a * da, tilt)
+        put(cv, utext('ПОСТ УДАЛЁН', 34, 'ExtraBold', (90, 96, 120)), cx + 50, cy - 6, pop(t, E.RUMOR_DEL + 0.5), a * da,
+            tilt)
 
 
 SPREAD_TAGS = [(0.0, 'ПЕРЧАТКИ?!', 820, 300, (232, 70, 64)), (0.4, 'КРАФТ!!', 700, 560, (196, 128, 70)),
@@ -1076,12 +1010,11 @@ def scene_price(cv, t):
     gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
     put(cv, radial(256, WARM), 880, 470, 1.6, 0.4 * a)
     gift_badge(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a, 0.0, 'mitt')
-    put(cv, pill('ТОГДА: 3–4 TON', (80, 110, 170), 34), 520, 560, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
-    put(cv, pill('СЕЙЧАС: 10 TON', (232, 70, 64), 38), 540, 650, pop(t, E.PRICE_NOW + 0.4),
+    put(cv, pill('ТОГДА: 3–4 TON · ~260–345 ₽', (80, 110, 170), 30), 470, 560, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
+    put(cv, pill('СЕЙЧАС: 10 TON · ' + rub(10), (232, 70, 64), 32), 490, 650, pop(t, E.PRICE_NOW + 0.4),
         a * appear(t, E.PRICE_NOW + 0.4, 0.2))
     if t >= E.PRICE_X2:
-        put(cv, utext('×2+', 130, 'ExtraBold', (255, 230, 120), 7, (150, 40, 40)), 660, 880,
-            pop(t, E.PRICE_X2, 0.5), a, -0.12)
+        put(cv, keyed('x2', w=330), 640, 880, pop(t, E.PRICE_X2, 0.5), a, -0.1)
 
 
 def scene_truth(cv, t):
@@ -1089,58 +1022,90 @@ def scene_truth(cv, t):
         return
     a = appear(t, E.TRUTH + 0.1, 0.35) * (1 - appear(t, E.MOVE2, 0.4))
     put(cv, radial(256, ICE), 820, 620, 2.2, 0.45 * a)
-    put(cv, utext('?', 300, 'ExtraBold', (235, 245, 255), 10, (90, 140, 210)), 820, 620 + 14 * math.sin(t * 2),
-        pop(t, E.TRUTH + 0.1, 0.5), a, 0.08 * math.sin(t * 1.5))
+    put(cv, keyed('ice_q', h=380), 820, 620 + 14 * math.sin(t * 2), pop(t, E.TRUTH + 0.1, 0.5), a, 0.06 * math.sin(t * 1.5))
     put(cv, pill('НИКТО НЕ ЗНАЕТ', (60, 76, 140), 28), 820, 850, pop(t, E.TRUTH + 1.0), a * appear(t, E.TRUTH + 1.0, 0.2))
     put(cv, pill('СКОРЕЕ ВСЕГО — СЛУХ', (110, 116, 140), 26), 820, 940, pop(t, E.TRUTH_NO),
         a * appear(t, E.TRUTH_NO, 0.2), -0.05)
     k = ease((t - E.TRUTH_MARKET) / 1.0)
     if k > 0:
-        def chart(d, mp, S):
-            pts = [(640, 1250), (700, 1230), (760, 1238), (820, 1180), (880, 1150), (940, 1070), (1000, 1010)]
-            n = 1 + int(k * (len(pts) - 1))
-            q = [mp(*p) for p in pts[:n + 1]]
-            if len(q) > 1:
-                d.line(q, fill=(232, 70, 64, 255), width=int(9 * S), joint='curve')
-            X, Y = q[-1]
-            d.ellipse((X - 11 * S, Y - 11 * S, X + 11 * S, Y + 11 * S), fill=(255, 255, 255, 255))
-        put(cv, radial(128, (20, 30, 70)), 820, 1170, 4.0, 0.18 * a)
-        put(cv, fx.rounded(440, 320, 30, (255, 255, 255, 250), (180, 198, 232, 255), 5), 820, 1150, pop(t, E.TRUTH_MARKET),
-            a)
-        fx.over(cv, fx.draw_rgba((600, 980, 1040, 1290), chart), a)
+        put(cv, keyed('card_chart', w=470), 820, 1150, pop(t, E.TRUTH_MARKET), a)
+        put(cv, radial(128, (255, 120, 100)), 820 + 205, 1150 - 110, 0.6 + 0.2 * math.sin(t * 5), 0.6 * a * k)
         put(cv, pill('РЫНОК ПОВЕРИЛ', (232, 70, 64), 26), 820, 1340, pop(t, E.TRUTH_MARKET + 0.4),
             a * appear(t, E.TRUTH_MARKET + 0.4, 0.2))
 
 
-# ------------------------------------------------------------------ финал: варежки «Верю / Не верю»
+# ------------------------------------------------------------------ финал: снежный шар-гадалка «Верю / Не верю»
 @functools.lru_cache(None)
-def mitten(side):
-    im = Image.open(KEYED / 'mittens.png').convert('RGBA')
-    im = im.crop((0, 280, 506, 1100) if side == 0 else (510, 280, 1024, 1100))
-    arr = np.array(im).astype(np.float32)
-    arr[..., 3] = np.where(arr[..., 3] < 200, arr[..., 3] * 0.0, arr[..., 3])   # срезаем ореол (смешался с зелёным)
-    im = Image.fromarray(arr.astype(np.uint8))
-    im = im.crop(im.getchannel('A').getbbox())
-    return im.resize((270, round(im.height * 270 / im.width)), Image.LANCZOS)
+def globe_big():
+    im = keyed('globe', h=560)
+    return im, (im.width * 0.5, im.height * 0.38, im.width * 0.355)      # центр и радиус стеклянной сферы
 
 
 def scene_choice(cv, t):
-    if t < E.MOVE2 + 0.2:
+    """Мита трясёт шар (клип globe); над ней — увеличенный шар: метель, по очереди «ВЕРЮ» / «НЕ ВЕРЮ», ответа нет."""
+    t0 = E.MOVE2 + 0.8
+    if t < t0:
         return
-    lt = t - E.MOVE2
-    for side, (x, word, col, glow, t_on) in enumerate(((175, 'ВЕРЮ', CARAMEL, WARM, 0.5), (905, 'НЕ ВЕРЮ', (80, 120, 190),
-                                                                                         ICE, 2.2))):
-        a = appear(lt, t_on - 0.3, 0.4)
-        if a <= 0:
+    im, (scx, scy, sr) = globe_big()
+    gx, gy = 540, 470
+    a = appear(t, t0, 0.35)
+    shake = (E.MOVE2 + 1.0 <= t < E.MOVE2 + 3.4)
+    rot = 0.07 * math.sin(t * 24) if shake else 0.015 * math.sin(t * 2)
+    dy = 10 * math.sin(t * 24) if shake else 6 * math.sin(t * 2)
+    put(cv, radial(256, (220, 236, 255)), gx, gy, 2.6, 0.5 * a)
+    put(cv, im, gx, gy + dy, pop(t, t0, 0.5), a, rot)
+    # центр сферы на экране
+    cx = gx - im.width / 2 + scx
+    cy = gy + dy - im.height / 2 + scy
+    # слова по очереди: метель «гадает»
+    lt = t - (E.MOVE2 + 1.1)
+    if lt > 0:
+        k = int(lt / 0.55)
+        ph = (lt / 0.55) % 1
+        word, col = (('ВЕРЮ', (196, 110, 50)), ('НЕ ВЕРЮ', (60, 100, 190)))[k % 2]
+        wa = math.sin(math.pi * ph) ** 0.6 * a
+        if t > E.CHOICE + 0.4:                                     # ответа нет — снег не оседает: «?»
+            word, col, wa = '?', (60, 100, 190), a * (0.75 + 0.25 * math.sin(t * 3))
+        put(cv, utext(word, 46 if len(word) > 4 else 90, 'ExtraBold', WHITE, 5, col), cx, cy, 0.9 + 0.1 * wa, wa)
+    # метель внутри сферы
+    def snow(d, mp, S):
+        rng = np.random.default_rng(4)
+        sp = 3.0 if shake else 0.8
+        for i in range(46):
+            ang = rng.uniform(0, 2 * math.pi) + t * sp * rng.uniform(0.5, 1.2)
+            rad = sr * 0.85 * math.sqrt(rng.uniform(0, 1))
+            X, Y = mp(cx + rad * math.cos(ang), cy + rad * math.sin(ang) * 0.9)
+            r = rng.uniform(2.5, 6) * S
+            d.ellipse((X - r, Y - r, X + r, Y + r), fill=(255, 255, 255, 235))
+    fx.over(cv, fx.draw_rgba((cx - sr, cy - sr, cx + sr, cy + sr), snow), a)
+    put(cv, pill('РЕШАТЬ ТЕБЕ!', (60, 76, 140), 30), gx, gy + im.height * 0.5 + 10, pop(t, E.CHOICE), appear(t, E.CHOICE, 0.2))
+    put(cv, pill('ПИШИ В КОММЕНТАРИЯХ!', (196, 128, 70), 28), gx, gy + im.height * 0.5 + 70, pop(t, E.CHOICE + 0.3),
+        appear(t, E.CHOICE + 0.3, 0.2))
+
+
+# ------------------------------------------------------------------ эмоции над головой (картинки автора)
+REACT = [(E.HOOK_X, 'excl'), (E.HOOK_RUMOR, 'quest'), (E.B_END + 0.1, 'sparkle'), (E.HAT_PAPA, 'flake'),
+         (E.COOKIE_MAMA + 0.3, 'heart'), (E.BELL_FRIEND, 'notes'), (E.STOCK_NOBODY, 'tear'), (E.TEASE, 'excl'),
+         (E.RUMOR_DEL + 0.3, 'sweat'), (E.SPREAD_ALL, 'surprise'), (E.PRICE_X2, 'surprise'), (E.TRUTH + 1.0, 'quest'),
+         (E.CHOICE, 'heart')]
+
+
+def reactions(cv, t):
+    for t0, kind in REACT:
+        k = t - t0
+        if not 0 <= k < 1.4:
             continue
-        hl = 0.5 + 0.5 * math.sin((lt - t_on) * 4) if lt > t_on else 0
-        y = 1010 + 10 * math.sin(t * 2 + side)
-        put(cv, radial(256, glow), x, y, 1.8, a * (0.35 + 0.25 * hl))
-        im = mitten(side)
-        put(cv, im, x, y, pop(lt, t_on - 0.3, 0.5) * (1 + 0.04 * hl), a, (-0.08 if side == 0 else 0.08))
-        put(cv, utext(word, 30 if side == 0 else 26, 'ExtraBold', WHITE, 3, INK), x + (10 if side == 0 else -12), y - 25,
-            pop(lt, t_on - 0.1, 0.5), a, (-0.08 if side == 0 else 0.08))
-    put(cv, pill('ПИШИ В КОММЕНТАРИЯХ!', (196, 128, 70), 28), 540, 470, pop(t, E.CHOICE + 0.3), appear(t, E.CHOICE + 0.3, 0.2))
+        a = min(1.0, k * 6) * (1 - fx.clamp01((k - 1.0) / 0.4))
+        p = fx.ease_out_back(fx.clamp01(k / 0.35))
+        x0 = M.x_of(t)
+        head = M.FOOT - M.MITA_H
+        if kind == 'sweat':
+            x, y, rot, h = x0 + 105, head + 70, -0.5, 70
+        elif kind == 'tear':
+            x, y, rot, h = x0 - 120, head + 30 - 30 * ease(k / 1.4), 0.1, 80
+        else:
+            x, y, rot, h = x0 + 150, head + 10 - 40 * ease(k / 1.4), 0.12 * math.sin(k * 6), 110
+        put(cv, keyed(f'emo_{kind}', h=h), x, y, 0.6 + 0.4 * p, a, rot)
 
 
 # ------------------------------------------------------------------ перемещение «снежной россыпью»
@@ -1225,10 +1190,10 @@ def render_at(t):
     scene_price(cv, t)
     scene_truth(cv, t)
     scene_choice(cv, t)
+    reactions(cv, t)
     if ck > 0:
         creepy_room(cv, t, ck)
-        frost(cv, t, ck * ease((t - E.CREEPY) / 4.5) if t < E.CREEPY_END else ck)
-        ice_particles(cv, t, ck)
+    creepy_ball(cv, t)
     ice_burst(cv, t)
     if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):
         subtitles(cv, t)
@@ -1315,7 +1280,6 @@ def globe_shake(img, t):
 
 def out_frame(t, i=None):
     img = ad_overlay(BR.render(render_at, t, i).astype(np.float32), t)
-    img = globe_shake(img, t)
     k_end = ease((t - (TOTAL - LOOP_D)) / LOOP_D)
     k_start = 1 - ease(t / LOOP_D)
     img = snow_cover(img, max(k_end, k_start), t)

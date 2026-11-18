@@ -61,7 +61,7 @@ def _track():
     a(dict(t0=E.CREEPY, t1=E.CREEPY_END, kind='creepy', x=540))
     a(dict(t0=E.CREEPY_END, t1=E.MOVE1, kind='clip', name='talk', x=540, off=4.0, mode='pp'))
     a(dict(t0=E.MOVE1, t1=E.MOVE2, kind='clip', name='talk', x=LEFT, off=6.5, mode='pp'))
-    a(dict(t0=E.MOVE2, t1=DUR + 5, kind='clip', name='choice', x=540, off=0.0, mode='once', hold=8.0))
+    a(dict(t0=E.MOVE2, t1=DUR + 5, kind='clip', name='globe', x=540, off=0.0, mode='once', hold=9.5))
     return T
 
 
@@ -146,7 +146,7 @@ def _seg_draw(cv, s, t, put, a=1.0, x=None):
         nm, lt = box_time(s, t)
         _clip_draw(cv, dict(s, mode='once'), t, put, a, x, nm, lt)
     elif k == 'creepy':
-        draw_creepy(cv, t, put, a)
+        pass                      # жуть рисует render.py: Мита внутри ёлочного шара (клип glass)
 
 
 @functools.lru_cache(maxsize=2)

@@ -9,7 +9,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RAW, OUT = HERE / 'voice' / 'raw', HERE / 'voice'
 SR = 48000
-PICK = {}
+PICK = {'L01': 1, 'L11': 1}   # 2026-11-18: грустное «а скинов до сих пор нет», «почти винтажный кулич»
 TEMPO = 1.08         # чуть быстрее, тон не меняется
 MAX_GAP = 0.2
 GAP_LINE = {6: 0.32}    # жуткий шёпот: паузы короче (как утверждено в 51)

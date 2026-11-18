@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-TRACK = HERE / 'input' / 'music' / 'dreams_of_love.mp3'
+TRACK = HERE / 'input' / 'music' / 'daijoubu.mp3'
 OFFSET = 0.0          # трек с начала
 LEVEL_DB = -28.3       # 51: как в 50 по громкости (−24,9 LUFS; Natsuki ярче Yuri на 0,8 дБ)
 DUCK_DB = -7.0         # дополнительное приглушение под речью

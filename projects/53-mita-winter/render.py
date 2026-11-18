@@ -591,8 +591,8 @@ def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0, rising=0.0, t=0.0):
 
 # ------------------------------------------------------------------ сцена подарков (шапка, пряник, колокольчик, носок)
 GIFTS = [  # ключ, начало, цена, цвет жидкости, подпись, комментарий (время, текст), иней
-    ('hat', max(E.HAT, E.B_END + 0.25), 9.0, RED, 'ШАПКА САНТЫ', (E.HAT_PAPA, 'ГОТОВЯТСЯ К ПРАЗДНИКУ!'), 0.0, '↑ ДОРОЖАЕТ'),
-    ('cookie', E.COOKIE, 6.0, (236, 160, 80), 'ПРЯНИК', (E.COOKIE_MAMA, 'КРАСИВЫЙ, КАК СВИТЕР'), 0.0, '= БЕЗ ИЗМЕНЕНИЙ'),
+    ('hat', max(E.HAT, E.B_END + 0.25), 9.0, RED, 'ШАПКА САНТЫ', (E.HAT_PAPA, 'К ПРАЗДНИКУ!'), 0.0, '↑ ДОРОЖАЕТ'),
+    ('cookie', E.COOKIE, 6.0, (236, 160, 80), 'ПРЯНИК', (E.COOKIE_MAMA, 'КАК СВИТЕР!'), 0.0, '= БЕЗ ИЗМЕНЕНИЙ'),
     ('bell', E.BELL, 13.0, GOLD, 'КОЛОКОЛЬЧИК', (E.BELL_FRIEND, 'ЗВОНКАЯ ЦЕНА!'), 0.0, 'САМЫЙ ДОРОГОЙ'),
     ('stock', E.STOCK, 5.0, (110, 170, 240), 'НОСОК', (E.STOCK_NOBODY, 'НИКТО НЕ БЕРЁТ…'), 1.0, 'САМЫЙ ДЕШЁВЫЙ'),
 ]
@@ -693,8 +693,16 @@ def scene_gifts(cv, t):
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
     if ca > 0:
         cp = pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 28)
-        put(cv, cp, min(gx, W - cp.width / 2 - 12), gy + size * 0.64 + 4 * math.sin(t * 2.4),
+        put(cv, cp, W - cp.width / 2 - 14, gy + size * 0.64 + 4 * math.sin(t * 2.4),
             pop(t, tc, 0.45), ca, -0.04)
+    # пустота снизу справа: цена две недели назад (Fragment, 04.11 → 17.11)
+    was = {'hat': 7, 'cookie': 6, 'bell': 12, 'stock': 5}[key]
+    wa = appear(t, t0 + 1.2, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
+    if wa > 0:
+        arrow = '↑' if price > was else ('=' if price == was else '↓')
+        put(cv, keyed('ico_reel', w=300), 860, 1330, pop(t, t0 + 1.2), wa)
+        put(cv, utext('БЫЛО', 24, 'ExtraBold', (190, 220, 255)), 860, 1296, pop(t, t0 + 1.2), wa)
+        put(cv, utext(f'{was} TON {arrow}', 40, 'ExtraBold', (255, 236, 170)), 860, 1346, pop(t, t0 + 1.3), wa)
     # крошки при «надкусывании»
     if key == 'cookie' and E.COOKIE_BITE <= t < E.COOKIE_BITE + 1.2:
         u2 = (t - E.COOKIE_BITE) / 1.2
@@ -737,7 +745,7 @@ def breath_glass(cv, t):
     if not (t0 <= t < E.BELL + 0.6):
         return
     fa = ease((t - t0 - 0.5) / 1.0) * (1 - appear(t, E.BELL + 0.1, 0.5))
-    put(cv, keyed('fog', w=420), FOG_X, FOG_Y, 0.85 + 0.15 * ease((t - t0 - 0.5) / 1.4), fa * 0.6)
+    put(cv, keyed('fog', w=420), FOG_X, FOG_Y, 0.85 + 0.15 * ease((t - t0 - 0.5) / 1.4), fa * 0.4)
     # «пишет пальцем»: цифры проявляются слева направо
     k = ease((t - t0 - 2.0) / 2.2)
     if k > 0:
@@ -1038,6 +1046,12 @@ def scene_rumor(cv, t):
         put(cv, pill('ЗИМНИЙ КРАФТ?', (60, 90, 170), 30), cx, cy + 340, sx * pop(t, E.RUMOR_POST + 0.4), a, tilt)
         if t >= E.RUMOR_DEL:
             poof(cv, t, E.RUMOR_DEL, cx, cy, 30, (230, 240, 255), 300)
+    # под карточкой: что это и сколько просмотров
+    lab = 'ВИДЕО В ТИКТОКЕ' if not post else ('ПОСТ В КАНАЛЕ' if not deleted else 'ВИСЕЛ ПАРУ МИНУТ')
+    put(cv, pill(lab, (40, 52, 104), 28), cx, 1300, 1.0, a)
+    views = int(1_250_000 * ease((t - E.RUMOR_VIDEO) / 3.0))
+    put(cv, keyed('ico_video', w=90), cx - 150, 1395, 1.0, a * appear(t, E.RUMOR_VIDEO, 0.3))
+    put(cv, utext(f'{views:,}'.replace(',', ' '), 40, 'ExtraBold', INK), cx + 30, 1395, 1.0, a * appear(t, E.RUMOR_VIDEO, 0.3))
     if deleted:
         da = appear(t, E.RUMOR_DEL + 0.4, 0.3)
         card = keyed('card_deleted', w=470)
@@ -1061,9 +1075,15 @@ def scene_spread(cv, t):
     for k, (s_, w0, ico) in enumerate((('БЛОГЕРЫ', 'блогеры', 'ico_video'), ('КАНАЛЫ', 'каналы', 'ico_mega'),
                                        ('ЧАТЫ', 'чаты', 'ico_chat'))):
         t0 = E.at(w0, 0, ON[10]) - 0.1
-        y = 1010 + k * 150
+        y = 1010 + k * 130
         put(cv, keyed(ico, w=120), 700, y, pop(t, t0), a * appear(t, t0, 0.2))
         put(cv, pill(s_, (40, 52, 104), 34), 860, y, pop(t, t0 + 0.1), a * appear(t, t0, 0.2))
+    # охваты: мегафон и растущий счётчик
+    oa = a * appear(t, E.SPREAD + 0.1, 0.3)
+    put(cv, keyed('ico_mega', w=170), 690, 1420, pop(t, E.SPREAD + 0.1), oa, -0.1)
+    reach = int(1_250_000 + 3_750_000 * ease((t - E.SPREAD) / 4.0))
+    put(cv, utext(f'{reach:,}'.replace(',', ' '), 40, 'ExtraBold', INK), 900, 1400, 1.0, oa)
+    put(cv, utext('ОХВАТЫ ↑', 24, 'ExtraBold', RED), 900, 1448, 1.0, oa)
     # письма-слухи летят к домикам за окном (окна загораются цепочкой — lights_state)
     gx0, gy0, gx1, gy1 = GLASS_F
     for q in range(8):
@@ -1121,6 +1141,11 @@ def scene_truth(cv, t):
     put(cv, pill('СКОРЕЕ ВСЕГО — СЛУХ', (110, 116, 140), 26), 820, 940, pop(t, E.TRUTH_NO),
         a * appear(t, E.TRUTH_NO, 0.2), -0.05)
     k = ease((t - E.TRUTH_MARKET) / 1.0)
+    ra = appear(t, E.TRUTH + 0.4, 0.3) * (1 - appear(t, E.TRUTH_MARKET - 0.2, 0.3))
+    if ra > 0:
+        put(cv, keyed('card_deleted', w=440), 820, 1150, pop(t, E.TRUTH + 0.4), a * ra, -0.04)
+        put(cv, utext('ПОСТ УДАЛЁН', 32, 'ExtraBold', (90, 96, 120)), 870, 1144, 1.0, a * ra, -0.04)
+        put(cv, keyed('emo_quest', h=90), 1000, 1050, 1.0, a * ra, 0.2 + 0.1 * math.sin(t * 3))
     if k > 0:
         put(cv, keyed('card_chart', w=470), 820, 1150, pop(t, E.TRUTH_MARKET), a)
         put(cv, radial(128, (255, 120, 100)), 820 + 205, 1150 - 110, 0.6 + 0.2 * math.sin(t * 5), 0.6 * a * k)

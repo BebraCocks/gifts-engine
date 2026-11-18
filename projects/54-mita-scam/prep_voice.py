@@ -12,7 +12,7 @@ SR = 48000
 PICK = {}
 TEMPO = 1.15         # 53: быстрее, чтобы уложиться ~70 с
 MAX_GAP = 0.13
-GAP_LINE = {6: 0.45}    # жуткий шёпот: паузы чуть длиннее остальных, но короче исходных
+GAP_LINE = {4: 0.45}    # жуткий шёпот: паузы чуть длиннее остальных, но короче исходных
 TRIM_START = {}
 
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     for k in range(1, len(LINES) + 1):
         name = f'L{k:02d}'
         trim = TRIM_START.get(k, 0.0)
-        tempo = 1.06 if k == 6 else TEMPO                    # шёпот чуть медленнее остальных
+        tempo = 1.06 if k == 4 else TEMPO                    # шёпот чуть медленнее остальных
         x = load(RAW / f'{name}_{PICK.get(name, 0)}.mp3', f'atrim=start={trim},asetpts=PTS-STARTPTS,atempo={tempo},loudnorm=I=-16:TP=-1.5:LRA=11')
         y, gaps = tighten(x, GAP_LINE.get(k, MAX_GAP))
         write(OUT / f'{name}.wav', y)

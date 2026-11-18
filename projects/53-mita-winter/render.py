@@ -196,10 +196,27 @@ def badge_img(d, ring=(196, 212, 242)):
     return im.resize((n // S, n // S), Image.LANCZOS)
 
 
-def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, ring=(196, 212, 242)):
-    d = int(max(im.size) * 1.14)
-    put(cv, badge_img(d, ring), x, y, s, a, rot * 0.5)
-    put(cv, im, x, y + 4 * s, s * 0.84, a, rot)
+KIND = {'hat': 0, 'cookie': 1, 'stock': 2, 'bell': 3, 'mitt': 0}
+BAUBLES = None
+
+
+@functools.lru_cache(maxsize=64)
+def bauble(kind, d):
+    """Рамка-подложка (ChatGPT, 4 вида): масштаб такой, чтобы пустая середина была диаметром d."""
+    import json
+    meta = json.loads((KEYED / 'baubles.json').read_text())[kind]
+    im = Image.open(KEYED / f'bauble_{kind}.png').convert('RGBA')
+    s = d / meta['d']
+    im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
+    return im, (meta['cx'] * s, meta['cy'] * s)
+
+
+def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, kind='hat'):
+    d = int(max(im.size) * 1.08)
+    fr, anc = bauble(KIND.get(kind, 0), d)
+    put(cv, radial(128, (20, 30, 70)), x, y + 18 * s, d / 128 * 1.25 * s, 0.25 * a)     # мягкая тень
+    put(cv, fr, x, y, s, a, rot * 0.5, anchor=anc)
+    put(cv, im, x, y, s * 0.86, a, rot)
 
 
 # ------------------------------------------------------------------ городок за окном
@@ -660,7 +677,7 @@ def scene_gifts(cv, t):
         d.line((X0, Y0, X1, Y1), fill=(220, 225, 240, 230), width=int(3 * S))
     fx.over(cv, fx.draw_rgba((600, 40, 1080, gy), string), ga)
     p = pop(t, t0, 0.5)
-    gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, (240, 200, 150) if key != 'stock' else (170, 200, 240))
+    gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, key)
     put(cv, pill(name, (60, 76, 140), 32), gx, gy + size * 0.64, pop(t, t0 + 0.2), ga)
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
@@ -847,7 +864,7 @@ def scene_hook(cv, t):
         x = 140 + j * 120 if j < 2 else 140 + j * 120
         y = 300 + 30 * (j % 2) + 6 * math.sin(t * 2 + j)
         gi = gift_frame(key, t, 256, j * 0.4).resize((130, 130), Image.LANCZOS)
-        gift_badge(cv, gi, x, y, pop(t, tj, 0.45), aj)
+        gift_badge(cv, gi, x, y, pop(t, tj, 0.45), aj, 0.0, key)
     a = appear(t, E.GLOVES_Q, 0.35) * (1 - appear(t, E.BOX_IN + 0.3, 0.4))
     if a <= 0:
         return
@@ -859,7 +876,7 @@ def scene_hook(cv, t):
     im = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
     x, y = 820, 470 + 12 * math.sin(t * 2)
     put(cv, radial(256, ICE), x, y, 1.9, 0.45 * a)
-    gift_badge(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5), a, 0.05 * math.sin(t * 3))
+    gift_badge(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5), a, 0.05 * math.sin(t * 3), 'mitt')
     put(cv, utext('?', 150, 'ExtraBold', WHITE, 6, (60, 90, 170)), x + 120, y - 120, pop(t, E.GLOVES_Q + 0.25),
         a, 0.15 + 0.08 * math.sin(t * 4))
     put(cv, pill('ПЕРЕПОЛОХ!', (60, 90, 170), 28), x - 10, y + 210, pop(t, E.GLOVES_Q + 1.5), a)
@@ -914,14 +931,14 @@ def scene_tease(cv, t):
             lum = arr[..., :3].mean(-1, keepdims=True)
             arr[..., :3] = arr[..., :3] * (1 - 0.7 * jump) + lum * 0.7 * jump
             gi = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
-        gift_badge(cv, gi, x, y, pop(t, E.CREEPY_END + 0.2 + 0.1 * j) * (1 - 0.15 * jump), a * (1 - 0.3 * jump))
+        gift_badge(cv, gi, x, y, pop(t, E.CREEPY_END + 0.2 + 0.1 * j) * (1 - 0.15 * jump), a * (1 - 0.3 * jump), 0.0, key)
     ta = appear(t, E.TEASE, 0.3)
     if ta > 0:
         y = 380 - 120 * fx.ease_out_back(fx.clamp01((t - E.TEASE_JUMP) / 0.6)) + 10 * math.sin(t * 3)
         sh = 0.12 * math.sin(t * 26) * jump * (1 - ease((t - E.TEASE_JUMP - 0.8) / 0.4))
         put(cv, radial(256, (255, 236, 170)), 540, y, 2.0 + 0.5 * jump, 0.45 * ta)
         im = gift_frame('mitt', t, 512).resize((260, 260), Image.LANCZOS)
-        gift_badge(cv, im, 540, y, pop(t, E.TEASE, 0.5) * (1 + 0.25 * jump), ta, sh, (240, 200, 150))
+        gift_badge(cv, im, 540, y, pop(t, E.TEASE, 0.5) * (1 + 0.25 * jump), ta, sh, 'mitt')
         if jump > 0:
             for k, (dx, dy, r) in enumerate(((-170, -60, -0.3), (170, -80, 0.3), (0, -200, 0.0))):
                 put(cv, utext('!' if k < 2 else '?', 90, 'ExtraBold', (255, 220, 120), 5, INK), 540 + dx, y + dy,
@@ -1014,7 +1031,7 @@ def scene_price(cv, t):
     thermo(cv, 880, 1040, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3))
     gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
     put(cv, radial(256, WARM), 880, 470, 1.6, 0.4 * a)
-    gift_badge(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a, 0.0, (240, 200, 150))
+    gift_badge(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a, 0.0, 'mitt')
     put(cv, pill('ТОГДА: 3–4 TON', (80, 110, 170), 34), 520, 560, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
     put(cv, pill('СЕЙЧАС: 10 TON', (232, 70, 64), 38), 540, 650, pop(t, E.PRICE_NOW + 0.4),
         a * appear(t, E.PRICE_NOW + 0.4, 0.2))

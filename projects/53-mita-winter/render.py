@@ -120,7 +120,8 @@ def keyed(name, w=None, h=None, crop=True):
 
 
 GIFT = {'hat': 'Santa Hat', 'cookie': 'Ginger Cookie', 'bell': 'Sleigh Bell', 'stock': 'Xmas Stocking',
-        'mitt': 'Snow Mittens'}
+        'mitt': 'Snow Mittens', 'globe': 'Snow Globe', 'jingle': 'Jingle Bells', 'cane': 'Candy Cane',
+        'wreath': 'Winter Wreath', 'drink': 'Holiday Drink'}
 
 
 @functools.lru_cache(None)
@@ -196,7 +197,7 @@ def badge_img(d, ring=(196, 212, 242)):
     return im.resize((n // S, n // S), Image.LANCZOS)
 
 
-KIND = {'hat': 0, 'cookie': 1, 'stock': 2, 'bell': 3, 'mitt': 0}
+KIND = {'hat': 0, 'cookie': 1, 'stock': 2, 'bell': 3, 'mitt': 0, 'globe': 2, 'jingle': 3, 'cane': 1, 'wreath': 3, 'drink': 0}
 BAUBLES = None
 
 
@@ -858,6 +859,41 @@ def ice_burst(cv, t):
         cv[..., :3] += (255 - cv[..., :3]) * (0.55 * (1 - u / 0.3))
 
 
+# ------------------------------------------------------------------ заполнение боков (правило автора: без пустот)
+SIDE_ITEMS = [('globe', 150, 980, 0.0), ('cane', 205, 1290, 1.3), ('jingle', 930, 960, 0.7), ('drink', 880, 1280, 2.1),
+              ('wreath', 160, 760, 2.9)]
+
+
+def side_free(t):
+    """Насколько бока свободны (0..1): в хуке, превращении, перед рекламой. Во время подарков, слуха и финала — заняты."""
+    g0 = GIFTS[0][1]
+    a = 1 - appear(t, g0 - 0.4, 0.4)                               # хук + превращение
+    a += appear(t, E.CREEPY_END + 0.2, 0.5) * (1 - appear(t, E.MOVE1 - 0.2, 0.3))   # перед рекламой
+    return fx.clamp01(a)
+
+
+def side_fill(cv, t):
+    a = side_free(t) * (1 - creepy_k(t))
+    if a <= 0:
+        return
+    for j, (key, x, y, ph) in enumerate(SIDE_ITEMS):
+        if key == 'wreath' and t < E.GLOVES_Q:
+            continue
+        dy = 22 * math.sin(t * 0.9 + ph)
+        dx = 10 * math.sin(t * 0.6 + ph * 1.7)
+        gi = gift_frame(key, t, 256, ph).resize((140, 140), Image.LANCZOS)
+        gift_badge(cv, gi, x + dx, y + dy, 0.95, a * appear(t, 0.2 + 0.15 * j, 0.4), 0.06 * math.sin(t + ph), key)
+    # искорки-снежинки между ними
+    def sp(d, mp, S):
+        for k in range(10):
+            side = k % 2
+            x = (60 + 190 * ((k * 0.37) % 1)) if side == 0 else (830 + 200 * ((k * 0.53) % 1))
+            y = 700 + (k * 97 + t * 25) % 760
+            X, Y = mp(x, y)
+            fx.sparkle(d, X, Y, (7 + 4 * math.sin(t * 3 + k)) * S, (200, 220, 250, int(200 * a)))
+    fx.over(cv, fx.draw_rgba((0, 680, W, 1480), sp))
+
+
 # ------------------------------------------------------------------ хук: силуэт перчаток со знаком вопроса
 def scene_hook(cv, t):
     """Хук: «Обычные зимние перчатки… взлетели в цене в разы. И всё — из-за одного слуха.»"""
@@ -1168,6 +1204,7 @@ def render_at(t):
     cv = background(t)
     ck = creepy_k(t)
     easter_egg(cv, t)
+    side_fill(cv, t)
     scene_hook(cv, t)
     scene_gifts(cv, t)
     if t != AD_STOP:

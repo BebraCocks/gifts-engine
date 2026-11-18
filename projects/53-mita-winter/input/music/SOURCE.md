@@ -1,5 +1,6 @@
 # Музыка ролика 53
 
-- `dreams_febbs_remix.mp3` — «Dreams of Love and Literature! (Febbs! Remix)», Dan Salvato (DDLC Fan Pack), 4:19, 100 BPM.
-- Прислал автор 2026-11-18. Тихое вступление ≈8 с, дальше ровно (≈ −11.8 LUFS по всему треку).
+- `dreams_of_love.mp3` — «Dreams of Love and Literature», Dan Salvato, Doki Doki Literature Club! OST (оригинал), 4:10, 320 kbps.
+- Прислал автор 2026-11-18. Без тихого вступления, громкость ровная (≈ −15.3 LUFS). Под авторским правом.
 - Новогоднее настроение добавляем сами: тихие бубенчики и колокольчик на счётчиках цен.
+- Сначала был прислан Febbs! Remix — заменён оригиналом.

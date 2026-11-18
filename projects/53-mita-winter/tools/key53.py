@@ -31,7 +31,7 @@ def bg_of(f):
     return np.median(c, 0).astype(np.float32)
 
 
-def key(f, bg, soft=0.75):
+def key(f, bg, soft=0.75, mode='normal'):
     x = f.astype(np.float32)
     gr = x[..., 1] - np.maximum(x[..., 0], x[..., 2])
     g0 = float(bg[1] - max(bg[0], bg[2]))
@@ -41,7 +41,14 @@ def key(f, bg, soft=0.75):
     aa = np.maximum(a, 1e-3)[..., None]
     fg = (x - (1 - a[..., None]) * bg) / aa
     fg = np.where(a[..., None] > 0.02, fg, 0)
-    fg[..., 1] = np.minimum(fg[..., 1], np.maximum(fg[..., 0], fg[..., 2]) * 1.04 + 4)
+    if mode == 'tree':            # ёлка тёмно-зелёная: зелёный гасим только на полупрозрачных краях
+        lim = np.maximum(fg[..., 0], fg[..., 2]) * 1.04 + 4
+        fg[..., 1] = np.where(a < 0.97, np.minimum(fg[..., 1], lim), fg[..., 1])
+    elif mode == 'box':           # вихрь: искры и «призрак» Миты на зелёном → золотые/тёплые, без зелени
+        r_, b_ = fg[..., 0], fg[..., 2]
+        fg[..., 1] = np.minimum(fg[..., 1], 0.5 * (r_ + b_) + 0.25 * np.abs(r_ - b_))
+    else:
+        fg[..., 1] = np.minimum(fg[..., 1], np.maximum(fg[..., 0], fg[..., 2]) * 1.04 + 4)
     return np.dstack([fg.clip(0, 255), a * 255]).astype(np.uint8)
 
 
@@ -60,7 +67,8 @@ def run_clip(name, geo):
     od = OUT / name
     od.mkdir(parents=True, exist_ok=True)
     for i, f in enumerate(fs, 1):
-        Image.fromarray(key(f, bg_of(f))).save(od / f'f{i:04d}.png', compress_level=1)
+        mode = 'tree' if name == 'tree' else 'box' if name.startswith('box') else 'normal'
+        Image.fromarray(key(f, bg_of(f), 0.75, mode)).save(od / f'f{i:04d}.png', compress_level=1)
     # геометрия по первому кадру: верх, низ (подошвы), центр стоп
     a = key(fs[0], bg)[..., 3] > 128
     ys, xs = np.nonzero(a)

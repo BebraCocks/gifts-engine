@@ -144,10 +144,10 @@ def town_layers():
     im = im.resize((W, round(im.height * TOWN_S)), Image.LANCZOS)
     a = np.array(im).astype(np.float32)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    lit = np.clip(((r - b) - 40) / 70, 0, 1) * np.clip((r - 150) / 60, 0, 1)
+    lit = np.clip(((r - b) - 15) / 45, 0, 1) * np.clip((r - 110) / 60, 0, 1)
     lit = cv2.GaussianBlur(lit, (0, 0), 1.2)
     dark = a.copy()
-    dark[..., :3] = a * (1 - 0.8 * lit[..., None]) + np.array([30, 34, 70], np.float32) * 0.8 * lit[..., None]
+    dark[..., :3] = a * (1 - 0.92 * lit[..., None]) + np.array([34, 38, 78], np.float32) * 0.92 * lit[..., None]
     # окна-кластеры: для цепочки «слух разлетелся»
     m = (lit > 0.35).astype(np.uint8)
     n, lab, st, cen = cv2.connectedComponentsWithStats(cv2.dilate(m, np.ones((5, 5), np.uint8)))
@@ -186,7 +186,8 @@ def lights_state(t):
     if E.SPREAD - 0.2 <= t < E.PRICE + 1.5:
         u0 = ease((t - (E.SPREAD - 0.2)) / 0.35)          # быстро гаснут
         def f(order):
-            on = ease((t - (E.SPREAD + 0.6 + order * 3.2)) / 0.25)   # загораются цепочкой слева направо
+            x = np.clip((t - (E.SPREAD + 0.6 + order * 3.2)) / 0.25, 0, 1)   # загораются цепочкой слева направо
+            on = x * x * (3 - 2 * x)
             return (1 - u0) + u0 * on
         return f
     return lambda order: np.full_like(order, 1 - 0.92 * ck)
@@ -418,8 +419,9 @@ def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0):
         BX, BY = mp(bx, by)
         R = br * S * 0.86
         d.ellipse((BX - R, BY - R, BX + R, BY + R), fill=col + (240,))
-        d.rounded_rectangle((X0 + (X1 - X0) * 0.18, Y0 + 6 * S, X0 + (X1 - X0) * 0.38, Y1 - R), 6 * S,
-                            fill=(255, 255, 255, 90))
+        if Y1 - R > Y0 + 14 * S:
+            d.rounded_rectangle((X0 + (X1 - X0) * 0.18, Y0 + 6 * S, X0 + (X1 - X0) * 0.38, Y1 - R), 6 * S,
+                                fill=(255, 255, 255, 90))
     fx.over(cv, fx.draw_rgba((x0, y0, x0 + im.width, y0 + h), draw), a)
     if frost > 0:
         put(cv, radial(128, ICE), cx, (ytop + by) / 2, 1.6, a * frost * 0.45)
@@ -539,7 +541,7 @@ def fog_patch():
     yy, xx = np.mgrid[:520, :520]
     r = np.sqrt((xx - 260) ** 2 + (yy - 260) ** 2) / 260
     a = np.clip(1 - r, 0, 1) ** 0.8 * (0.6 + 0.4 * n)
-    arr = np.dstack([np.full((520, 520, 3), 240, np.float32), a * 200]).astype(np.uint8)
+    arr = np.dstack([np.full((520, 520, 3), 242, np.float32), np.clip(a * 260, 0, 235)]).astype(np.uint8)
     return Image.fromarray(arr)
 
 
@@ -548,11 +550,11 @@ def breath_glass(cv, t):
     if not (t0 <= t < E.BELL + 0.6):
         return
     fa = ease((t - t0 - 0.5) / 1.0) * (1 - appear(t, E.BELL + 0.1, 0.5))
-    put(cv, fog_patch(), FOG_X, FOG_Y, 0.8 + 0.25 * ease((t - t0 - 0.5) / 1.4), fa)
+    put(cv, fog_patch(), FOG_X, FOG_Y, 0.95 + 0.3 * ease((t - t0 - 0.5) / 1.4), fa)
     # «пишет пальцем»: цифры проявляются слева направо
     k = ease((t - t0 - 2.0) / 2.2)
     if k > 0:
-        im = utext('6 TON', 74, 'ExtraBold', (250, 252, 255))
+        im = utext('6 TON', 100, 'ExtraBold', (250, 252, 255), 3, (170, 190, 220))
         arr = np.array(im)
         cut = int(arr.shape[1] * k)
         arr[:, cut:, 3] = 0
@@ -566,29 +568,51 @@ def creepy_k(t):
 
 @functools.lru_cache(None)
 def frost_tex():
+    """Иней: дымка у краёв + веточки-«папоротники», растущие от краёв внутрь."""
     rng = np.random.default_rng(31)
     base = np.zeros((H // 8, W // 8), np.float32)
-    for k, sc in enumerate((4, 9, 20, 40)):
+    for k, sc in enumerate((5, 11, 23)):
         n = rng.random((max(2, sc * 16 // 9), sc)).astype(np.float32)
         base += cv2.resize(n, (W // 8, H // 8), interpolation=cv2.INTER_CUBIC) * (0.6 ** k)
     base = (base - base.min()) / (base.max() - base.min())
     base = cv2.resize(base, (W, H), interpolation=cv2.INTER_CUBIC)
     yy, xx = np.mgrid[:H, :W].astype(np.float32)
-    edge = np.minimum(np.minimum(xx, W - xx) / W, np.minimum(yy, H - yy) / H * 0.9)   # 0 у края → ~0.5 в центре
-    # «перья» инея: тонкие светлые прожилки
-    veins = np.abs(np.sin(base * 40.0)) ** 8
-    return base, edge, veins
+    edge = np.minimum(np.minimum(xx, W - xx) / W, np.minimum(yy, H - yy) / H * 0.9) + (base - 0.5) * 0.035
+    ferns = Image.new('L', (W, H), 0)
+    d = ImageDraw.Draw(ferns)
+
+    def branch(x, y, ang, ln, depth):
+        if depth == 0 or ln < 6:
+            return
+        x2, y2 = x + math.cos(ang) * ln, y + math.sin(ang) * ln
+        d.line((x, y, x2, y2), fill=200 - 30 * (4 - depth), width=max(1, depth - 1))
+        for side in (-1, 1):
+            branch(x + (x2 - x) * 0.5, y + (y2 - y) * 0.5, ang + side * rng.uniform(0.6, 1.0), ln * 0.45, depth - 1)
+        branch(x2, y2, ang + rng.uniform(-0.25, 0.25), ln * 0.7, depth - 1)
+    for i in range(170):
+        side = rng.integers(4)
+        if side == 0:
+            x, y, ang = rng.uniform(0, W), 0, math.pi / 2
+        elif side == 1:
+            x, y, ang = rng.uniform(0, W), H, -math.pi / 2
+        elif side == 2:
+            x, y, ang = 0, rng.uniform(0, H), 0.0
+        else:
+            x, y, ang = W, rng.uniform(0, H), math.pi
+        branch(x, y, ang + rng.uniform(-0.6, 0.6), rng.uniform(60, 150), 4)
+    ferns = cv2.GaussianBlur(np.array(ferns, np.float32) / 255, (0, 0), 0.8)
+    return edge, ferns
 
 
 def frost(cv, t, k):
-    """Иней ползёт от краёв экрана к центру (кромка неровная, с прожилками)."""
+    """Иней ползёт от краёв экрана к центру (кромка неровная, с веточками)."""
     if k <= 0:
         return
-    base, edge, veins = frost_tex()
-    reach = 0.03 + 0.17 * k
-    m = np.clip((reach + (base - 0.5) * 0.1 - edge) / 0.035, 0, 1)
-    m = m * (0.55 + 0.35 * veins)
-    col = np.array([226, 240, 255], np.float32)
+    edge, ferns = frost_tex()
+    reach = 0.02 + 0.10 * k
+    m = np.clip((reach - edge) / 0.045, 0, 1)
+    m = np.clip(m * 0.5 + ferns * np.clip((reach * 1.6 - edge) / 0.05, 0, 1) * 0.9, 0, 0.92)
+    col = np.array([228, 242, 255], np.float32)
     cv[..., :3] = cv[..., :3] * (1 - m[..., None]) + col * m[..., None]
 
 
@@ -610,8 +634,8 @@ def creepy_room(cv, t, k):
     if ha > 0:
         im = keyed('handprint', h=380)
         arr = np.array(im).astype(np.float32)
-        arr[..., 1] = arr[..., 1] * 0.82
-        arr[..., 2] = np.minimum(255, arr[..., 2] * 1.08)
+        lum = arr[..., :3].mean(-1, keepdims=True)
+        arr[..., :3] = np.clip(lum * np.array([0.82, 0.93, 1.08]) + np.array([10, 20, 40]), 0, 255)
         put(cv, Image.fromarray(arr.astype(np.uint8)), 255, 470, 0.92 + 0.08 * ha, ha * 0.9, -0.12)
 
 
@@ -708,7 +732,7 @@ def transform_fx(cv, t):
     if 0 <= u < 1:
         k = math.sin(math.pi * u) ** 1.3
         put(cv, radial(256, (255, 248, 236)), 540, 1150, 4.2, k)
-        cv[..., :3] += (255 - cv[..., :3]) * (0.5 * k)
+        cv[..., :3] += (255 - cv[..., :3]) * (0.82 * k)
 
 
 def box_cover(cv, t):
@@ -813,12 +837,12 @@ def scene_spread(cv, t):
     a = 1 - appear(t, E.PRICE - 0.1, 0.4)
     for dt, s_, x, y, col in SPREAD_TAGS:
         t0 = E.SPREAD + 0.2 + dt
-        put(cv, pill(s_, col, 30), x + 6 * math.sin(t * 2 + x), y + 6 * math.cos(t * 2.2 + y), pop(t, t0),
+        put(cv, pill(s_, col, 40), x + 6 * math.sin(t * 2 + x), y + 6 * math.cos(t * 2.2 + y), pop(t, t0),
             a * appear(t, t0, 0.2), 0.06 * math.sin(x))
     for k, (s_, w0) in enumerate((('БЛОГЕРЫ', 'блогеры'), ('КАНАЛЫ', 'каналы'), ('ЧАТЫ', 'чаты'))):
         t0 = E.at(w0, 0, ON[10]) - 0.1
         y = 1010 + k * 110
-        put(cv, pill(s_, (40, 52, 104), 32), 800, y, pop(t, t0), a * appear(t, t0, 0.2))
+        put(cv, pill(s_, (40, 52, 104), 40), 800, y, pop(t, t0), a * appear(t, t0, 0.2))
 
 
 def scene_price(cv, t):
@@ -828,15 +852,15 @@ def scene_price(cv, t):
     up = ease((t - E.PRICE_NOW) / 1.3)
     lv = 3.5 + (10 - 3.5) * up
     col = tuple(int(v) for v in np.array((110, 170, 240)) + (np.array(RED) - np.array((110, 170, 240))) * up)
-    thermo(cv, 820, 1000, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3))
+    thermo(cv, 880, 1040, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3))
     gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
-    put(cv, radial(256, WARM), 820, 470, 1.6, 0.4 * a)
-    put(cv, gi, 820, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a)
-    put(cv, pill('ТОГДА: 3–4 TON', (80, 110, 170), 28), 820, 640, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
-    put(cv, pill('СЕЙЧАС: 10 TON', (232, 70, 64), 30), 820, 720, pop(t, E.PRICE_NOW + 0.4),
+    put(cv, radial(256, WARM), 880, 470, 1.6, 0.4 * a)
+    put(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a)
+    put(cv, pill('ТОГДА: 3–4 TON', (80, 110, 170), 34), 520, 560, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
+    put(cv, pill('СЕЙЧАС: 10 TON', (232, 70, 64), 38), 540, 650, pop(t, E.PRICE_NOW + 0.4),
         a * appear(t, E.PRICE_NOW + 0.4, 0.2))
     if t >= E.PRICE_X2:
-        put(cv, utext('×2+', 120, 'ExtraBold', (255, 230, 120), 7, (150, 40, 40)), 620, 900,
+        put(cv, utext('×2+', 130, 'ExtraBold', (255, 230, 120), 7, (150, 40, 40)), 660, 880,
             pop(t, E.PRICE_X2, 0.5), a, -0.12)
 
 
@@ -1062,7 +1086,8 @@ def globe_shake(img, t):
     cv = np.dstack([img.astype(np.float32), np.full(img.shape[:2], 255, np.float32)])
     u = t - t0
     sh = 0.18 * math.sin(u * 26) * ease((u - 0.5) / 0.2)
-    put(cv, keyed('globe', h=300), 540, 1180 + 30 * math.sin(u * 26) * ease((u - 0.5) / 0.2), pop(t, t0, 0.45), 1.0, sh)
+    put(cv, keyed('globe', h=240), 540, 1800 + 20 * math.sin(u * 26) * ease((u - 0.5) / 0.2), pop(t, t0, 0.45), 1.0, sh,
+        anchor=None)
     return cv[..., :3]
 
 

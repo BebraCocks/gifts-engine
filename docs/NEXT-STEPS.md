@@ -606,3 +606,4 @@ Whip Cupcake, Xmas Stocking ≈2 452 ₽), три «?», шкала «спрос
 
 - 51-mita-craft (2026-11-17): v1 и v2 собраны. v2 — https://drive.google.com/file/d/186aiT9VBBTf2wcuW37jrKkJAgrXvI38g/view (70,5 с с RubUp). Мита — клипы Gemini (tools/key_clips.py), ходьба 60 к/с со скоростью шага; жуть утверждена — не менять. Ждём замечаний автора.
 - 51-mita-craft v3 (2026-11-17): фишки — петля (белая вспышка в конце и в начале), стук по экрану, «сохранение…»/«загрузка», выбор как в игре, пасхалки (ободок, картридж, ножик), наезды камеры, реакции NFT, счётчик цен + «Fragment · 17.11». Drive: https://drive.google.com/file/d/1KPFrVklQqEQ1KGMm_QoiKBmUJJfH1D7H/view
+- 52-mita-artist v1 (2026-11-18): художница, невышедшие подарки (карточка @ideanode), ведро краски, тычок + цепи, жуть в тетради в клетку, мастерская скинов на рекламе, змейка на кнопочном телефоне. 65,4 с. Drive: https://drive.google.com/file/d/1oZrXj639DsJdLC8CsteGKNhDzZFIfBvc/view

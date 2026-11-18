@@ -860,8 +860,11 @@ def ice_burst(cv, t):
 
 
 # ------------------------------------------------------------------ заполнение боков (правило автора: без пустот)
-SIDE_ITEMS = [('globe', 150, 980, 0.0), ('cane', 205, 1290, 1.3), ('jingle', 930, 960, 0.7), ('drink', 880, 1280, 2.1),
-              ('wreath', 160, 760, 2.9)]
+SIDE_ITEMS = [('globe', 150, 1010, 0.0), ('cane', 200, 1300, 1.3), ('jingle', 930, 960, 0.7), ('drink', 885, 1270, 2.1),
+              ('wreath', 160, 720, 2.9)]
+# подписи: название и цена (Fragment floor, 17.11.2026 — input/decor/PRICES.md)
+SIDE_INFO = {'globe': ('СНЕЖНЫЙ ШАР', 8), 'cane': ('ЛЕДЕНЕЦ', 5), 'jingle': ('БУБЕНЦЫ', 12), 'drink': ('НАПИТОК', 6),
+             'wreath': ('ВЕНОК', 6)}
 
 
 def side_free(t):
@@ -883,6 +886,11 @@ def side_fill(cv, t):
         dx = 10 * math.sin(t * 0.6 + ph * 1.7)
         gi = gift_frame(key, t, 256, ph).resize((140, 140), Image.LANCZOS)
         gift_badge(cv, gi, x + dx, y + dy, 0.95, a * appear(t, 0.2 + 0.15 * j, 0.4), 0.06 * math.sin(t + ph), key)
+        nm, pr = SIDE_INFO[key]
+        ia = a * appear(t, 0.5 + 0.15 * j, 0.3)
+        cx_ = min(max(x + dx, 120), 960)
+        put(cv, pill(nm, (60, 76, 140), 22), cx_, y + dy + 98, 1.0, ia)
+        put(cv, pill(f'{pr} TON', (196, 128, 70), 22), cx_, y + dy + 142, 1.0, ia)
     # искорки-снежинки между ними
     def sp(d, mp, S):
         for k in range(10):

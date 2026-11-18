@@ -1,10 +1,58 @@
-"""Shared content-time events. Add word anchors here for picture and sound together."""
-from timeline import DUR, ON, END
-from words import wt
+"""События ролика 52 (время содержания). Опорные слова — words.WORDS."""
+from timeline import ON, END, AD_STOP, DUR
+from words import WORDS
 
-# Place an ad in the pause nearest the middle, with room for deceleration.
-gaps = [(abs((END[k] + ON[k+1])/2 - DUR/2), k) for k in range(len(ON)-1)]
-if not gaps:
-    raise ValueError('Use at least two lines and plan a speech pause for RubUp')
-k = min(gaps)[1]
-AD_STOP = (END[k] + ON[k+1]) / 2
+
+def at(word, n=0, after=0.0):
+    w0 = word.lower().replace('ё', 'е')
+    hits = [s for w, s, e, _ in WORDS if w.lower().strip('.,!?…:;«»').replace('ё', 'е') == w0 and s >= after - 1e-6]
+    return hits[n]
+
+
+# 1 хук (обычный наряд): кулич, мороженое, звёздочка рисуются; «а скинов нет» — серые
+G_KULICH = at('кулич') - 0.15
+G_ICE = at('мороженое') - 0.15
+G_STAR = at('звездочку') - 0.2
+NO_SKIN = at('скинов', 0, ON[1]) - 0.1
+# 2 «И таких подарков — целая куча!» — подарки высыпают; ведро краски
+MANY = ON[2] + 0.02
+BUCKET_IN = ON[2]                      # клип «замечает и закрывается» (с 1,3 с клипа)
+BUCKET_OFF = 1.3
+SPLASH = at('куча') + 0.0              # ведро опрокидывается
+OUT_START = SPLASH + 0.3               # клип «отряхивается» — уже художница
+# 3 карточка
+CARD = ON[3] - 0.1
+THIRD = at('треть') - 0.3
+# 4 ближе к финишу
+FIN_PLANE = at('самолетик') - 0.1
+FIN_ICE = at('мороженое', 0, ON[4]) - 0.1
+FIN_NONE = at('некоторых') - 0.1
+# 5 цепи и тычок
+ERASE1 = ON[5] - 0.45                  # ластик: центр → слева
+POKE = at('засекречен') + 0.15         # тычок
+POKE_HIT = POKE + 0.55
+# 6 жуть (тетрадь в клетку, без наезда)
+CREEPY = ON[6] - 0.15
+CREEP_B = at('быть') - 0.1
+CREEP_C = at('я', 0, ON[6]) - 0.15
+CREEPY_END = END[6] + 0.1              # вихрь краски
+# 7 дизайнеры (сердечко на стекле)
+HEART = ON[7] + 0.05
+NO_NEW = at('будет', 0, ON[7]) - 0.1
+YEAR_END = at('конца', 0, ON[7]) - 0.15
+# 8 почему так долго — песочные часы
+WHY = ON[8] - 0.1
+# 9 50 и 100 скинов
+FAN50 = at('пятидесяти') - 0.2
+FAN100 = at('вышедших') - 0.1
+# 10 конкурсные
+CONTEST = ON[10] - 0.05
+CONTEST_ART = at('участники') - 0.3
+# 11 храни кулич
+KEEP = ON[11] - 0.05
+VINTAGE = at('винтажный') - 0.1
+REPAINT = at('дорисуют') - 0.2
+UPGRADE = at('улучшить') - 0.1
+# 12 финал: змейка + выбор
+ERASE2 = ON[12] - 0.5
+CHOICE = at('выбирай') - 0.1

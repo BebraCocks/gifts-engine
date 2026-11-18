@@ -14,8 +14,8 @@ from PIL import Image
 HERE = Path(__file__).resolve().parents[1]
 SRC = HERE / 'input' / 'mita' / 'video'
 OUT = HERE / 'build' / 'clips'
-FPS60 = {'walk_left'}
-CLIPS = ['hook_normal', 'talk', 'cast_down', 'sweep', 'nope', 'palm', 'think', 'walk_left', 'creep_gemini_try1']
+FPS60 = set()
+CLIPS = ['hook', 'bucket_in', 'bucket_out', 'talk', 'easel', 'glass_heart', 'choice']
 
 
 def frames(path):

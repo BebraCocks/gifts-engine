@@ -628,7 +628,8 @@ def scene_gifts(cv, t):
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
     if ca > 0:
-        put(cv, pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 28), gx, gy + size * 0.64 + 4 * math.sin(t * 2.4),
+        cp = pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 28)
+        put(cv, cp, min(gx, W - cp.width / 2 - 12), gy + size * 0.64 + 4 * math.sin(t * 2.4),
             pop(t, tc, 0.45), ca, -0.04)
     # крошки при «надкусывании»
     if key == 'cookie' and E.COOKIE_BITE <= t < E.COOKIE_BITE + 1.2:

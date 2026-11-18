@@ -1060,7 +1060,8 @@ def scene_truth(cv, t):
                 d.line(q, fill=(232, 70, 64, 255), width=int(9 * S), joint='curve')
             X, Y = q[-1]
             d.ellipse((X - 11 * S, Y - 11 * S, X + 11 * S, Y + 11 * S), fill=(255, 255, 255, 255))
-        put(cv, fx.rounded(440, 320, 30, (246, 248, 255, 235), (255, 255, 255, 255), 4), 820, 1150, pop(t, E.TRUTH_MARKET),
+        put(cv, radial(128, (20, 30, 70)), 820, 1170, 4.0, 0.18 * a)
+        put(cv, fx.rounded(440, 320, 30, (255, 255, 255, 250), (180, 198, 232, 255), 5), 820, 1150, pop(t, E.TRUTH_MARKET),
             a)
         fx.over(cv, fx.draw_rgba((600, 980, 1040, 1290), chart), a)
         put(cv, pill('РЫНОК ПОВЕРИЛ', (232, 70, 64), 26), 820, 1340, pop(t, E.TRUTH_MARKET + 0.4),

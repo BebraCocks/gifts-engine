@@ -137,6 +137,31 @@ def radial(size, rgb, power=2.0):
     return fx.radial(size, rgb, power, 1.0)
 
 
+@functools.lru_cache(maxsize=16)
+def badge_img(d, ring=(196, 212, 242)):
+    """Белый «снежный» кружок-подложка под подарок: чтобы NFT читались на тёмном окне."""
+    S = 2
+    pad = 26
+    n = (d + 2 * pad) * S
+    im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
+    sh = Image.new('L', (n, n), 0)
+    ImageDraw.Draw(sh).ellipse((pad * S, (pad + 8) * S, (pad + d) * S, (pad + d + 8) * S), fill=110)
+    sh = sh.filter(ImageFilter.GaussianBlur(12 * S))
+    im.paste((20, 30, 70, 255), (0, 0), sh)
+    dr = ImageDraw.Draw(im)
+    dr.ellipse((pad * S, pad * S, (pad + d) * S, (pad + d) * S), fill=(255, 255, 255, 255), outline=ring + (255,),
+               width=6 * S)
+    dr.ellipse(((pad + 14) * S, (pad + 14) * S, (pad + d - 14) * S, (pad + d - 14) * S), outline=(232, 240, 252, 255),
+               width=3 * S)
+    return im.resize((n // S, n // S), Image.LANCZOS)
+
+
+def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, ring=(196, 212, 242)):
+    d = int(max(im.size) * 1.12)
+    put(cv, badge_img(d, ring), x, y, s, a)
+    put(cv, im, x, y, s * 0.92, a, rot)
+
+
 # ------------------------------------------------------------------ городок за окном
 SKY0, SKY1 = (20, 28, 70), (52, 66, 128)
 WALL, FLOOR = (46, 58, 112), (64, 80, 140)
@@ -594,9 +619,8 @@ def scene_gifts(cv, t):
         X1, Y1 = mp(gx, gy - size * 0.42)
         d.line((X0, Y0, X1, Y1), fill=(220, 225, 240, 230), width=int(3 * S))
     fx.over(cv, fx.draw_rgba((600, 40, 1080, gy), string), ga)
-    put(cv, radial(256, WARM if key != 'stock' else ICE), gx, gy, 1.7, 0.35 * ga)
     p = pop(t, t0, 0.5)
-    put(cv, im, gx, gy, p, ga, sw * 0.6)
+    gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, (240, 200, 150) if key != 'stock' else (170, 200, 240))
     put(cv, pill(name, (60, 76, 140), 32), gx, gy + size * 0.52, pop(t, t0 + 0.2), ga)
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
@@ -727,7 +751,7 @@ def creepy_room(cv, t, k):
     # отпечаток ладони на стекле (снаружи)
     ha = appear(t, E.HANDPRINT, 1.4) * k
     if ha > 0:
-        im = keyed('handprint', h=380)
+        im = keyed('handprint', h=240)
         arr = np.array(im).astype(np.float32)
         lum = arr[..., :3].mean(-1, keepdims=True)
         arr[..., :3] = np.clip(lum * np.array([0.82, 0.93, 1.08]) + np.array([10, 20, 40]), 0, 255)
@@ -783,7 +807,7 @@ def scene_hook(cv, t):
         x = 140 + j * 120 if j < 2 else 140 + j * 120
         y = 300 + 30 * (j % 2) + 6 * math.sin(t * 2 + j)
         gi = gift_frame(key, t, 256, j * 0.4).resize((130, 130), Image.LANCZOS)
-        put(cv, gi, x, y, pop(t, tj, 0.45), aj * (1 - 0.0))
+        gift_badge(cv, gi, x, y, pop(t, tj, 0.45), aj)
     a = appear(t, E.GLOVES_Q, 0.35) * (1 - appear(t, E.BOX_IN + 0.3, 0.4))
     if a <= 0:
         return
@@ -795,7 +819,7 @@ def scene_hook(cv, t):
     im = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
     x, y = 820, 470 + 12 * math.sin(t * 2)
     put(cv, radial(256, ICE), x, y, 1.9, 0.45 * a)
-    put(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5), a, 0.05 * math.sin(t * 3))
+    gift_badge(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5), a, 0.05 * math.sin(t * 3))
     put(cv, utext('?', 150, 'ExtraBold', WHITE, 6, (60, 90, 170)), x + 120, y - 120, pop(t, E.GLOVES_Q + 0.25),
         a, 0.15 + 0.08 * math.sin(t * 4))
     put(cv, pill('ПЕРЕПОЛОХ!', (60, 90, 170), 28), x - 10, y + 210, pop(t, E.GLOVES_Q + 1.5), a)
@@ -850,14 +874,14 @@ def scene_tease(cv, t):
             lum = arr[..., :3].mean(-1, keepdims=True)
             arr[..., :3] = arr[..., :3] * (1 - 0.7 * jump) + lum * 0.7 * jump
             gi = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
-        put(cv, gi, x, y, pop(t, E.CREEPY_END + 0.2 + 0.1 * j) * (1 - 0.15 * jump), a * (1 - 0.3 * jump))
+        gift_badge(cv, gi, x, y, pop(t, E.CREEPY_END + 0.2 + 0.1 * j) * (1 - 0.15 * jump), a * (1 - 0.3 * jump))
     ta = appear(t, E.TEASE, 0.3)
     if ta > 0:
         y = 380 - 120 * fx.ease_out_back(fx.clamp01((t - E.TEASE_JUMP) / 0.6)) + 10 * math.sin(t * 3)
         sh = 0.12 * math.sin(t * 26) * jump * (1 - ease((t - E.TEASE_JUMP - 0.8) / 0.4))
         put(cv, radial(256, (255, 236, 170)), 540, y, 2.0 + 0.5 * jump, 0.45 * ta)
         im = gift_frame('mitt', t, 512).resize((260, 260), Image.LANCZOS)
-        put(cv, im, 540, y, pop(t, E.TEASE, 0.5) * (1 + 0.25 * jump), ta, sh)
+        gift_badge(cv, im, 540, y, pop(t, E.TEASE, 0.5) * (1 + 0.25 * jump), ta, sh, (240, 200, 150))
         if jump > 0:
             for k, (dx, dy, r) in enumerate(((-170, -60, -0.3), (170, -80, 0.3), (0, -200, 0.0))):
                 put(cv, utext('!' if k < 2 else '?', 90, 'ExtraBold', (255, 220, 120), 5, INK), 540 + dx, y + dy,
@@ -950,7 +974,7 @@ def scene_price(cv, t):
     thermo(cv, 880, 1040, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3))
     gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
     put(cv, radial(256, WARM), 880, 470, 1.6, 0.4 * a)
-    put(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a)
+    gift_badge(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a, 0.0, (240, 200, 150))
     put(cv, pill('ТОГДА: 3–4 TON', (80, 110, 170), 34), 520, 560, pop(t, E.PRICE_THEN), a * appear(t, E.PRICE_THEN, 0.2))
     put(cv, pill('СЕЙЧАС: 10 TON', (232, 70, 64), 38), 540, 650, pop(t, E.PRICE_NOW + 0.4),
         a * appear(t, E.PRICE_NOW + 0.4, 0.2))

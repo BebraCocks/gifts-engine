@@ -66,7 +66,7 @@ def sfx_layer(n, kit):
         a(fx, 'counter', t0 + 0.3, gain_db=-22, fit=0.8, label=f'{lab}: градусник')
     a(fx, 'whoosh-short', E.COOKIE + 0.4, gain_db=-22, label='дышит на стекло')
     a(fx, 'paper', E.COOKIE + 2.0, gain_db=-21, label='пишет пальцем')
-    a(fx, 'cartoon-hit', E.COOKIE_BITE + 0.05, gain_db=-18, label='кусь!')
+    a(fx, 'sparkle', E.COOKIE_MAMA + 0.3, gain_db=-19, label='пряник красивый, как свитер')
     a(fx, 'sparkle', E.BELL + 0.2, gain_db=-18, label='колокольчик блестит')
     a(fx, 'power-down', E.STOCK_NOBODY, gain_db=-22, label='носок никнет')
     a(fx, 'sub-drop', E.CREEPY + 0.05, gain_db=-15, label='ЖУТЬ: музыка обрывается, гул')

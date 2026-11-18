@@ -222,11 +222,13 @@ def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, kind='hat'):
 # ------------------------------------------------------------------ городок за окном
 SKY0, SKY1 = (20, 28, 70), (52, 66, 128)
 WALL, FLOOR = (46, 58, 112), (64, 80, 140)
-WIN_BOX = (70, 150, 1010, 940)            # окно: x0, y0, x1, y1 (низ = подоконник)
-SILL_Y = 940
-TREE_X = 862
-ORNAMENTS = [(844, 640), (884, 700), (826, 760), (900, 820), (858, 880)]
-STAR = (TREE_X, 506)
+WIN_BOX = (200, 180, 880, 680)           # окно: x0, y0, x1, y1 (низ = подоконник) — компактное, над головой Миты
+SILL_Y = 680
+TREE_X = 790
+ORNAMENTS = [(TREE_X - 18, SILL_Y - 235), (TREE_X + 22, SILL_Y - 185), (TREE_X - 34, SILL_Y - 135),
+             (TREE_X + 40, SILL_Y - 85), (TREE_X - 4, SILL_Y - 45)]
+STAR = (TREE_X, SILL_Y - 345)
+WIN_MID_Y = (180 + 680) // 2
 
 
 @functools.lru_cache(None)
@@ -238,19 +240,19 @@ def town_layers():
     img = Image.fromarray(base.astype(np.uint8))
     d = ImageDraw.Draw(img)
     rng = np.random.default_rng(8)
-    for _ in range(40):                                      # звёзды
-        x, y = rng.uniform(90, 990), rng.uniform(170, 560)
+    for _ in range(26):                                      # звёзды
+        x, y = rng.uniform(215, 865), rng.uniform(195, 470)
         r = rng.uniform(1.2, 2.6)
         d.ellipse((x - r, y - r, x + r, y + r), fill=(235, 238, 255))
-    d.ellipse((165, 245, 275, 355), fill=(250, 244, 214))   # луна
+    d.ellipse((288, 222, 368, 302), fill=(250, 244, 214))   # луна
     d.ellipse((150, 230, 250, 330), fill=tuple(int(v) for v in sky[int(290)][0][0] * 0 + np.array(SKY0) * 0 + (0, 0, 0))) if False else None
     lab = Image.new('I', (W, H), 0)
     dl = ImageDraw.Draw(lab)
     houses = []
-    x = 40
-    while x < 1040:
-        w_ = int(rng.uniform(105, 160))
-        h_ = int(rng.uniform(120, 230))
+    x = 200
+    while x < 880:
+        w_ = int(rng.uniform(85, 125))
+        h_ = int(rng.uniform(90, 170))
         houses.append((x, SILL_Y - h_, x + w_, SILL_Y))
         x += w_ + int(rng.uniform(-6, 10))
     off_c, on_c = (40, 50, 104), (255, 204, 120)
@@ -272,13 +274,14 @@ def town_layers():
                 dl.rectangle((wx - 3, wy - 3, wx + 23, wy + 29), fill=k)
     # ёлка
     for dd in (d, don):
-        for i, (top, half, bot) in enumerate(((520, 64, 680), (610, 96, 800), (710, 128, 920))):
+        for i, (top, half, bot) in enumerate(((SILL_Y - 330, 52, SILL_Y - 200), (SILL_Y - 262, 76, SILL_Y - 112),
+                                              (SILL_Y - 186, 100, SILL_Y - 16))):
             dd.polygon([(TREE_X, top), (TREE_X - half, bot), (TREE_X + half, bot)], fill=(24, 72, 84))
             dd.polygon([(TREE_X, top), (TREE_X - half, bot), (TREE_X - half + 18, bot - 6), (TREE_X, top + 16)],
                        fill=(228, 236, 252))
-        dd.rectangle((TREE_X - 12, 918, TREE_X + 12, SILL_Y), fill=(60, 44, 50))
+        dd.rectangle((TREE_X - 10, SILL_Y - 18, TREE_X + 10, SILL_Y), fill=(60, 44, 50))
         for (ox, oy) in ORNAMENTS:
-            dd.ellipse((ox - 15, oy - 15, ox + 15, oy + 15), fill=(196, 206, 228))
+            dd.ellipse((ox - 12, oy - 12, ox + 12, oy + 12), fill=(196, 206, 228))
         sx, sy = STAR
         dd.polygon([(sx + 22 * math.cos(-math.pi / 2 + q * math.pi / 5) * (1 if q % 2 == 0 else 0.45),
                      sy + 22 * math.sin(-math.pi / 2 + q * math.pi / 5) * (1 if q % 2 == 0 else 0.45)) for q in range(10)],
@@ -347,8 +350,8 @@ def snowfall(cv, t, n=90, seed=7, y0=0, y1=1180, speed=(70, 150), alpha=0.85, sc
 
 def fireworks(cv, t):
     """Салют за окном в момент превращения."""
-    for j, (t0, x, y, col) in enumerate(((E.FLASH - 0.05, 300, 330, (255, 214, 140)), (E.FLASH + 0.3, 760, 260, ICE),
-                                         (E.FLASH + 0.65, 520, 420, (255, 240, 250)))):
+    for j, (t0, x, y, col) in enumerate(((E.FLASH - 0.05, 340, 330, (255, 214, 140)), (E.FLASH + 0.3, 720, 270, ICE),
+                                         (E.FLASH + 0.65, 560, 400, (255, 240, 250)))):
         u = (t - t0) / 1.4
         if not 0 <= u < 1:
             continue
@@ -428,20 +431,20 @@ def window_layer():
     im = Image.new('RGBA', (W * S, H * S), (250, 252, 255, 255))
     d = ImageDraw.Draw(im)
     rng = np.random.default_rng(14)
-    for _ in range(34):                                    # бледные снежинки на стене
+    for _ in range(16):                                    # бледные снежинки на стене (редко и очень бледно)
         x, y = rng.uniform(0, W), rng.uniform(0, H)
         x0, y0, x1, y1 = WIN_BOX
         if x0 - 30 < x < x1 + 30 and y0 - 30 < y < y1 + 40:
             continue
-        snowflake(d, x * S, y * S, rng.uniform(18, 42) * S, (226, 234, 248, 255), int(3 * S))
+        snowflake(d, x * S, y * S, rng.uniform(18, 38) * S, (236, 241, 251, 255), int(2.5 * S))
     x0, y0, x1, y1 = WIN_BOX
     d.rounded_rectangle(((x0 - 10) * S, (y0 - 6) * S, (x1 + 10) * S, (y1 + 16) * S), 34 * S, fill=(214, 224, 244, 255))
     d.rounded_rectangle((x0 * S, y0 * S, x1 * S, y1 * S), 28 * S, fill=(0, 0, 0, 0))
-    lw = 12
+    lw = 9
     col = (180, 198, 232, 255)
     d.rounded_rectangle((x0 * S, y0 * S, x1 * S, y1 * S), 28 * S, outline=col, width=lw * S)
     d.rectangle(((540 - lw / 2) * S, y0 * S, (540 + lw / 2) * S, y1 * S), fill=col)
-    d.rectangle((x0 * S, (470 - lw / 2) * S, x1 * S, (470 + lw / 2) * S), fill=col)
+    d.rectangle((x0 * S, (WIN_MID_Y - lw / 2) * S, x1 * S, (WIN_MID_Y + lw / 2) * S), fill=col)
     d.rounded_rectangle(((x0 - 34) * S, SILL_Y * S, (x1 + 34) * S, (SILL_Y + 30) * S), 12 * S, fill=(232, 238, 252, 255),
                         outline=(196, 210, 238, 255), width=3 * S)
     for k in range(34):                                    # снег на подоконнике
@@ -513,9 +516,12 @@ def stocking_parts():
 
 def stockings(cv, t):
     parts, string = stocking_parts()
-    y = 990
+    k = appear(t, E.STOCK - 0.25, 0.6) * (1 - appear(t, E.CREEPY_END + 0.8, 0.6))
+    if k <= 0:
+        return
+    y = SILL_Y + 70 - 160 * (1 - k)
     ck = creepy_k(t)
-    put(cv, string, 540, y + 12, 1.0, 1.0)
+    put(cv, string, 540, y + 12, 1.0, k)
     for j, (p, dx) in enumerate(parts):
         if abs(dx) < 120:                # за Митой носок не виден — не рисуем
             continue
@@ -525,7 +531,7 @@ def stockings(cv, t):
         if j == 3:                      # голубой носок — «его никто не берёт»: никнет и тускнеет
             sad = appear(t, E.STOCK_NOBODY, 0.6) * (1 - appear(t, E.CREEPY_END + 0.5, 0.6))
             rot += 0.12 * sad
-        put(cv, p, 540 + dx, y + 6, 1.0, 1.0 - 0.35 * sad, rot, anchor=(p.width / 2, 8))
+        put(cv, p, 540 + dx, y + 6, 1.0, k * (1.0 - 0.35 * sad), rot, anchor=(p.width / 2, 8))
         if j == 3 and sad > 0:
             put(cv, radial(128, ICE), 540 + dx, y + 150, 1.2, 0.25 * sad)
 
@@ -548,12 +554,12 @@ def background(t):
     cv = np.zeros((H, W, 4), np.float32)
     cv[..., :3] = town(t)
     ck = creepy_k(t)
-    put(cv, radial(256, (250, 240, 200)), 220, 300, 1.1, 0.3 * (1 - 0.7 * ck))
+    put(cv, radial(256, (250, 240, 200)), 328, 262, 0.8, 0.3 * (1 - 0.7 * ck))
     aurora(cv, t, appear(t, E.MOVE2, 1.0))
     fireworks(cv, t)
     tree_lights(cv, t)
-    snowfall(cv, t, 50, 7, 150, 940, (45, 90), 0.6, 0.8, ck)
-    snowfall(cv, t, 26, 11, 150, 940, (90, 160), 0.85, 1.2, ck)
+    snowfall(cv, t, 34, 7, 180, 680, (40, 80), 0.6, 0.75, ck)
+    snowfall(cv, t, 16, 11, 180, 680, (80, 140), 0.85, 1.1, ck)
     room(cv, t)
     stockings(cv, t)
     cv[..., 3] = 255
@@ -580,6 +586,7 @@ def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0):
     im, box, s = thermo_img(h)
     x0 = cx - im.width / 2
     y0 = cy - h / 2
+    put(cv, fx.soft_shadow(im.width - 20, h - 20, 40, 22, 0.35), cx + 8, cy + 16, 1.0, a)
     put(cv, im, cx, cy, 1.0, a)
     tx0 = x0 + (TUBE['x0'] - box[0]) * s
     tx1 = x0 + (TUBE['x1'] - box[0]) * s
@@ -607,9 +614,9 @@ def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0):
 
 # ------------------------------------------------------------------ сцена подарков (шапка, пряник, колокольчик, носок)
 GIFTS = [  # ключ, начало, цена, цвет жидкости, подпись, комментарий (время, текст), иней
-    ('hat', E.HAT, 9.0, RED, 'ШАПКА САНТЫ', (E.HAT_PAPA, 'ПАПЕ — НА ПРАЗДНИК'), 0.0, '↑ ДОРОЖАЕТ'),
-    ('cookie', E.COOKIE, 6.0, (236, 160, 80), 'ПРЯНИК', (E.COOKIE_MAMA, 'МАМЕ К ЧАЮ'), 0.0, '= БЕЗ ИЗМЕНЕНИЙ'),
-    ('bell', E.BELL, 13.0, GOLD, 'КОЛОКОЛЬЧИК', (E.BELL_FRIEND, 'ПОДРУГЕ… ИЛИ СЕБЕ'), 0.0, 'САМЫЙ ДОРОГОЙ'),
+    ('hat', max(E.HAT, E.B_END + 0.25), 9.0, RED, 'ШАПКА САНТЫ', (E.HAT_PAPA, 'ГОТОВЯТСЯ К ПРАЗДНИКУ!'), 0.0, '↑ ДОРОЖАЕТ'),
+    ('cookie', E.COOKIE, 6.0, (236, 160, 80), 'ПРЯНИК', (E.COOKIE_MAMA, 'КРАСИВЫЙ, КАК СВИТЕР'), 0.0, '= БЕЗ ИЗМЕНЕНИЙ'),
+    ('bell', E.BELL, 13.0, GOLD, 'КОЛОКОЛЬЧИК', (E.BELL_FRIEND, 'ЗВОНКАЯ ЦЕНА!'), 0.0, 'САМЫЙ ДОРОГОЙ'),
     ('stock', E.STOCK, 5.0, (110, 170, 240), 'НОСОК', (E.STOCK_NOBODY, 'НИКТО НЕ БЕРЁТ…'), 1.0, 'САМЫЙ ДЕШЁВЫЙ'),
 ]
 GIFT_END = E.CREEPY + 0.3
@@ -633,7 +640,7 @@ def bite_mask(size):
 
 
 def scene_gifts(cv, t):
-    if not (E.HAT - 0.1 <= t < GIFT_END + 0.4):
+    if not (GIFTS[0][1] - 0.1 <= t < GIFT_END + 0.4):
         return
     a_all = 1 - appear(t, GIFT_END - 0.1, 0.4)
     j = gift_idx(t)
@@ -647,7 +654,7 @@ def scene_gifts(cv, t):
     lv = lv0 + (price - lv0) * u
     c0 = np.array(prev[3] if prev else col, np.float32)
     c = tuple(int(v) for v in c0 + (np.array(col, np.float32) - c0) * u)
-    ta = appear(t, E.HAT - 0.05, 0.4) * a_all
+    ta = appear(t, GIFTS[0][1] - 0.05, 0.4) * a_all
     thermo(cv, 150, 960, THERMO_H, lv, c, ta, frost * u)
     put(cv, pill(f'{price:g} TON', (40, 52, 104), 40), 150, 600 + 6 * math.sin(t * 2), pop(t, t0 + 0.3), ta)
     put(cv, pill(tag, (230, 80, 70) if j in (0, 2) else (90, 130, 200) if j == 3 else (130, 110, 90), 26),
@@ -655,7 +662,7 @@ def scene_gifts(cv, t):
     # подарок — «ёлочная игрушка» на нитке справа, качается
     ga = appear(t, t0, 0.3) * a_all
     sw = 0.08 * math.sin(t * 1.7)
-    gx, gy = 850 + 120 * math.sin(sw), 470
+    gx, gy = 858 + 14 * math.sin(t * 1.3), 930 + 12 * math.sin(t * 1.9)        # справа на уровне Миты — заполняет середину
     size = 330
     im = gift_frame(key, t - t0, 512)
     im = im.resize((size, size), Image.LANCZOS)
@@ -675,14 +682,12 @@ def scene_gifts(cv, t):
         X0, Y0 = mp(850, 60)
         X1, Y1 = mp(gx, gy - size * 0.42)
         d.line((X0, Y0, X1, Y1), fill=(220, 225, 240, 230), width=int(3 * S))
-    fx.over(cv, fx.draw_rgba((600, 40, 1080, gy), string), ga)
     p = pop(t, t0, 0.5)
     gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, key)
-    put(cv, pill(name, (60, 76, 140), 32), gx, gy + size * 0.64, pop(t, t0 + 0.2), ga)
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
     if ca > 0:
-        put(cv, pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 26), 832, 768 + 6 * math.sin(t * 2.4),
+        put(cv, pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 28), gx, gy + size * 0.64 + 4 * math.sin(t * 2.4),
             pop(t, tc, 0.45), ca, -0.04)
     # крошки при «надкусывании»
     if key == 'cookie' and E.COOKIE_BITE <= t < E.COOKIE_BITE + 1.2:
@@ -726,7 +731,7 @@ def breath_glass(cv, t):
     if not (t0 <= t < E.BELL + 0.6):
         return
     fa = ease((t - t0 - 0.5) / 1.0) * (1 - appear(t, E.BELL + 0.1, 0.5))
-    put(cv, fog_patch(), FOG_X, FOG_Y, 0.6 + 0.15 * ease((t - t0 - 0.5) / 1.4), fa * 0.8)
+    put(cv, fog_patch(), FOG_X, FOG_Y, 0.45 + 0.1 * ease((t - t0 - 0.5) / 1.4), fa * 0.55)
     # «пишет пальцем»: цифры проявляются слева направо
     k = ease((t - t0 - 2.0) / 2.2)
     if k > 0:
@@ -808,11 +813,11 @@ def creepy_room(cv, t, k):
     # отпечаток ладони на стекле (снаружи)
     ha = appear(t, E.HANDPRINT, 1.4) * k
     if ha > 0:
-        im = keyed('handprint', h=240)
+        im = keyed('handprint', h=170)
         arr = np.array(im).astype(np.float32)
         lum = arr[..., :3].mean(-1, keepdims=True)
         arr[..., :3] = np.clip(lum * np.array([0.82, 0.93, 1.08]) + np.array([10, 20, 40]), 0, 255)
-        put(cv, Image.fromarray(arr.astype(np.uint8)), 300, 330, 0.92 + 0.08 * ha, ha * 0.9, -0.12)
+        put(cv, Image.fromarray(arr.astype(np.uint8)), 340, 320, 0.92 + 0.08 * ha, ha * 0.9, -0.12)
 
 
 def ice_particles(cv, t, k):
@@ -855,31 +860,26 @@ def ice_burst(cv, t):
 
 # ------------------------------------------------------------------ хук: силуэт перчаток со знаком вопроса
 def scene_hook(cv, t):
-    # прошлогодние подарки — маленькие игрушки на гирлянде (хук: «помнишь?»)
-    for j, key in enumerate(('hat', 'cookie', 'bell', 'stock')):
-        tj = 0.35 + 0.25 * j
-        aj = appear(t, tj, 0.4) * (1 - appear(t, E.BOX_IN + 0.3, 0.4))
-        if aj <= 0:
-            continue
-        x = 140 + j * 120 if j < 2 else 140 + j * 120
-        y = 300 + 30 * (j % 2) + 6 * math.sin(t * 2 + j)
-        gi = gift_frame(key, t, 256, j * 0.4).resize((130, 130), Image.LANCZOS)
-        gift_badge(cv, gi, x, y, pop(t, tj, 0.45), aj, 0.0, key)
+    """Хук: «Обычные зимние перчатки… взлетели в цене в разы. И всё — из-за одного слуха.»"""
     a = appear(t, E.GLOVES_Q, 0.35) * (1 - appear(t, E.BOX_IN + 0.3, 0.4))
     if a <= 0:
         return
+    x, y = 540, 420 + 10 * math.sin(t * 2)
+    jump = fx.ease_out_back(fx.clamp01((t - E.HOOK_X) / 0.5)) * (1 - ease((t - E.HOOK_X - 0.8) / 0.6))
+    y -= 50 * jump
     im = gift_frame('mitt', t, 512).resize((300, 300), Image.LANCZOS)
-    arr = np.array(im).astype(np.float32)
-    k = 1 - ease((t - E.GLOVES_Q - 1.2) / 1.0) * 0.35       # силуэт: почти чёрный, к концу проступает цвет
-    arr[..., :3] *= (1 - 0.9 * k)
-    arr[..., :3] += np.array([30, 40, 90]) * 0.9 * k
-    im = Image.fromarray(arr.clip(0, 255).astype(np.uint8))
-    x, y = 820, 470 + 12 * math.sin(t * 2)
-    put(cv, radial(256, ICE), x, y, 1.9, 0.45 * a)
-    gift_badge(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5), a, 0.05 * math.sin(t * 3), 'mitt')
-    put(cv, utext('?', 150, 'ExtraBold', WHITE, 6, (60, 90, 170)), x + 120, y - 120, pop(t, E.GLOVES_Q + 0.25),
-        a, 0.15 + 0.08 * math.sin(t * 4))
-    put(cv, pill('ПЕРЕПОЛОХ!', (60, 90, 170), 28), x - 10, y + 210, pop(t, E.GLOVES_Q + 1.5), a)
+    put(cv, radial(256, (255, 236, 170)), x, y, 2.2, 0.35 * a)
+    gift_badge(cv, im, x, y, pop(t, E.GLOVES_Q, 0.5) * (1 + 0.08 * jump), a, 0.05 * math.sin(t * 3), 'mitt')
+    # «в разы!» — стрелка вверх и плашка
+    xa = appear(t, E.HOOK_X, 0.25)
+    if xa > 0:
+        put(cv, utext('↑', 120, 'ExtraBold', RED, 6, WHITE), x + 230, y - 40 - 30 * jump, pop(t, E.HOOK_X, 0.45), a * xa)
+        put(cv, pill('В РАЗЫ!', RED, 34), x + 210, y + 90, pop(t, E.HOOK_X + 0.1, 0.45), a * xa, 0.08)
+    ra = appear(t, E.HOOK_RUMOR, 0.25)
+    if ra > 0:
+        put(cv, pill('СЛУХ?', (60, 76, 140), 36), x - 220, y + 120, pop(t, E.HOOK_RUMOR, 0.45), a * ra, -0.08)
+        put(cv, utext('?', 120, 'ExtraBold', WHITE, 6, (60, 90, 170)), x - 210, y - 70, pop(t, E.HOOK_RUMOR + 0.1),
+            a * ra, -0.15 + 0.08 * math.sin(t * 4))
 
 
 # ------------------------------------------------------------------ коробка: «пуф» при появлении/исчезновении

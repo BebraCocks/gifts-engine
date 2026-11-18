@@ -9,7 +9,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RAW, OUT = HERE / 'voice' / 'raw', HERE / 'voice'
 SR = 48000
-PICK = {}
+PICK = {'L01': 1, 'L06': 1, 'L07': 1}   # v2: перчатки в хуке
 TEMPO = 1.12         # 53: чуть быстрее, чтобы уложиться в 70 с
 MAX_GAP = 0.15
 GAP_LINE = {8: 0.45}    # жуткий шёпот: паузы чуть длиннее остальных, но короче исходных

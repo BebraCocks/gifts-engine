@@ -468,8 +468,16 @@ def stockings(cv, t):
 
 
 def easter_egg(cv, t):
-    """Пасхалка: снеговик с синими хвостиками (как у Миты) в углу, иногда машет."""
-    im = keyed('snowman', h=250)
+    """Пасхалка: снеговик с синими хвостиками (как у Миты) в углу; реагирует: жуть — закрыл глаза, ×2 — удивился,
+    финал — машет."""
+    pose = 'snowman'
+    if E.CREEPY - 0.1 <= t < E.CREEPY_END + 0.3:
+        pose = 'snowman_scared'
+    elif E.PRICE_X2 - 0.1 <= t < E.PRICE_X2 + 1.8 or E.HOOK_X <= t < E.HOOK_X + 1.4:
+        pose = 'snowman_surprised'
+    elif t >= E.CHOICE - 0.3 or E.B_END <= t < E.B_END + 1.2:
+        pose = 'snowman_wave'
+    im = keyed(pose, h=250)
     wave_ = 0.06 * math.sin(t * 2.2) * (1 - creepy_k(t))
     put(cv, im, 978, 1835, 1.0, 1.0, wave_, anchor=(im.width / 2, im.height))
 
@@ -523,7 +531,25 @@ def thermo_img(h):
     return im.resize((round(im.width * s), h), Image.LANCZOS), box, s
 
 
-def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0):
+def slot_price(cv, x, y, t, t0, target, a=1.0, w=250, spin=0.9, fast=False, before=None):
+    """Цена как барабан игрового автомата: цифры крутятся и встают на target (TON) с щелчком."""
+    reel = keyed('ico_reel', w=w)
+    put(cv, reel, x, y, 1.0, a)
+    k = fx.clamp01((t - t0) / spin)
+    if before is not None and t < t0:
+        put(cv, utext(before, int(w * 0.15), 'ExtraBold', (190, 220, 255)), x, y + 4, 1.0, a)
+        return
+    if k < 1:
+        rng = np.random.default_rng(int(t * (40 if fast else 22)))
+        val = f'{rng.integers(1, 99)}'
+        off = 30 * math.sin(t * (70 if fast else 45))
+        put(cv, utext(val + ' TON', int(w * 0.17), 'ExtraBold', (255, 236, 170)), x, y + 4 + off * (1 - k), 1.0, a * 0.85)
+    else:
+        bump = fx.ease_out_back(fx.clamp01((t - t0 - spin) / 0.3))
+        put(cv, utext(f'{target:g} TON', int(w * 0.17), 'ExtraBold', (255, 236, 170)), x, y + 4, 0.8 + 0.2 * bump, a)
+
+
+def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0, rising=0.0, t=0.0):
     """level 0..THERMO_MAX (TON). Жидкость рисуется внутри трубки; frost — иней на трубке (подешевел)."""
     im, box, s = thermo_img(h)
     x0 = cx - im.width / 2
@@ -549,8 +575,17 @@ def thermo(cv, cx, cy, h, level, col, a=1.0, frost=0.0):
             d.rounded_rectangle((X0 + (X1 - X0) * 0.18, Y0 + 6 * S, X0 + (X1 - X0) * 0.38, Y1 - R), 6 * S,
                                 fill=(255, 255, 255, 90))
     fx.over(cv, fx.draw_rgba((x0, y0, x0 + im.width, y0 + h), draw), a)
-    if frost > 0:
+    if frost > 0:                              # 3. цена упала — трубку затягивает ледяная корка
         put(cv, radial(128, ICE), cx, (ytop + by) / 2, 1.6, a * frost * 0.45)
+        crust = keyed('ico_frost', w=int((tx1 - tx0) * 2.6))
+        for q in range(3):
+            put(cv, crust, cx, ytop + 40 + q * 110, 1.0, a * fx.clamp01(frost * 3 - q), math.pi / 2)
+    if rising > 0:                             # 3. цена растёт — по столбику поднимаются пузырьки
+        bub = keyed('ico_bubbles', w=int((tx1 - tx0) * 1.7))
+        for q in range(3):
+            ph = (t * 0.7 + q / 3) % 1
+            yb = by - br * 0.5 - (by - br * 0.5 - ytop) * ph
+            put(cv, bub, (tx0 + tx1) / 2 + 6 * math.sin(t * 5 + q), yb, 0.6 + 0.3 * ph, a * rising * math.sin(math.pi * ph))
     return ytop
 
 
@@ -597,8 +632,9 @@ def scene_gifts(cv, t):
     c0 = np.array(prev[3] if prev else col, np.float32)
     c = tuple(int(v) for v in c0 + (np.array(col, np.float32) - c0) * u)
     ta = appear(t, GIFTS[0][1] - 0.05, 0.4) * a_all
-    thermo(cv, 150, 960, THERMO_H, lv, c, ta, frost * u)
-    put(cv, pill(f'{price:g} TON', (40, 52, 104), 40), 150, 590 + 6 * math.sin(t * 2), pop(t, t0 + 0.3), ta)
+    rise = (1.0 if key in ('hat',) else 0.0) * u
+    thermo(cv, 150, 960, THERMO_H, lv, c, ta, frost * u, rise, t)
+    slot_price(cv, 150, 535, t, t0 + 0.1, price, ta, 240)
     put(cv, pill(rub(price), (196, 128, 70), 26), 150, 652 + 6 * math.sin(t * 2), pop(t, t0 + 0.45), ta)
     put(cv, pill(tag, (230, 80, 70) if j in (0, 2) else (90, 130, 200) if j == 3 else (130, 110, 90), 26),
         215, 1310, pop(t, t0 + 0.9), ta * appear(t, t0 + 0.9))
@@ -626,6 +662,32 @@ def scene_gifts(cv, t):
         X1, Y1 = mp(gx, gy - size * 0.42)
         d.line((X0, Y0, X1, Y1), fill=(220, 225, 240, 230), width=int(3 * S))
     p = pop(t, t0, 0.5)
+    lt = t - t0
+    if key == 'hat':                            # шапка падает сверху со «скоростным» росчерком
+        fall = ease(lt / 0.45)
+        gy = gy - (1 - fall) * 900
+        if lt < 0.6:
+            put(cv, keyed('ico_swoosh', w=260), gx - 40, gy - 260, 1.0, ga * (1 - lt / 0.6), -0.4)
+        p = 1.0 if lt > 0.45 else 0.9
+    elif key == 'cookie':                       # пряник «выпекается»: выходит из облачка пара, золотистое свечение
+        put(cv, keyed('fog', w=420), gx, gy + 20, 0.8 + 0.4 * ease(lt / 1.2), ga * (1 - ease((lt - 0.5) / 0.8)) * 0.8)
+        put(cv, radial(256, (255, 200, 120)), gx, gy, 2.2, ga * 0.5 * (1 - ease((lt - 0.6) / 1.0)))
+        p = 0.5 + 0.5 * ease(lt / 0.7)
+    elif key == 'bell':                         # колокольчик звенит: качается, звуковые волны
+        sw = 0.22 * math.sin(lt * 14) * math.exp(-lt * 1.5) + 0.05 * math.sin(t * 2)
+        for q in range(2):
+            ph = (lt * 1.3 + q * 0.5) % 1
+            put(cv, keyed('ico_waves', w=360), gx, gy, 0.8 + 0.6 * ph, ga * (1 - ph) * 0.9)
+    elif key == 'stock':                        # носок спускается на нитке и грустно покачивается
+        drop = fx.ease_out_back(fx.clamp01(lt / 0.8))
+        gy = gy - (1 - drop) * 600
+        sw = 0.1 * math.sin(t * 1.2)
+        def thread(d, mp, S, gx=gx, gy=gy):
+            X0, Y0 = mp(gx, 0)
+            X1, Y1 = mp(gx, gy - 190)
+            d.line((X0, Y0, X1, Y1), fill=(200, 210, 235, 255), width=int(3 * S))
+        fx.over(cv, fx.draw_rgba((gx - 10, 0, gx + 10, max(10, gy - 180)), thread), ga)
+        p = 1.0
     gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, key)
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
@@ -996,10 +1058,28 @@ def scene_spread(cv, t):
         t0 = E.SPREAD + 0.2 + dt
         put(cv, pill(s_, col, 40), x + 6 * math.sin(t * 2 + x), y + 6 * math.cos(t * 2.2 + y), pop(t, t0),
             a * appear(t, t0, 0.2), 0.06 * math.sin(x))
-    for k, (s_, w0) in enumerate((('БЛОГЕРЫ', 'блогеры'), ('КАНАЛЫ', 'каналы'), ('ЧАТЫ', 'чаты'))):
+    for k, (s_, w0, ico) in enumerate((('БЛОГЕРЫ', 'блогеры', 'ico_video'), ('КАНАЛЫ', 'каналы', 'ico_mega'),
+                                       ('ЧАТЫ', 'чаты', 'ico_chat'))):
         t0 = E.at(w0, 0, ON[10]) - 0.1
-        y = 1010 + k * 110
-        put(cv, pill(s_, (40, 52, 104), 40), 800, y, pop(t, t0), a * appear(t, t0, 0.2))
+        y = 1010 + k * 150
+        put(cv, keyed(ico, w=120), 700, y, pop(t, t0), a * appear(t, t0, 0.2))
+        put(cv, pill(s_, (40, 52, 104), 34), 860, y, pop(t, t0 + 0.1), a * appear(t, t0, 0.2))
+    # письма-слухи летят к домикам за окном (окна загораются цепочкой — lights_state)
+    gx0, gy0, gx1, gy1 = GLASS_F
+    for q in range(8):
+        tq = E.SPREAD + 0.5 + q * 0.4
+        u = (t - tq) / 0.9
+        if not 0 <= u < 1:
+            continue
+        tx = gx0 + (gx1 - gx0) * (q + 0.5) / 8
+        ty = gy1 - 80
+        sx_, sy_ = 790, 1000
+        x = sx_ + (tx - sx_) * ease(u)
+        y = sy_ + (ty - sy_) * ease(u) - 160 * math.sin(math.pi * u)
+        put(cv, keyed('ico_mail', w=110), x, y, 1 - 0.4 * u, a * (1 - ease((u - 0.8) / 0.2)), -0.3 + 0.6 * u)
+
+
+RARE_MITT = ['Astronaut', 'Diamond Hands', 'Fire Nation', 'Polaris', 'Jelly Bears']
 
 
 def scene_price(cv, t):
@@ -1009,7 +1089,8 @@ def scene_price(cv, t):
     up = ease((t - E.PRICE_NOW) / 1.3)
     lv = 3.5 + (10 - 3.5) * up
     col = tuple(int(v) for v in np.array((110, 170, 240)) + (np.array(RED) - np.array((110, 170, 240))) * up)
-    thermo(cv, 880, 1040, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3))
+    thermo(cv, 880, 1040, 760, lv, col, a, (1 - up) * appear(t, E.PRICE_THEN, 0.3), up, t)
+    slot_price(cv, 600, 790, t, E.PRICE_NOW - 0.2, 10, a, 250, 1.2, True, '3–4 TON')
     gi = gift_frame('mitt', t, 512).resize((230, 230), Image.LANCZOS)
     put(cv, radial(256, WARM), 880, 470, 1.6, 0.4 * a)
     gift_badge(cv, gi, 880, 470 + 10 * math.sin(t * 2), pop(t, E.PRICE + 0.1), a, 0.0, 'mitt')
@@ -1017,7 +1098,17 @@ def scene_price(cv, t):
     put(cv, pill('СЕЙЧАС: 10 TON · ' + rub(10), (232, 70, 64), 32), 490, 650, pop(t, E.PRICE_NOW + 0.4),
         a * appear(t, E.PRICE_NOW + 0.4, 0.2))
     if t >= E.PRICE_X2:
-        put(cv, keyed('x2', w=330), 640, 880, pop(t, E.PRICE_X2, 0.5), a, -0.1)
+        put(cv, keyed('x2', w=280), 620, 960, pop(t, E.PRICE_X2, 0.5), a, -0.1)
+    # редкие модели перчаток — веером пролетают за градусником
+    for q, mdl in enumerate(RARE_MITT):
+        tq = E.PRICE_THEN + 0.2 + q * 0.2
+        k = appear(t, tq, 0.4)
+        if k <= 0:
+            continue
+        rx, ry = (560, 690, 560, 690, 625)[q], (1110, 1190, 1270, 1350, 1440)[q]
+        mi = lottie.frame(str(gifts_api.model_file('Snow Mittens', mdl, 'tgs')), t, size=256, offset=q * 0.3)
+        mi = mi.resize((120, 120), Image.LANCZOS)
+        gift_badge(cv, mi, rx, ry + 8 * math.sin(t * 2 + q), k * 0.85, a * k, 0.1 * math.sin(t + q), ('mitt', 'stock', 'bell', 'cookie', 'mitt')[q])
 
 
 def scene_truth(cv, t):

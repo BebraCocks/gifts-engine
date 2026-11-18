@@ -139,27 +139,67 @@ def radial(size, rgb, power=2.0):
 
 @functools.lru_cache(maxsize=16)
 def badge_img(d, ring=(196, 212, 242)):
-    """Белый «снежный» кружок-подложка под подарок: чтобы NFT читались на тёмном окне."""
+    """Подложка под подарок — ёлочный шар: матовое белое стекло с голубым отливом, серебряный колпачок с петелькой,
+    снежная шапка сверху, морозные снежинки по краю, глянцевый блик и искорки."""
     S = 2
-    pad = 26
+    pad = 40
     n = (d + 2 * pad) * S
+    R = d * S / 2
+    cx, cy = n / 2, n / 2 + 6 * S
     im = Image.new('RGBA', (n, n), (0, 0, 0, 0))
     sh = Image.new('L', (n, n), 0)
-    ImageDraw.Draw(sh).ellipse((pad * S, (pad + 8) * S, (pad + d) * S, (pad + d + 8) * S), fill=110)
-    sh = sh.filter(ImageFilter.GaussianBlur(12 * S))
-    im.paste((20, 30, 70, 255), (0, 0), sh)
-    dr = ImageDraw.Draw(im)
-    dr.ellipse((pad * S, pad * S, (pad + d) * S, (pad + d) * S), fill=(255, 255, 255, 255), outline=ring + (255,),
-               width=6 * S)
-    dr.ellipse(((pad + 14) * S, (pad + 14) * S, (pad + d - 14) * S, (pad + d - 14) * S), outline=(232, 240, 252, 255),
-               width=3 * S)
+    ImageDraw.Draw(sh).ellipse((cx - R, cy - R + 10 * S, cx + R, cy + R + 10 * S), fill=120)
+    im.paste((24, 36, 80, 255), (0, 0), sh.filter(ImageFilter.GaussianBlur(14 * S)))
+    # стекло: радиальный градиент белый → бледно-голубой
+    yy, xx = np.mgrid[:n, :n].astype(np.float32)
+    r = np.sqrt((xx - cx + R * 0.25) ** 2 + (yy - cy + R * 0.3) ** 2) / (R * 1.35)
+    body = np.dstack([255 - 28 * r, 255 - 18 * r, np.full_like(r, 255)]).clip(0, 255)
+    mask = Image.new('L', (n, n), 0)
+    ImageDraw.Draw(mask).ellipse((cx - R, cy - R, cx + R, cy + R), fill=255)
+    im.paste(Image.fromarray(body.astype(np.uint8)), (0, 0), mask)
+    d_ = ImageDraw.Draw(im)
+    # морозные снежинки по краю стекла
+    for k in range(7):
+        ang = k * 2 * math.pi / 7 + 0.3
+        snowflake(d_, cx + R * 0.76 * math.cos(ang), cy + R * 0.76 * math.sin(ang), R * 0.13,
+                  (205, 222, 248, 255), max(1, int(1.6 * S)))
+    # каёмки: цветная + серебряная тонкая
+    d_.ellipse((cx - R, cy - R, cx + R, cy + R), outline=ring + (255,), width=int(7 * S))
+    d_.ellipse((cx - R + 9 * S, cy - R + 9 * S, cx + R - 9 * S, cy + R - 9 * S), outline=(214, 222, 238, 255),
+               width=int(2 * S))
+    # глянцевый блик
+    hl = Image.new('L', (n, n), 0)
+    ImageDraw.Draw(hl).arc((cx - R * 0.8, cy - R * 0.8, cx + R * 0.8, cy + R * 0.8), 200, 250, fill=200,
+                           width=int(R * 0.09))
+    im.paste((255, 255, 255, 255), (0, 0), hl.filter(ImageFilter.GaussianBlur(2 * S)))
+    # снежная шапка на макушке
+    rng = np.random.default_rng(int(d))
+    for k in range(9):
+        ang = math.pi * (1.18 + 0.64 * k / 8)
+        x, y = cx + R * 0.97 * math.cos(ang), cy + R * 0.97 * math.sin(ang)
+        rr = R * rng.uniform(0.13, 0.19)
+        d_.ellipse((x - rr, y - rr * 0.8, x + rr, y + rr * 0.8), fill=(255, 255, 255, 255), outline=(222, 232, 250, 255),
+                   width=S)
+    # серебряный колпачок с рёбрами и петелькой
+    cw, ch = R * 0.42, R * 0.2
+    top = cy - R - ch * 0.55
+    d_.ellipse((cx - cw * 0.28, top - ch * 1.25, cx + cw * 0.28, top - ch * 0.15), outline=(170, 178, 196, 255),
+               width=int(3.5 * S))
+    d_.rounded_rectangle((cx - cw / 2, top - ch * 0.4, cx + cw / 2, top + ch * 0.75), int(4 * S), fill=(212, 218, 232, 255),
+                         outline=(150, 158, 178, 255), width=int(2 * S))
+    for q in range(1, 5):
+        x = cx - cw / 2 + cw * q / 5
+        d_.line((x, top - ch * 0.35, x, top + ch * 0.7), fill=(170, 178, 196, 255), width=int(1.5 * S))
+    # искорки
+    for (fx_, fy_, fr) in ((0.98, -0.62, 0.11), (-1.02, 0.42, 0.08), (0.82, 0.86, 0.07)):
+        fx.sparkle(d_, cx + R * fx_, cy + R * fy_, R * fr, (255, 236, 170, 255))
     return im.resize((n // S, n // S), Image.LANCZOS)
 
 
 def gift_badge(cv, im, x, y, s=1.0, a=1.0, rot=0.0, ring=(196, 212, 242)):
-    d = int(max(im.size) * 1.12)
-    put(cv, badge_img(d, ring), x, y, s, a)
-    put(cv, im, x, y, s * 0.92, a, rot)
+    d = int(max(im.size) * 1.14)
+    put(cv, badge_img(d, ring), x, y, s, a, rot * 0.5)
+    put(cv, im, x, y + 4 * s, s * 0.84, a, rot)
 
 
 # ------------------------------------------------------------------ городок за окном
@@ -621,11 +661,11 @@ def scene_gifts(cv, t):
     fx.over(cv, fx.draw_rgba((600, 40, 1080, gy), string), ga)
     p = pop(t, t0, 0.5)
     gift_badge(cv, im, gx, gy, p, ga, sw * 0.6, (240, 200, 150) if key != 'stock' else (170, 200, 240))
-    put(cv, pill(name, (60, 76, 140), 32), gx, gy + size * 0.52, pop(t, t0 + 0.2), ga)
+    put(cv, pill(name, (60, 76, 140), 32), gx, gy + size * 0.64, pop(t, t0 + 0.2), ga)
     # комментарий Миты зрителю
     ca = appear(t, tc, 0.3) * a_all * (1 - appear(t, (GIFTS[j + 1][1] if j + 1 < len(GIFTS) else GIFT_END) - 0.3, 0.3))
     if ca > 0:
-        put(cv, pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 26), 810, 712 + 6 * math.sin(t * 2.4),
+        put(cv, pill(comment, (196, 128, 70) if key != 'stock' else (80, 110, 170), 26), 832, 768 + 6 * math.sin(t * 2.4),
             pop(t, tc, 0.45), ca, -0.04)
     # крошки при «надкусывании»
     if key == 'cookie' and E.COOKIE_BITE <= t < E.COOKIE_BITE + 1.2:

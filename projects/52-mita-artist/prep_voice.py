@@ -9,10 +9,10 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RAW, OUT = HERE / 'voice' / 'raw', HERE / 'voice'
 SR = 48000
-PICK = {'L03': 1}   # «кубок» на карточке — мороженое в вазочке → переозвучено
+PICK = {}
 TEMPO = 1.08         # чуть быстрее, тон не меняется
 MAX_GAP = 0.2
-GAP_LINE = {5: 0.32}    # жуткий шёпот: паузы короче (как утверждено в 51)
+GAP_LINE = {6: 0.32}    # жуткий шёпот: паузы короче (как утверждено в 51)
 TRIM_START = {}
 
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     for k in range(1, len(LINES) + 1):
         name = f'L{k:02d}'
         trim = TRIM_START.get(k, 0.0)
-        tempo = 1.06 if k == 5 else TEMPO                    # шёпот чуть медленнее остальных
+        tempo = 1.06 if k == 6 else TEMPO                    # шёпот чуть медленнее остальных
         x = load(RAW / f'{name}_{PICK.get(name, 0)}.mp3', f'atrim=start={trim},asetpts=PTS-STARTPTS,atempo={tempo},loudnorm=I=-16:TP=-1.5:LRA=11')
         y, gaps = tighten(x, GAP_LINE.get(k, MAX_GAP))
         write(OUT / f'{name}.wav', y)

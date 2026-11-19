@@ -183,17 +183,23 @@ def _polaroid(kind):
 
 
 def wanted(cv, t):
-    """Пока улик мало — на доске плакат «РАЗЫСКИВАЕТСЯ» с лисой-мошенником (доска не пустая)."""
+    """Хук: плакат «РАЗЫСКИВАЕТСЯ» с лисой справа на месте будущей мошенницы; когда она заходит — улетает на доску."""
     a = appear(t, 0.3, 0.4) * (1 - appear(t, E.OFFER_SAY - 0.4, 0.5))
     if a <= 0:
         return
-    x, y = 660, 520
-    put(cv, keyed('polaroid', w=190), x, y, 1.0, a, 0.05)
-    put(cv, keyed('fox_head', w=130), x, y - 22, 1.0, a, 0.05)
-    put(cv, pill('РАЗЫСКИВАЕТСЯ', RED, 20), x, y + 112, 1.0, a, 0.05)
+    u = ease((t - (E.OFFER - 0.1)) / 0.7)                   # полёт на доску
+    x = 800 + (660 - 800) * u
+    y = 1060 + (520 - 1060) * u + 10 * math.sin(t * 1.6) * (1 - u)
+    sc = 1.55 + (1.0 - 1.55) * u
+    rot = 0.05 + 0.04 * math.sin(t * 1.2) * (1 - u)
+    put(cv, keyed('polaroid', w=190), x, y, sc, a, rot)
+    put(cv, keyed('fox_head', w=130), x, y - 22 * sc, sc, a, rot)
+    put(cv, pill('РАЗЫСКИВАЕТСЯ', RED, 20), x, y + 112 * sc, sc, a, rot)
+    if u < 1:
+        put(cv, pill('ОХОТИТСЯ ЗА NFT', (60, 50, 50), 24), x, y - 190 * sc, pop(t, E.HOOK_MSG + 0.4) * (1 - u), a * (1 - u), -0.04)
     pa = a
-    put(cv, pill('МОШЕННИК', (60, 50, 50), 22), x - 250, y - 40, pop(t, E.HOOK_MSG + 0.4), pa, -0.08)
-    put(cv, pill('ДЕЛО № 54', (120, 90, 60), 22), x - 250, y + 40, pop(t, E.HOOK_MSG + 0.7), pa, -0.05)
+    put(cv, pill('МОШЕННИК', (60, 50, 50), 22), 410, 480, pop(t, E.HOOK_MSG + 0.4), pa, -0.08)
+    put(cv, pill('ДЕЛО № 54', (120, 90, 60), 22), 410, 560, pop(t, E.HOOK_MSG + 0.7), pa, -0.05)
 
 
 def board(cv, t):

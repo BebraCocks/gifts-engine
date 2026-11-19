@@ -22,12 +22,13 @@ FPS = 24
 H = M.DET_H
 FOOT = M.FOOT
 XF = 0.22
-C, DL, DR = 540, 300, 780          # детектив: центр / левее (мошенница справа) / правее (мошенница слева)
+C, DL = 540, 300                   # детектив: центр (финал) / левее центра (мошенница справа)
+DR = DL + 428                      # правее центра: ровно длина её полного прохода (4 шага) — стопы не скользят
 SR, SL = 820, 260                  # где стоит мошенница
 OFF = 470                          # откуда заходит мошенница (от своего места; за краем экрана)
 RUN_V = 950                        # скорость убегания по экрану, px/с
-RUN_RATE = 1.4                     # испуг перед побегом проигрываем быстрее — убегает раньше
-GONE_PAUSE = 0.2                   # детектив трогается, когда мошенница уже за кадром
+RUN_RATE = 1.6                     # испуг перед побегом проигрываем быстрее — убегает раньше
+GONE_PAUSE = 0.05                  # детектив трогается сразу, как мошенница скрылась за кадром
 NEW = {'listen', 'step'} | {f's{k}_{p}' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}
 
 
@@ -88,33 +89,14 @@ def state(sg, t):
     return l1, x1
 
 
-def walk(t0, x0, x1, name='step', pre=(1.2, 1.5), w1=3.3, post=3.7, cyc=(1.92, 2.67), flip_for_right=True):
-    """Детектив идёт x0→x1: поворот в профиль, шаги (цикл 1.92↔2.67 добавляет/убирает шаг), поворот к камере."""
-    s = scale(name)
-    vw = GAIT[name]['v'] * s
-    dist = abs(x1 - x0)
-    base = w1 - pre[1]
-    per = cyc[1] - cyc[0]
-    n = round((dist / vw - base) / per)
-    n = max(-1, n)
-    tw = base + n * per
-    flip = (x1 > x0) and flip_for_right
+def walk(t0, x0, x1, name='step', pre=(1.2, 1.5), w1=3.3, post=3.7):
+    """Детектив идёт x0→x1: поворот в профиль, полный проход клипа без вырезок (DL↔DR = длина её шагов), поворот к камере."""
+    flip = x1 > x0
+    tw = w1 - pre[1]
     pieces = [(t0, t0 + pre[1] - pre[0], pre[0], pre[1], x0, x0)]
     t = pieces[-1][1]
-    # шаги: куски локального времени
-    legs = []
-    if n < 0:
-        legs = [(pre[1], cyc[0]), (cyc[1], w1)]
-    else:
-        legs = [(pre[1], cyc[1])] + [(cyc[0], cyc[1])] * (n - 1 if n > 0 else 0) + ([(cyc[0], w1)] if n > 0 else [(cyc[1], w1)])
-        if n == 0:
-            legs = [(pre[1], w1)]
-    xa = x0
-    for la, lb in legs:
-        d = (lb - la) / tw * (x1 - x0)
-        pieces.append((t, t + lb - la, la, lb, xa, xa + d))
-        t += lb - la
-        xa += d
+    pieces.append((t, t + tw, pre[1], w1, x0, x1))
+    t += tw
     pieces.append((t, t + post - w1, w1, post, x1, x1))
     return seg(name, pieces, flip), pieces[-1][1]
 
@@ -181,6 +163,56 @@ def scammer(k, right, arrive, stamp):
     return segs
 
 
+def _det():
+    D = []
+    pre, post = M.STAMP_HIT - M.STAMP_A, M.STAMP_B - M.STAMP_HIT
+    # хук → 1 оффер: детектив всё время левее центра, мошенница заходит справа
+    D.append(old('hook', 0.0, E.LENS0, DL, 0.0, 'pp'))                    # обычная Мита до лупы (лупа — в render)
+    D.append(dict(old('talk', E.LENS1, E.OFFER_SAY - 0.3, DL, 0.0, 'pp'), nojoin=True))
+    lsn, t = listen(E.OFFER_SAY - 0.3, DL, E.OFFER_SAY_END, False)
+    D.append(lsn)
+    D.append(old('talk', t, E.LANG - 0.3, DL, 1.0, 'pp'))
+    D.append(old('lens', E.LANG - 0.3, E.STAMP1 - pre, DL, 0.6))
+    D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + post, DL, M.STAMP_A))
+    D.append(old('talk', E.STAMP1 + post, gone(1) + GONE_PAUSE, DL, 2.0, 'pp'))
+    # 2 клон: слева → детектив переходит направо
+    w, t = walk(gone(1) + GONE_PAUSE, DL, DR)
+    D.append(w)
+    lsn, t = listen(max(t, E.CLONE_SAY - 0.3), DR, E.CLONE_SAY_END, True)
+    D.append(lsn)
+    D.append(old('talk', t, E.ASK, DR, 2.0, 'pp'))
+    D.append(old('phone', E.ASK, E.CREEPY, DR, 0.2))
+    # жуть — отдельная сцена (render); после неё детектив снова левее центра (крючок, реклама)
+    D.append(dict(old('talk', E.CREEPY_END - 0.3, E.LINK_SAY - 0.3, DL, 4.0, 'pp'), nojoin=True))
+    # 3 ссылка: справа
+    lsn, t = listen(E.LINK_SAY - 0.3, DL, E.LINK_SAY_END, False)
+    D.append(lsn)
+    if E.STAMP3 - 1.1 - t > 0.8:
+        D.append(old('lens', t, E.STAMP3 - 1.1, DL, 0.6))
+    D.append(old('shock', min(t, E.STAMP3 - 1.1) if E.STAMP3 - 1.1 - t <= 0.8 else E.STAMP3 - 1.1, E.STAMP3 + 0.9, DL, 0.6))
+    D.append(old('talk', E.STAMP3 + 0.9, gone(3) + GONE_PAUSE, DL, 1.0, 'pp'))
+    # 4 обмен: слева
+    w, t = walk(gone(3) + GONE_PAUSE, DL, DR)
+    D.append(w)
+    lsn, t = listen(max(t, E.SWAP_SAY - 0.3), DR, E.SWAP_SAY_END, True)
+    D.append(lsn)
+    D.append(old('nono', t, gone(4) + GONE_PAUSE, DR, 0.4))
+    # 5 гарант: справа
+    w, t = walk(gone(4) + GONE_PAUSE, DR, DL)
+    D.append(w)
+    lsn, t = listen(max(t, E.GUAR_SAY - 0.3), DL, E.GUAR_SAY_END, False)
+    D.append(lsn)
+    D.append(old('stamp', t, E.STAMP5 + post, DL, M.STAMP_A - (E.STAMP5 - pre - t)))
+    D.append(old('talk', E.STAMP5 + post, E.MEMO, DL, 3.0, 'pp'))
+    # памятка — там же; финал — в центр (растворяется → проявляется, облачко «пуф»)
+    D.append(old('point', E.MEMO, E.MOVE2, DL, 0.3))
+    D.append(dict(old('choice', E.MOVE2, DUR + 5, C, 0.0), hold=9.4, xf=0.45))
+    for a, b in zip(D, D[1:]):
+        if not b.get('nojoin'):
+            a['t1'] = b['t0']
+    return D
+
+
 # ------------------------------------------------------------------ дорожки
 def gone(k):
     """Когда мошенница k скрылась за краем экрана."""
@@ -189,75 +221,48 @@ def gone(k):
     return t_go + 440 / RUN_V
 
 
-def _det():
-    D = []
-    pre, post = M.STAMP_HIT - M.STAMP_A, M.STAMP_B - M.STAMP_HIT
-    D.append(old('talk', E.LENS1, E.OFFER + 0.15, C, 0.0, 'pp'))
-    # 1 оффер: справа
-    w, t = walk(E.OFFER + 0.15, C, DL)
-    D.append(w)
-    lsn, t = listen(t, DL, E.OFFER_SAY_END, False)
-    D.append(lsn)
-    D.append(old('talk', t, E.LANG - 0.3, DL, 1.0, 'pp'))
-    D.append(old('lens', E.LANG - 0.3, E.STAMP1 - pre, DL, 0.6))
-    D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + post, DL, M.STAMP_A))
-    D.append(old('talk', E.STAMP1 + post, gone(1) + GONE_PAUSE, DL, 2.0, 'pp'))
-    # 2 клон: слева → детектив переходит направо
-    w, t = walk(gone(1) + GONE_PAUSE, DL, DR)       # мошенница уже убежала — детектив переходит
-    D.append(w)
-    lsn, t = listen(t, DR, E.CLONE_SAY_END, True)
-    D.append(lsn)
-    D.append(old('talk', t, E.ASK, DR, 2.0, 'pp'))
-    D.append(old('phone', E.ASK, E.CREEPY, DR, 0.2))
-    # жуть — отдельная сцена (render), потом крючок в центре
-    D.append(old('talk', E.CREEPY_END, E.LINK + 0.1, C, 4.0, 'pp'))
-    # 3 ссылка: справа
-    w, t = walk(E.LINK + 0.1, C, DL)
-    D.append(w)
-    lsn, t = listen(t, DL, E.LINK_SAY_END, False)
-    D.append(lsn)
-    D.append(old('lens', t, E.STAMP3 - 1.1, DL, 0.6))
-    D.append(old('shock', E.STAMP3 - 1.1, E.STAMP3 + 0.9, DL, 0.6))
-    D.append(old('talk', E.STAMP3 + 0.9, gone(3) + GONE_PAUSE, DL, 1.0, 'pp'))
-    # 4 обмен: слева
-    w, t = walk(gone(3) + GONE_PAUSE, DL, DR)
-    D.append(w)
-    lsn, t = listen(t, DR, E.SWAP_SAY_END, True)
-    D.append(lsn)
-    D.append(old('nono', t, E.STAMP4 + 0.9, DR, 0.4))
-    D.append(old('talk', E.STAMP4 + 0.9, gone(4) + GONE_PAUSE, DR, 5.0, 'pp'))
-    # 5 гарант: справа
-    w, t = walk(gone(4) + GONE_PAUSE, DR, DL)
-    D.append(w)
-    lsn, t = listen(t, DL, E.GUAR_SAY_END, False)
-    D.append(lsn)
-    D.append(old('stamp', t, E.STAMP5 + post, DL, M.STAMP_A - (E.STAMP5 - pre - t)))
-    D.append(old('talk', E.STAMP5 + post, E.MEMO - 0.6, DL, 3.0, 'pp'))
-    w, t = walk(E.MEMO - 0.6, DL, C)
-    D.append(w)
-    D.append(old('point', t, E.MOVE2, C, 0.3))
-    D.append(dict(old('choice', E.MOVE2, DUR + 5, C, 0.0), hold=9.4))
-    for a, b in zip(D, D[1:]):
-        a['t1'] = b['t0']
-    return D
-
-
 SCAM = [scammer(1, True, E.OFFER_SAY - 0.25, E.STAMP1), scammer(2, False, E.CLONE_SAY - 0.25, E.STAMP2),
         scammer(3, True, E.LINK_SAY - 0.25, E.STAMP3), scammer(4, False, E.SWAP_SAY - 0.25, E.STAMP4),
         scammer(5, True, E.GUAR_SAY - 0.25, E.STAMP5)]
 DET = _det()
 
 
-def _draw_seg(cv, sg, t, put, a=1.0, shadow=None):
+def _img(sg, t):
     if sg['kind'] == 'old':
         lt = t - sg['t0'] + sg['off']
         if sg.get('hold') and lt > sg['hold']:
             lt = sg['hold']
         im, anc = M.clip_img(sg['name'], M.idx_at(sg['name'], lt, sg['mode']))
-        x = sg['x']
-    else:
-        loc, x = state(sg, t)
-        im, anc = frame(sg['name'], nidx(sg['name'], loc), sg['flip'])
+        return im, anc, sg['x']
+    loc, x = state(sg, t)
+    im, anc = frame(sg['name'], nidx(sg['name'], loc), sg['flip'])
+    return im, anc, x
+
+
+def _body_x(im, anc, x):
+    """Центр корпуса на экране (ряды плеч–пояса): по нему сводим стыки клипов."""
+    a = np.array(im.getchannel('A'))
+    h = a.shape[0]
+    band = a[int(h * 0.30):int(h * 0.50)] > 128
+    cols = np.nonzero(band.any(0))[0]
+    return x - anc[0] + (cols.min() + cols.max()) / 2 if len(cols) else x
+
+
+@functools.lru_cache(maxsize=64)
+def _seam(key, i):
+    segs = TRACKS[key]
+    a, b = segs[i - 1], segs[i]
+    pa = _body_x(*_img(a, b['t0'] - 1e-3))
+    pb = _body_x(*_img(b, b['t0']))
+    return pa - pb
+
+
+SEAM_T = 0.35
+
+
+def _draw_seg(cv, sg, t, put, a=1.0, shadow=None, dx=0.0):
+    im, anc, x = _img(sg, t)
+    x += dx
     if shadow and a > 0.5:
         shadow(cv, x, FOOT)
     put(cv, im, x, FOOT, 1.0, a, anchor=anc)
@@ -271,13 +276,27 @@ def _active(segs, t):
     return None
 
 
-def draw_track(cv, segs, t, put, shadow=None):
+def draw_track(cv, key, t, put, shadow=None):
+    segs = TRACKS[key]
     i = _active(segs, t)
     if i is None:
         return None
     sg = segs[i]
-    x = _draw_seg(cv, sg, t, put, 1.0, shadow)
-    if i > 0 and t - sg['t0'] < XF and abs(segs[i - 1]['t1'] - sg['t0']) < 1e-3:
+    joined = i > 0 and abs(segs[i - 1]['t1'] - sg['t0']) < 1e-3 and not sg.get('nojoin')
+    xf = sg.get('xf')
+    if joined and xf and t - sg['t0'] < 2 * xf:            # перестановка: там растворяется — тут проявляется
+        u = (t - sg['t0']) / xf
+        if u < 1:
+            _draw_seg(cv, segs[i - 1], sg['t0'] - 1e-3, put, 1 - u * u * (3 - 2 * u), shadow)
+        else:
+            _draw_seg(cv, sg, t, put, (u - 1) * (u - 1) * (3 - 2 * (u - 1)) if u < 2 else 1.0, shadow)
+        return sg.get('x')
+    dx = 0.0
+    if joined and t - sg['t0'] < SEAM_T:                   # стык клипов: плавно гасим смещение корпуса
+        u = (t - sg['t0']) / SEAM_T
+        dx = _seam(key, i) * (1 - u * u * (3 - 2 * u))
+    x = _draw_seg(cv, sg, t, put, 1.0, shadow, dx)
+    if joined and t - sg['t0'] < XF:
         u = (t - sg['t0']) / XF
         _draw_seg(cv, segs[i - 1], sg['t0'] - 1e-3, put, 1 - u * u * (3 - 2 * u))
     return x
@@ -291,7 +310,10 @@ def det_x(t):
     return sg['x'] if sg['kind'] == 'old' else state(sg, t)[1]
 
 
+TRACKS = {'det': DET, **{f's{k}': SCAM[k - 1] for k in range(1, 6)}}
+
+
 def draw(cv, t, put, shadow=None):
-    for segs in SCAM:
-        draw_track(cv, segs, t, put, shadow)
-    draw_track(cv, DET, t, put, shadow)
+    for k in range(1, 6):
+        draw_track(cv, f's{k}', t, put, shadow)
+    draw_track(cv, 'det', t, put, shadow)

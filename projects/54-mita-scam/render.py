@@ -38,6 +38,7 @@ MUSTARD = (226, 170, 40)
 SUB_Y = 1640
 TON_RUB = 86
 PHONE_X, PHONE_Y, PHONE_H = 800, 1080, 860
+PX = PHONE_X                      # текущий x телефона (меняется по ходу ролика)
 
 
 def ease(x):
@@ -238,7 +239,7 @@ def phone_img():
 def phone_box():
     im = phone_img()
     s = PHONE_H / 811
-    x0 = PHONE_X - im.width / 2
+    x0 = PX - im.width / 2
     y0 = PHONE_Y - im.height / 2
     return x0 + 18 * s, y0 + 40 * s, x0 + 375 * s, y0 + 790 * s
 
@@ -280,8 +281,8 @@ def chat(cv, t, a, title, avatar, msgs, typing=None):
     """msgs: [(t0, 'in'|'out'|'sys', текст)]. avatar: 'fox' | 'friend' | 'mita' | 'tg'."""
     if a <= 0:
         return
-    put(cv, fx.soft_shadow(380, 820, 60, 26, 0.35), PHONE_X + 10, PHONE_Y + 18, 1.0, a)
-    put(cv, phone_img(), PHONE_X, PHONE_Y, 1.0, a)
+    put(cv, fx.soft_shadow(380, 820, 60, 26, 0.35), PX + 10, PHONE_Y + 18, 1.0, a)
+    put(cv, phone_img(), PX, PHONE_Y, 1.0, a, 0.02 * (PX - round(PX / 10) * 10))
     x0, y0, x1, y1 = phone_box()
     # шапка чата
     def head(d, mp, S):
@@ -679,6 +680,8 @@ def subtitles(cv, t):
 
 # ------------------------------------------------------------------ кадр
 def render_at(t):
+    global PX
+    PX = M.phone_x(t)
     cv = background(t)
     board(cv, t)
     fox_peek(cv, t)
@@ -693,6 +696,11 @@ def render_at(t):
             if E.LENS1 <= t < E.LENS1 + 0.6:              # лупа «уменьшается» и прыгает в руку + дымка
                 u = (t - E.LENS1) / 0.6
                 put(cv, keyed('shimmer', w=420), M.LEFT, M.FOOT - 380, 0.8 + 0.6 * u, 1 - u)
+    for tm, x0, x1 in M.MOVES:
+        for xx, t0 in ((x0, tm), (x1, tm + M.MOVE_D)):
+            u = (t - t0) / 0.55
+            if 0 <= u < 1:
+                put(cv, keyed('emo_poof', w=260), xx, M.FOOT - 420, 0.6 + 0.9 * u, (1 - u) * 0.9)
     scene_creepy(cv, t)
     scene_hook(cv, t)
     scene_offer(cv, t)
@@ -703,10 +711,6 @@ def render_at(t):
     scene_guar(cv, t)
     scene_memo(cv, t)
     scene_choice(cv, t)
-    if E.MOVE2 <= t < E.MOVE2 + 0.6:
-        u = (t - E.MOVE2) / 0.6
-        put(cv, keyed('emo_poof', w=260), M.LEFT, M.FOOT - 400, 0.7 + 0.8 * u, 1 - u)
-        put(cv, keyed('emo_poof', w=260), 540, M.FOOT - 400, 0.7 + 0.8 * u, (1 - u) * 0.8)
     if creepy_k(t) < 0.5:
         reactions(cv, t)
     if not (AD_STOP - 0.02 <= t < AD_STOP + 0.1):

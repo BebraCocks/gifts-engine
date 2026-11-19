@@ -73,23 +73,32 @@ def still(name):
 
 
 # ------------------------------------------------------------------ дорожка: (t0, t1, вид, параметры)
+RIGHT = 790
+CENTER = 540
+
+
 def _track():
-    """Штамп-жест только на схемах 1, 3, 5 (на 2 — крест, на 4 — рвётся карточка: Мита в это время объясняет)."""
+    """Каждая схема — своя мизансцена: Мита меняет сторону (телефон — на противоположной), свои клипы-жесты."""
     pre = STAMP_HIT - STAMP_A
     post = STAMP_B - STAMP_HIT
-    T = [dict(t0=-1, kind='clip', name='hook', off=0.0, mode='pp'),
-         dict(t0=E.LENS1, kind='clip', name='talk', off=0.0, mode='pp'),
-         dict(t0=E.LANG - 0.3, kind='clip', name='lens', off=0.6, mode='once'),
-         dict(t0=E.STAMP1 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP1 - pre), mode='once', abs=True),
-         dict(t0=E.STAMP1 + post, kind='clip', name='talk', off=2.0, mode='pp'),
-         dict(t0=E.CREEPY, kind='creepy'),
-         dict(t0=E.CREEPY_END, kind='clip', name='talk', off=4.0, mode='pp'),
-         dict(t0=E.LINK_LENS, kind='clip', name='lens', off=0.6, mode='once'),
-         dict(t0=E.STAMP3 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP3 - pre), mode='once', abs=True),
-         dict(t0=E.STAMP3 + post, kind='clip', name='talk', off=1.0, mode='pp'),
-         dict(t0=E.STAMP5 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP5 - pre), mode='once', abs=True),
-         dict(t0=E.STAMP5 + post, kind='clip', name='talk', off=3.0, mode='pp'),
-         dict(t0=E.MOVE2, kind='clip', name='choice', off=0.0, mode='once', hold=9.4, x=540)]
+    L, R, C = LEFT, RIGHT, CENTER
+    T = [dict(t0=-1, kind='clip', name='hook', off=0.0, mode='pp', x=L),
+         dict(t0=E.LENS1, kind='clip', name='talk', off=0.0, mode='pp', x=L),
+         dict(t0=E.OFFER + 0.3, kind='clip', name='phone', off=0.2, mode='once', x=L),
+         dict(t0=E.LANG - 0.3, kind='clip', name='lens', off=0.6, mode='once', x=L),
+         dict(t0=E.STAMP1 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP1 - pre), mode='once', abs=True, x=L),
+         dict(t0=E.STAMP1 + post, kind='clip', name='talk', off=2.0, mode='pp', x=R),
+         dict(t0=E.CREEPY, kind='creepy', x=C),
+         dict(t0=E.CREEPY_END, kind='clip', name='talk', off=4.0, mode='pp', x=L),
+         dict(t0=E.LINK, kind='clip', name='talk', off=1.0, mode='pp', x=R),
+         dict(t0=E.LINK_LENS, kind='clip', name='lens', off=0.6, mode='once', x=R),
+         dict(t0=E.STAMP3 - 1.1, kind='clip', name='shock', off=0.6, mode='once', x=R),
+         dict(t0=E.SWAP, kind='clip', name='talk', off=5.0, mode='pp', x=L),
+         dict(t0=E.STAMP4 - 0.7, kind='clip', name='nono', off=0.4, mode='once', x=L),
+         dict(t0=E.GUAR, kind='clip', name='talk', off=3.0, mode='pp', x=R),
+         dict(t0=E.STAMP5 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP5 - pre), mode='once', abs=True, x=R),
+         dict(t0=E.MEMO, kind='clip', name='point', off=0.3, mode='once', x=L),
+         dict(t0=E.MOVE2, kind='clip', name='choice', off=0.0, mode='once', hold=9.4, x=C)]
     T.sort(key=lambda s: s['t0'])
     for i in range(len(T) - 1):
         T[i]['t1'] = T[i + 1]['t0']
@@ -98,6 +107,25 @@ def _track():
 
 
 TRACK = _track()
+MOVE_D = 0.45
+MOVES = [(s['t0'], TRACK[i - 1]['x'], s['x']) for i, s in enumerate(TRACK)
+         if i > 0 and s['x'] != TRACK[i - 1]['x'] and s['kind'] != 'creepy' and TRACK[i - 1]['kind'] != 'creepy']
+
+
+def phone_x(t):
+    """Телефон — всегда на стороне, противоположной Мите; при перестановке переезжает."""
+    def side(x):
+        return RIGHT + 10 if x < CENTER else (LEFT if x > CENTER else None)
+    i, s = seg_at(t)
+    j = i
+    while side(TRACK[j]['x']) is None and j > 0:
+        j -= 1
+    cur = side(TRACK[j]['x'])
+    for tm, x0, x1 in MOVES:
+        if tm <= t < tm + MOVE_D * 1.6:
+            u = ease((t - tm) / (MOVE_D * 1.6))
+            return side(x0) + (side(x1) - side(x0)) * u
+    return cur
 
 
 def seg_at(t):
@@ -108,6 +136,9 @@ def seg_at(t):
 
 
 def x_of(t):
+    for tm, x0, x1 in MOVES:
+        if tm <= t < tm + MOVE_D:
+            return x0
     return seg_at(t)[1].get('x', LEFT)
 
 
@@ -143,16 +174,27 @@ def _seg_draw(cv, s, t, put, a=1.0, x=None):
 
 def draw(cv, t, put, shadow=None):
     i, s = seg_at(t)
+    for tm, x0, x1 in MOVES:                                 # перестановка: растворяется тут — проявляется там
+        if tm <= t < tm + 2 * MOVE_D:
+            u = (t - tm) / MOVE_D
+            if u < 1:
+                p = TRACK[i - 1] if s['t0'] == tm else s
+                _seg_draw(cv, p, tm - 1e-3, put, 1 - ease(u), x0)
+            else:
+                if shadow:
+                    shadow(cv, x1, FOOT)
+                _seg_draw(cv, s, t, put, ease(u - 1), x1)
+            return
     if shadow:
         shadow(cv, x_of(t), FOOT)
     if s['kind'] == 'clip' and s['name'] == 'choice' and t - s['t0'] < 0.5:
-        p = TRACK[i - 1]                                   # переход в центр: растворение + «пуф»
+        p = TRACK[i - 1]
         u = ease((t - s['t0']) / 0.5)
         _seg_draw(cv, p, s['t0'] - 1e-3, put, 1 - u)
         _seg_draw(cv, s, t, put, u)
         return
     _seg_draw(cv, s, t, put)
-    if i > 0 and t - s['t0'] < 0.22:                       # мягкая склейка соседних клипов
+    if i > 0 and t - s['t0'] < 0.22 and TRACK[i - 1].get('x') == s.get('x'):
         _seg_draw(cv, TRACK[i - 1], s['t0'] - 1e-3, put, 1 - ease((t - s['t0']) / 0.22))
 
 

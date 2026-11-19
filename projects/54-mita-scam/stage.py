@@ -26,6 +26,8 @@ C, DL, DR = 540, 300, 780          # детектив: центр / левее (
 SR, SL = 820, 260                  # где стоит мошенница
 OFF = 470                          # откуда заходит мошенница (от своего места; за краем экрана)
 RUN_V = 950                        # скорость убегания по экрану, px/с
+RUN_RATE = 1.4                     # испуг перед побегом проигрываем быстрее — убегает раньше
+GONE_PAUSE = 0.2                   # детектив трогается, когда мошенница уже за кадром
 NEW = {'listen', 'step'} | {f's{k}_{p}' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}
 
 
@@ -142,7 +144,7 @@ def old(name, t0, t1, x, off=0.0, mode='once'):
 
 
 # ------------------------------------------------------------------ мошенницы
-WALKIN = {1: (4.2, 4.5), 2: (4.0, 4.6), 3: (4.2, 4.4), 4: (4.4, 5.5), 5: (4.0, 4.5)}     # (конец шагов, стоит)
+WALKIN = {1: (4.2, 4.5), 2: (4.0, 4.6), 3: (4.2, 4.4), 4: (4.4, 4.6), 5: (4.0, 4.5)}     # (конец шагов, стоит)
 RUN = {1: (0.7, 2.3), 2: (0.6, 2.5), 3: (1.0, 2.4), 4: (0.5, 3.2), 5: (0.8, 2.5)}         # (вздрогнула, побежала)
 RUN_END = {1: 9.9, 2: 9.9, 3: 6.3, 4: 9.9, 5: 4.9}
 
@@ -161,24 +163,32 @@ def scammer(k, right, arrive, stamp):
     tw = wend - lw0
     ta = arrive - (stand - wend)
     segs.append(seg(nm, [(ta - tw, ta, lw0, wend, xs + out * OFF, xs), (ta, arrive, wend, stand, xs, xs)], flip))
-    # говорит
-    nm = f's{k}_talk'
-    t_run = stamp - RUN[k][0]
-    segs.append(seg(nm, [(arrive, t_run, 0.0, t_run - arrive, xs, xs)], flip, hold=None))
-    if t_run - arrive > 9.8:
-        segs[-1] = seg(nm, [(arrive, arrive + 9.8, 0.0, 9.8, xs, xs)], flip, hold=(6.0, 9.8))
-        segs[-1]['t1'] = t_run
-    # разоблачение и побег
-    nm = f's{k}_run'
+    # говорит (до побега; если дольше клипа — пинг-понг конца)
     st, rs = RUN[k]
-    t_go = t_run + rs
-    tout = OFF / RUN_V
+    t_run = stamp - st / RUN_RATE
+    nm = f's{k}_talk'
+    if t_run - arrive <= 9.8:
+        segs.append(seg(nm, [(arrive, t_run, 0.0, t_run - arrive, xs, xs)], flip))
+    else:
+        segs.append(seg(nm, [(arrive, arrive + 9.8, 0.0, 9.8, xs, xs)], flip, hold=(6.0, 9.8)))
+        segs[-1]['t1'] = t_run
+    # разоблачение (испуг быстрее, RUN_RATE) и побег за край экрана
+    nm = f's{k}_run'
+    t_go = t_run + rs / RUN_RATE
+    tout = 1000 / RUN_V
     segs.append(seg(nm, [(t_run, t_go, 0.0, rs, xs, xs),
-                         (t_go, t_go + tout, rs, min(RUN_END[k], rs + tout), xs, xs + out * (OFF + 200))], flip))
+                         (t_go, t_go + tout, rs, min(RUN_END[k], rs + tout), xs, xs + out * 1000)], flip))
     return segs
 
 
 # ------------------------------------------------------------------ дорожки
+def gone(k):
+    """Когда мошенница k скрылась за краем экрана."""
+    rn = SCAM[k - 1][2]
+    t_go = rn['pieces'][1][0]
+    return t_go + 440 / RUN_V
+
+
 def _det():
     D = []
     pre, post = M.STAMP_HIT - M.STAMP_A, M.STAMP_B - M.STAMP_HIT
@@ -190,9 +200,10 @@ def _det():
     D.append(lsn)
     D.append(old('talk', t, E.LANG - 0.3, DL, 1.0, 'pp'))
     D.append(old('lens', E.LANG - 0.3, E.STAMP1 - pre, DL, 0.6))
-    D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + 0.35, DL, M.STAMP_A))
+    D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + post, DL, M.STAMP_A))
+    D.append(old('talk', E.STAMP1 + post, gone(1) + GONE_PAUSE, DL, 2.0, 'pp'))
     # 2 клон: слева → детектив переходит направо
-    w, t = walk(E.STAMP1 + 0.35, DL, DR)          # сразу после удара штампа — уступает место «клону»
+    w, t = walk(gone(1) + GONE_PAUSE, DL, DR)       # мошенница уже убежала — детектив переходит
     D.append(w)
     lsn, t = listen(t, DR, E.CLONE_SAY_END, True)
     D.append(lsn)
@@ -207,14 +218,16 @@ def _det():
     D.append(lsn)
     D.append(old('lens', t, E.STAMP3 - 1.1, DL, 0.6))
     D.append(old('shock', E.STAMP3 - 1.1, E.STAMP3 + 0.9, DL, 0.6))
+    D.append(old('talk', E.STAMP3 + 0.9, gone(3) + GONE_PAUSE, DL, 1.0, 'pp'))
     # 4 обмен: слева
-    w, t = walk(E.STAMP3 + 0.9, DL, DR)
+    w, t = walk(gone(3) + GONE_PAUSE, DL, DR)
     D.append(w)
     lsn, t = listen(t, DR, E.SWAP_SAY_END, True)
     D.append(lsn)
     D.append(old('nono', t, E.STAMP4 + 0.9, DR, 0.4))
+    D.append(old('talk', E.STAMP4 + 0.9, gone(4) + GONE_PAUSE, DR, 5.0, 'pp'))
     # 5 гарант: справа
-    w, t = walk(E.STAMP4 + 0.9, DR, DL)
+    w, t = walk(gone(4) + GONE_PAUSE, DR, DL)
     D.append(w)
     lsn, t = listen(t, DL, E.GUAR_SAY_END, False)
     D.append(lsn)
@@ -229,10 +242,10 @@ def _det():
     return D
 
 
-DET = _det()
 SCAM = [scammer(1, True, E.OFFER_SAY - 0.25, E.STAMP1), scammer(2, False, E.CLONE_SAY - 0.25, E.STAMP2),
         scammer(3, True, E.LINK_SAY - 0.25, E.STAMP3), scammer(4, False, E.SWAP_SAY - 0.25, E.STAMP4),
         scammer(5, True, E.GUAR_SAY - 0.25, E.STAMP5)]
+DET = _det()
 
 
 def _draw_seg(cv, sg, t, put, a=1.0, shadow=None):

@@ -42,7 +42,7 @@ SWAP = ON[7]
 SWAP_MSG = at('давай', 0, ON[7]) - 0.1
 SWAP_SENT = at('первый', 0, ON[7]) + 0.2
 SWAP_GONE = at('честный') - 0.1
-STAMP4 = END[7] - 0.1
+STAMP4 = at('честный') + 0.1
 # 8 гарант
 GUAR = ON[8]
 GUAR_MSG = ON[8] + 0.1

@@ -74,32 +74,26 @@ def still(name):
 
 # ------------------------------------------------------------------ дорожка: (t0, t1, вид, параметры)
 def _track():
-    T = []
-    a = T.append
-    a(dict(t0=-1, t1=E.LENS1, kind='clip', name='hook', off=0.0, mode='pp'))
-    a(dict(t0=E.LENS1, t1=E.LANG - 0.3, kind='clip', name='talk', off=0.0, mode='pp'))
-    a(dict(t0=E.LANG - 0.3, t1=E.STAMP1 - (STAMP_HIT - STAMP_A), kind='clip', name='lens', off=0.6, mode='once'))
-    for k, ts in enumerate(E.STAMPS):
-        t_a = ts - (STAMP_HIT - STAMP_A)
-        t_b = ts + (STAMP_B - STAMP_HIT)
-        a(dict(t0=t_a, t1=t_b, kind='clip', name='stamp', off=STAMP_A - t_a, mode='once', abs=True))
-        if k == 0:
-            a(dict(t0=t_b, t1=E.CREEPY, kind='clip', name='talk', off=2.0, mode='pp'))
-        if k == 1:
-            a(dict(t0=t_b, t1=E.CREEPY_END, kind='creepy'))
-            a(dict(t0=E.CREEPY_END, t1=E.LINK_LENS, kind='clip', name='talk', off=4.0, mode='pp'))
-            a(dict(t0=E.LINK_LENS, t1=E.STAMP3 - (STAMP_HIT - STAMP_A), kind='clip', name='lens', off=0.6, mode='once'))
-        if k == 2:
-            a(dict(t0=t_b, t1=E.STAMP4 - (STAMP_HIT - STAMP_A), kind='clip', name='talk', off=1.0, mode='pp'))
-        if k == 3:
-            a(dict(t0=t_b, t1=E.STAMP5 - (STAMP_HIT - STAMP_A), kind='clip', name='talk', off=5.0, mode='pp'))
-        if k == 4:
-            a(dict(t0=t_b, t1=E.MOVE2, kind='clip', name='talk', off=3.0, mode='pp'))
-    a(dict(t0=E.MOVE2, t1=DUR + 5, kind='clip', name='choice', off=0.0, mode='once', hold=9.4, x=540))
+    """Штамп-жест только на схемах 1, 3, 5 (на 2 — крест, на 4 — рвётся карточка: Мита в это время объясняет)."""
+    pre = STAMP_HIT - STAMP_A
+    post = STAMP_B - STAMP_HIT
+    T = [dict(t0=-1, kind='clip', name='hook', off=0.0, mode='pp'),
+         dict(t0=E.LENS1, kind='clip', name='talk', off=0.0, mode='pp'),
+         dict(t0=E.LANG - 0.3, kind='clip', name='lens', off=0.6, mode='once'),
+         dict(t0=E.STAMP1 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP1 - pre), mode='once', abs=True),
+         dict(t0=E.STAMP1 + post, kind='clip', name='talk', off=2.0, mode='pp'),
+         dict(t0=E.CREEPY, kind='creepy'),
+         dict(t0=E.CREEPY_END, kind='clip', name='talk', off=4.0, mode='pp'),
+         dict(t0=E.LINK_LENS, kind='clip', name='lens', off=0.6, mode='once'),
+         dict(t0=E.STAMP3 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP3 - pre), mode='once', abs=True),
+         dict(t0=E.STAMP3 + post, kind='clip', name='talk', off=1.0, mode='pp'),
+         dict(t0=E.STAMP5 - pre, kind='clip', name='stamp', off=STAMP_A - (E.STAMP5 - pre), mode='once', abs=True),
+         dict(t0=E.STAMP5 + post, kind='clip', name='talk', off=3.0, mode='pp'),
+         dict(t0=E.MOVE2, kind='clip', name='choice', off=0.0, mode='once', hold=9.4, x=540)]
     T.sort(key=lambda s: s['t0'])
-    # склеиваем: каждый сегмент до начала следующего
     for i in range(len(T) - 1):
         T[i]['t1'] = T[i + 1]['t0']
+    T[-1]['t1'] = DUR + 5
     return T
 
 

@@ -15,15 +15,15 @@ HERE = Path(__file__).resolve().parents[1]
 VID = HERE / 'input' / 'mita' / 'video'
 OUT = HERE / 'build' / 'clips'
 KEYED = HERE / 'build' / 'keyed'
-CLIPS = {'hook': VID / 'hook_gemini.mp4', 'box_a': VID / 'box_a_gemini.mp4', 'box_b': VID / 'box_b_gemini.mp4',
-         'talk': VID / 'talk_gemini.mp4', 'breath': VID / 'breath_gemini.mp4', 'tree': VID / 'tree_gemini.mp4',
-         'choice': VID / 'choice_gemini.mp4', 'santa': HERE / 'input' / 'decor' / 'santa_gemini.mp4',
-         'glass': VID / 'glass_gemini.mp4', 'globe': VID / 'globe_gemini.mp4'}
-IMAGES = {'ginger': 'input/mita/sheets/ginger_ref.png', 'creep_a': 'input/mita/sheets/creep_a.png',
-          'creep_b': 'input/mita/sheets/creep_b.png', 'creep_c': 'input/mita/sheets/creep_c.png',
-          'window': 'input/decor/window.png', 'thermo': 'input/decor/thermo.png', 'globe': 'input/decor/globe.png',
-          'snowman': 'input/decor/snowman.png', 'mittens': 'input/decor/mittens.png', 'santa_img': 'input/decor/santa.png',
-          'handprint': 'input/decor/handprint.png', 'stockings': 'input/decor/stockings.png'}
+CLIPS = {'hook': VID / 'hook_gemini.mp4', 'talk': VID / 'talk_gemini.mp4', 'lens': VID / 'lens_gemini.mp4',
+         'stamp': VID / 'stamp_gemini.mp4', 'case': VID / 'case_gemini.mp4', 'choice': VID / 'choice_gemini.mp4',
+         'fox': HERE / 'input' / 'decor' / 'fox_gemini.mp4'}
+IMAGES = {'detective': 'input/mita/sheets/detective_ref.png', 'creep_1': 'input/mita/sheets/creep_1.png',
+          'creep_2': 'input/mita/sheets/creep_2.png', 'creep_3': 'input/mita/sheets/creep_3.png',
+          'creep_4': 'input/mita/sheets/creep_4.png', 'creep_5': 'input/mita/sheets/creep_5.png',
+          'lens': 'input/decor/lens.png', 'sheet_psf': 'input/decor/phone_stamp_fox.png', 'counter': 'input/decor/counter.png',
+          'notes': 'input/decor/notes_folders.png', 'fox_full': 'input/decor/fox_full.png', 'ui': 'input/decor/ui.png',
+          'emotes': 'input/decor/emotes.png', 'fx': 'input/decor/fx.png'}
 
 
 def bg_of(f):
@@ -68,7 +68,7 @@ def run_clip(name, geo):
     od = OUT / name
     od.mkdir(parents=True, exist_ok=True)
     for i, f in enumerate(fs, 1):
-        mode = 'tree' if name == 'tree' else 'box' if name.startswith('box') else 'normal'
+        mode = 'normal'
         Image.fromarray(key(f, bg_of(f), 0.75, mode)).save(od / f'f{i:04d}.png', compress_level=1)
     # геометрия по первому кадру: верх, низ (подошвы), центр стоп
     a = key(fs[0], bg)[..., 3] > 128
@@ -84,7 +84,7 @@ def run_images():
     KEYED.mkdir(parents=True, exist_ok=True)
     for name, rel in IMAGES.items():
         f = np.array(Image.open(HERE / rel).convert('RGB'))
-        k = key(f, bg_of(f), 0.6 if name in ('window',) else 0.75)
+        k = key(f, bg_of(f), 0.75, 'box' if name == 'fx' else 'normal')
         Image.fromarray(k).save(KEYED / f'{name}.png')
         print(name, f.shape, round((k[..., 3] > 128).mean(), 3))
 

@@ -40,13 +40,13 @@ STAMP3 = END[6] - 0.1
 # 7 обмен «ты первый»
 SWAP = ON[7]
 SWAP_MSG = at('давай', 0, ON[7]) - 0.1
-SWAP_SENT = at('отправил') - 0.1
-SWAP_GONE = at('исчез') - 0.1
+SWAP_SENT = at('первый', 0, ON[7]) + 0.2
+SWAP_GONE = at('честный') - 0.1
 STAMP4 = END[7] - 0.1
 # 8 гарант
 GUAR = ON[8]
-GUAR_MSG = at('бойся') - 0.2
-GUAR_FOX = at('гарант', 1, ON[8]) - 0.1
+GUAR_MSG = ON[8] + 0.1
+GUAR_FOX = at('мошенник', 0, ON[8]) - 0.4
 GUAR_SAFE = at('сделки', 0, ON[8]) - 0.1
 STAMP5 = END[8] - 0.1
 # 9 памятка

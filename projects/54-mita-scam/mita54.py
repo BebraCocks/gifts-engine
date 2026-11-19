@@ -124,7 +124,9 @@ def phone_x(t):
     for tm, x0, x1 in MOVES:
         if tm <= t < tm + MOVE_D * 1.6:
             u = ease((t - tm) / (MOVE_D * 1.6))
-            return side(x0) + (side(x1) - side(x0)) * u
+            a = side(x0) if side(x0) is not None else cur
+            b = side(x1) if side(x1) is not None else a
+            return a + (b - a) * u
     return cur
 
 

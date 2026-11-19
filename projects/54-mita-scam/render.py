@@ -78,17 +78,27 @@ def multi(parts, size, weight='Heavy'):
     return fx.text_img(parts, size, weight, False)
 
 
+SYM_FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+
+
 @functools.lru_cache(None)
 def pill(s_, fill, size=30, tcol=WHITE):
-    f = ufont('ExtraBold', size)
-    tw = int(f.getlength(s_))
-    w_, h_ = tw + 2 * size, int(size * 2.0)
+    sym = s_[-1] if s_[-1] in '✓✗' else ''                # у основного шрифта нет ✓/✗ — рисуем их DejaVu
+    body = s_[:-1].rstrip() if sym else s_
     S = 2
+    fb, fs = ufont('ExtraBold', size * S), ImageFont.truetype(SYM_FONT, int(size * 1.15 * S))
+    bw = fb.getlength(body) / S
+    sw = (fs.getlength(sym) / S + size * 0.35) if sym else 0
+    tw = int(bw + sw)
+    w_, h_ = tw + 2 * size, int(size * 2.0)
     im = Image.new('RGBA', ((w_ + 12) * S, (h_ + 12) * S), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((6 * S, 6 * S, (6 + w_) * S, (6 + h_) * S), h_ * S // 2, fill=fill + (255,), outline=(255, 255, 255, 235),
                         width=3 * S)
-    d.text(((6 + w_ / 2) * S, (6 + h_ / 2 + 1) * S), s_, font=ufont('ExtraBold', size * S), fill=tcol + (255,), anchor='mm')
+    x0, cy = 6 + size, (6 + h_ / 2 + 1) * S
+    d.text((x0 * S, cy), body, font=fb, fill=tcol + (255,), anchor='lm')
+    if sym:
+        d.text(((x0 + tw) * S, cy), sym, font=fs, fill=tcol + (255,), anchor='rm')
     return im.resize((w_ + 12, h_ + 12), Image.LANCZOS)
 
 
@@ -527,12 +537,23 @@ def note_col(k):
     return Image.fromarray(im.astype(np.uint8))
 
 
-def scene_memo(cv, t):
+MEMO_MASK = np.clip((900 - np.arange(H, dtype=np.float32)) / 120, 0, 1)[:, None, None]   # мягкий нижний край
+
+
+def memo_wash(cv, t):
+    """Доска «уходит» под цвет стены — рисуется ДО Миты, чтобы не бледнить её."""
     if not (E.MEMO - 0.1 <= t < E.MOVE2 + 0.3):
         return
     a = appear(t, E.MEMO, 0.35) * (1 - appear(t, E.MOVE2, 0.3))
     wall = np.array([236, 226, 214], np.float32)
-    cv[:900, :, :3] = cv[:900, :, :3] * (1 - 0.85 * a) + wall * 0.85 * a          # доска «уходит»
+    k = 0.85 * a * MEMO_MASK
+    cv[..., :3] = cv[..., :3] * (1 - k) + wall * k
+
+
+def scene_memo(cv, t):
+    if not (E.MEMO - 0.1 <= t < E.MOVE2 + 0.3):
+        return
+    a = appear(t, E.MEMO, 0.35) * (1 - appear(t, E.MOVE2, 0.3))
     put(cv, pill('ЗАПОМНИ', (60, 50, 50), 40), 540, 150, pop(t, E.MEMO, 0.5), a)
     items = ((E.NOTE1, ('ПОДАРОК', 'ПЕРВЫМ', 'НЕ ОТПРАВЛЯЙ'), 'emo_excl'), (E.NOTE2, ('НА СЛОВО', 'НЕ ВЕРЬ'), 'emo_anger'),
              (E.NOTE3, ('ТОЛЬКО', 'ПРОВЕРЕННЫЕ', 'МАРКЕТЫ'), 'emo_bulb'))
@@ -685,6 +706,7 @@ def render_at(t):
     cv = background(t)
     board(cv, t)
     fox_peek(cv, t)
+    memo_wash(cv, t)
     if t != AD_STOP:
         if E.LENS0 <= t < E.LENS1:
             mita_shadow(cv, M.LEFT, M.FOOT)

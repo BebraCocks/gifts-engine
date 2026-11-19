@@ -11,6 +11,7 @@ import sound
 import sfxkit
 import music
 import events as E
+import stage as S
 from timeline import DUR, ON, END, TAKES, AD_STOP
 
 SR = 48000
@@ -35,18 +36,20 @@ def envelope(v):
 def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
-    a(fx, 'popup', E.HOOK_MSG + 0.4, gain_db=-19, label='сообщение покупателя')
     a(fx, 'scan', E.LENS0, gain_db=-17, fit=1.4, label='лупа проходит по Мите')
     a(fx, 'transform', E.LENS1 - 0.1, gain_db=-16, label='детектив!')
     for j in range(5):
         a(fx, 'select-soft', E.COUNTER_IN + 0.08 * j, gain_db=-24, label=f'счётчик {j + 1}')
-    a(fx, 'popup', E.OFFER_CARD, gain_db=-18, label='фейковый оффер')
+    a(fx, 'popup', E.OFFER_SAY + 0.25, gain_db=-18, label='фейковый оффер')
+    for k, segs in enumerate(S.SCAM, 1):                   # мошенницы: заход, испуг, побег
+        wk, tk, rn = segs
+        a(fx, 'cartoon-move', wk['t0'] + 0.2, gain_db=-22, label=f'мошенница {k} заходит')
+        a(fx, 'boing', E.STAMPS[k - 1] + 0.05, gain_db=-19, label=f'мошенница {k} вздрогнула')
+        a(fx, 'whoosh-short', rn['pieces'][1][0], gain_db=-18, label=f'мошенница {k} убегает')
     a(fx, 'flip', E.LANG, gain_db=-19, label='смена языка')
     a(fx, 'confirm', E.REAL, gain_db=-20, label='настоящее перевелось')
     a(fx, 'error', E.FAKE, gain_db=-19, label='фейк — нет')
-    a(fx, 'popup', E.FRIEND_MSG, gain_db=-20, label='сообщение «друга»')
     a(fx, 'typing', E.ASK + 0.2, gain_db=-22, fit=0.8, label='вопрос другу')
-    a(fx, 'glitch', E.FOX_FLIP, gain_db=-17, label='аватарка → лиса')
     a(fx, 'sub-drop', E.CREEPY + 0.05, gain_db=-15, label='ЖУТЬ: музыка обрывается')
     a(fx, 'typing', E.CREEPY + 0.3, gain_db=-20, fit=4.2, label='«это я» печатается само')
     a(fx, 'glitch-texture', E.CREEPY_END - 1.0, gain_db=-21, label='улыбка')
@@ -55,11 +58,6 @@ def sfx_layer(n, kit):
     a(fx, 'popup', E.LINK_MSG, gain_db=-19, label='ссылка')
     a(fx, 'scan', E.LINK_LENS, gain_db=-19, label='лупа: rn ≠ m')
     a(fx, 'error', E.LINK_LENS + 0.7, gain_db=-19, label='не переходи')
-    a(fx, 'popup', E.SWAP_MSG, gain_db=-20, label='давай меняться')
-    a(fx, 'whoosh', E.SWAP_SENT, gain_db=-19, label='подарок улетел')
-    a(fx, 'power-down', E.SWAP_GONE, gain_db=-19, label='аккаунт удалён')
-    a(fx, 'popup', E.GUAR_MSG, gain_db=-20, label='гарант')
-    a(fx, 'glitch', E.GUAR_FOX, gain_db=-18, label='гарант = лиса')
     a(fx, 'confirm', E.GUAR_SAFE, gain_db=-18, label='маркет Telegram')
     for k, ts in enumerate(E.STAMPS):
         a(fx, 'impact', ts, gain_db=-14, label=f'ШТАМП {k + 1}')

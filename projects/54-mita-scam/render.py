@@ -20,6 +20,8 @@ import frames
 import fx
 import events as E
 import mita54 as M
+import stage as S
+import script
 from timeline import DUR, ON, END, AD_STOP
 from words import WORDS
 
@@ -182,14 +184,14 @@ def _polaroid(kind):
 
 def wanted(cv, t):
     """Пока улик мало — на доске плакат «РАЗЫСКИВАЕТСЯ» с лисой-мошенником (доска не пустая)."""
-    a = appear(t, 0.3, 0.4) * (1 - appear(t, E.STAMP2, 0.5))
+    a = appear(t, 0.3, 0.4) * (1 - appear(t, E.OFFER_SAY - 0.4, 0.5))
     if a <= 0:
         return
     x, y = 660, 520
     put(cv, keyed('polaroid', w=190), x, y, 1.0, a, 0.05)
     put(cv, keyed('fox_head', w=130), x, y - 22, 1.0, a, 0.05)
     put(cv, pill('РАЗЫСКИВАЕТСЯ', RED, 20), x, y + 112, 1.0, a, 0.05)
-    pa = a * (1 - appear(t, E.STAMP1, 0.4))
+    pa = a
     put(cv, pill('МОШЕННИК', (60, 50, 50), 22), x - 250, y - 40, pop(t, E.HOOK_MSG + 0.4), pa, -0.08)
     put(cv, pill('ДЕЛО № 54', (120, 90, 60), 22), x - 250, y + 40, pop(t, E.HOOK_MSG + 0.7), pa, -0.05)
 
@@ -346,13 +348,13 @@ def chat(cv, t, a, title, avatar, msgs, typing=None):
         y -= im.height + 14
 
 
-def stamp_scam(cv, t, ts, x, y, word='СКАМ!'):
+def stamp_scam(cv, t, ts, x, y, word='СКАМ!', sc=1.0):
     """Штамп с ударом: падает и «впечатывается», рамка автора + слово."""
     u = (t - ts) / 0.18
     if u < -1 or t > ts + 1.6:
         return
     a = 1 - ease((t - ts - 1.2) / 0.4)
-    s = 1.8 - 0.8 * ease(u) if u < 1 else 1.0
+    s = (1.8 - 0.8 * ease(u) if u < 1 else 1.0) * sc
     if u < 0:
         return
     fr = keyed('stamp_frame', w=330)
@@ -366,48 +368,44 @@ def stamp_scam(cv, t, ts, x, y, word='СКАМ!'):
 def scene_hook(cv, t):
     if t >= E.OFFER + 0.3:
         return
-    a = appear(t, 0.3, 0.3) * (1 - appear(t, E.OFFER, 0.3))
-    chat(cv, t, a, 'Покупатель', 'fox', [(E.HOOK_MSG + 0.2, 'in', 'Продашь свой NFT?')], typing=0.5)
+    return                                                  # v4: телефона нет
+
+
+def speech_card(cv, t, t0, a, x, y):
+    """Облачко мошенницы №1: карточка оффера «500 TON ≈ 43 000 ₽» (картинка автора + текст кодом)."""
+    k = pop(t, t0, 0.5)
+    card = keyed('offer_card', w=340)
+    yy = y + 6 * math.sin(t * 2.2)
+    put(cv, card, x, yy, k, a, 0.03)
+    put(cv, utext('Вам предложили', 21, 'ExtraBold', INK), x + 18, yy - 66, k, a, 0.03)
+    put(cv, utext('500 TON', 40, 'ExtraBold', BLUE), x, yy - 14, k, a, 0.03)
+    put(cv, utext(rub(500), 28, 'ExtraBold', (60, 60, 90)), x, yy + 32, k, a, 0.03)
+    put(cv, utext('ПРИНЯТЬ', 23, 'ExtraBold', WHITE), x, yy + 104, k, a, 0.03)
 
 
 def scene_offer(cv, t):
-    if not (E.OFFER - 0.1 <= t < E.CLONE + 0.3):
+    if not (E.OFFER_SAY - 0.2 <= t < E.STAMP1 + 1.4):
         return
-    a = appear(t, E.OFFER, 0.3) * (1 - appear(t, E.CLONE - 0.1, 0.3))
-    chat(cv, t, a, 'Telegram', 'tg', [])
-    x0, y0, x1, y1 = phone_box()
-    k = pop(t, E.OFFER_CARD, 0.5)
-    if t >= E.OFFER_CARD:
-        cx, cy = (x0 + x1) / 2, y0 + 330
-        card = keyed('offer_card', w=360)
-        put(cv, card, cx, cy, k, a)
-        lang_en = t >= E.REAL
-        put(cv, utext('Вам предложили' if not (lang_en and False) else 'You got an offer', 22, 'ExtraBold', INK), cx + 20, cy - 70, k, a)
-        put(cv, utext('500 TON', 40, 'ExtraBold', BLUE), cx, cy - 15, k, a)
-        put(cv, utext(rub(500), 30, 'ExtraBold', (60, 60, 90)), cx, cy + 34, k, a)
-        put(cv, utext('ПРИНЯТЬ', 24, 'ExtraBold', WHITE), cx, cy + 112, k, a)
-    # лупа: «смени язык» — настоящее переводится, фейк — нет
+    tc = E.OFFER_SAY + 0.25
+    a = appear(t, tc, 0.25) * (1 - appear(t, E.STAMP1 + 0.4, 0.4))
+    if t >= tc:
+        speech_card(cv, t, tc, a, S.SR - 10, 520)
+    # «смени язык»: настоящее переводится, фейк — нет (над детективом)
     if t >= E.LANG:
-        la = appear(t, E.LANG, 0.3) * a
-        cx, cy = (x0 + x1) / 2, y0 + 640
-        put(cv, pill('ЯЗЫК → English', (60, 70, 100), 24), cx, cy - 120, pop(t, E.LANG, 0.4), la)
+        la = appear(t, E.LANG, 0.3) * (1 - appear(t, E.STAMP1 + 0.2, 0.35))
+        cx = S.DL + 60
+        put(cv, pill('ЯЗЫК → English', (60, 70, 100), 28), cx, 470, pop(t, E.LANG, 0.4), la)
         rk = appear(t, E.REAL, 0.3) * la
         if rk > 0:
-            put(cv, pill('НАСТОЯЩЕЕ → EN ✓', (40, 150, 90), 24), cx, cy - 40, pop(t, E.REAL, 0.4), rk)
+            put(cv, pill('НАСТОЯЩЕЕ → EN ✓', (40, 150, 90), 28), cx, 550, pop(t, E.REAL, 0.4), rk)
         fk = appear(t, E.FAKE, 0.3) * la
         if fk > 0:
-            put(cv, pill('ФЕЙК → НЕ МЕНЯЕТСЯ ✗', RED, 24), cx, cy + 40, pop(t, E.FAKE, 0.4), fk)
-    stamp_scam(cv, t, E.STAMP1, (x0 + x1) / 2, y0 + 330)
-
-
-@functools.lru_cache(None)
-def avatar_disc():
-    im = Image.new('RGBA', (520, 520), (0, 0, 0, 0))
-    ImageDraw.Draw(im).ellipse((10, 10, 510, 510), fill=(90, 150, 230, 255), outline=(255, 255, 255, 255), width=16)
-    return im.resize((260, 260), Image.LANCZOS)
+            put(cv, pill('ФЕЙК → НЕ МЕНЯЕТСЯ ✗', RED, 28), cx + 40, 630, pop(t, E.FAKE, 0.4), fk)
+    stamp_scam(cv, t, E.STAMP1, S.SR - 70, 1060, 'ФЕЙК!', 0.82)
 
 
 def scene_clone(cv, t):
+    return                                                  # v4: переделать без телефона
     if not (E.CLONE - 0.1 <= t < E.CREEPY + 0.3):
         return
     a = appear(t, E.CLONE, 0.3) * (1 - appear(t, E.CREEPY - 0.1, 0.3))
@@ -475,6 +473,7 @@ def scene_tease(cv, t):
 
 
 def scene_link(cv, t):
+    return                                                  # v4: переделать без телефона
     if not (E.LINK - 0.1 <= t < E.SWAP + 0.3):
         return
     a = appear(t, E.LINK, 0.3) * (1 - appear(t, E.SWAP - 0.1, 0.3))
@@ -492,6 +491,7 @@ def scene_link(cv, t):
 
 
 def scene_swap(cv, t):
+    return                                                  # v4: переделать без телефона
     if not (E.SWAP - 0.1 <= t < E.GUAR + 0.3):
         return
     a = appear(t, E.SWAP, 0.3) * (1 - appear(t, E.GUAR - 0.1, 0.3))
@@ -513,6 +513,7 @@ def scene_swap(cv, t):
 
 
 def scene_guar(cv, t):
+    return                                                  # v4: переделать без телефона
     if not (E.GUAR - 0.1 <= t < E.MEMO + 0.3):
         return
     a = appear(t, E.GUAR, 0.3) * (1 - appear(t, E.MEMO - 0.1, 0.3))
@@ -597,7 +598,7 @@ def scene_choice(cv, t):
 
 
 # ------------------------------------------------------------------ лиса-пасхалка выглядывает из-за края
-FOX_PEEK = [9.0, 23.5, 41.0, 59.5]
+FOX_PEEK = [35.6]                 # v4: справа/слева теперь заходят мошенницы — лиса выглядывает только на крючке
 
 
 def fox_peek(cv, t):
@@ -613,9 +614,9 @@ def fox_peek(cv, t):
 
 
 # ------------------------------------------------------------------ эмоции над головой
-REACT = [(E.HOOK_MSG + 0.3, 'quest'), (E.LENS1, 'sparkle'), (E.LANG + 0.2, 'bulb'), (E.FAKE + 0.2, 'excl'),
-         (E.FRIEND_MSG + 0.3, 'sweat'), (E.ASK + 0.1, 'bulb'), (E.FOX_FLIP + 0.1, 'anger'), (E.TEASE + 0.3, 'excl'),
-         (E.LINK_LENS + 0.6, 'glint'), (E.SWAP_GONE + 0.1, 'sweat'), (E.GUAR_FOX + 0.1, 'anger'), (E.NOTE1, 'bulb'),
+REACT = [(E.HOOK_MSG + 0.3, 'quest'), (E.LENS1, 'sparkle'), (E.OFFER_SAY_END + 0.1, 'quest'), (E.LANG + 0.2, 'bulb'),
+         (E.FAKE + 0.2, 'excl'), (E.CLONE_SAY_END + 0.1, 'sweat'), (E.ASK + 0.1, 'bulb'), (E.TEASE + 0.3, 'excl'),
+         (E.LINK_LENS + 0.6, 'glint'), (E.SWAP_SAY_END + 0.1, 'anger'), (E.GUAR_FOX + 0.1, 'anger'), (E.NOTE1, 'bulb'),
          (E.CHOICE, 'sparkle')]
 
 
@@ -626,7 +627,7 @@ def reactions(cv, t):
             continue
         a = min(1.0, k * 6) * (1 - fx.clamp01((k - 1.0) / 0.4))
         p = fx.ease_out_back(fx.clamp01(k / 0.35))
-        x0 = M.x_of(t)
+        x0 = S.det_x(t)
         head = M.FOOT - M.DET_H
         x, y = x0 + 150, head + 20 - 40 * ease(k / 1.4)
         if kind == 'sweat':
@@ -685,7 +686,7 @@ def subtitles(cv, t):
             break
     if ch is None:
         return
-    acc = (200, 60, 60) if creepy_k(t) > 0.5 else (196, 140, 30)
+    acc = (200, 60, 60) if creepy_k(t) > 0.5 else ((60, 110, 220) if ch[0][3] in script.SCAM else (196, 140, 30))
     parts = []
     for j, w in enumerate(ch):
         on = w[1] - 0.03 <= t
@@ -701,28 +702,21 @@ def subtitles(cv, t):
 
 # ------------------------------------------------------------------ кадр
 def render_at(t):
-    global PX
-    PX = M.phone_x(t)
     cv = background(t)
     board(cv, t)
     fox_peek(cv, t)
     memo_wash(cv, t)
     if t != AD_STOP:
         if E.LENS0 <= t < E.LENS1:
-            mita_shadow(cv, M.LEFT, M.FOOT)
+            mita_shadow(cv, M.LENS_X, M.FOOT)
             lim, geom = lens_big()
             M.lens_reveal(cv, t, put, lim, geom)
         else:
             if not (E.CREEPY + 0.3 <= t < E.CREEPY_END - 0.3):
-                M.draw(cv, t, put, mita_shadow if creepy_k(t) < 0.5 else None)
+                S.draw(cv, t, put, mita_shadow if creepy_k(t) < 0.5 else None)
             if E.LENS1 <= t < E.LENS1 + 0.6:              # лупа «уменьшается» и прыгает в руку + дымка
                 u = (t - E.LENS1) / 0.6
-                put(cv, keyed('shimmer', w=420), M.LEFT, M.FOOT - 380, 0.8 + 0.6 * u, 1 - u)
-    for tm, x0, x1 in M.MOVES:
-        for xx, t0 in ((x0, tm), (x1, tm + M.MOVE_D)):
-            u = (t - t0) / 0.55
-            if 0 <= u < 1:
-                put(cv, keyed('emo_poof', w=260), xx, M.FOOT - 420, 0.6 + 0.9 * u, (1 - u) * 0.9)
+                put(cv, keyed('shimmer', w=420), M.LENS_X, M.FOOT - 380, 0.8 + 0.6 * u, 1 - u)
     scene_creepy(cv, t)
     scene_hook(cv, t)
     scene_offer(cv, t)

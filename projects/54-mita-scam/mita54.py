@@ -20,6 +20,7 @@ DET_H = 860
 FOOT = 1560
 CFPS = 24
 LEFT = 290
+LENS_X = 540            # v4: перевоплощение в центре
 STAMP_HIT = 5.4          # в клипе stamp второй удар (ноги вместе) — кадр удара
 STAMP_A, STAMP_B = 4.55, 6.9
 
@@ -205,13 +206,13 @@ def lens_reveal(cv, t, put, lens_im, lens_geom):
     u = ease((t - E.LENS0) / (E.LENS1 - E.LENS0))
     gcx, gcy, gr, sc = lens_geom
     cy = FOOT - MITA_H - 160 + (MITA_H + 260) * u
-    cx = LEFT + 40 * np.sin(u * 6)
+    cx = LENS_X + 40 * np.sin(u * 6)
     tmp_n = np.zeros(cv.shape[:2] + (4,), np.float32)
     tmp_d = np.zeros_like(tmp_n)
     im, anc = clip_img('hook', idx_at('hook', t, 'pp'))
-    put(tmp_n, im, LEFT, FOOT, 1.0, 1.0, anchor=anc)
+    put(tmp_n, im, LENS_X, FOOT, 1.0, 1.0, anchor=anc)
     dim, danc = still('detective')
-    put(tmp_d, dim, LEFT, FOOT, 1.0, 1.0, anchor=danc)
+    put(tmp_d, dim, LENS_X, FOOT, 1.0, 1.0, anchor=danc)
     H, W = cv.shape[:2]
     yy, xx = np.mgrid[:H, :W].astype(np.float32)
     inside = (xx - cx) ** 2 + (yy - cy) ** 2 < (gr * sc) ** 2

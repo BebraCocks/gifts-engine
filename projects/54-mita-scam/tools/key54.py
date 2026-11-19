@@ -18,7 +18,9 @@ KEYED = HERE / 'build' / 'keyed'
 CLIPS = {'hook': VID / 'hook_gemini.mp4', 'talk': VID / 'talk_gemini.mp4', 'lens': VID / 'lens_gemini.mp4',
          'stamp': VID / 'stamp_gemini.mp4', 'case': VID / 'case_gemini.mp4', 'choice': VID / 'choice_gemini.mp4',
          'fox': HERE / 'input' / 'decor' / 'fox_gemini.mp4', 'nono': VID / 'nono_gemini.mp4', 'shock': VID / 'shock_gemini.mp4',
-         'phone': VID / 'phone_gemini.mp4', 'point': VID / 'point_gemini.mp4'}
+         'phone': VID / 'phone_gemini.mp4', 'point': VID / 'point_gemini.mp4',
+         'listen': VID / 'listen.mp4', 'step': VID / 'step.mp4',
+         **{f's{k}_{p}': VID / f's{k}_{p}.mp4' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}}
 IMAGES = {'detective': 'input/mita/sheets/detective_ref.png', 'creep_1': 'input/mita/sheets/creep_1.png',
           'creep_2': 'input/mita/sheets/creep_2.png', 'creep_3': 'input/mita/sheets/creep_3.png',
           'creep_4': 'input/mita/sheets/creep_4.png', 'creep_5': 'input/mita/sheets/creep_5.png',

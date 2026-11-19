@@ -1,4 +1,4 @@
-"""Черновой звук для проверки автором: голос + «Dreams of Love and Literature» (приглушается под речью, обрывается на жути) + реклама RubUp.
+"""Черновой звук для проверки автором: голос + «Daijoubu!» (приглушается под речью, обрывается на жути) + реклама RubUp.
 Без SFX. → build/review/voice_music_preview.mp3"""
 import subprocess
 import sys
@@ -24,9 +24,9 @@ for k, take in TAKES.items():
     v[s:s + c] += d[:c] * 0.9
 env = np.convolve(np.abs(v).max(1), np.ones(4800) / 4800, 'same')
 env = np.clip(env / (np.percentile(env[env > 1e-4], 60) + 1e-9), 0, 1)
-m = np.zeros((n, 2))                  # музыка ещё не выбрана — превью только голос + реклама
+m = music.music(n, env, slow_from=None)
 t = np.arange(n) / SR
-c0, c1 = ON[4] - 0.12, END[4] + 0.15                       # жуть: музыка обрывается и плавно возвращается
+c0, c1 = ON[8] - 0.12, END[8] + 0.15                       # жуть: музыка обрывается и плавно возвращается
 g = 1 - np.clip((t - c0) / 0.08, 0, 1) + np.clip((t - c1) / 0.9, 0, 1)
 m *= np.clip(g, 0, 1)[:, None]
 out = BR.audio(v + m, SR)

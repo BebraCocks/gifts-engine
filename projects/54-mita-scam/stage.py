@@ -30,8 +30,14 @@ RUN_V = 950                        # скорость убегания по эк
 RUN_RATE = 1.6                     # испуг перед побегом проигрываем быстрее — убегает раньше
 GONE_PAUSE = 0.05                  # детектив телепортируется сразу, как мошенница скрылась за кадром
 TP = 0.3                           # телепорт: растворяется TP, проявляется TP (облачко «пуф» + блёстки)
-TELEPORTS = []                     # (момент, откуда x, куда x) — для эффекта в render
-NEW = {'listen', 'step'} | {f's{k}_{p}' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}
+TELEPORTS = []                     # (момент, откуда x, куда x, клип) — для звука в audio
+# клипы телепорта: (исчезает: кадры от–до), (появляется: от–до), скорость, когда тела уже не видно (локально), dy появления
+TPC = {'tp1_smoke': ((0.9, 3.4), (7.7, 9.0), 1.6, 1.6, 0),
+       'tp2_glitch': ((1.3, 3.8), (5.4, 7.3), 1.6, 3.3, 10),
+       'tp3_papers': ((0.5, 2.7), (6.4, 7.9), 1.6, 2.6, 0),
+       'tp4_lens': ((0.6, 3.5), (5.2, 7.6), 1.6, 2.7, 0),
+       'tp5_hat': ((0.6, 3.3), (6.1, 8.2), 1.6, 2.8, 0)}
+NEW = {'listen', 'step', 'tp1_smoke', 'tp2_glitch', 'tp3_papers', 'tp4_lens', 'tp5_hat'} | {f's{k}_{p}' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}
 
 
 def scale(name):
@@ -101,6 +107,33 @@ def walk(t0, x0, x1, name='step', pre=(1.2, 1.5), w1=3.3, post=3.7):
     t += tw
     pieces.append((t, t + post - w1, w1, post, x1, x1))
     return seg(name, pieces, flip), pieces[-1][1]
+
+
+def vanish(t0, x, name):
+    (a, b), _, r, _, _ = TPC[name]
+    d = (b - a) / r
+    return dict(seg(name, [(t0, t0 + d, a, b, x, x)]), fade=(0.0, 0.35)), t0 + d
+
+
+def appear(t0, x, name):
+    _, (a, b), r, _, dy = TPC[name]
+    d = (b - a) / r
+    return dict(seg(name, [(t0, t0 + d, a, b, x, x)]), nojoin=True, dy=dy, fade=(0.35, 0.0)), t0 + d
+
+
+def body_gone(t, name):
+    (a, b), _, r, g, _ = TPC[name]
+    return t + (g - a) / r
+
+
+def teleport(D, t, x0, x1, name):
+    """Детектив исчезает в эффекте на x0 и появляется на x1 (клип Gemini: исчезновение → пусто → появление)."""
+    TELEPORTS.append((t, x0, x1, name))
+    v, t = vanish(t, x0, name)
+    D.append(v)
+    a, t = appear(t, x1, name)
+    D.append(a)
+    return t
 
 
 def listen(t0, x, say_end, toward_left):
@@ -180,15 +213,18 @@ def _det():
     D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + post, DL, M.STAMP_A))
     D.append(old('talk', E.STAMP1 + post, gone(1) + GONE_PAUSE, DL, 2.0, 'pp'))
     # 2 клон: слева → детектив переходит направо
-    t = gone(1) + GONE_PAUSE                     # телепорт на другую сторону
-    TELEPORTS.append((t, DL, DR))
-    D.append(dict(old('talk', t, E.CLONE_SAY - 0.3, DR, 1.5, 'pp'), xf=TP))
-    lsn, t = listen(E.CLONE_SAY - 0.3, DR, E.CLONE_SAY_END, True)
+    t = teleport(D, gone(1) + GONE_PAUSE, DL, DR, 'tp1_smoke')     # телепорт на другую сторону
+    if E.CLONE_SAY - 0.3 - t > 0.2:
+        D.append(old('talk', t, E.CLONE_SAY - 0.3, DR, 1.5, 'pp'))
+    lsn, t = listen(max(t, E.CLONE_SAY - 0.3), DR, E.CLONE_SAY_END, True)
     D.append(lsn)
     D.append(old('talk', t, E.ASK, DR, 2.0, 'pp'))
     D.append(old('phone', E.ASK, E.CREEPY, DR, 0.2))
     # жуть — отдельная сцена (render); после неё детектив снова левее центра (крючок, реклама)
-    D.append(dict(old('talk', E.CREEPY_END - 0.3, E.LINK_SAY - 0.3, DL, 4.0, 'pp'), nojoin=True))
+    TELEPORTS.append((E.CREEPY_END - 0.3, None, DL, 'tp2_glitch'))
+    a, t = appear(E.CREEPY_END - 0.3, DL, 'tp2_glitch')           # после жути — собирается из пикселей (глитч)
+    D.append(a)
+    D.append(old('talk', t, E.LINK_SAY - 0.3, DL, 4.0, 'pp'))
     # 3 ссылка: справа
     lsn, t = listen(E.LINK_SAY - 0.3, DL, E.LINK_SAY_END, False)
     D.append(lsn)
@@ -197,24 +233,24 @@ def _det():
     D.append(old('shock', min(t, E.STAMP3 - 1.1) if E.STAMP3 - 1.1 - t <= 0.8 else E.STAMP3 - 1.1, E.STAMP3 + 0.9, DL, 0.6))
     D.append(old('talk', E.STAMP3 + 0.9, gone(3) + GONE_PAUSE, DL, 1.0, 'pp'))
     # 4 обмен: слева
-    t = gone(3) + GONE_PAUSE                     # телепорт на другую сторону
-    TELEPORTS.append((t, DL, DR))
-    D.append(dict(old('talk', t, E.SWAP_SAY - 0.3, DR, 4.5, 'pp'), xf=TP))
-    lsn, t = listen(E.SWAP_SAY - 0.3, DR, E.SWAP_SAY_END, True)
+    t = teleport(D, gone(3) + GONE_PAUSE, DL, DR, 'tp3_papers')     # телепорт на другую сторону
+    if E.SWAP_SAY - 0.3 - t > 0.2:
+        D.append(old('talk', t, E.SWAP_SAY - 0.3, DR, 4.5, 'pp'))
+    lsn, t = listen(max(t, E.SWAP_SAY - 0.3), DR, E.SWAP_SAY_END, True)
     D.append(lsn)
     D.append(old('nono', t, gone(4) + GONE_PAUSE, DR, 0.4))
     # 5 гарант: справа
-    t = gone(4) + GONE_PAUSE                     # телепорт на другую сторону
-    TELEPORTS.append((t, DR, DL))
-    D.append(dict(old('talk', t, E.GUAR_SAY - 0.3, DL, 6.0, 'pp'), xf=TP))
-    lsn, t = listen(E.GUAR_SAY - 0.3, DL, E.GUAR_SAY_END, False)
+    t = teleport(D, gone(4) + GONE_PAUSE, DR, DL, 'tp4_lens')     # телепорт на другую сторону
+    if E.GUAR_SAY - 0.3 - t > 0.2:
+        D.append(old('talk', t, E.GUAR_SAY - 0.3, DL, 6.0, 'pp'))
+    lsn, t = listen(max(t, E.GUAR_SAY - 0.3), DL, E.GUAR_SAY_END, False)
     D.append(lsn)
     D.append(old('stamp', t, E.STAMP5 + post, DL, M.STAMP_A - (E.STAMP5 - pre - t)))
     D.append(old('talk', E.STAMP5 + post, E.MEMO, DL, 3.0, 'pp'))
     # памятка — там же; финал — в центр (растворяется → проявляется, облачко «пуф»)
-    D.append(old('point', E.MEMO, E.MOVE2, DL, 0.3))
-    TELEPORTS.append((E.MOVE2, DL, C))
-    D.append(dict(old('choice', E.MOVE2, DUR + 5, C, 0.0), hold=9.4, xf=TP))
+    D.append(old('point', E.MEMO, E.MOVE2 - 1.6, DL, 0.3))
+    t = teleport(D, E.MOVE2 - 1.6, DL, C, 'tp5_hat')                 # финал: трюк со шляпой → в центр
+    D.append(dict(old('choice', t, DUR + 5, C, 0.0), hold=9.4))
     for a, b in zip(D, D[1:]):
         if not b.get('nojoin'):
             a['t1'] = b['t0']
@@ -244,7 +280,19 @@ def _img(sg, t):
         return im, anc, sg['x']
     loc, x = state(sg, t)
     im, anc = frame(sg['name'], nidx(sg['name'], loc), sg['flip'])
+    if sg.get('dy'):
+        anc = (anc[0], anc[1] - sg['dy'] * scale(sg['name']))
     return im, anc, x
+
+
+def _fade(sg, t):
+    fi, fo = sg.get('fade', (0.0, 0.0))
+    a = 1.0
+    if fi > 0:
+        a *= min(1.0, max(0.0, (t - sg['t0']) / fi))
+    if fo > 0:
+        a *= min(1.0, max(0.0, (sg['t1'] - t) / fo))
+    return a
 
 
 def _body_x(im, anc, x):
@@ -271,6 +319,9 @@ SEAM_T = 0.35
 def _draw_seg(cv, sg, t, put, a=1.0, shadow=None, dx=0.0):
     im, anc, x = _img(sg, t)
     x += dx
+    a *= _fade(sg, t)
+    if sg['name'].startswith('tp'):
+        shadow = None                                      # во время телепорта тени нет
     if shadow and a > 0.5:
         shadow(cv, x, FOOT)
     put(cv, im, x, FOOT, 1.0, a, anchor=anc)

@@ -71,9 +71,10 @@ def run_clip(name, geo):
     bg = bg_of(fs[0])
     od = OUT / name
     od.mkdir(parents=True, exist_ok=True)
+    tp = name.startswith('tp')                    # телепорты: полупрозрачная Мита/дым — мягче ключ + сильнее убрать зелень
     for i, f in enumerate(fs, 1):
-        mode = 'normal'
-        Image.fromarray(key(f, bg_of(f), 0.75, mode)).save(od / f'f{i:04d}.png', compress_level=1)
+        Image.fromarray(key(f, bg_of(f), 1.0 if tp else 0.75, 'box' if tp else 'normal')).save(od / f'f{i:04d}.png',
+                                                                                             compress_level=1)
     # геометрия по первому кадру: верх, низ (подошвы), центр стоп
     a = key(fs[0], bg)[..., 3] > 128
     ys, xs = np.nonzero(a)

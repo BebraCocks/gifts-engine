@@ -720,12 +720,6 @@ def render_at(t):
             if E.LENS1 <= t < E.LENS1 + 0.6:              # лупа «уменьшается» и прыгает в руку + дымка
                 u = (t - E.LENS1) / 0.6
                 put(cv, keyed('shimmer', w=420), M.LENS_X, M.FOOT - 380, 0.8 + 0.6 * u, 1 - u)
-    for tm, x0, x1 in S.TELEPORTS:                         # телепорт детектива: «пуф» там — блёстки и «пуф» тут
-        for xx, t0 in ((x0, tm), (x1, tm + S.TP)):
-            u = (t - t0) / 0.55
-            if 0 <= u < 1:
-                put(cv, keyed('emo_poof', w=280), xx, M.FOOT - 430, 0.6 + 0.9 * u, (1 - u) * 0.9)
-                put(cv, keyed('shimmer', w=380), xx, M.FOOT - 450, 0.8 + 0.5 * u, (1 - u) * 0.8)
     scene_creepy(cv, t)
     scene_hook(cv, t)
     scene_offer(cv, t)

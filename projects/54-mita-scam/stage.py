@@ -28,7 +28,9 @@ SR, SL = 820, 260                  # где стоит мошенница
 OFF = 470                          # откуда заходит мошенница (от своего места; за краем экрана)
 RUN_V = 950                        # скорость убегания по экрану, px/с
 RUN_RATE = 1.6                     # испуг перед побегом проигрываем быстрее — убегает раньше
-GONE_PAUSE = 0.05                  # детектив трогается сразу, как мошенница скрылась за кадром
+GONE_PAUSE = 0.05                  # детектив телепортируется сразу, как мошенница скрылась за кадром
+TP = 0.3                           # телепорт: растворяется TP, проявляется TP (облачко «пуф» + блёстки)
+TELEPORTS = []                     # (момент, откуда x, куда x) — для эффекта в render
 NEW = {'listen', 'step'} | {f's{k}_{p}' for k in range(1, 6) for p in ('walkin', 'talk', 'run')}
 
 
@@ -129,6 +131,7 @@ def old(name, t0, t1, x, off=0.0, mode='once'):
 WALKIN = {1: (4.2, 4.5), 2: (4.0, 4.6), 3: (4.2, 4.4), 4: (4.4, 4.6), 5: (4.0, 4.5)}     # (конец шагов, стоит)
 RUN = {1: (0.7, 2.3), 2: (0.6, 2.5), 3: (1.0, 2.4), 4: (0.5, 3.2), 5: (0.8, 2.5)}         # (вздрогнула, побежала)
 RUN_END = {1: 9.9, 2: 9.9, 3: 6.3, 4: 9.9, 5: 4.9}
+TALK_L0 = {4: 4.1}                 # «торговка»: скрещённые пальцы (кадр 5,5 с) — ровно на её «только ты первый»
 
 
 def scammer(k, right, arrive, stamp):
@@ -149,8 +152,9 @@ def scammer(k, right, arrive, stamp):
     st, rs = RUN[k]
     t_run = stamp - st / RUN_RATE
     nm = f's{k}_talk'
-    if t_run - arrive <= 9.8:
-        segs.append(seg(nm, [(arrive, t_run, 0.0, t_run - arrive, xs, xs)], flip))
+    l0 = TALK_L0.get(k, 0.0)
+    if l0 + t_run - arrive <= 9.8:
+        segs.append(seg(nm, [(arrive, t_run, l0, l0 + t_run - arrive, xs, xs)], flip))
     else:
         segs.append(seg(nm, [(arrive, arrive + 9.8, 0.0, 9.8, xs, xs)], flip, hold=(6.0, 9.8)))
         segs[-1]['t1'] = t_run
@@ -176,9 +180,10 @@ def _det():
     D.append(old('stamp', E.STAMP1 - pre, E.STAMP1 + post, DL, M.STAMP_A))
     D.append(old('talk', E.STAMP1 + post, gone(1) + GONE_PAUSE, DL, 2.0, 'pp'))
     # 2 клон: слева → детектив переходит направо
-    w, t = walk(gone(1) + GONE_PAUSE, DL, DR)
-    D.append(w)
-    lsn, t = listen(max(t, E.CLONE_SAY - 0.3), DR, E.CLONE_SAY_END, True)
+    t = gone(1) + GONE_PAUSE                     # телепорт на другую сторону
+    TELEPORTS.append((t, DL, DR))
+    D.append(dict(old('talk', t, E.CLONE_SAY - 0.3, DR, 1.5, 'pp'), xf=TP))
+    lsn, t = listen(E.CLONE_SAY - 0.3, DR, E.CLONE_SAY_END, True)
     D.append(lsn)
     D.append(old('talk', t, E.ASK, DR, 2.0, 'pp'))
     D.append(old('phone', E.ASK, E.CREEPY, DR, 0.2))
@@ -192,21 +197,24 @@ def _det():
     D.append(old('shock', min(t, E.STAMP3 - 1.1) if E.STAMP3 - 1.1 - t <= 0.8 else E.STAMP3 - 1.1, E.STAMP3 + 0.9, DL, 0.6))
     D.append(old('talk', E.STAMP3 + 0.9, gone(3) + GONE_PAUSE, DL, 1.0, 'pp'))
     # 4 обмен: слева
-    w, t = walk(gone(3) + GONE_PAUSE, DL, DR)
-    D.append(w)
-    lsn, t = listen(max(t, E.SWAP_SAY - 0.3), DR, E.SWAP_SAY_END, True)
+    t = gone(3) + GONE_PAUSE                     # телепорт на другую сторону
+    TELEPORTS.append((t, DL, DR))
+    D.append(dict(old('talk', t, E.SWAP_SAY - 0.3, DR, 4.5, 'pp'), xf=TP))
+    lsn, t = listen(E.SWAP_SAY - 0.3, DR, E.SWAP_SAY_END, True)
     D.append(lsn)
     D.append(old('nono', t, gone(4) + GONE_PAUSE, DR, 0.4))
     # 5 гарант: справа
-    w, t = walk(gone(4) + GONE_PAUSE, DR, DL)
-    D.append(w)
-    lsn, t = listen(max(t, E.GUAR_SAY - 0.3), DL, E.GUAR_SAY_END, False)
+    t = gone(4) + GONE_PAUSE                     # телепорт на другую сторону
+    TELEPORTS.append((t, DR, DL))
+    D.append(dict(old('talk', t, E.GUAR_SAY - 0.3, DL, 6.0, 'pp'), xf=TP))
+    lsn, t = listen(E.GUAR_SAY - 0.3, DL, E.GUAR_SAY_END, False)
     D.append(lsn)
     D.append(old('stamp', t, E.STAMP5 + post, DL, M.STAMP_A - (E.STAMP5 - pre - t)))
     D.append(old('talk', E.STAMP5 + post, E.MEMO, DL, 3.0, 'pp'))
     # памятка — там же; финал — в центр (растворяется → проявляется, облачко «пуф»)
     D.append(old('point', E.MEMO, E.MOVE2, DL, 0.3))
-    D.append(dict(old('choice', E.MOVE2, DUR + 5, C, 0.0), hold=9.4, xf=0.45))
+    TELEPORTS.append((E.MOVE2, DL, C))
+    D.append(dict(old('choice', E.MOVE2, DUR + 5, C, 0.0), hold=9.4, xf=TP))
     for a, b in zip(D, D[1:]):
         if not b.get('nojoin'):
             a['t1'] = b['t0']
@@ -308,6 +316,11 @@ def det_x(t):
         return C
     sg = DET[i]
     return sg['x'] if sg['kind'] == 'old' else state(sg, t)[1]
+
+
+def finger_xy():
+    """Где на экране скрещённые пальцы «торговки» (замерено по кадру сборки: левее и ниже плеча; она слева)."""
+    return SL - 145, 925
 
 
 TRACKS = {'det': DET, **{f's{k}': SCAM[k - 1] for k in range(1, 6)}}

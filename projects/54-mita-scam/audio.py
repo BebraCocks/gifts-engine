@@ -41,6 +41,8 @@ def sfx_layer(n, kit):
     for j in range(5):
         a(fx, 'select-soft', E.COUNTER_IN + 0.08 * j, gain_db=-24, label=f'счётчик {j + 1}')
     a(fx, 'popup', E.OFFER_SAY + 0.25, gain_db=-18, label='фейковый оффер')
+    for tm, x0, x1 in S.TELEPORTS:
+        a(fx, 'sparkle-whoosh', tm, gain_db=-19, label='телепорт детектива')
     for k, segs in enumerate(S.SCAM, 1):                   # мошенницы: заход, испуг, побег
         wk, tk, rn = segs
         a(fx, 'cartoon-move', wk['t0'] + 0.2, gain_db=-22, label=f'мошенница {k} заходит')
@@ -64,7 +66,6 @@ def sfx_layer(n, kit):
         a(fx, 'paper', ts + 0.05, gain_db=-20, label=f'улика {k + 1} на доску')
     for k, tn in enumerate((E.NOTE1, E.NOTE2, E.NOTE3)):
         a(fx, 'pop', tn, gain_db=-18, label=f'памятка {k + 1}')
-    a(fx, 'sparkle-whoosh', E.MOVE2, gain_db=-19, label='в центр')
     a(fx, 'select-soft', E.MOVE2 + 0.6, gain_db=-17, label='«БЫЛО»')
     a(fx, 'select-soft', E.MOVE2 + 1.8, gain_db=-17, label='«НЕ БЫЛО»')
     a(fx, 'impact', DUR - 0.55, gain_db=-15, label='ДЕЛО ЗАКРЫТО')

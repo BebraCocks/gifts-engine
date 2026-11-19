@@ -411,28 +411,22 @@ def scene_offer(cv, t):
 
 
 def scene_clone(cv, t):
-    return                                                  # v4: переделать без телефона
-    if not (E.CLONE - 0.1 <= t < E.CREEPY + 0.3):
+    """Схема 2: «клон» слева. Облачко «Дай подарок на минутку?»; детектив — вопрос, который знает только друг; «КЛОН!»."""
+    if not (E.CLONE_SAY - 0.1 <= t < E.CREEPY):
         return
-    a = appear(t, E.CLONE, 0.3) * (1 - appear(t, E.CREEPY - 0.1, 0.3))
-    chat(cv, t, a, 'Дима (друг)', 'friend', [(E.FRIEND_MSG, 'in', 'Дай подарок на минутку?')], typing=E.CLONE + 0.3)
-    x0, y0, x1, y1 = phone_box()
-    cx, cy = (x0 + x1) / 2, y0 + 300
-    fl = ease((t - E.FOX_FLIP) / 0.45)
-    sx = abs(math.cos(math.pi * fl))
-    k = pop(t, E.CLONE + 0.2, 0.5)
-    if fl < 0.5:
-        fx.over(cv, fx.warp(avatar_disc(), cx, cy, sx * k, k), a)
-        fx.over(cv, fx.warp(utext('Д', 130, 'ExtraBold', WHITE), cx, cy + 4, sx * k, k), a)
-        put(cv, pill('ДИМА', (60, 90, 160), 26), cx, cy + 160, k, a)
-    else:
-        fx.over(cv, fx.warp(keyed('fox_head', w=260), cx, cy, sx, 1.0), a)
-        put(cv, pill('КЛОН!', RED, 30), cx, cy + 160, pop(t, E.FOX_FLIP + 0.3), a)
-    if t >= E.ASK:
-        put(cv, keyed('emo_bulb', w=100), cx + 150, cy - 120, pop(t, E.ASK), a)
-    if t >= E.STAMP2:                                      # вердикт — красный крест маркером
+    a = appear(t, E.CLONE_SAY + 0.2, 0.25) * (1 - appear(t, E.CREEPY - 0.5, 0.4))
+    bx, by = S.SL + 50, 640 + 6 * math.sin(t * 2.1)
+    im = bubble('Дай подарок на минутку?', 'in', 34)
+    put(cv, im, bx, by, pop(t, E.CLONE_SAY + 0.2, 0.45), a, -0.03)
+    if t >= E.STAMP2:                                      # вердикт: крест маркером по облачку + «КЛОН!»
         u = ease((t - E.STAMP2) / 0.3)
-        put(cv, keyed('cross', h=300), cx, cy, 1.3 - 0.3 * u, a * u, -0.05)
+        put(cv, keyed('cross', h=200), bx, by, 1.3 - 0.3 * u, a * u, -0.05)
+        put(cv, pill('КЛОН!', RED, 34), bx, by - 110, pop(t, E.STAMP2 + 0.1), a)
+    if t >= E.ASK:                                         # вопрос от детектива
+        qa = appear(t, E.ASK, 0.25) * (1 - appear(t, E.CREEPY - 0.5, 0.4))
+        put(cv, pill('СПРОСИ ТО, ЧТО ЗНАЕТ ДРУГ', (60, 70, 100), 24), S.DR - 10, 520, pop(t, E.ASK, 0.4), qa)
+        put(cv, bubble('Где мы познакомились?', 'out', 30, (20, 40, 90)), S.DR - 10, 610, pop(t, E.ASK + 0.3, 0.4),
+            qa * appear(t, E.ASK + 0.3, 0.2), 0.03)
 
 
 def scene_creepy(cv, t):
@@ -469,71 +463,74 @@ def scene_creepy(cv, t):
 
 
 def scene_tease(cv, t):
+    """Крючок перед рекламой: справа мигалка и «САМАЯ ХИТРАЯ…» (детектив слева)."""
     if not (E.CREEPY_END - 0.1 <= t < AD_STOP + 0.1):
         return
-    a = appear(t, E.CREEPY_END, 0.3)
-    chat(cv, t, a, 'Покупатель', 'fox', [], typing=E.TEASE + 0.2)
-    x0, y0, x1, y1 = phone_box()
-    put(cv, keyed('emo_siren', w=130), (x0 + x1) / 2, y0 + 330, pop(t, E.TEASE + 0.5), a, 0.1 * math.sin(t * 8))
-    put(cv, pill('САМАЯ ХИТРАЯ…', (60, 70, 100), 26), (x0 + x1) / 2, y0 + 470, pop(t, E.TEASE + 0.9), a)
+    a = appear(t, E.TEASE + 0.3, 0.3)
+    x = S.SR - 20
+    put(cv, radial(256, (255, 80, 80)), x, 1010, 1.2 + 0.15 * math.sin(t * 9), 0.35 * a)
+    put(cv, keyed('emo_siren', w=190), x, 1010, pop(t, E.TEASE + 0.3), a, 0.1 * math.sin(t * 8))
+    put(cv, pill('САМАЯ ХИТРАЯ…', (60, 70, 100), 32), x, 1180, pop(t, E.TEASE + 0.8), a)
+    put(cv, pill('ПОПАДАЮТСЯ ДАЖЕ ОПЫТНЫЕ', RED, 22), x - 30, 1260, pop(t, E.TEASE + 1.6), appear(t, E.TEASE + 1.6, 0.2) * a)
 
 
 def scene_link(cv, t):
-    return                                                  # v4: переделать без телефона
-    if not (E.LINK - 0.1 <= t < E.SWAP + 0.3):
+    """Схема 3: «коллекционерша» справа. «КУПЛЮ ДОРОГО!», адрес fragrnent.com, лупа: rn ≠ m, «НЕ ПЕРЕХОДИ!», штамп."""
+    if not (E.LINK_SAY - 0.1 <= t < E.STAMP3 + 1.4):
         return
-    a = appear(t, E.LINK, 0.3) * (1 - appear(t, E.SWAP - 0.1, 0.3))
-    chat(cv, t, a, 'Покупатель', 'fox', [(E.LINK_MSG, 'in', 'Выстави NFT вот тут: fragrnent.com')], typing=E.LINK + 0.2)
-    x0, y0, x1, y1 = phone_box()
+    a = appear(t, E.LINK_SAY + 0.2, 0.25) * (1 - appear(t, E.STAMP3 + 0.6, 0.4))
+    cx = S.SR - 20
+    put(cv, pill('КУПЛЮ ДОРОГО!', (190, 140, 40), 30), cx, 530 + 5 * math.sin(t * 2), pop(t, E.LINK_SAY + 0.2), a, 0.04)
+    if t >= E.LINK_MSG:
+        k = pop(t, E.LINK_MSG, 0.45)
+        la = appear(t, E.LINK_MSG, 0.2) * a
+        put(cv, keyed('addr_bar', w=370), cx - 10, 620, k, la)
+        put(cv, utext('fragrnent.com', 30, 'ExtraBold', INK), cx, 618, k, la)
     if t >= E.LINK_LENS:
         la = appear(t, E.LINK_LENS, 0.3) * a
-        cx, cy = (x0 + x1) / 2, y0 + 300
-        put(cv, keyed('addr_bar', w=340), cx, cy - 60, pop(t, E.LINK_LENS, 0.4), la)
-        put(cv, utext('fragrnent.com', 30, 'ExtraBold', INK), cx + 10, cy - 62, pop(t, E.LINK_LENS, 0.4), la)
-        put(cv, keyed('emo_glint', w=150), cx + 40, cy + 70, pop(t, E.LINK_LENS + 0.4, 0.4), la)
-        put(cv, pill('rn ≠ m', RED, 30), cx - 70, cy + 70, pop(t, E.LINK_LENS + 0.7), la, -0.06)
-        put(cv, pill('НЕ ПЕРЕХОДИ!', RED, 24), cx, cy + 170, pop(t, E.LINK_LENS + 1.2), la)
-    stamp_scam(cv, t, E.STAMP3, (x0 + x1) / 2, y0 + 300, 'ФЕЙК!')
+        put(cv, keyed('emo_glint', w=130), cx + 150, 700, pop(t, E.LINK_LENS + 0.3, 0.4), la)
+        put(cv, pill('rn ≠ m', RED, 32), cx - 170, 700, pop(t, E.LINK_LENS + 0.5), la, -0.06)
+        put(cv, pill('НЕ ПЕРЕХОДИ!', RED, 30), S.DL + 40, 560, pop(t, E.LINK_LENS + 0.2), appear(t, E.LINK_LENS + 0.2, 0.2) *
+            (1 - appear(t, E.SWAP - 0.3, 0.3)))
+    stamp_scam(cv, t, E.STAMP3, S.SR - 70, 1060, 'ФЕЙК!', 0.82)
 
 
 def scene_swap(cv, t):
-    return                                                  # v4: переделать без телефона
-    if not (E.SWAP - 0.1 <= t < E.GUAR + 0.3):
+    """Схема 4: «торговка» слева. Карточка «ОБМЕН / ТЫ ПЕРВЫЙ», подсветка скрещённых пальцев, карточка рвётся, «ПУСТАЯ КОРОБКА!»."""
+    if not (E.SWAP_SAY - 0.1 <= t < E.GUAR):
         return
-    a = appear(t, E.SWAP, 0.3) * (1 - appear(t, E.GUAR - 0.1, 0.3))
-    chat(cv, t, a, 'Покупатель', 'fox', [(E.SWAP_MSG, 'in', 'Меняемся? Только ты первый!')], typing=E.SWAP + 0.2)
-    x0, y0, x1, y1 = phone_box()
-    cx, cy = (x0 + x1) / 2, y0 + 310
-    k = pop(t, E.SWAP + 0.3, 0.5)
+    a = appear(t, E.SWAP_SAY + 0.1, 0.25) * (1 - appear(t, E.GUAR - 0.6, 0.4))
+    cx, cy = S.SL + 50, 600 + 5 * math.sin(t * 2)
+    k = pop(t, E.SWAP_SAY + 0.1, 0.5)
     tear = ease((t - E.STAMP4) / 0.5)
-    l, r = keyed('torn_l', h=300), keyed('torn_r', h=300)
-    put(cv, l, cx - l.width / 2 - 60 * tear, cy + 40 * tear, k, a, -0.25 * tear)
-    put(cv, r, cx + r.width / 2 + 60 * tear, cy + 60 * tear, k, a, 0.3 * tear)
-    put(cv, utext('ОБМЕН', 40, 'ExtraBold', INK), cx - 60 * tear, cy - 40 + 40 * tear, k, a * (1 - tear))
-    put(cv, utext('ТЫ ПЕРВЫЙ', 30, 'ExtraBold', RED), cx, cy + 20, k, a * (1 - tear))
-    if E.SWAP_SENT <= t < E.SWAP_SENT + 1.2:              # подарок улетает
-        u = (t - E.SWAP_SENT) / 1.2
-        put(cv, keyed('emo_poof', w=120), cx + 120 * u, cy - 200 - 300 * u, 0.6 + 0.8 * u, a * (1 - u))
-    if t >= E.STAMP4:
-        put(cv, pill('СОБЕСЕДНИК ИСЧЕЗ', RED, 26), cx, cy + 230, pop(t, E.STAMP4 + 0.2), a)
+    l, r = keyed('torn_l', h=230), keyed('torn_r', h=230)
+    put(cv, l, cx - l.width / 2 - 70 * tear, cy + 50 * tear, k, a * (1 - 0.6 * tear), -0.25 * tear)
+    put(cv, r, cx + r.width / 2 + 70 * tear, cy + 70 * tear, k, a * (1 - 0.6 * tear), 0.3 * tear)
+    put(cv, utext('ОБМЕН', 36, 'ExtraBold', INK), cx, cy - 34, k, a * (1 - tear))
+    put(cv, utext('ТЫ ПЕРВЫЙ', 28, 'ExtraBold', RED), cx, cy + 18, k, a * (1 - tear))
+    fa = appear(t, E.SWAP_FINGERS, 0.15) * (1 - appear(t, E.SWAP_FINGERS + 1.1, 0.25))
+    if fa > 0:                                             # скрещённые пальцы — подсветка
+        fx_, fy = S.finger_xy()
+        put(cv, radial(256, (255, 210, 80)), fx_, fy, 0.75 + 0.08 * math.sin(t * 10), 0.55 * fa)
+        put(cv, keyed('emo_excl', h=80), fx_ + 10, fy - 110, pop(t, E.SWAP_FINGERS, 0.35), fa, -0.2)
+    if t >= E.STAMP4 + 0.7:
+        put(cv, pill('ПУСТАЯ КОРОБКА!', RED, 28), cx + 20, cy - 10, pop(t, E.STAMP4 + 0.7), a)
 
 
 def scene_guar(cv, t):
-    return                                                  # v4: переделать без телефона
-    if not (E.GUAR - 0.1 <= t < E.MEMO + 0.3):
+    """Схема 5: «гарант» справа. «ГАРАНТ ✓» → «МОШЕННИК ✗», штамп, «ТОЛЬКО МАРКЕТ TELEGRAM ✓» над детективом."""
+    if not (E.GUAR_SAY - 0.1 <= t < E.MEMO + 0.2):
         return
-    a = appear(t, E.GUAR, 0.3) * (1 - appear(t, E.MEMO - 0.1, 0.3))
-    chat(cv, t, a, '@garant_official', 'friend', [(E.GUAR_MSG, 'in', 'Не бойся, я гарант!')], typing=E.GUAR + 0.1)
-    x0, y0, x1, y1 = phone_box()
-    cx, cy = (x0 + x1) / 2, y0 + 290
-    off = ease((t - E.GUAR_FOX) / 0.5)
-    put(cv, keyed('fox_head', w=230), cx, cy, pop(t, E.GUAR + 0.2, 0.5), a * max(0.0, off))
-    if off < 1:
-        put(cv, pill('ГАРАНТ ✓', (40, 150, 90), 40), cx + 260 * off, cy - 200 * off, 1.0, a * (1 - off), 0.8 * off)
+    a = appear(t, E.GUAR_SAY + 0.2, 0.25) * (1 - appear(t, E.STAMP5 + 1.2, 0.4))
+    cx, cy = S.SR - 20, 560 + 5 * math.sin(t * 2)
+    fl = ease((t - E.STAMP5) / 0.35)
+    sq = abs(math.cos(math.pi * fl))
+    im = pill('ГАРАНТ ✓', (40, 150, 90), 38) if fl < 0.5 else pill('МОШЕННИК ✗', RED, 38)
+    fx.over(cv, fx.warp(im, cx, cy, sq * pop(t, E.GUAR_SAY + 0.2, 0.45), pop(t, E.GUAR_SAY + 0.2, 0.45), 0.03), a)
+    stamp_scam(cv, t, E.STAMP5, S.SR - 70, 1060, 'СКАМ!', 0.82)
     if t >= E.GUAR_SAFE:
-        sa = appear(t, E.GUAR_SAFE, 0.3) * a
-        put(cv, pill('ТОЛЬКО МАРКЕТ TELEGRAM ✓', (40, 120, 210), 22), cx, cy + 210, pop(t, E.GUAR_SAFE, 0.45), sa)
-    stamp_scam(cv, t, E.STAMP5, cx, cy, 'ФЕЙК!')
+        sa = appear(t, E.GUAR_SAFE, 0.3) * (1 - appear(t, E.MEMO - 0.2, 0.3))
+        put(cv, pill('ТОЛЬКО МАРКЕТ TELEGRAM ✓', (40, 120, 210), 26), S.DL + 120, 560, pop(t, E.GUAR_SAFE, 0.45), sa)
 
 
 @functools.lru_cache(maxsize=4)
@@ -563,7 +560,7 @@ def scene_memo(cv, t):
     a = appear(t, E.MEMO, 0.35) * (1 - appear(t, E.MOVE2, 0.3))
     put(cv, pill('ЗАПОМНИ', (60, 50, 50), 40), 540, 150, pop(t, E.MEMO, 0.5), a)
     items = ((E.NOTE1, ('ПОДАРОК', 'ПЕРВЫМ', 'НЕ ОТПРАВЛЯЙ'), 'emo_excl'), (E.NOTE2, ('НА СЛОВО', 'НЕ ВЕРЬ'), 'emo_anger'),
-             (E.NOTE3, ('ТОЛЬКО', 'ПРОВЕРЕННЫЕ', 'МАРКЕТЫ'), 'emo_bulb'))
+             (E.NOTE3, ('ПО ССЫЛКАМ', 'НЕ ХОДИ'), 'emo_bulb'))
     pos = [(360, 470), (760, 520), (760, 950)]
     for k, (tn, lines, ico) in enumerate(items):
         ka = appear(t, tn, 0.25) * a
@@ -723,6 +720,12 @@ def render_at(t):
             if E.LENS1 <= t < E.LENS1 + 0.6:              # лупа «уменьшается» и прыгает в руку + дымка
                 u = (t - E.LENS1) / 0.6
                 put(cv, keyed('shimmer', w=420), M.LENS_X, M.FOOT - 380, 0.8 + 0.6 * u, 1 - u)
+    for tm, x0, x1 in S.TELEPORTS:                         # телепорт детектива: «пуф» там — блёстки и «пуф» тут
+        for xx, t0 in ((x0, tm), (x1, tm + S.TP)):
+            u = (t - t0) / 0.55
+            if 0 <= u < 1:
+                put(cv, keyed('emo_poof', w=280), xx, M.FOOT - 430, 0.6 + 0.9 * u, (1 - u) * 0.9)
+                put(cv, keyed('shimmer', w=380), xx, M.FOOT - 450, 0.8 + 0.5 * u, (1 - u) * 0.8)
     scene_creepy(cv, t)
     scene_hook(cv, t)
     scene_offer(cv, t)

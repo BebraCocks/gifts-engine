@@ -8,7 +8,7 @@ const path = require('path');
   await p.goto('file://' + path.resolve(__dirname, '../game/popa-pryg.html') + (process.argv[2] || '#specials'));
   await p.waitForTimeout(900);
   await p.evaluate(() => { window.__skip = 10; });
-  await p.click('#playBtn'); await p.evaluate(() => window.__popa.auto(true));
+  await p.click('#mPlay'); await p.click('#playBtn'); await p.evaluate(() => window.__popa.auto(true));
   const t0 = Date.now(); let lastIdx = -1;
   while (Date.now() - t0 < (+process.argv[3] || 420000)) {
     const i = await p.evaluate(() => window.__popa.info());

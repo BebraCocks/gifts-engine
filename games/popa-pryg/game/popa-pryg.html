@@ -243,6 +243,26 @@
   .btn.sm { font-size: 14px; padding: 8px 12px; }
   .stats3 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
+  .back { border: 0; border-radius: 999px; background: #f0eafc; color: var(--ink); font: 900 14px var(--display); padding: 9px 14px; cursor: pointer; flex-shrink: 0; }
+  .back:focus-visible, .pause-btn:focus-visible, .link-btn:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+  .sheet-head { justify-content: flex-start; gap: 12px; }
+  .sheet-head h2 { font-size: 20px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pause-btn { position: fixed; z-index: 15; top: calc(var(--top-inset) + 10px); right: calc(max(16px, env(safe-area-inset-right, 0px)) + 48px);
+    width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); box-shadow: 0 3px 0 rgba(42,20,87,.25);
+    display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+  .pause-btn i { display: block; width: 5px; height: 15px; border-radius: 2px; background: var(--ink); }
+  .link-btn { border: 0; background: none; color: #6d5a9c; font: 900 12px var(--display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; padding: 4px; }
+  .set-row { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 14px; background: #f8f5ff; font-weight: 900; font-size: 14px; color: var(--ink); }
+  .set-row.check { flex-direction: row; align-items: center; justify-content: space-between; }
+  .set-row input[type=range] { width: 100%; accent-color: var(--butt); }
+  .set-row input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--butt); }
+  .hint-card { position: fixed; z-index: 35; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); transform: translateX(-50%);
+    width: min(340px, calc(100vw - 32px)); box-sizing: border-box; background: rgba(255,255,255,.95); border-radius: 16px; padding: 10px 14px;
+    box-shadow: 0 6px 0 rgba(42,20,87,.18); display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+  .hint-card b { font: 900 15px var(--display); color: var(--butt); }
+  .hint-card span { font-weight: 500; font-size: 13px; line-height: 1.35; color: #4a3a73; }
+  .hint-card.show { animation: hintIn .3s ease-out; }
+  @keyframes hintIn { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .swipe i::after { animation: none; } .pop.show { animation-duration: .01s; } }
 </style>
 
@@ -260,6 +280,8 @@
 </div>
 <div class="pop" id="pop"></div>
 <button class="mute" id="mute" type="button" aria-label="Звук">ЗВУК</button>
+<button class="pause-btn" id="pauseBtn" type="button" aria-label="Пауза" hidden><i></i><i></i></button>
+<div class="hint-card" id="hintCard" hidden role="status"><b id="hintTitle"></b><span id="hintText"></span></div>
 <button class="auto" id="auto" type="button" aria-pressed="false" hidden><i></i>АВТО</button>
 <button class="gun" id="gunBtn" type="button" hidden>КАКАШКА</button>
 <button class="mic" id="micBtn" type="button" aria-pressed="false" aria-label="Микрофон" hidden>МИК</button>
@@ -293,6 +315,7 @@
       <div class="menu-btns"><button class="btn online" id="onlineBtn" type="button">Случайный</button><button class="btn online" id="friendPlayBtn" type="button">С другом</button></div>
       <button class="btn ghost" id="playBack" type="button">Назад</button>
     </div>
+    <button class="link-btn" id="mSettings" type="button">Настройки</button>
     <label class="code" for="codeInput"><span>Секретный<br>код</span><input id="codeInput" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="······" aria-describedby="codeNote"></label>
     <div class="code-note" id="codeNote" aria-live="polite"></div>
   </div>
@@ -300,7 +323,7 @@
 
 <div class="screen panel" id="panel" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
-    <div class="sheet-head"><h2 id="panelTitle">Профиль</h2><button class="x" id="panelClose" type="button" aria-label="Закрыть">✕</button></div>
+    <div class="sheet-head"><button class="back" id="panelClose" type="button">‹ Назад</button><h2 id="panelTitle">Профиль</h2></div>
     <div class="tabs" id="panelTabs" role="tablist" hidden></div>
     <div class="sheet-body" id="panelBody"></div>
     <div class="sheet-foot" id="panelFoot" hidden></div>
@@ -313,6 +336,16 @@
     <p class="lead" id="modalText"></p>
     <div id="modalExtra"></div>
     <div class="menu-btns" id="modalBtns"></div>
+  </div>
+</div>
+
+<div class="screen" id="pauseScreen" hidden>
+  <div class="card">
+    <h2 class="title">Пауза</h2>
+    <button class="btn" id="resumeBtn" type="button">Продолжить</button>
+    <button class="btn ghost" id="pauseSettings" type="button">Настройки</button>
+    <button class="btn ghost" id="pauseMenu" type="button">Выйти в меню</button>
+    <div class="label" id="pauseNote"></div>
   </div>
 </div>
 
@@ -1042,12 +1075,12 @@
   let ringT = 1;
 
   // ---------- audio ----------
-  let actx = null, muted = false, noiseBuf = null, sfxBus = null, musicBus = null;
+  let actx = null, muted = false, noiseBuf = null, sfxBus = null, musicBus = null, voiceBus = null;
   try { muted = localStorage.getItem('popa-mute') === '1'; } catch (e) {}
   const muteBtn = $('mute');
   const syncMute = () => {
     muteBtn.textContent = muted ? 'ТИХО' : 'ЗВУК'; muteBtn.setAttribute('aria-pressed', String(!muted));
-    if (musicBus) musicBus.gain.setTargetAtTime(muted ? 0 : 0.16, actx.currentTime, 0.05);
+    if (musicBus) applySettings();
   };
   syncMute();
   muteBtn.addEventListener('click', e => {
@@ -1061,7 +1094,9 @@
         noiseBuf = actx.createBuffer(1, actx.sampleRate, actx.sampleRate);
         const d = noiseBuf.getChannelData(0); for (let k = 0; k < d.length; k++) d[k] = rnd() * 2 - 1;
         sfxBus = actx.createGain(); sfxBus.gain.value = 1; sfxBus.connect(actx.destination);
-        musicBus = actx.createGain(); musicBus.gain.value = muted ? 0 : 0.16; musicBus.connect(actx.destination);
+        musicBus = actx.createGain(); musicBus.gain.value = 0; musicBus.connect(actx.destination);
+        voiceBus = actx.createGain(); voiceBus.gain.value = 1; voiceBus.connect(actx.destination);
+        applySettings();
         setInterval(musicTick, 25);
       } catch (e) {}
     }
@@ -1734,6 +1769,7 @@
       return true;
     }
     deathReason = b.def.death;
+    haptic('error');
     state = 'fall'; fallTime = 0;
     fallV.set((rnd() < 0.5 ? -1 : 1) * 2.5, 9, 3.5);
     fallSpin = (rnd() < 0.5 ? -1 : 1) * 7;
@@ -2108,7 +2144,7 @@
     if (net.ws) { try { net.ws.close(); } catch (e) {} }
     net.ws = null; net.on = false; net.waiting = false; online = false;
     mate.root.visible = false; mateChip.hidden = true;
-    waitScreen.hidden = true; $('overScreen').hidden = true; $('endScreen').hidden = true;
+    waitScreen.hidden = true; $('overScreen').hidden = true; $('endScreen').hidden = true; pauseScreen.hidden = true; paused = false;
     hideHud(); clearBoss();
     if (owner) owner.g.visible = false;
     fin = null;
@@ -2237,7 +2273,7 @@
         pp.g.visible = false;
         puffBurst(to.x, to.y, to.z, 26, [0x7a4a22, 0x5a3418, 0x9a6a3a], 1.0, 9);
         sfx.splat();
-        if (pp.atMe) { window.__poopHits = (window.__poopHits || 0) + 1; hitFlash.classList.add('on'); setTimeout(() => hitFlash.classList.remove('on'), 90); jiggleV += 10; }
+        if (pp.atMe) { haptic('medium'); window.__poopHits = (window.__poopHits || 0) + 1; hitFlash.classList.add('on'); setTimeout(() => hitFlash.classList.remove('on'), 90); jiggleV += 10; }
       }
     }
   }
@@ -2290,7 +2326,7 @@
     let e = 0;
     for (let q = 0; q < n; q++) { d[q] = muDec(u8[q + 1]); e += d[q] * d[q]; }
     if (Math.sqrt(e / n) > 0.02) vc.talkT = 0.35;
-    const src = actx.createBufferSource(); src.buffer = buf; src.connect(actx.destination);
+    const src = actx.createBufferSource(); src.buffer = buf; src.connect(voiceBus || actx.destination);
     const now = actx.currentTime;
     if (vc.next < now + 0.04 || vc.next > now + 0.6) vc.next = now + 0.12;
     src.start(vc.next); vc.next += buf.duration;
@@ -2601,6 +2637,129 @@
     return r;
   }
 
+  // ---------- settings (stored on this phone) ----------
+  const settings = { music: 1, sfx: 1, voice: 1, sens: 1, vibe: true };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem('popa-settings') || '{}')); } catch (e) {}
+  const saveSettings = () => { try { localStorage.setItem('popa-settings', JSON.stringify(settings)); } catch (e) {} };
+  function applySettings() {
+    if (musicBus) musicBus.gain.setTargetAtTime(muted || paused ? 0 : 0.16 * settings.music, actx.currentTime, 0.05);
+    if (sfxBus) sfxBus.gain.setTargetAtTime(settings.sfx, actx.currentTime, 0.05);
+    if (voiceBus) voiceBus.gain.setTargetAtTime(settings.voice, actx.currentTime, 0.05);
+  }
+  function openSettings() {
+    openPanel('Настройки', 'settings');
+    const slider = (id, label, val, min, max, step) => `<label class="set-row" for="${id}"><span>${label}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"></label>`;
+    panelBody.innerHTML =
+      slider('setMusic', 'Музыка', settings.music, 0, 1, 0.05) +
+      slider('setSfx', 'Звуки', settings.sfx, 0, 1, 0.05) +
+      slider('setVoice', 'Голос друга', settings.voice, 0, 1.5, 0.05) +
+      slider('setSens', 'Чувствительность пальца', settings.sens, 0.5, 1.8, 0.05) +
+      `<label class="set-row check" for="setVibe"><span>Вибрация</span><input type="checkbox" id="setVibe" ${settings.vibe ? 'checked' : ''}></label>
+       <div class="hint">Настройки хранятся на этом телефоне.</div>`;
+    const bind = (id, key) => $(id).addEventListener('input', e => { settings[key] = +e.target.value; saveSettings(); ensureAudio(); applySettings(); if (key === 'sfx') sfx.coin(0); });
+    bind('setMusic', 'music'); bind('setSfx', 'sfx'); bind('setVoice', 'voice'); bind('setSens', 'sens');
+    $('setVibe').addEventListener('change', e => { settings.vibe = e.target.checked; saveSettings(); haptic('medium'); });
+  }
+
+  // ---------- vibration through Telegram ----------
+  let lastBuzz = 0;
+  function haptic(kind) {
+    if (!settings.vibe) return;
+    const h = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback;
+    if (!h) return;
+    const now = performance.now();
+    if (kind === 'light' && now - lastBuzz < 90) return;
+    lastBuzz = now;
+    try { if (kind === 'error' || kind === 'success' || kind === 'warning') h.notificationOccurred(kind); else h.impactOccurred(kind); } catch (e) {}
+  }
+
+  // ---------- hints the first time you meet something ----------
+  const HINTS = {
+    tramp: ['Батут', 'Подбросит высоко: перелетишь через один цилиндр.'],
+    cannon: ['Пушка', 'Выстрелит тобой на 5 цилиндров вперёд.'],
+    portal: ['Портал', 'Перенесёт на 3 цилиндра вперёд.'],
+    mover: ['Ездящий цилиндр', 'Катается по рельсу, лови его.'],
+    ghost: ['Призрак', 'Мигает. Прыгнешь, когда он прозрачный, и провалишься. Плотный даст +8.'],
+    ice: ['Лёд', 'После него попа скользит на следующем прыжке.'],
+    wind: ['Ветер', 'На следующем прыжке сдует в сторону стрелки. Подруливай против ветра.'],
+    jelly: ['Желе', 'Следующий прыжок медленный, успеешь прицелиться.'],
+    piggy: ['Копилка', '+15 очков.'],
+    disco: ['Диско', 'Следующие 5 прыжков очки идут вдвое.'],
+    spikes: ['Полукактус', 'Приземляйся на гладкую половину. Колючки отнимают 10 очков.'],
+    swap: ['Обменник', 'Поменяет тебя местами с другом.'],
+    secret: ['Секретный цилиндр', 'Случайный сюрприз: бывает хорошее, рискованное и смешное.']
+  };
+  const BOSS_HINTS = [
+    'Уклоняйся от огненных шаров, место удара видно заранее. Потом прыгни на ракету.',
+    'Снежки оставляют лёд, на нём попа скользит. Потом прыгни на фен.',
+    'Колючки летят веером. Встань в щель. Потом прыгни на лейку.',
+    'Лазер бьёт по мигающим полосам. Уйди с них. Потом прыгни на кнопку.',
+    'Пчёлы летят за тобой. Резко уходи в сторону. Потом прыгни на дымовую шашку.',
+    'Бочки катятся по полосам. Встань на свободную. Потом прыгни на пушку.',
+    'Луч тянет к краю, тяни пальцем обратно и уворачивайся от слизи. Потом бластер.',
+    'Молния бьёт туда, где тень. Уходи. Потом прыгни на солнышко.',
+    'Лапа накрывает полплощадки и иногда обманывает. Потом прыгни на указку.',
+    'Повторяет атаки всех боссов. Потом прыгни на зеркало.'
+  ];
+  let seenHints = new Set();
+  try { seenHints = new Set(JSON.parse(localStorage.getItem('popa-hints') || '[]')); } catch (e) {}
+  let hintTimer = 0;
+  function showHint(key, title, text) {
+    if (seenHints.has(key)) return;
+    seenHints.add(key);
+    try { localStorage.setItem('popa-hints', JSON.stringify([...seenHints])); } catch (e) {}
+    const el = $('hintCard');
+    $('hintTitle').textContent = title; $('hintText').textContent = text;
+    el.hidden = false; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    clearTimeout(hintTimer); hintTimer = setTimeout(() => { el.hidden = true; }, 4200);
+  }
+  function hintRow(row) { for (const k of row.all) { const t = k.kind === 'secret' ? 'secret' : k.special; if (t && HINTS[t]) { showHint('sp-' + t, ...HINTS[t]); return; } } }
+
+  // ---------- pause ----------
+  let paused = false;
+  const pauseScreen = $('pauseScreen'), pauseBtn = $('pauseBtn');
+  const inRun = () => ['play', 'boss', 'jet', 'count'].includes(state) || (state === 'finale' && $('endScreen').hidden);
+  function pauseGame() {
+    if (!inRun() || !pauseScreen.hidden) return;
+    pauseScreen.hidden = false;
+    $('pauseNote').textContent = net.on ? 'В онлайне игра не останавливается: друг прыгает дальше.' : (gameMode === 'endless' ? 'Если выйти в меню, забег закончится и результат засчитается.' : '');
+    if (!net.on) { paused = true; applySettings(); }
+  }
+  function resumeGame() { pauseScreen.hidden = true; if (paused) { paused = false; last = performance.now(); applySettings(); } }
+  pauseBtn.addEventListener('click', e => { e.stopPropagation(); pauseBtn.blur(); pauseGame(); });
+  $('resumeBtn').addEventListener('click', resumeGame);
+  $('pauseSettings').addEventListener('click', openSettings);
+  $('pauseMenu').addEventListener('click', () => {
+    pauseScreen.hidden = true; paused = false;
+    if (!net.on && (gameMode === 'endless') && score > 0) sendResult('endless', false);
+    showMenu();
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && !net.on) pauseGame(); });
+  $('mSettings').addEventListener('click', openSettings);
+
+  // ---------- one "back" for everything: our buttons, Telegram's back button and the Android back gesture ----------
+  function handleBack() {
+    if (!modal.hidden) { closeModal(); return; }
+    if (!panel.hidden) { closePanel(); return; }
+    if (!pauseScreen.hidden) { resumeGame(); return; }
+    if (!waitScreen.hidden) { showMenu(); return; }
+    if (!$('overScreen').hidden || !$('endScreen').hidden) { showMenu(); return; }
+    if (inRun()) { pauseGame(); return; }
+    if (!$('menuPlay').hidden) { showMain(); return; }
+  }
+  const tgBack = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.BackButton;
+  const tgBackOK = !!(tgBack && TG_INIT && window.Telegram.WebApp.isVersionAtLeast && window.Telegram.WebApp.isVersionAtLeast('6.1'));
+  if (tgBackOK) tgBack.onClick(handleBack);
+  let backShown = null;
+  setInterval(() => {
+    const atRoot = !$('startScreen').hidden && !$('menuMain').hidden && modal.hidden && panel.hidden;
+    pauseBtn.hidden = !inRun() || !pauseScreen.hidden;
+    if (!tgBackOK || backShown === !atRoot) return;
+    backShown = !atRoot;
+    try { if (backShown) tgBack.show(); else tgBack.hide(); } catch (e) {}
+  }, 200);
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') handleBack(); });
+
   // ---------- lifecycle ----------
   function clearBoss() {
     if (boss) { boss.model.g.visible = false; boss.weapon.g.visible = false; if (boss.model.beam) boss.model.beam.visible = false; }
@@ -2687,7 +2846,7 @@
 
   // ---------- input ----------
   let dragging = false, lastPX = 0;
-  const SENS = () => 7.5 / Math.max(320, window.innerWidth);
+  const SENS = () => 7.5 / Math.max(320, window.innerWidth) * settings.sens;
   canvas.addEventListener('pointerdown', e => {
     dragging = true; lastPX = e.clientX;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
@@ -2769,6 +2928,7 @@
 
   // ---------- landing ----------
   function land(c) {
+    haptic('light');
     const dist = Math.abs(px - c.x);
     const perfect = c.kind !== 'boss' && c.kind !== 'final' && !c.isAlt && dist < c.r * 0.28;
     const mul = (fx && fx.e.x2 ? 2 : 1) * (disco > 0 ? 2 : 1);
@@ -2837,6 +2997,7 @@
     model.g.position.set(c.x + 6, 10, c.z - 34);
     model.mats.forEach(m => { m.emissive.setHex(m.userData.e0); m.emissiveIntensity = m.userData.ei0; m.opacity = m.transparent ? m.opacity : 1; });
     (def.enter || sfx.roar)();
+    showHint('boss-' + n, def.name, BOSS_HINTS[n]);
     $('bossTag').textContent = 'Босс ' + (n + 1) + '/10';
     bossText.textContent = def.name;
     pipsEl.hidden = true;
@@ -2963,7 +3124,7 @@
         b.fallV.set((rnd() - 0.5) * 3, 4, -3);
         const reward = (25 + 25 * (b.n + 1)) * (1 + b.level);
         addScore(reward);
-        bossesWon++;
+        bossesWon++; haptic('success');
         showPop('Победа! +' + reward, 'long');
         bossText.textContent = 'Победа!';
         setTimeout(() => sfx.win(), 250);
@@ -3085,9 +3246,9 @@
   }
 
   // ---------- loop ----------
-  let last = performance.now(), frameNo = 0;
+  var last = performance.now(), frameNo = 0;
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const dt = paused ? 0 : Math.min(0.05, (now - last) / 1000); last = now;
     time += dt;
 
     if (autoOn && (state === 'play' || state === 'boss')) { targetX = autoTarget(); autoUsed = true; }
@@ -3149,7 +3310,8 @@
           updateFxChip();
           if (on.kind === 'secret') triggerSecret(on);
           fillCyls(); pruneCyls();
-          if (on.special && state === 'play') applySpecial(on);
+          if (on.special && state === 'play') { haptic('medium'); applySpecial(on); }
+          const nextRow = getCyl(curIdx + (nextHop.span || 1)); if (nextRow) hintRow(nextRow);
           if (to.kind === 'gold' && music.name !== 'finale' && to.i === GOLD_START) { setMusic('finale'); showPop('Золотая дорога!', 'long'); }
           if (to.kind === 'boss') startBoss(to);
           else if (to.kind === 'final') startFinale(to);
@@ -3163,7 +3325,7 @@
           fallV.set((px - to.x) * 0.3, -4 * HOP_H / hopDur * 0.3, (to.z - from.z) / hopDur * 0.6);
           fallSpin = (px > to.x ? -1 : 1) * 5;
           combo = 0; nextHop = {};
-          sfx.fall(); setMusic(null);
+          sfx.fall(); setMusic(null); haptic('error');
         }
       }
     } else if (state === 'jet') updateJet(dt);

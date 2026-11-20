@@ -27,3 +27,9 @@ new_sqlite_classes = ["Lobby"]
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["Accounts"]
+
+
+# music (and other big files) live in KV, so the worker bundle stays small
+[[kv_namespaces]]
+binding = "MEDIA"
+id = "afd8add8c45c4b62bfe2f5afb37f3d20"

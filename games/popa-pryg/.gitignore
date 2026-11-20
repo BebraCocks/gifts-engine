@@ -2,3 +2,4 @@ worker/public/index.html
 worker/.wrangler/
 node_modules/
 tests/shots/
+worker/.uploaded/

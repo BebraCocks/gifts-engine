@@ -1264,6 +1264,7 @@
         voiceBus = actx.createGain(); voiceBus.gain.value = 1; voiceBus.connect(actx.destination);
         applySettings();
         setInterval(musicTick, 25);
+        loadTracks();
       } catch (e) {}
     }
     if (actx && actx.state === 'suspended') actx.resume();
@@ -1397,16 +1398,42 @@
   };
   const midi = m => 440 * Math.pow(2, (m - 69) / 12);
   const deg = (mode, d) => { const L = mode.length; return mode[((d % L) + L) % L] + 12 * Math.floor(d / L); };
-  const music = { name: null, gain: null, song: null, step: 0, next: 0 };
+  const music = { name: null, gain: null, song: null, step: 0, next: 0, src: null };
+  // recorded tracks (made in Gemini) live next to the game as files; until one loads, or if it can't,
+  // the little code-written song plays instead. loopStart/loopEnd are whole bars, so the loop has no seam.
+  const TRACKS = {
+    main: { url: 'music/main.mp3', loopStart: 18.6323, loopEnd: 111.9509 },
+    // menu: calm track, coming next
+  };
+  const TRACK_GAIN = 2.6;   // the music bus is quiet for the code songs; recorded tracks are mastered louder
+  const trackBuf = {};
+  function loadTracks() {
+    for (const [name, t] of Object.entries(TRACKS)) {
+      if (name in trackBuf) continue;
+      trackBuf[name] = null;
+      fetch(t.url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); })
+        .then(b => new Promise((ok, bad) => actx.decodeAudioData(b, ok, bad)))
+        .then(buf => { trackBuf[name] = buf; if (music.name === name && !music.src) { music.name = null; setMusic(name); } })
+        .catch(() => {});
+    }
+  }
   function setMusic(name) {
     if (!actx || music.name === name) return;
-    if (music.gain) { const g = music.gain; g.gain.setTargetAtTime(0, actx.currentTime, 0.2); setTimeout(() => g.disconnect(), 1500); }
-    music.name = name; music.gain = null; music.song = null;
+    if (music.gain) { const g = music.gain, src = music.src; g.gain.setTargetAtTime(0, actx.currentTime, 0.2); setTimeout(() => { g.disconnect(); if (src) try { src.stop(); } catch (e) {} }, 1500); }
+    music.name = name; music.gain = null; music.song = null; music.src = null;
     if (!name) return;
     const g = actx.createGain(); g.gain.value = 0.0001; g.connect(musicBus);
-    g.gain.setTargetAtTime(1, actx.currentTime + 0.05, 0.25);
-    music.gain = g; music.song = SONGS[name]; music.step = 0; music.next = actx.currentTime + 0.12;
+    const buf = trackBuf[name], tr = TRACKS[name];
+    g.gain.setTargetAtTime(buf ? TRACK_GAIN : 1, actx.currentTime + 0.05, 0.25);
+    music.gain = g;
+    if (buf) {
+      const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+      src.loopStart = tr.loopStart; src.loopEnd = Math.min(tr.loopEnd, buf.duration);
+      src.connect(g); src.start(actx.currentTime + 0.05); music.src = src;
+    } else { music.song = SONGS[name]; music.step = 0; music.next = actx.currentTime + 0.12; }
   }
+  // browsers start sound only after a tap: the first tap anywhere starts the calm menu music
+  document.addEventListener('pointerdown', () => { ensureAudio(); if (!$('startScreen').hidden && !music.name) setMusic('menu'); }, { once: true, capture: true });
   function mnote(t, f, dur, type, vol, out, o = {}) {
     const osc = actx.createOscillator(), g = actx.createGain();
     osc.type = type; osc.frequency.setValueAtTime(f, t);
@@ -2317,7 +2344,7 @@
     if (owner) owner.g.visible = false;
     fin = null;
     state = 'ready'; gameMode = 'story'; newRun();
-    setMusic(null);
+    setMusic('menu');
     showMain(); closeModal(); panel.hidden = true; refreshMe();
     $('startScreen').hidden = false;
   }
@@ -3823,7 +3850,7 @@
 
   // tiny hook for automated checks
   window.__popa = {
-    info: () => ({ state, px, pz, curIdx, score, online, host: net.host, tok: !!net.token, rt: net.resumeTry, ws: net.ws && net.ws.readyState, leaving: net.leaving, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
+    info: () => ({ state, music: music.name + (music.src ? ":track" : music.song ? ":code" : ""), px, pz, curIdx, score, online, host: net.host, tok: !!net.token, rt: net.resumeTry, ws: net.ws && net.ws.readyState, leaving: net.leaving, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
       fx: fx && fx.e.id, shield, fin: fin && fin.phase, hz: hz.length, tx: targetX, haz: hz.map(h => [+h.x.toFixed(2), +h.t.toFixed(2), h.w, h.style]) }),
     steer: x => { targetX = x; },
     dropNet: () => { if (net.ws) net.ws.close(); },

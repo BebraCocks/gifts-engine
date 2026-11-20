@@ -90,6 +90,16 @@ export default {
     if (url.pathname === '/poster.jpg') {
       return new Response(poster, { headers: { 'content-type': 'image/jpeg', 'cache-control': 'public, max-age=86400' } });
     }
+    if (url.pathname.startsWith('/music/') && /^\/music\/[a-z0-9-]+\.mp3$/.test(url.pathname)) {
+      // tracks are stored in KV; the edge cache keeps KV reads low
+      const cache = caches.default, hit = await cache.match(request);
+      if (hit) return hit;
+      const data = env.MEDIA && await env.MEDIA.get(url.pathname.slice(1), 'arrayBuffer');
+      if (!data) return new Response('not found', { status: 404 });
+      const res = new Response(data, { headers: { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=604800, immutable' } });
+      ctx.waitUntil(cache.put(request, res.clone()));
+      return res;
+    }
     if (url.pathname === '/stats') {
       const res = await env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main')).fetch('https://accounts/op', { method: 'POST', body: JSON.stringify({ op: 'stats' }) });
       return new Response(JSON.stringify(await res.json(), null, 2), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });

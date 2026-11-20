@@ -116,3 +116,86 @@ short peach-skin legs, white socks, red sneakers with white soles, no upper body
 2. Значки особых цилиндров. Ими можно украсить подсказки.
 3. Видео-приветствие для /start.
 4. Остальное по желанию.
+
+---
+
+# Интерфейс
+
+Текст на кнопках и сами кнопки я оставляю в коде: так они чёткие на любом экране и надписи не ломаются.
+От картинок нужны **значки, медали, иллюстрации для экранов и фоны**: их я ставлю рядом с текстом.
+
+**Референсы:** `art/ui-reference.png` (как интерфейс выглядит сейчас), `art/hero-reference.jpg` (героиня).
+Сделай первый значок, и если он нравится, прикладывай его как референс ко всем остальным: так набор будет единым.
+
+**Палитра игры** (вставлять в промпты как есть): purple `#a43cff`, red `#ff3b2f`, yellow `#ffd60a`,
+sky blue `#3aa8ff`, orange `#ff8a1a`, deep ink outline `#2a1457`, white.
+
+**Добавлять в конец каждого промпта интерфейса:**
+```
+glossy candy 3D mobile game icon, chunky rounded shapes, soft bevel and top highlight,
+thick deep-purple (#2a1457) outline, palette: purple #a43cff, red #ff3b2f, yellow #ffd60a,
+sky blue #3aa8ff, orange #ff8a1a, white; centered, transparent background, no text, no letters
+```
+
+## А. Значки меню и игры (512×512, PNG без фона)
+
+| # | Значок | Промпт (вставить перед общим окончанием) |
+|---|---|---|
+| 1 | Играть | `big yellow play triangle with a tiny purple cartoon butt bouncing on it` |
+| 2 | Профиль | `round avatar badge with a purple-shorts cartoon butt silhouette inside` |
+| 3 | Друзья | `two cartoon butts side by side, one in purple shorts, one in orange shorts, high-fiving with sneakers` |
+| 4 | Лидерборд | `golden trophy cup with a star, small purple ribbon` |
+| 5 | Магазин (на потом) | `cute shop stall with striped red-white awning and a shopping bag` |
+| 6 | Настройки | `chunky purple gear cog` |
+| 7 | Пауза | `two thick rounded white pause bars on a purple circle` |
+| 8 | Звук включён | `yellow speaker with sound waves` |
+| 9 | Звук выключен | `grey speaker with a small red cross` |
+| 10 | Микрофон включён | `green microphone with sound waves` |
+| 11 | Микрофон выключен | `grey microphone with a red slash` |
+| 12 | Автопилот | `cute robot head steering a small ship wheel` |
+| 13 | Какашка | `cute smiling cartoon poop swirl with big eyes, brown and glossy` |
+| 14 | Реакции | `round yellow laughing face with tears of joy` |
+| 15 | Поделиться | `paper plane flying out of a purple circle with sparkles` |
+| 16 | Назад | `thick rounded arrow pointing left, purple` |
+| 17 | Сюжет | `open storybook with a golden star bookmark` |
+| 18 | Бесконечный | `glossy purple infinity sign made of cylinders` |
+| 19 | Испытание дня | `calendar page with a golden star and a small flame` |
+| 20 | Онлайн: случайный | `pink dice showing a butt on one face` |
+| 21 | Онлайн: с другом | `two sneakers, red and blue, touching toes, small heart above` |
+| 22 | Копировать | `two overlapping rounded white cards` |
+| 23 | Принять | `thick green check mark` |
+| 24 | Отклонить | `thick red cross` |
+
+## Б. Медали лидерборда (512×512, PNG без фона)
+
+- `gold medal with number 1 shape embossed as a star, red ribbon` — 1 место
+- `silver medal with a star, blue ribbon` — 2 место
+- `bronze medal with a star, green ribbon` — 3 место
+- `small golden crown with three round gems` — над аватаркой лидера
+
+## В. Иллюстрации для экранов (1024×1024, PNG без фона, героиня в центре)
+
+| Экран | Промпт |
+|---|---|
+| Проигрыш | `the cartoon butt character sitting dizzy on a cylinder, cartoon stars and birds circling above` |
+| Новый рекорд | `the cartoon butt character jumping with a gold medal, confetti burst` |
+| Пауза | `the cartoon butt character asleep lying on a cylinder, big Zzz bubbles, tiny pillow` |
+| Ждём соперника | `the cartoon butt character looking through binoculars, standing on a cylinder` |
+| Нет друзей | `lonely cartoon butt character holding a big magnifying glass, searching` |
+| Пустой лидерборд | `empty three-step winners podium with a question mark, confetti on the floor` |
+| Как тебя зовут | `the cartoon butt character holding a blank white name tag sign` |
+| Победа над боссом | `the cartoon butt character standing proudly on top of a golden trophy, flexing` |
+| Сюжет пройден | `the cartoon butt character and a cartoon boy in a cyan t-shirt dancing together, hearts around` |
+
+## Г. Фоны
+
+- **Фон меню**, 1080×1920 — промпт из раздела «Картинки для меню и бота» выше.
+- **Узор для окон**, 512×512, бесшовный: `seamless subtle pattern of tiny lavender cylinders, stars and little sneakers on very light lavender #f6f1ff, low contrast, flat`
+- **Шапка окна**, 1080×300: `wide soft gradient banner from purple #a43cff to pink, small clouds and floating cylinders, flat cartoon, no text`
+
+## Что в первую очередь
+
+1. Значки 1–4 и 6 (главное меню) и 17–21 (выбор режима).
+2. Иллюстрации «Проигрыш», «Новый рекорд», «Пауза», «Ждём соперника».
+3. Медали.
+4. Остальное.

@@ -137,7 +137,7 @@
   .btn.online:active { box-shadow: 0 2px 0 #6a1fb0; }
   .btn.ghost { background: #fff; color: var(--ink); box-shadow: 0 5px 0 rgba(42,20,87,.25); }
   .menu-btns { display: flex; gap: 8px; width: 100%; }
-  .menu-btns .btn { flex: 1; min-width: 0; }
+  .menu-btns .btn { flex: 1; min-width: 0; font-size: clamp(12px, 3.7vw, 15px); padding-left: 4px; padding-right: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .screen.wait { background: rgba(26,12,60,.72); flex-direction: column; gap: 18px; text-align: center; color: #fff; }
   .wait-title { font-weight: 900; font-size: clamp(22px, 7vw, 30px); line-height: 1.15; text-wrap: balance; max-width: 100%; }
   .wait-title i { display: inline-block; width: 1.2em; text-align: left; font-style: normal; }
@@ -180,7 +180,7 @@
   .screen.panel { z-index: 25; }
   .screen.modal { z-index: 30; background: rgba(26,12,60,.55); align-items: center; }
   .pop { z-index: 40; }
-  .menu-card { gap: 9px; }
+  .menu-card { gap: 9px; width: min(310px, 100%); }
   .me-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: #f6f1ff; border-radius: 14px; padding: 6px 10px; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
   .me-text { display: flex; flex-direction: column; min-width: 0; }
   .me-text b { font-weight: 900; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -199,6 +199,7 @@
   .tile.locked { background: #c9cbd1; color: #5b5f69; box-shadow: 0 4px 0 #a9acb4; cursor: not-allowed; filter: grayscale(1); }
   .tile.locked:active { transform: none; box-shadow: 0 4px 0 #a9acb4; }
   .tile .chains { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .lock-label { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; background: rgba(214,216,222,.92); border-radius: 10px; padding: 3px 10px; }
   .badge { position: absolute; top: 6px; right: 8px; min-width: 18px; height: 18px; border-radius: 9px; background: #ff3b2f; color: #fff; font: 900 11px/18px var(--display); padding: 0 5px; }
   .tile:focus-visible, .me-row:focus-visible, .x:focus-visible, .tab:focus-visible, .mini:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 
@@ -307,13 +308,13 @@
         <button class="tile" id="mProfile" type="button">Профиль</button>
         <button class="tile" id="mFriends" type="button">Друзья<span class="badge" id="reqBadge" hidden>0</span></button>
         <button class="tile" id="mBoard" type="button">Лидерборд</button>
-        <button class="tile locked" id="mShop" type="button" aria-disabled="true">Магазин<small>скоро</small>
+        <button class="tile locked" id="mShop" type="button" aria-disabled="true"><span class="lock-label">Магазин<small>скоро</small></span>
           <svg class="chains" viewBox="0 0 120 70" aria-hidden="true" preserveAspectRatio="none">
             <g fill="none" stroke="#6b6f7a" stroke-width="3.2"><g transform="rotate(18 60 35)">
               <rect x="-6" y="31" width="16" height="9" rx="4.5"/><rect x="8" y="31" width="16" height="9" rx="4.5"/><rect x="22" y="31" width="16" height="9" rx="4.5"/><rect x="36" y="31" width="16" height="9" rx="4.5"/><rect x="50" y="31" width="16" height="9" rx="4.5"/><rect x="64" y="31" width="16" height="9" rx="4.5"/><rect x="78" y="31" width="16" height="9" rx="4.5"/><rect x="92" y="31" width="16" height="9" rx="4.5"/><rect x="106" y="31" width="16" height="9" rx="4.5"/></g>
             <g transform="rotate(-18 60 35)">
               <rect x="-6" y="31" width="16" height="9" rx="4.5"/><rect x="8" y="31" width="16" height="9" rx="4.5"/><rect x="22" y="31" width="16" height="9" rx="4.5"/><rect x="36" y="31" width="16" height="9" rx="4.5"/><rect x="50" y="31" width="16" height="9" rx="4.5"/><rect x="64" y="31" width="16" height="9" rx="4.5"/><rect x="78" y="31" width="16" height="9" rx="4.5"/><rect x="92" y="31" width="16" height="9" rx="4.5"/><rect x="106" y="31" width="16" height="9" rx="4.5"/></g></g>
-            <g transform="translate(60 37)"><path d="M-7 -4 v-5 a7 7 0 0 1 14 0 v5" fill="none" stroke="#4a4e58" stroke-width="3"/><rect x="-10" y="-4" width="20" height="15" rx="3" fill="#7d818c" stroke="#4a4e58" stroke-width="2"/><circle cx="0" cy="3" r="2.2" fill="#3a3d45"/></g>
+            <g transform="translate(100 54) scale(0.75)"><path d="M-7 -4 v-5 a7 7 0 0 1 14 0 v5" fill="none" stroke="#4a4e58" stroke-width="3"/><rect x="-10" y="-4" width="20" height="15" rx="3" fill="#7d818c" stroke="#4a4e58" stroke-width="2"/><circle cx="0" cy="3" r="2.2" fill="#3a3d45"/></g>
           </svg>
         </button>
       </div>

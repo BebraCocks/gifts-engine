@@ -318,11 +318,12 @@
   scene.add(lamp);
 
   // shared geometry
-  const sph = new THREE.SphereGeometry(1, 22, 16);
-  const cyl1 = new THREE.CylinderGeometry(1, 1, 1, 22);
-  const cone1 = new THREE.ConeGeometry(1, 1, 16);
-  const box1 = new THREE.BoxGeometry(1, 1, 1);
-  const cap1 = new THREE.CapsuleGeometry(0.5, 1, 8, 16);
+  const keep = x => { x.userData.keep = true; return x; };   // shared resources: cleanup never frees these
+  const sph = keep(new THREE.SphereGeometry(1, 22, 16));
+  const cyl1 = keep(new THREE.CylinderGeometry(1, 1, 1, 22));
+  const cone1 = keep(new THREE.ConeGeometry(1, 1, 16));
+  const box1 = keep(new THREE.BoxGeometry(1, 1, 1));
+  const cap1 = keep(new THREE.CapsuleGeometry(0.5, 1, 8, 16));
   const M = (color, rough = 0.55, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: rough }, extra));
   const Basic = (color, extra = {}) => new THREE.MeshBasicMaterial(Object.assign({ color }, extra));
   function add(parent, geo, mat, p = [0, 0, 0], s = 1, r = [0, 0, 0]) {
@@ -346,17 +347,17 @@
       pts.push(new THREE.Vector2(1 - e + e * Math.cos(th), -e + e * Math.sin(th)));
     }
     pts.push(new THREE.Vector2(1, -CYL_H), new THREE.Vector2(0, -CYL_H));
-    return new THREE.LatheGeometry(pts.reverse(), 56);
+    return keep(new THREE.LatheGeometry(pts.reverse(), 56));
   })();
-  const bossStripeGeo = new THREE.TorusGeometry(1, 0.035, 10, 72);
-  const studGeo = new THREE.SphereGeometry(0.16, 14, 10);
+  const bossStripeGeo = keep(new THREE.TorusGeometry(1, 0.035, 10, 72));
+  const studGeo = keep(new THREE.SphereGeometry(0.16, 14, 10));
   const qTex = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d');
     g.font = '900 104px Rubik, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.lineWidth = 14; g.strokeStyle = '#7a1fa8'; g.strokeText('?', 64, 70);
     g.fillStyle = '#fff'; g.fillText('?', 64, 70);
-    return new THREE.CanvasTexture(c);
+    return keep(new THREE.CanvasTexture(c));
   })();
 
   // ---------- boss platforms: each one dressed for its boss ----------
@@ -642,8 +643,8 @@
   }
 
   // online track: one wide track with five wandering paths close together
-  const PATH_OFF = [-4.8, -2.4, 0, 2.4, 4.8];
-  let pathX = PATH_OFF.slice();
+  const PATH_OFF = [-3.1, 0, 3.1];
+  let pathX = PATH_OFF.slice(), pathW = [1, 1, 1];
   function makeCyl() {
     const i = nextIdx++;
     const kind = kindOf(i);
@@ -656,7 +657,7 @@
     else if (multi) {
       if (i >= 3 && !(prev && prev.kind === 'boss')) { const step = (0.3 + d * 0.8) * (lrnd() < 0.5 ? -1 : 1); x = clamp(lastX + step, -2.5, 2.5); }
       else x = clamp(lastX * 0.5, -1, 1);
-      r = 1.05 - d * 0.15;
+      r = 1.25 - d * 0.2;
     }
     else if (kind === 'final') { r = FINAL_R; x = clamp(lastX * 0.4, -1.5, 1.5); }
     else if (i < 3) { /* straight start */ }
@@ -675,19 +676,24 @@
       r = (1.2 - d * 0.42 + (lrnd() - 0.5) * 0.14) * CYL_SCALE;
     }
     const centre = x;
-    let xs = null;
+    let xs = null, rs = null;
     if (multi) {
       // each path wanders on its own, stays near its slot, and never touches its neighbours
-      for (let k = 0; k < 5; k++) pathX[k] = lerp(pathX[k] + (i > 0 ? (lrnd() - 0.5) * 1.3 : 0), centre + PATH_OFF[k], 0.4);
-      pathX.sort((a, b) => a - b);
-      for (let pass = 0; pass < 3; pass++) for (let k = 1; k < 5; k++) { const gap = pathX[k] - pathX[k - 1], need = r * 2 + 0.35; if (gap < need) { const push = (need - gap) / 2; pathX[k - 1] -= push; pathX[k] += push; } }
+      // each path has its own width that slowly changes, and its own wobble
+      for (let k = 0; k < 3; k++) {
+        pathW[k] = clamp(pathW[k] + (i > 0 ? (lrnd() - 0.5) * 0.25 : (lrnd() - 0.5) * 0.6), 0.65, 1.35);
+        pathX[k] = lerp(pathX[k] + (i > 0 ? (lrnd() - 0.5) * 1.6 : 0), centre + PATH_OFF[k], 0.3);
+      }
+      for (let pass = 0; pass < 3; pass++) for (let k = 1; k < 3; k++) { const gap = pathX[k] - pathX[k - 1], need = r * (pathW[k] + pathW[k - 1]) + 0.45; if (gap < need) { const push = (need - gap) / 2; pathX[k - 1] -= push; pathX[k] += push; } }
       xs = pathX.slice();
-      x = xs[0];
+      rs = pathW.map(w => r * w);
+      x = xs[0]; r = rs[0];
     }
     const hasSecret = !multi && kind === 'normal' && secretSet.has(i);
     const ghostFork = !multi && sp === 'ghost';
     const altR = 1.0 * CYL_SCALE;
-    const gap = i === 0 ? 0 : Math.max(SPACING, lastR + Math.max(r, hasSecret || ghostFork ? altR : 0) + 0.7) + (kind === 'final' ? 1.2 : 0);
+    const rowR = rs ? Math.max(...rs) : r;
+    const gap = i === 0 ? 0 : Math.max(SPACING, lastR + Math.max(rowR, hasSecret || ghostFork ? altR : 0) + 0.7) + (kind === 'final' ? 1.2 : 0);
     const z = zCursor - gap;
     zCursor = z;
 
@@ -702,7 +708,7 @@
     if (kind === 'boss') decorateBossPlatform(g, r, Math.round(i / BOSS_EVERY) - 1, c);
     if (multi) {
       c.centre = centre;
-      for (let k = 1; k < 5; k++) { const e = makePlain(xs[k], z, r, kind); e.i = i; e.parent = c; c.extra.push(e); c.all.push(e); }
+      for (let k = 1; k < 3; k++) { const e = makePlain(xs[k], z, rs[k], kind); e.i = i; e.parent = c; c.extra.push(e); c.all.push(e); }
     }
     if (hasSecret || ghostFork) {
       const side = x > 1 ? -1 : x < -1 ? 1 : (lrnd() < 0.5 ? -1 : 1);
@@ -711,23 +717,38 @@
       c.all.push(c.alt);
     }
     if (sp) {
-      const target = multi ? c.all[Math.floor(lrnd() * 5)] : c;
+      const target = multi ? c.all[Math.floor(lrnd() * 3)] : c;
       decorateSpecial(target, sp);
     }
-    lastR = Math.max(r, hasSecret || ghostFork ? altR : 0);
+    lastR = Math.max(rowR, hasSecret || ghostFork ? altR : 0);
     cyls.push(c);
     return c;
   }
   const getCyl = i => cyls.find(c => c.i === i);
-  function dropCyl(c) {
-    for (const k of c.all) { scene.remove(k.g); k.mat.dispose(); if (k.extraObjs) k.extraObjs.forEach(o => scene.remove(o)); }
+  function freeDeep(obj) {
+    obj.traverse(o => {
+      if (o.geometry && !o.geometry.userData.keep) o.geometry.dispose();
+      const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      for (const m of mats) {
+        if (m.userData.keep) continue;
+        for (const key of ['map', 'emissiveMap']) if (m[key] && !m[key].userData.keep) m[key].dispose();
+        m.dispose();
+      }
+    });
   }
-  function fillCyls() { while (nextIdx <= FINAL_IDX && nextIdx < curIdx + 34) makeCyl(); }
+  // a row the butt has passed is removed from the scene and everything it used is freed
+  function dropCyl(c) {
+    for (const k of c.all) {
+      scene.remove(k.g); freeDeep(k.g);
+      if (k.extraObjs) k.extraObjs.forEach(o => { scene.remove(o); freeDeep(o); });
+    }
+  }
+  function fillCyls() { while (nextIdx <= FINAL_IDX && nextIdx < curIdx + 22) makeCyl(); }
 
   function resetWorld() {
     cyls.forEach(dropCyl);
     cyls = []; nextIdx = 0; lastX = 0; lastColor = -1; zCursor = 0; lastR = 1.25 * CYL_SCALE;
-    pathX = PATH_OFF.slice();
+    pathX = PATH_OFF.slice(); pathW = [1, 1, 1];
     rollSecrets();
     rollSpecials();
     curIdx = 0;
@@ -735,7 +756,7 @@
   }
 
   // ---------- clouds ----------
-  const cloudMat = M(0xffffff, 1, { emissive: 0xdfefff, emissiveIntensity: 0.35 });
+  const cloudMat = keep(M(0xffffff, 1, { emissive: 0xdfefff, emissiveIntensity: 0.35 }));
   const clouds = [];
   function puff(parent, n, spread = 1.1) {
     for (let k = 0; k < n; k++) {
@@ -1440,7 +1461,7 @@
     paw:    { strike: 'paw', mark: 0xff8a00, impact: [0xfff1dc, 0xffd0a0] },
     dark:   { color: 0xb040ff, halo: 0x3a0060, size: 0.4, trail: [0xb040ff, 0x400070], impact: [0xb040ff, 0xff40c0, 0x400070], mark: 0xb040ff }
   };
-  const ringGeo = new THREE.RingGeometry(0.62, 0.82, 40), circGeo = new THREE.CircleGeometry(0.62, 40), planeGeo = new THREE.PlaneGeometry(1, 1);
+  const ringGeo = keep(new THREE.RingGeometry(0.62, 0.82, 40)), circGeo = keep(new THREE.CircleGeometry(0.62, 40)), planeGeo = keep(new THREE.PlaneGeometry(1, 1));
   const pawMesh = (() => {
     const g = grp(scene); const m = M(0xffa850, 0.7), pk = M(0xff8fb0, 0.6);
     add(g, sph, m, [0, 0, 0], [1.4, 0.7, 1.5]);
@@ -1998,8 +2019,8 @@
       paintButt(hero, net.host ? 'purple' : 'orange'); paintButt(mate, net.host ? 'orange' : 'purple');
       newRun();
       const c0 = getCyl(0);
-      px = targetX = c0.all[net.host ? 1 : 3].x;
-      net.rs.x = c0.all[net.host ? 3 : 1].x;
+      px = targetX = c0.all[net.host ? 0 : 2].x;
+      net.rs.x = c0.all[net.host ? 2 : 0].x;
       mate.root.position.set(net.rs.x, 0, 0); mate.root.rotation.set(0, 0, 0); mate.root.visible = true;
       $('mateName').textContent = net.mateName; $('mateText').textContent = '0'; mateChip.hidden = false;
       scoreEl.hidden = false; bestMini.hidden = true;
@@ -2147,7 +2168,7 @@
     bossBar.hidden = true;
   }
   function pruneCyls() {
-    cyls = cyls.filter(c => { if (c.i < curIdx - 3) { dropCyl(c); return false; } return true; });
+    cyls = cyls.filter(c => { if (c.i < curIdx - 2) { dropCyl(c); return false; } return true; });
   }
 
   function newRun() {
@@ -2854,7 +2875,7 @@
 
   // tiny hook for automated checks
   window.__popa = {
-    info: () => ({ state, px, pz, curIdx, score, online, host: net.host, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
+    info: () => ({ state, px, pz, curIdx, score, online, host: net.host, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
       fx: fx && fx.e.id, shield, fin: fin && fin.phase, hz: hz.length, tx: targetX, haz: hz.map(h => [+h.x.toFixed(2), +h.t.toFixed(2), h.w, h.style]) }),
     steer: x => { targetX = x; },
     rowInfo: i => { const c = getCyl(i); const k = c.all.find(q => q.special) || c; return { x: k.x, z: k.z, special: k.special }; },

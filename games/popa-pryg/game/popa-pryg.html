@@ -803,6 +803,43 @@
     }
   }
 
+  // ---------- regular cylinders get one of several looks, so the track is not all the same ----------
+  const LOOKS = ['plain', 'plain', 'stripes', 'dots', 'icing', 'bands', 'sprinkles', 'rim'];
+  const lookFor = (i, k) => LOOKS[(((i * 2654435761) ^ (k * 40503)) >>> 0) % LOOKS.length];   // depends only on the row, so both online players see the same
+  const sideGeo = keep(new THREE.CylinderGeometry(1, 1, CYL_H - 0.12, 48, 1, true));
+  const lookTex = {};
+  function patternTex(kind) {
+    if (lookTex[kind]) return lookTex[kind];
+    const t = canvasTex(512, 256, (g, w, h) => {
+      g.clearRect(0, 0, w, h); g.fillStyle = 'rgba(255,255,255,.92)';
+      if (kind === 'stripes') { for (let x = -h; x < w + h; x += 64) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 26, 0); g.lineTo(x + 26 + h * 0.6, h); g.lineTo(x + h * 0.6, h); g.fill(); } }
+      else if (kind === 'dots') { for (let y = 22; y < h; y += 44) for (let x = (y / 44 % 2) * 32 + 16; x < w; x += 64) { g.beginPath(); g.arc(x, y, 11, 0, Math.PI * 2); g.fill(); } }
+      else if (kind === 'icing') { g.fillRect(0, 0, w, 26); for (let x = 0; x < w; x += 32) { const l = 30 + ((x * 37) % 70); g.beginPath(); g.moveTo(x + 4, 20); g.lineTo(x + 6, l); g.arc(x + 16, l, 10, Math.PI, 0, true); g.lineTo(x + 28, 20); g.fill(); } }
+      else if (kind === 'bands') { g.fillRect(0, 34, w, 18); g.fillRect(0, 70, w, 8); }
+    }, 1);
+    t.repeat.set(kind === 'dots' ? 3 : 2, 1);
+    lookTex[kind] = { tex: keep(t), mat: keep(new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.4, depthWrite: false })) };
+    return lookTex[kind];
+  }
+  const whiteMat = keep(M(0xfff8ff, 0.35)), icingGeo = keep(new THREE.CircleGeometry(1, 40)), rimGeo = keep(new THREE.TorusGeometry(1, 0.06, 8, 48));
+  const sprinkleGeo = keep(new THREE.CapsuleGeometry(0.035, 0.14, 3, 6));
+  const sprinkleMats = [0xff3fd0, 0x22dcff, 0xffd60a, 0x7ee84a, 0xffffff, 0xff8a1a].map(c => keep(M(c, 0.4)));
+  function decorateNormal(k, look) {
+    const g = k.g, r = k.r;
+    if (look === 'stripes' || look === 'dots' || look === 'icing' || look === 'bands') {
+      add(g, sideGeo, patternTex(look).mat, [0, -0.12 - (CYL_H - 0.12) / 2, 0], [r * 1.006, 1, r * 1.006]);
+    }
+    if (look === 'icing') add(g, icingGeo, whiteMat, [0, 0.01, 0], [r * 0.9, r * 0.9, 1], [-Math.PI / 2, 0, 0]).receiveShadow = true;
+    if (look === 'rim' || look === 'icing') add(g, rimGeo, whiteMat, [0, -0.02, 0], [r * 0.96, r * 0.96, 1], [Math.PI / 2, 0, 0]);
+    if (look === 'sprinkles') {
+      for (let q = 0; q < 22; q++) {
+        const a = q * 2.399, d = Math.sqrt((q + 0.5) / 22) * r * 0.82;
+        add(g, sprinkleGeo, sprinkleMats[q % sprinkleMats.length], [Math.cos(a) * d, 0.04, Math.sin(a) * d], 1, [Math.PI / 2, 0, a * 1.7]);
+      }
+    }
+    k.look = look;
+  }
+
   // online track: one wide track with five wandering paths close together
   const PATH_OFF = [-3.1, 0, 3.1];
   let pathX = PATH_OFF.slice(), pathW = [1, 1, 1];
@@ -881,6 +918,7 @@
       const target = multi ? c.all[Math.floor(lrnd() * 3)] : c;
       decorateSpecial(target, sp);
     }
+    c.all.forEach((k, n) => { if ((k.kind === 'normal') && !k.special) decorateNormal(k, lookFor(i, n)); });
     lastR = Math.max(rowR, hasSecret || ghostFork ? altR : 0);
     cyls.push(c);
     return c;

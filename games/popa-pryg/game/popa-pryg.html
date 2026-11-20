@@ -1405,6 +1405,7 @@
     main: { url: 'music/main.mp3', loopStart: 18.6323, loopEnd: 111.9509 },
     menu: { url: 'music/menu.mp3', loopStart: 7.4204, loopEnd: 114.0871 },
     night: { url: 'music/night.mp3', loopStart: 16.0101, loopEnd: 92.2005 },   // plays instead of main in the dark theme
+    boss: { url: 'music/boss.mp3', loopStart: 17.1835, loopEnd: 113.1835 },    // every boss except the dark twin
   };
   const TRACK_GAIN = 2.6;   // the music bus is quiet for the code songs; recorded tracks are mastered louder
   const trackBuf = {};
@@ -1420,6 +1421,7 @@
   }
   function setMusic(name) {
     if (name === 'main' && document.documentElement.dataset.theme === 'dark' && trackBuf.night) name = 'night';
+    if (name && name !== 'dark' && trackBuf.boss && BOSSES.some(b => b.song === name)) name = 'boss';
     if (!actx || music.name === name) return;
     if (music.gain) { const g = music.gain, src = music.src; g.gain.setTargetAtTime(0, actx.currentTime, 0.2); setTimeout(() => { g.disconnect(); if (src) try { src.stop(); } catch (e) {} }, 1500); }
     music.name = name; music.gain = null; music.song = null; music.src = null;

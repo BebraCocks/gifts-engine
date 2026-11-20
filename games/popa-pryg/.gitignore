@@ -1,0 +1,3 @@
+worker/public/index.html
+worker/.wrangler/
+node_modules/

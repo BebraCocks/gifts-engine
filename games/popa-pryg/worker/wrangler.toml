@@ -1,0 +1,21 @@
+name = "popa-pryg"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[[rules]]
+type = "Data"
+globs = ["**/*.jpg"]
+fallthrough = true
+
+[[durable_objects.bindings]]
+name = "LOBBY"
+class_name = "Lobby"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Lobby"]

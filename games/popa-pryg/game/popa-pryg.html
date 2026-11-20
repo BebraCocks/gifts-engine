@@ -1406,22 +1406,26 @@
     menu: { url: 'music/menu.mp3', loopStart: 7.4204, loopEnd: 114.0871 },
     night: { url: 'music/night.mp3', loopStart: 16.0101, loopEnd: 92.2005 },   // plays instead of main in the dark theme
     boss: { url: 'music/boss.mp3', loopStart: 17.1835, loopEnd: 113.1835 },    // every boss except the dark twin
+    dark: { url: 'music/dark.mp3', loopStart: 10.0348, loopEnd: 114.0348 },    // the dark twin, last boss
   };
   const TRACK_GAIN = 2.6;   // the music bus is quiet for the code songs; recorded tracks are mastered louder
   const trackBuf = {};
-  function loadTracks() {
-    for (const [name, t] of Object.entries(TRACKS)) {
-      if (name in trackBuf) continue;
-      trackBuf[name] = null;
-      fetch(t.url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); })
-        .then(b => new Promise((ok, bad) => actx.decodeAudioData(b, ok, bad)))
-        .then(buf => { trackBuf[name] = buf; if (music.name === name && !music.src) { music.name = null; setMusic(name); } })
-        .catch(() => {});
-    }
+  // tracks are fetched when they are about to be needed, not all at once (they are ~1.8 MB each)
+  function needTrack(name) {
+    const t = TRACKS[name];
+    if (!actx || !t || name in trackBuf) return;
+    trackBuf[name] = null;
+    fetch(t.url).then(r => { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(b => new Promise((ok, bad) => actx.decodeAudioData(b, ok, bad)))
+      .then(buf => { trackBuf[name] = buf; if (music.name === name && !music.src) { music.name = null; setMusic(name); } })
+      .catch(() => {});
   }
+  function loadTracks() { needTrack('menu'); needTrack(document.documentElement.dataset.theme === 'dark' ? 'night' : 'main'); }
   function setMusic(name) {
-    if (name === 'main' && document.documentElement.dataset.theme === 'dark' && trackBuf.night) name = 'night';
-    if (name && name !== 'dark' && trackBuf.boss && BOSSES.some(b => b.song === name)) name = 'boss';
+    const dark = document.documentElement.dataset.theme === 'dark', codeSong = name;   // the code-written song plays until the track is loaded
+    if (name === 'main') { needTrack(dark ? 'night' : 'main'); needTrack('boss'); if (dark && TRACKS.night) name = 'night'; }
+    if (name && name !== 'dark' && BOSSES.some(b => b.song === name)) { name = 'boss'; needTrack('dark'); needTrack('finale'); }
+    needTrack(name);
     if (!actx || music.name === name) return;
     if (music.gain) { const g = music.gain, src = music.src; g.gain.setTargetAtTime(0, actx.currentTime, 0.2); setTimeout(() => { g.disconnect(); if (src) try { src.stop(); } catch (e) {} }, 1500); }
     music.name = name; music.gain = null; music.song = null; music.src = null;
@@ -1434,7 +1438,7 @@
       const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
       src.loopStart = tr.loopStart; src.loopEnd = Math.min(tr.loopEnd, buf.duration);
       src.connect(g); src.start(actx.currentTime + 0.05); music.src = src;
-    } else { music.song = SONGS[name]; music.step = 0; music.next = actx.currentTime + 0.12; }
+    } else { music.song = SONGS[codeSong]; music.step = 0; music.next = actx.currentTime + 0.12; }
   }
   // browsers start sound only after a tap: the first tap anywhere starts the calm menu music
   document.addEventListener('pointerdown', () => { ensureAudio(); if (!$('startScreen').hidden && !music.name) setMusic('menu'); }, { once: true, capture: true });

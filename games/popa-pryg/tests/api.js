@@ -1,0 +1,57 @@
+// Exercises the accounts API on a test Worker with signed fake Telegram users. Usage: BOT_TOKEN=... node api.js https://popa-pryg-test....workers.dev
+const crypto = require('crypto');
+const BASE = process.argv[2], TOKEN = process.env.BOT_TOKEN;
+const sign = (id, first) => {
+  const p = new URLSearchParams({ auth_date: String(Math.floor(Date.now() / 1000)), query_id: 'q' + id, user: JSON.stringify({ id, first_name: first }) });
+  const check = [...p.entries()].sort(([a], [b]) => a < b ? -1 : 1).map(([k, v]) => `${k}=${v}`).join('\n');
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(TOKEN).digest();
+  p.set('hash', crypto.createHmac('sha256', secret).update(check).digest('hex'));
+  return p.toString();
+};
+const call = async (who, op, body = {}) => {
+  const r = await fetch(`${BASE}/api/${op}`, { method: 'POST', headers: { 'X-Tg-Init': who, 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  return { status: r.status, ...(await r.json()) };
+};
+(async () => {
+  const base = 900000000 + Math.floor(Math.random() * 1e6);
+  const A = sign(base + 1, 'Аня'), B = sign(base + 2, 'Боря'), C = sign(base + 3, 'Вика');
+  const out = (label, v) => console.log(label.padEnd(34), JSON.stringify(v));
+  out('forged init rejected', (await fetch(`${BASE}/api/me`, { method: 'POST', headers: { 'X-Tg-Init': A.replace(/hash=\w/, 'hash=0') } })).status);
+  out('A me before name', (await call(A, 'me')).me);
+  out('A leaderboard friends w/o name', await call(A, 'leaderboard', { scope: 'friends' }));
+  out('A name too long', await call(A, 'name', { name: 'a'.repeat(25) }));
+  out('A rude name', await call(A, 'name', { name: 'Xуйло' }));
+  out('A emoji name', await call(A, 'name', { name: '  Аня 🍑🍑‍  ' }));
+  out('B name', await call(B, 'name', { name: 'Боря_2000' }));
+  out('C name', await call(C, 'name', { name: '超级跳跃' }));
+  const a = (await call(A, 'me')).me, bb = (await call(B, 'me')).me, c = (await call(C, 'me')).me;
+  out('ids', [a.uid, bb.uid, c.uid]);
+  out('A renames, keeps id', (await call(A, 'name', { name: 'Анечка' })).me);
+  out('A finds B', await call(A, 'find', { uid: bb.uid }));
+  out('A finds self', (await call(A, 'find', { uid: a.uid })).rel);
+  out('A finds missing', await call(A, 'find', { uid: 99999999 }));
+  out('A -> B request', await call(A, 'request', { uid: bb.uid }));
+  out('A finds B again', (await call(A, 'find', { uid: bb.uid })).rel);
+  out('B requests list', (await call(B, 'requests')).list.map(x => [x.uid, x.name]));
+  out('B me incoming', (await call(B, 'me')).incoming);
+  out('B accepts', await call(B, 'respond', { uid: a.uid, accept: true }));
+  out('A friends', (await call(A, 'friends')).list.map(x => x.name));
+  out('C -> A, A -> C mutual', [(await call(C, 'request', { uid: a.uid })).rel, (await call(A, 'request', { uid: c.uid })).rel]);
+  out('A friends now', (await call(A, 'friends')).list.map(x => x.name));
+  out('A unfriends C', await call(A, 'unfriend', { uid: c.uid }));
+  out('C friends after', (await call(C, 'friends')).list.length);
+  out('A endless 1200 in 60s', await call(A, 'score', { mode: 'endless', score: 1200, secs: 60, bosses: 1 }));
+  out('B endless 900 auto', await call(B, 'score', { mode: 'endless', score: 900, secs: 60, auto: true }));
+  out('B endless 99999 in 10s', await call(B, 'score', { mode: 'endless', score: 99999, secs: 10 }));
+  out('B endless 800 honest', await call(B, 'score', { mode: 'endless', score: 800, secs: 60, bosses: 1 }));
+  out('C story finished', await call(C, 'score', { mode: 'story', score: 1900, secs: 600, bosses: 10, finished: true }));
+  const lb = await call(B, 'leaderboard', { scope: 'all' });
+  out('all-time top (ours)', lb.top.filter(r => [a.uid, bb.uid, c.uid].includes(r.uid)).map(r => [r.name, r.score]));
+  out('B mine', lb.mine);
+  out('week top (ours)', (await call(B, 'leaderboard', { scope: 'week' })).top.filter(r => [a.uid, bb.uid].includes(r.uid)).map(r => [r.name, r.score]));
+  out('B friends board', (await call(B, 'leaderboard', { scope: 'friends' })).top.map(r => [r.name, r.score]));
+  out('C profile', (await call(C, 'me')).me);
+  out('A invites B', await call(A, 'invite', { uid: bb.uid }));
+  out('A invites C (not friend)', await call(A, 'invite', { uid: c.uid }));
+  out('avatar reroll changes', (await call(A, 'avatar')).me.avatar !== a.avatar);
+})();

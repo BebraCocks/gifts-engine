@@ -7,7 +7,9 @@ const WELCOME =
   'Привет! Это «Попа-Прыг».\n\n' +
   'Попа сама прыгает по цилиндрам, а ты ведёшь её пальцем влево и вправо. ' +
   'Каждые 50 цилиндров ждёт босс, а на радужных цилиндрах с «?» прячутся сюрпризы.\n\n' +
-  'Победи всех десятерых боссов и узнай, чья это попа. А в режиме «Онлайн» можно прыгать вместе с другом.\n\nЖми «Играть»!';
+  'Победи всех десятерых боссов и узнай, чья это попа. В «Бесконечном» режиме бейся за место в лидерборде, а в «Онлайне» прыгай вместе с другом.\n\nЖми «Играть»!';
+
+// ---------- Telegram helpers ----------
 
 // The webhook secret is derived from the bot token, so it never has to be stored anywhere else.
 async function hookSecret(token) {
@@ -21,6 +23,30 @@ async function tg(env, method, body) {
   });
   const j = await r.json().catch(() => ({ ok: false, description: 'bad response' }));
   return { ok: !!j.ok, description: j.description, result: j.result };
+}
+
+async function hmac(key, data) {
+  const k = await crypto.subtle.importKey('raw', typeof key === 'string' ? new TextEncoder().encode(key) : key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(data)));
+}
+const hex = a => [...a].map(b => b.toString(16).padStart(2, '0')).join('');
+
+// Checks the signature Telegram puts on Mini App launch data, so nobody can pretend to be another player.
+async function verifyInitData(initData, botToken) {
+  if (!initData || !botToken) return null;
+  const params = new URLSearchParams(initData);
+  const hash = params.get('hash');
+  if (!hash) return null;
+  params.delete('hash');
+  const check = [...params.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join('\n');
+  const secret = await hmac('WebAppData', botToken);
+  if (hex(await hmac(secret, check)) !== hash) return null;
+  const authDate = +params.get('auth_date') || 0;
+  if (Date.now() / 1000 - authDate > 7 * 86400) return null;
+  let user = null;
+  try { user = JSON.parse(params.get('user') || 'null'); } catch (e) {}
+  if (!user || !user.id) return null;
+  return { id: user.id, first: String(user.first_name || '').slice(0, 64) };
 }
 
 async function onUpdate(env, update) {
@@ -43,7 +69,7 @@ async function setup(env, origin) {
   out.webhook = await tg(env, 'setWebhook', { url: origin + '/telegram', secret_token: secret, allowed_updates: ['message'], drop_pending_updates: true });
   out.menu = await tg(env, 'setChatMenuButton', { menu_button: { type: 'web_app', text: 'Играть', web_app: { url: GAME_URL } } });
   out.commands = await tg(env, 'setMyCommands', { commands: [{ command: 'start', description: 'Начать игру' }, { command: 'play', description: 'Открыть игру' }] });
-  out.description = await tg(env, 'setMyDescription', { description: 'Попа сама прыгает по цилиндрам, ты ведёшь её пальцем. 10 боссов, секретные цилиндры, игра вдвоём с другом и тайна в конце. Нажми «Старт», а потом «Играть».' });
+  out.description = await tg(env, 'setMyDescription', { description: 'Попа сама прыгает по цилиндрам, ты ведёшь её пальцем. 10 боссов, особые цилиндры, бесконечный режим с лидербордом, игра с друзьями и тайна в конце. Нажми «Старт», а потом «Играть».' });
   out.short = await tg(env, 'setMyShortDescription', { short_description: 'Прыгай по цилиндрам, побеждай боссов и узнай, чья это попа.' });
   return {
     bot: out.me.ok ? '@' + out.me.result.username : null,
@@ -51,10 +77,12 @@ async function setup(env, origin) {
   };
 }
 
+// ---------- the Worker ----------
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const json = (o, status = 200) => new Response(JSON.stringify(o, null, 2), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
+    const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 
     if (url.pathname === '/' || url.pathname === '/index.html') {
       return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60' } });
@@ -65,6 +93,23 @@ export default {
     if (url.pathname === '/ws') {
       if (request.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
       return env.LOBBY.get(env.LOBBY.idFromName('main')).fetch(request);
+    }
+    if (url.pathname.startsWith('/api/') && request.method === 'POST') {
+      const who = await verifyInitData(request.headers.get('X-Tg-Init'), env.TELEGRAM_BOT_TOKEN);
+      if (!who) return json({ ok: false, error: 'auth' }, 401);
+      const body = await request.json().catch(() => ({}));
+      const op = url.pathname.slice(5);
+      const res = await env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main')).fetch('https://accounts/op', {
+        method: 'POST', body: JSON.stringify({ op, who, body })
+      });
+      const out = await res.json();
+      // messages the bot sends on the player's behalf: friend requests and game invites
+      if (out.notify) {
+        const n = out.notify; delete out.notify;
+        const sent = await tg(env, 'sendMessage', { chat_id: n.chat, text: n.text, reply_markup: { inline_keyboard: [[{ text: n.button, web_app: { url: GAME_URL + (n.query || '') } }]] } });
+        out.delivered = sent.ok;
+      }
+      return json(out, res.status);
     }
     if (url.pathname === '/telegram' && request.method === 'POST') {
       if (!env.TELEGRAM_BOT_TOKEN) return new Response('no token', { status: 503 });
@@ -82,14 +127,205 @@ export default {
   }
 };
 
-// Online lobby: the first player waits, the second one is paired with them, then every message is passed to the partner.
-export class Lobby {
-  constructor(state, env) { this.waiting = null; }
+// ---------- names ----------
+
+const BAD_ROOTS = ['хуй', 'хуе', 'хуя', 'хуи', 'пизд', 'ебат', 'ебан', 'ебал', 'ебуч', 'еблан', 'бляд', 'блят', 'сука', 'суки', 'мудак', 'мудил', 'пидор', 'пидар', 'педик', 'шлюх', 'гандон', 'залуп', 'дрочи',
+  'fuck', 'shit', 'bitch', 'cunt', 'nigger', 'nigga', 'faggot', 'whore', 'dick', 'pussy'];
+const LOOKALIKE = { a: 'а', e: 'е', o: 'о', p: 'р', c: 'с', x: 'х', y: 'у', k: 'к', m: 'м', t: 'т', h: 'н', b: 'в', '0': 'о', '3': 'з', '6': 'б', 'ё': 'е' };
+function isRude(name) {
+  const low = name.toLowerCase();
+  const plain = low.replace(/[^\p{L}\p{N}]/gu, '');
+  const cyr = [...plain].map(ch => LOOKALIKE[ch] || ch).join('');
+  return BAD_ROOTS.some(r => plain.includes(r) || cyr.includes(r));
+}
+// Any letters, digits, symbols and emoji; at most 24 visible characters; invisible and control characters removed.
+function cleanName(raw) {
+  let s = String(raw || '').normalize('NFC')
+    .replace(/[\u0000-\u001F\u007F-\u009F­​‌‎‏‪-‮⁠-⁤⁦-⁩﻿]/g, '')
+    .replace(/\s+/g, ' ').trim().replace(/^\u200D+|\u200D+$/g, '').trim()
+    .replace(/(\p{M}{2})\p{M}+/gu, '$1');
+  const chars = [...new Intl.Segmenter('ru', { granularity: 'grapheme' }).segment(s)];
+  if (!chars.length) return { error: 'Имя не может быть пустым' };
+  if (chars.length > 24) return { error: 'Не больше 24 символов' };
+  if (isRude(s)) return { error: 'Такое имя нельзя, выбери другое' };
+  return { name: s };
+}
+
+const weekKey = t => Math.floor((t + 3 * 3600e3 + 3 * 86400e3) / 604800e3);   // weeks start on Monday 00:00 Moscow time
+
+// ---------- accounts: profiles, IDs, scores, friends (one Durable Object with SQLite) ----------
+
+export class Accounts {
+  constructor(state, env) {
+    this.sql = state.storage.sql;
+    this.sql.exec(`
+      CREATE TABLE IF NOT EXISTS users (tg INTEGER PRIMARY KEY, uid INTEGER UNIQUE, name TEXT, avatar INTEGER, first TEXT, created INTEGER,
+        best INTEGER DEFAULT 0, best_at INTEGER DEFAULT 0, story INTEGER DEFAULT 0, bosses INTEGER DEFAULT 0, games INTEGER DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS counters (k TEXT PRIMARY KEY, v INTEGER);
+      CREATE TABLE IF NOT EXISTS weekly (uid INTEGER, week INTEGER, best INTEGER, at INTEGER, PRIMARY KEY (uid, week));
+      CREATE TABLE IF NOT EXISTS requests (src INTEGER, dst INTEGER, at INTEGER, PRIMARY KEY (src, dst));
+      CREATE TABLE IF NOT EXISTS friends (a INTEGER, b INTEGER, at INTEGER, PRIMARY KEY (a, b));
+      CREATE INDEX IF NOT EXISTS users_best ON users (best DESC);
+      CREATE INDEX IF NOT EXISTS weekly_best ON weekly (week, best DESC);
+      CREATE INDEX IF NOT EXISTS requests_dst ON requests (dst);
+    `);
+  }
+  rows(q, ...b) { return this.sql.exec(q, ...b).toArray(); }
+  row(q, ...b) { return this.rows(q, ...b)[0] || null; }
+  userByTg(tg) { return this.row('SELECT * FROM users WHERE tg = ?', tg); }
+  userByUid(uid) { return this.row('SELECT * FROM users WHERE uid = ?', uid); }
+  pub(u) { return u ? { uid: u.uid, name: u.name, avatar: u.avatar } : null; }
+  isFriend(a, b) { return !!this.row('SELECT 1 AS x FROM friends WHERE a = ? AND b = ?', a, b); }
+  makeFriends(a, b) {
+    const t = Date.now();
+    this.sql.exec('INSERT OR IGNORE INTO friends (a, b, at) VALUES (?, ?, ?)', a, b, t);
+    this.sql.exec('INSERT OR IGNORE INTO friends (a, b, at) VALUES (?, ?, ?)', b, a, t);
+    this.sql.exec('DELETE FROM requests WHERE (src = ? AND dst = ?) OR (src = ? AND dst = ?)', a, b, b, a);
+  }
+
   async fetch(request) {
+    const { op, who, body } = await request.json();
+    const send = (o, status = 200) => new Response(JSON.stringify(o), { status });
+    // every call makes sure the player has a row; the game ID comes only with a name
+    this.sql.exec('INSERT OR IGNORE INTO users (tg, first, created) VALUES (?, ?, ?)', who.id, who.first, Date.now());
+    let me = this.userByTg(who.id);
+    const needName = () => send({ ok: false, error: 'noname' }, 400);
+    const b = body || {};
+
+    if (op === 'me') {
+      const incoming = me.uid ? this.row('SELECT COUNT(*) AS n FROM requests WHERE dst = ?', me.uid).n : 0;
+      const wk = me.uid ? this.row('SELECT best FROM weekly WHERE uid = ? AND week = ?', me.uid, weekKey(Date.now())) : null;
+      return send({ ok: true, me: { uid: me.uid, name: me.name, avatar: me.avatar, best: me.best, weekBest: wk ? wk.best : 0, story: !!me.story, bosses: me.bosses, games: me.games }, incoming });
+    }
+
+    if (op === 'name') {
+      const c = cleanName(b.name);
+      if (c.error) return send({ ok: false, error: c.error }, 400);
+      if (!me.uid) {
+        const n = this.row("INSERT INTO counters (k, v) VALUES ('uid', 1) ON CONFLICT (k) DO UPDATE SET v = v + 1 RETURNING v").v;
+        this.sql.exec('UPDATE users SET uid = ?, avatar = ? WHERE tg = ?', n, Math.floor(Math.random() * 2147483647), who.id);
+      }
+      this.sql.exec('UPDATE users SET name = ? WHERE tg = ?', c.name, who.id);
+      me = this.userByTg(who.id);
+      return send({ ok: true, me: this.pub(me) });
+    }
+
+    if (op === 'avatar') {
+      if (!me.uid) return needName();
+      this.sql.exec('UPDATE users SET avatar = ? WHERE tg = ?', Math.floor(Math.random() * 2147483647), who.id);
+      return send({ ok: true, me: this.pub(this.userByTg(who.id)) });
+    }
+
+    if (op === 'score') {
+      // every finished game counts for the profile; only honest endless runs go to the leaderboard
+      const score = Math.max(0, Math.floor(+b.score || 0)), secs = Math.max(0, +b.secs || 0), bosses = Math.max(0, Math.min(500, Math.floor(+b.bosses || 0)));
+      this.sql.exec('UPDATE users SET games = games + 1, bosses = bosses + ? WHERE tg = ?', bosses, who.id);
+      if (b.mode === 'story' && b.finished) this.sql.exec('UPDATE users SET story = 1 WHERE tg = ?', who.id);
+      const plausible = secs >= 5 && score <= secs * 35 + bosses * 1500 + 300;
+      const counts = b.mode === 'endless' && !b.auto && plausible && me.uid;
+      let newBest = false, newWeek = false;
+      if (counts) {
+        if (score > me.best) { this.sql.exec('UPDATE users SET best = ?, best_at = ? WHERE tg = ?', score, Date.now(), who.id); newBest = true; }
+        const wk = weekKey(Date.now());
+        const cur = this.row('SELECT best FROM weekly WHERE uid = ? AND week = ?', me.uid, wk);
+        if (!cur || score > cur.best) { this.sql.exec('INSERT INTO weekly (uid, week, best, at) VALUES (?, ?, ?, ?) ON CONFLICT (uid, week) DO UPDATE SET best = excluded.best, at = excluded.at', me.uid, wk, score, Date.now()); newWeek = true; }
+      }
+      me = this.userByTg(who.id);
+      const place = counts && me.best > 0 ? this.row('SELECT COUNT(*) + 1 AS p FROM users WHERE uid IS NOT NULL AND best > ?', me.best).p : null;
+      return send({ ok: true, counted: !!counts, why: b.mode !== 'endless' ? 'mode' : b.auto ? 'auto' : !me.uid ? 'noname' : !plausible ? 'check' : null, newBest, newWeek, best: me.best, place });
+    }
+
+    if (op === 'leaderboard') {
+      const scope = b.scope === 'week' || b.scope === 'friends' ? b.scope : 'all';
+      let top, mine = null;
+      if (scope === 'week') {
+        const wk = weekKey(Date.now());
+        top = this.rows('SELECT u.uid, u.name, u.avatar, w.best AS score FROM weekly w JOIN users u ON u.uid = w.uid WHERE w.week = ? AND u.name IS NOT NULL ORDER BY w.best DESC, w.at ASC LIMIT 50', wk);
+        if (me.uid) { const r = this.row('SELECT best, at FROM weekly WHERE uid = ? AND week = ?', me.uid, wk); if (r) mine = { score: r.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM weekly WHERE week = ? AND (best > ? OR (best = ? AND at < ?))', wk, r.best, r.best, r.at).p }; }
+      } else if (scope === 'friends') {
+        if (!me.uid) return needName();
+        top = this.rows('SELECT u.uid, u.name, u.avatar, u.best AS score FROM users u WHERE u.uid = ? OR u.uid IN (SELECT b FROM friends WHERE a = ?) ORDER BY u.best DESC, u.best_at ASC LIMIT 100', me.uid, me.uid);
+        const i = top.findIndex(r => r.uid === me.uid); if (i >= 0) mine = { score: top[i].score, place: i + 1 };
+      } else {
+        top = this.rows('SELECT uid, name, avatar, best AS score FROM users WHERE uid IS NOT NULL AND name IS NOT NULL AND best > 0 ORDER BY best DESC, best_at ASC LIMIT 50');
+        if (me.uid && me.best > 0) mine = { score: me.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM users WHERE uid IS NOT NULL AND (best > ? OR (best = ? AND best_at < ?))', me.best, me.best, me.best_at).p };
+      }
+      return send({ ok: true, scope, top: top.map((r, i) => ({ place: i + 1, uid: r.uid, name: r.name, avatar: r.avatar, score: r.score })), mine, myUid: me.uid });
+    }
+
+    if (!me.uid) return needName();
+
+    if (op === 'find') {
+      const uid = Math.floor(+b.uid || 0);
+      const u = uid > 0 ? this.userByUid(uid) : null;
+      if (!u) return send({ ok: false, error: 'Игрока с таким ID нет' }, 404);
+      let rel = 'none';
+      if (u.uid === me.uid) rel = 'self';
+      else if (this.isFriend(me.uid, u.uid)) rel = 'friend';
+      else if (this.row('SELECT 1 AS x FROM requests WHERE src = ? AND dst = ?', me.uid, u.uid)) rel = 'sent';
+      else if (this.row('SELECT 1 AS x FROM requests WHERE src = ? AND dst = ?', u.uid, me.uid)) rel = 'incoming';
+      return send({ ok: true, user: { ...this.pub(u), best: u.best }, rel });
+    }
+
+    if (op === 'request') {
+      const u = this.userByUid(Math.floor(+b.uid || 0));
+      if (!u) return send({ ok: false, error: 'Игрока с таким ID нет' }, 404);
+      if (u.uid === me.uid) return send({ ok: false, error: 'Это ты' }, 400);
+      if (this.isFriend(me.uid, u.uid)) return send({ ok: true, rel: 'friend' });
+      if (this.row('SELECT 1 AS x FROM requests WHERE src = ? AND dst = ?', u.uid, me.uid)) { this.makeFriends(me.uid, u.uid); return send({ ok: true, rel: 'friend' }); }
+      const fresh = !this.row('SELECT 1 AS x FROM requests WHERE src = ? AND dst = ?', me.uid, u.uid);
+      this.sql.exec('INSERT OR IGNORE INTO requests (src, dst, at) VALUES (?, ?, ?)', me.uid, u.uid, Date.now());
+      const out = { ok: true, rel: 'sent' };
+      if (fresh) out.notify = { chat: u.tg, text: `${me.name} (ID ${me.uid}) хочет добавить тебя в друзья в «Попа-Прыг».`, button: 'Открыть заявки', query: '?tab=requests' };
+      return send(out);
+    }
+
+    if (op === 'requests') {
+      const list = this.rows('SELECT u.uid, u.name, u.avatar, r.at FROM requests r JOIN users u ON u.uid = r.src WHERE r.dst = ? ORDER BY r.at DESC LIMIT 100', me.uid);
+      return send({ ok: true, list, now: Date.now() });
+    }
+
+    if (op === 'respond') {
+      const uid = Math.floor(+b.uid || 0);
+      if (!this.row('SELECT 1 AS x FROM requests WHERE src = ? AND dst = ?', uid, me.uid)) return send({ ok: false, error: 'Заявки уже нет' }, 404);
+      if (b.accept) this.makeFriends(me.uid, uid);
+      else this.sql.exec('DELETE FROM requests WHERE src = ? AND dst = ?', uid, me.uid);
+      return send({ ok: true });
+    }
+
+    if (op === 'friends') {
+      const list = this.rows('SELECT u.uid, u.name, u.avatar, u.best FROM friends f JOIN users u ON u.uid = f.b WHERE f.a = ? ORDER BY u.name COLLATE NOCASE LIMIT 500', me.uid);
+      return send({ ok: true, list });
+    }
+
+    if (op === 'unfriend') {
+      const uid = Math.floor(+b.uid || 0);
+      this.sql.exec('DELETE FROM friends WHERE (a = ? AND b = ?) OR (a = ? AND b = ?)', me.uid, uid, uid, me.uid);
+      return send({ ok: true });
+    }
+
+    if (op === 'invite') {
+      const u = this.userByUid(Math.floor(+b.uid || 0));
+      if (!u || !this.isFriend(me.uid, u.uid)) return send({ ok: false, error: 'Это не твой друг' }, 400);
+      const room = [...crypto.getRandomValues(new Uint8Array(6))].map(x => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x % 32]).join('');
+      return send({ ok: true, room, notify: { chat: u.tg, text: `${me.name} (ID ${me.uid}) зовёт тебя прыгать вместе в «Попа-Прыг»! Приглашение действует, пока он ждёт.`, button: 'Прыгать вместе', query: '?room=' + room } });
+    }
+
+    return send({ ok: false, error: 'unknown' }, 404);
+  }
+}
+
+// ---------- online lobby: random pairs and private rooms for friends ----------
+
+export class Lobby {
+  constructor(state, env) { this.waiting = null; this.rooms = new Map(); }
+  async fetch(request) {
+    const url = new URL(request.url);
+    const room = (url.searchParams.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
-    server.partner = null; server.name = 'Друг';
+    server.partner = null; server.name = 'Друг'; server.room = room || null;
     server.addEventListener('message', ev => this.onMessage(server, ev.data));
     const bye = () => this.onClose(server);
     server.addEventListener('close', bye);
@@ -97,27 +333,32 @@ export class Lobby {
     return new Response(null, { status: 101, webSocket: client });
   }
   send(ws, m) { try { ws.send(typeof m === 'string' ? m : JSON.stringify(m)); } catch (e) {} }
+  pairUp(a, b) {
+    a.partner = b; b.partner = a;
+    const seed = Math.floor(Math.random() * 4294967296), voice = !!a.room;
+    this.send(a, { t: 'start', host: true, seed, name: b.name, avatar: b.avatar, voice });
+    this.send(b, { t: 'start', host: false, seed, name: a.name, avatar: a.avatar, voice });
+  }
   onMessage(ws, data) {
-    if (typeof data !== 'string') {   // voice chunks: passed straight to the partner
-      if (data && data.byteLength <= 4000 && ws.partner && ws.partner.readyState === 1) { try { ws.partner.send(data); } catch (e) {} }
+    if (typeof data !== 'string') {   // voice chunks: only between friends in a private room
+      if (ws.room && data && data.byteLength <= 4000 && ws.partner && ws.partner.readyState === 1) { try { ws.partner.send(data); } catch (e) {} }
       return;
     }
     if (data.length > 4000) return;
     let m; try { m = JSON.parse(data); } catch (e) { return; }
     if (m.t === 'hello' && !ws.hello) {
       ws.hello = true;
-      ws.name = String(m.name || 'Друг').slice(0, 16);
-      const other = this.waiting;
-      if (other && other !== ws && other.readyState === 1) {
-        this.waiting = null;
-        other.partner = ws; ws.partner = other;
-        const seed = Math.floor(Math.random() * 4294967296);
-        this.send(other, { t: 'start', host: true, seed, name: ws.name });
-        this.send(ws, { t: 'start', host: false, seed, name: other.name });
-      } else {
-        this.waiting = ws;
-        this.send(ws, { t: 'wait' });
+      ws.name = String(m.name || 'Друг').slice(0, 40);
+      ws.avatar = Number.isFinite(+m.avatar) ? +m.avatar : null;
+      if (ws.room) {
+        const other = this.rooms.get(ws.room);
+        if (other && other !== ws && other.readyState === 1 && !other.partner) { this.rooms.delete(ws.room); this.pairUp(other, ws); }
+        else { this.rooms.set(ws.room, ws); this.send(ws, { t: 'wait' }); }
+        return;
       }
+      const other = this.waiting;
+      if (other && other !== ws && other.readyState === 1) { this.waiting = null; this.pairUp(other, ws); }
+      else { this.waiting = ws; this.send(ws, { t: 'wait' }); }
       return;
     }
     if (ws.partner && ws.partner.readyState === 1) this.send(ws.partner, data);
@@ -125,6 +366,7 @@ export class Lobby {
   onClose(ws) {
     if (ws.closedOnce) return; ws.closedOnce = true;
     if (this.waiting === ws) this.waiting = null;
+    if (ws.room && this.rooms.get(ws.room) === ws) this.rooms.delete(ws.room);
     const p = ws.partner;
     if (p) { p.partner = null; this.send(p, { t: 'left' }); }
   }

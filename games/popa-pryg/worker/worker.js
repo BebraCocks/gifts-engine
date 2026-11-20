@@ -90,6 +90,10 @@ export default {
     if (url.pathname === '/poster.jpg') {
       return new Response(poster, { headers: { 'content-type': 'image/jpeg', 'cache-control': 'public, max-age=86400' } });
     }
+    if (url.pathname === '/stats') {
+      const res = await env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main')).fetch('https://accounts/op', { method: 'POST', body: JSON.stringify({ op: 'stats' }) });
+      return new Response(JSON.stringify(await res.json(), null, 2), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+    }
     if (url.pathname === '/ws') {
       if (request.headers.get('Upgrade') !== 'websocket') return new Response('expected websocket', { status: 426 });
       return env.LOBBY.get(env.LOBBY.idFromName('main')).fetch(request);
@@ -152,6 +156,7 @@ function cleanName(raw) {
 }
 
 const weekKey = t => Math.floor((t + 3 * 3600e3 + 3 * 86400e3) / 604800e3);   // weeks start on Monday 00:00 Moscow time
+const dayKey = t => Math.floor((t + 3 * 3600e3) / 86400e3);                       // days start at 00:00 Moscow time
 
 // ---------- accounts: profiles, IDs, scores, friends (one Durable Object with SQLite) ----------
 
@@ -168,7 +173,11 @@ export class Accounts {
       CREATE INDEX IF NOT EXISTS users_best ON users (best DESC);
       CREATE INDEX IF NOT EXISTS weekly_best ON weekly (week, best DESC);
       CREATE INDEX IF NOT EXISTS requests_dst ON requests (dst);
+      CREATE TABLE IF NOT EXISTS daily (uid INTEGER, day INTEGER, best INTEGER, at INTEGER, PRIMARY KEY (uid, day));
+      CREATE INDEX IF NOT EXISTS daily_best ON daily (day, best DESC);
+      CREATE TABLE IF NOT EXISTS deaths (day INTEGER, mode TEXT, bucket INTEGER, boss INTEGER, reason TEXT, n INTEGER, PRIMARY KEY (day, mode, bucket, boss, reason));
     `);
+    try { this.sql.exec('ALTER TABLE users ADD COLUMN seen INTEGER DEFAULT 0'); } catch (e) {}
   }
   rows(q, ...b) { return this.sql.exec(q, ...b).toArray(); }
   row(q, ...b) { return this.rows(q, ...b)[0] || null; }
@@ -183,11 +192,25 @@ export class Accounts {
     this.sql.exec('DELETE FROM requests WHERE (src = ? AND dst = ?) OR (src = ? AND dst = ?)', a, b, b, a);
   }
 
+  stats() {
+    // where players fall, over the last 7 days: by distance, by boss and by reason
+    const from = dayKey(Date.now()) - 6;
+    return {
+      ok: true, days: 7,
+      players: this.row('SELECT COUNT(*) AS n FROM users WHERE uid IS NOT NULL').n,
+      byDistance: this.rows('SELECT mode, bucket * 25 AS from_row, SUM(n) AS deaths FROM deaths WHERE day >= ? GROUP BY mode, bucket ORDER BY mode, bucket', from),
+      byBoss: this.rows('SELECT mode, boss + 1 AS boss, SUM(n) AS deaths FROM deaths WHERE day >= ? AND boss >= 0 GROUP BY mode, boss ORDER BY deaths DESC', from),
+      byReason: this.rows('SELECT reason, SUM(n) AS deaths FROM deaths WHERE day >= ? GROUP BY reason ORDER BY deaths DESC LIMIT 20', from)
+    };
+  }
+
   async fetch(request) {
     const { op, who, body } = await request.json();
     const send = (o, status = 200) => new Response(JSON.stringify(o), { status });
+    if (op === 'stats') return send(this.stats());
     // every call makes sure the player has a row; the game ID comes only with a name
     this.sql.exec('INSERT OR IGNORE INTO users (tg, first, created) VALUES (?, ?, ?)', who.id, who.first, Date.now());
+    this.sql.exec('UPDATE users SET seen = ? WHERE tg = ?', Date.now(), who.id);
     let me = this.userByTg(who.id);
     const needName = () => send({ ok: false, error: 'noname' }, 400);
     const b = body || {};
@@ -195,8 +218,10 @@ export class Accounts {
     if (op === 'me') {
       const incoming = me.uid ? this.row('SELECT COUNT(*) AS n FROM requests WHERE dst = ?', me.uid).n : 0;
       const wk = me.uid ? this.row('SELECT best FROM weekly WHERE uid = ? AND week = ?', me.uid, weekKey(Date.now())) : null;
-      return send({ ok: true, me: { uid: me.uid, name: me.name, avatar: me.avatar, best: me.best, weekBest: wk ? wk.best : 0, story: !!me.story, bosses: me.bosses, games: me.games }, incoming });
+      const dy = me.uid ? this.row('SELECT best FROM daily WHERE uid = ? AND day = ?', me.uid, dayKey(Date.now())) : null;
+      return send({ ok: true, me: { uid: me.uid, name: me.name, avatar: me.avatar, best: me.best, weekBest: wk ? wk.best : 0, dayBest: dy ? dy.best : 0, story: !!me.story, bosses: me.bosses, games: me.games }, incoming, day: dayKey(Date.now()) });
     }
+    if (op === 'ping') return send({ ok: true });
 
     if (op === 'name') {
       const c = cleanName(b.name);
@@ -221,7 +246,23 @@ export class Accounts {
       const score = Math.max(0, Math.floor(+b.score || 0)), secs = Math.max(0, +b.secs || 0), bosses = Math.max(0, Math.min(500, Math.floor(+b.bosses || 0)));
       this.sql.exec('UPDATE users SET games = games + 1, bosses = bosses + ? WHERE tg = ?', bosses, who.id);
       if (b.mode === 'story' && b.finished) this.sql.exec('UPDATE users SET story = 1 WHERE tg = ?', who.id);
+      if (!b.finished && Number.isFinite(+b.row)) {
+        const mode = ['story', 'endless', 'daily', 'online'].includes(b.mode) ? b.mode : 'other';
+        const boss = Number.isFinite(+b.boss) ? Math.max(-1, Math.min(9, Math.floor(+b.boss))) : -1;
+        const reason = String(b.reason || '').slice(0, 40);
+        this.sql.exec('INSERT INTO deaths (day, mode, bucket, boss, reason, n) VALUES (?, ?, ?, ?, ?, 1) ON CONFLICT (day, mode, bucket, boss, reason) DO UPDATE SET n = n + 1',
+          dayKey(Date.now()), mode, Math.max(0, Math.floor(+b.row / 25)), boss, reason);
+      }
       const plausible = secs >= 5 && score <= secs * 35 + bosses * 1500 + 300;
+      const today = dayKey(Date.now());
+      if (b.mode === 'daily' && !b.auto && plausible && me.uid && (+b.day === today || +b.day === today - 1)) {
+        const cur = this.row('SELECT best FROM daily WHERE uid = ? AND day = ?', me.uid, +b.day);
+        const newDay = !cur || score > cur.best;
+        if (newDay) this.sql.exec('INSERT INTO daily (uid, day, best, at) VALUES (?, ?, ?, ?) ON CONFLICT (uid, day) DO UPDATE SET best = excluded.best, at = excluded.at', me.uid, +b.day, score, Date.now());
+        const r = this.row('SELECT best, at FROM daily WHERE uid = ? AND day = ?', me.uid, +b.day);
+        const place = this.row('SELECT COUNT(*) + 1 AS p FROM daily WHERE day = ? AND (best > ? OR (best = ? AND at < ?))', +b.day, r.best, r.best, r.at).p;
+        return send({ ok: true, counted: true, newBest: newDay, best: r.best, place });
+      }
       const counts = b.mode === 'endless' && !b.auto && plausible && me.uid;
       let newBest = false, newWeek = false;
       if (counts) {
@@ -232,13 +273,17 @@ export class Accounts {
       }
       me = this.userByTg(who.id);
       const place = counts && me.best > 0 ? this.row('SELECT COUNT(*) + 1 AS p FROM users WHERE uid IS NOT NULL AND best > ?', me.best).p : null;
-      return send({ ok: true, counted: !!counts, why: b.mode !== 'endless' ? 'mode' : b.auto ? 'auto' : !me.uid ? 'noname' : !plausible ? 'check' : null, newBest, newWeek, best: me.best, place });
+      return send({ ok: true, counted: !!counts, why: !['endless', 'daily'].includes(b.mode) ? 'mode' : b.auto ? 'auto' : !me.uid ? 'noname' : !plausible ? 'check' : b.mode === 'daily' ? 'day' : null, newBest, newWeek, best: me.best, place });
     }
 
     if (op === 'leaderboard') {
-      const scope = b.scope === 'week' || b.scope === 'friends' ? b.scope : 'all';
+      const scope = ['week', 'friends', 'day'].includes(b.scope) ? b.scope : 'all';
       let top, mine = null;
-      if (scope === 'week') {
+      if (scope === 'day') {
+        const dk = dayKey(Date.now());
+        top = this.rows('SELECT u.uid, u.name, u.avatar, d.best AS score FROM daily d JOIN users u ON u.uid = d.uid WHERE d.day = ? AND u.name IS NOT NULL ORDER BY d.best DESC, d.at ASC LIMIT 50', dk);
+        if (me.uid) { const r = this.row('SELECT best, at FROM daily WHERE uid = ? AND day = ?', me.uid, dk); if (r) mine = { score: r.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM daily WHERE day = ? AND (best > ? OR (best = ? AND at < ?))', dk, r.best, r.best, r.at).p }; }
+      } else if (scope === 'week') {
         const wk = weekKey(Date.now());
         top = this.rows('SELECT u.uid, u.name, u.avatar, w.best AS score FROM weekly w JOIN users u ON u.uid = w.uid WHERE w.week = ? AND u.name IS NOT NULL ORDER BY w.best DESC, w.at ASC LIMIT 50', wk);
         if (me.uid) { const r = this.row('SELECT best, at FROM weekly WHERE uid = ? AND week = ?', me.uid, wk); if (r) mine = { score: r.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM weekly WHERE week = ? AND (best > ? OR (best = ? AND at < ?))', wk, r.best, r.best, r.at).p }; }
@@ -294,8 +339,8 @@ export class Accounts {
     }
 
     if (op === 'friends') {
-      const list = this.rows('SELECT u.uid, u.name, u.avatar, u.best FROM friends f JOIN users u ON u.uid = f.b WHERE f.a = ? ORDER BY u.name COLLATE NOCASE LIMIT 500', me.uid);
-      return send({ ok: true, list });
+      const list = this.rows('SELECT u.uid, u.name, u.avatar, u.best, u.seen FROM friends f JOIN users u ON u.uid = f.b WHERE f.a = ? ORDER BY u.seen DESC LIMIT 500', me.uid);
+      return send({ ok: true, list, now: Date.now() });
     }
 
     if (op === 'unfriend') {
@@ -315,13 +360,15 @@ export class Accounts {
   }
 }
 
-// ---------- online lobby: random pairs and private rooms for friends ----------
+// ---------- online lobby: random pairs, private rooms for friends, and coming back after a short drop ----------
 
+const RESUME_MS = 15000;
 export class Lobby {
-  constructor(state, env) { this.waiting = null; this.rooms = new Map(); }
+  constructor(state, env) { this.waiting = null; this.rooms = new Map(); this.lost = new Map(); }
   async fetch(request) {
     const url = new URL(request.url);
     const room = (url.searchParams.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12);
+    const resume = (url.searchParams.get('resume') || '').replace(/[^a-z0-9]/g, '').slice(0, 32);
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
@@ -330,14 +377,26 @@ export class Lobby {
     const bye = () => this.onClose(server);
     server.addEventListener('close', bye);
     server.addEventListener('error', bye);
+    if (resume) this.resume(server, resume);
     return new Response(null, { status: 101, webSocket: client });
   }
   send(ws, m) { try { ws.send(typeof m === 'string' ? m : JSON.stringify(m)); } catch (e) {} }
+  token() { return [...crypto.getRandomValues(new Uint8Array(12))].map(b => b.toString(16).padStart(2, '0')).join(''); }
   pairUp(a, b) {
     a.partner = b; b.partner = a;
+    a.token = this.token(); b.token = this.token();
     const seed = Math.floor(Math.random() * 4294967296), voice = !!a.room;
-    this.send(a, { t: 'start', host: true, seed, name: b.name, avatar: b.avatar, voice });
-    this.send(b, { t: 'start', host: false, seed, name: a.name, avatar: a.avatar, voice });
+    this.send(a, { t: 'start', host: true, seed, name: b.name, avatar: b.avatar, voice, token: a.token });
+    this.send(b, { t: 'start', host: false, seed, name: a.name, avatar: a.avatar, voice, token: b.token });
+  }
+  resume(ws, token) {
+    const old = this.lost.get(token);
+    if (!old) { this.send(ws, { t: 'resume-failed' }); return; }
+    this.lost.delete(token); clearTimeout(old.timer);
+    const p = old.partner;
+    ws.hello = true; ws.name = old.name; ws.avatar = old.avatar; ws.room = old.room; ws.token = token;
+    if (p && p.readyState === 1 && !p.closedOnce) { ws.partner = p; p.partner = ws; this.send(p, { t: 'back' }); this.send(ws, { t: 'resumed' }); }
+    else this.send(ws, { t: 'resume-failed' });
   }
   onMessage(ws, data) {
     if (typeof data !== 'string') {   // voice chunks: only between friends in a private room
@@ -361,13 +420,21 @@ export class Lobby {
       else { this.waiting = ws; this.send(ws, { t: 'wait' }); }
       return;
     }
+    if (m.t === 'bye') { ws.leaving = true; return; }
     if (ws.partner && ws.partner.readyState === 1) this.send(ws.partner, data);
   }
   onClose(ws) {
     if (ws.closedOnce) return; ws.closedOnce = true;
+    try { ws.close(1000, 'bye'); } catch (e) {}   // finish the closing handshake so the phone knows at once
     if (this.waiting === ws) this.waiting = null;
     if (ws.room && this.rooms.get(ws.room) === ws) this.rooms.delete(ws.room);
     const p = ws.partner;
-    if (p) { p.partner = null; this.send(p, { t: 'left' }); }
+    if (!p) return;
+    if (ws.leaving || !ws.token) { p.partner = null; this.send(p, { t: 'left' }); return; }
+    // the connection dropped: keep the seat for a while so the player can come back
+    this.send(p, { t: 'lag' });
+    const entry = { partner: p, name: ws.name, avatar: ws.avatar, room: ws.room };
+    entry.timer = setTimeout(() => { if (this.lost.get(ws.token) === entry) { this.lost.delete(ws.token); if (p.partner === ws) { p.partner = null; this.send(p, { t: 'left' }); } } }, RESUME_MS);
+    this.lost.set(ws.token, entry);
   }
 }

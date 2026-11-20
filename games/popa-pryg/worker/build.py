@@ -23,6 +23,11 @@ head = """<!doctype html>
   })();
 </script>
 """
+# three.js goes inside the page, so the game never depends on an outside CDN (MIT licence, see vendor/three.min.js header)
+CDN = '<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>'
+three = (ROOT / 'vendor' / 'three.min.js').read_text(encoding='utf-8')
+assert CDN in src, 'three.js script tag not found in the game file'
+src = src.replace(CDN, '<script>' + three.replace('</script', '<\\/script') + '</script>')
 i = src.index('<canvas id="game"')
 page = head + src[:i] + "</head>\n<body>\n" + src[i:].rstrip() + "\n</body>\n</html>\n"
 out = ROOT / 'public' / 'index.html'

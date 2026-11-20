@@ -146,7 +146,7 @@
   .chip.mate b { background: #ff8a1a; }
   .chip.talk { box-shadow: 0 0 0 3px #7dff5a, 0 4px 0 rgba(0,0,0,.2); }
   .gun, .mic {
-    position: fixed; pointer-events: auto; top: calc(var(--top-inset) + 58px);
+    position: fixed; z-index: 15; pointer-events: auto; top: calc(var(--top-inset) + 58px);
     height: 40px; border: 0; cursor: pointer; border-radius: 999px;
     background: rgba(255,255,255,.85); color: var(--ink); box-shadow: 0 3px 0 rgba(42,20,87,.25);
     font: 900 12px var(--display); letter-spacing: .05em;
@@ -263,6 +263,14 @@
   .hint-card span { font-weight: 500; font-size: 13px; line-height: 1.35; color: #4a3a73; }
   .hint-card.show { animation: hintIn .3s ease-out; }
   @keyframes hintIn { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translateX(-50%); opacity: 1; } }
+  .btn.daily { background: #ffb020; box-shadow: 0 5px 0 #c27a00; }
+  .btn.daily:active { box-shadow: 0 2px 0 #c27a00; }
+  .emo { position: fixed; z-index: 15; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(var(--top-inset) + 106px);
+    width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.85); box-shadow: 0 3px 0 rgba(42,20,87,.25); font-size: 20px; cursor: pointer; }
+  .emo-row { position: fixed; z-index: 15; left: calc(max(16px, env(safe-area-inset-left, 0px)) + 48px); top: calc(var(--top-inset) + 106px);
+    display: flex; gap: 4px; background: rgba(255,255,255,.92); border-radius: 999px; padding: 3px; box-shadow: 0 3px 0 rgba(42,20,87,.25); }
+  .emo-row button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; font-size: 20px; cursor: pointer; }
+  .online-dot { color: #1f9d55; }
   @media (prefers-reduced-motion: reduce) { .swipe i::after { animation: none; } .pop.show { animation-duration: .01s; } }
 </style>
 
@@ -284,6 +292,8 @@
 <div class="hint-card" id="hintCard" hidden role="status"><b id="hintTitle"></b><span id="hintText"></span></div>
 <button class="auto" id="auto" type="button" aria-pressed="false" hidden><i></i>АВТО</button>
 <button class="gun" id="gunBtn" type="button" hidden>КАКАШКА</button>
+<button class="emo" id="emoBtn" type="button" aria-label="Реакции" hidden>😀</button>
+<div class="emo-row" id="emoRow" hidden><button type="button">😂</button><button type="button">👍</button><button type="button">😡</button><button type="button">💩</button></div>
 <button class="mic" id="micBtn" type="button" aria-pressed="false" aria-label="Микрофон" hidden>МИК</button>
 <div class="hit-flash" id="hitFlash"></div>
 
@@ -311,6 +321,7 @@
     <div class="menu-play" id="menuPlay" hidden>
       <div class="label">Одиночный</div>
       <div class="menu-btns"><button class="btn" id="playBtn" type="button">Сюжет</button><button class="btn" id="endlessBtn" type="button">Бесконечный</button></div>
+      <button class="btn daily" id="dailyBtn" type="button">Испытание дня</button>
       <div class="label">Онлайн</div>
       <div class="menu-btns"><button class="btn online" id="onlineBtn" type="button">Случайный</button><button class="btn online" id="friendPlayBtn" type="button">С другом</button></div>
       <button class="btn ghost" id="playBack" type="button">Назад</button>
@@ -363,7 +374,9 @@
     <div class="label" id="overBosses"></div>
     <div class="label" id="overRank"></div>
     <div class="label" id="bestOver"></div>
+    <div class="menu-btns" id="onlineOverBtns" hidden><button class="btn online" id="watchBtn" type="button">Смотреть</button><button class="btn online" id="rematchBtn" type="button">Реванш</button></div>
     <div class="menu-btns"><button class="btn ghost" id="overMenu" type="button">Меню</button><button class="btn" id="againBtn" type="button">Ещё раз</button></div>
+    <button class="link-btn" id="shareBtn" type="button">Поделиться результатом</button>
   </div>
 </div>
 
@@ -377,6 +390,7 @@
     </div>
     <div class="newbest" id="endBest" hidden>Новый рекорд!</div>
     <div class="menu-btns"><button class="btn ghost" id="endMenu" type="button">Меню</button><button class="btn" id="endBtn" type="button">Играть снова</button></div>
+    <button class="link-btn" id="endShare" type="button">Поделиться результатом</button>
   </div>
 </div>
 
@@ -390,7 +404,10 @@
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   let lrnd = Math.random;   // level randomness: seeded, so both online players get the same track
   let online = false;
-  let gameMode = 'story';   // story: 10 bosses and the ending; endless: bosses in random order forever
+  let gameMode = 'story';
+  const endlessLike = () => gameMode === 'endless' || gameMode === 'daily';
+  let serverDay = null;
+  const dailyDay = () => serverDay != null ? serverDay : Math.floor((Date.now() + 3 * 3600e3) / 86400e3);   // story: 10 bosses and the ending; endless: bosses in random order forever
   const LANE = 2.3;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -406,9 +423,9 @@
   const GOLD_N = TEST || FIN_TEST ? 5 : 20;
   const GOLD_START = LAST_BOSS + REG_AFTER + 1;
   const FINAL_IDX = GOLD_START + GOLD_N;
-  const lastIdx = () => gameMode === 'endless' ? Infinity : FINAL_IDX;
+  const lastIdx = () => endlessLike() ? Infinity : FINAL_IDX;
   function kindOf(i) {
-    if (gameMode === 'endless') return i > 0 && i % BOSS_EVERY === 0 ? 'boss' : 'normal';
+    if (endlessLike()) return i > 0 && i % BOSS_EVERY === 0 ? 'boss' : 'normal';
     if (i > 0 && i <= LAST_BOSS && i % BOSS_EVERY === 0) return 'boss';
     if (i >= GOLD_START && i < FINAL_IDX) return 'gold';
     if (i === FINAL_IDX) return 'final';
@@ -418,9 +435,9 @@
   function rollSecrets() {
     secretSet = new Set();
     if (FIN_TEST || online) return;
-    for (let k = 0; k < (gameMode === 'endless' ? 100 : BOSS_COUNT); k++) {
+    for (let k = 0; k < (endlessLike() ? 100 : BOSS_COUNT); k++) {
       const a = k * BOSS_EVERY + (TEST ? 3 : 5), b = (k + 1) * BOSS_EVERY - (TEST ? 3 : 5);
-      secretSet.add(TEST ? a : a + Math.floor(rnd() * (b - a + 1)));
+      secretSet.add(TEST ? a : a + Math.floor((gameMode === 'daily' ? lrnd() : rnd()) * (b - a + 1)));
     }
   }
 
@@ -685,7 +702,7 @@
     specialMap = new Map();
     const list = online ? SPECIALS.concat(['swap', 'swap']) : SPECIALS;
     let i = TEST ? 4 : 10;
-    const end = FIN_TEST ? 0 : gameMode === 'endless' ? 5000 : LAST_BOSS + REG_AFTER;
+    const end = FIN_TEST ? 0 : endlessLike() ? 5000 : LAST_BOSS + REG_AFTER;
     if (location.hash === '#specials') { let q = 0; for (let k = 3; k < 100; k += 6) if (kindOf(k) === 'normal' && k % BOSS_EVERY <= BOSS_EVERY - 4) specialMap.set(k, list[q++ % list.length]); return; }
     while (i < end) {
       const m = i % BOSS_EVERY;
@@ -871,7 +888,7 @@
   let bossSeq = [];
   function bossFor(i) {
     const k = Math.round(i / BOSS_EVERY) - 1;
-    if (gameMode !== 'endless') return k % 10;
+    if (!endlessLike()) return k % 10;
     while (bossSeq.length <= k) {
       const bag = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       for (let q = 9; q > 0; q--) { const j = Math.floor(lrnd() * (q + 1)); [bag[q], bag[j]] = [bag[j], bag[q]]; }
@@ -901,13 +918,13 @@
   }
   function fillCyls() { while (nextIdx <= lastIdx() && nextIdx < curIdx + 22) makeCyl(); }
 
-  function resetWorld() {
+  function resetWorld(startRow = 0) {
     cyls.forEach(dropCyl);
-    cyls = []; nextIdx = 0; lastX = 0; lastColor = -1; zCursor = 0; lastR = 1.25 * CYL_SCALE;
+    cyls = []; nextIdx = startRow; lastX = 0; lastColor = -1; zCursor = 0; lastR = 1.25 * CYL_SCALE;
     pathX = PATH_OFF.slice(); pathW = [1, 1, 1]; bossSeq = [];
     rollSecrets();
     rollSpecials();
-    curIdx = 0;
+    curIdx = startRow;
     fillCyls();
   }
 
@@ -1956,6 +1973,7 @@
   }
   let popTimer = 0;
   function showPop(text, kind = '') {
+    (window.__pops = window.__pops || []).push(text);
     popEl.textContent = text; popEl.className = 'pop ' + kind; void popEl.offsetWidth; popEl.classList.add('show');
     clearTimeout(popTimer);
     popTimer = setTimeout(() => { popEl.classList.remove('show'); }, kind.includes('long') ? 1800 : 900);   // never longer than 5 s
@@ -2140,7 +2158,8 @@
   function netSend(m) { if (net.on && net.ws && net.ws.readyState === 1) { try { net.ws.send(JSON.stringify(m)); } catch (e) {} } }
   const waitScreen = $('waitScreen'), mateChip = $('mateChip');
   function showMenu() {
-    stopMic(); micBtn.hidden = true; gunBtn.hidden = true;
+    stopMic(); micBtn.hidden = true; gunBtn.hidden = true; emoBtn.hidden = true; emoRow.hidden = true; spectating = false;
+    net.leaving = true; netSend({ t: 'bye' });
     if (net.ws) { try { net.ws.close(); } catch (e) {} }
     net.ws = null; net.on = false; net.waiting = false; online = false;
     mate.root.visible = false; mateChip.hidden = true;
@@ -2170,43 +2189,81 @@
       $('waitNote').textContent = 'Ждём, пока кто-нибудь ещё нажмёт «Онлайн → Случайный». Голосового чата тут нет.';
     }
     if (!WS_URL) { $('waitTitle').firstChild.textContent = 'Онлайн работает в Telegram'; $('waitNote').textContent = 'Открой игру через бота @buttjump_bot.'; return; }
-    net.waiting = true;
-    const ws = new WebSocket(WS_URL + (room ? '?room=' + encodeURIComponent(room) : ''));
+    net.waiting = true; net.leaving = false; net.token = null;
+    openSocket(WS_URL + (room ? '?room=' + encodeURIComponent(room) : ''), false);
+  }
+  function openSocket(url, resuming) {
+    const ws = new WebSocket(url);
+    ws.__resuming = resuming;
     net.ws = ws;
-    ws.onopen = () => ws.send(JSON.stringify({ t: 'hello', name: playerName(), avatar: account && account.uid ? account.avatar : null }));
     ws.binaryType = 'arraybuffer';
-    ws.onmessage = ev => { if (typeof ev.data !== 'string') { playVoice(new Uint8Array(ev.data)); return; } let m; try { m = JSON.parse(ev.data); } catch (e) { return; } onNet(m); };
+    ws.onopen = () => { if (!resuming) ws.send(JSON.stringify({ t: 'hello', name: playerName(), avatar: account && account.uid ? account.avatar : null })); };
+    ws.onmessage = ev => { net.lastRx = performance.now(); if (typeof ev.data !== 'string') { playVoice(new Uint8Array(ev.data)); return; } let m; try { m = JSON.parse(ev.data); } catch (e) { return; } onNet(m); };
+    net.lastRx = performance.now();
     ws.onclose = () => {
       if (net.ws !== ws) return;
-      if (net.waiting) { $('waitTitle').firstChild.textContent = 'Нет связи с сервером'; $('waitNote').textContent = 'Проверь интернет и попробуй ещё раз.'; net.waiting = false; }
-      else if (net.on && net.rs && !net.rs.gone) { net.rs.gone = true; mate.root.visible = false; if (alive()) showPop('Связь с другом потеряна', 'long'); }
+      if (net.waiting) { $('waitTitle').firstChild.textContent = 'Нет связи с сервером'; $('waitNote').textContent = 'Проверь интернет и попробуй ещё раз.'; net.waiting = false; return; }
+      if (net.on && !net.leaving && net.token && net.rs && !net.rs.gone) { tryResume(resuming ? net.resumeTry + 1 : 0); return; }
+      if (net.on && net.rs && !net.rs.gone) loseFriend('Связь с другом потеряна');
     };
+    return ws;
+  }
+  // after a short drop the game keeps going and quietly reconnects to the same pair
+  function tryResume(n) {
+    net.resumeTry = n;
+    if (n >= 6) { loseFriend('Связь с другом потеряна'); return; }
+    if (n === 0 && alive()) showPop('Связь пропала, переподключаемся…', 'long');
+    setTimeout(() => { if (net.on && !net.leaving) openSocket(WS_URL + '?resume=' + net.token, true); }, 800 + n * 1500);
+  }
+  function loseFriend(text) {
+    net.partnerLag = false;
+    const r = net.rs; if (!r || r.gone) return;
+    r.gone = true; mate.root.visible = false; $('mateText').textContent = 'вышел';
+    if (alive()) showPop(text, 'long');
+    updateOverMate();
+  }
+  function beginOnlineRun(seed) {
+    net.seed = seed >>> 0;
+    gameMode = 'story';
+    net.rs = { x: 0, y: 0, z: 0, s: 'count', sc: 0, alive: true, gone: false, fall: 0 };
+    net.rematch = { me: false, mate: false };
+    spectating = false;
+    waitScreen.hidden = true; $('overScreen').hidden = true; $('endScreen').hidden = true;
+    paintButt(hero, net.host ? 'purple' : 'orange'); paintButt(mate, net.host ? 'orange' : 'purple');
+    newRun();
+    const c0 = getCyl(0);
+    px = targetX = c0.all[net.host ? 0 : 2].x;
+    net.rs.x = c0.all[net.host ? 2 : 0].x;
+    mate.root.position.set(net.rs.x, 0, 0); mate.root.rotation.set(0, 0, 0); mate.root.visible = true;
+    $('mateName').textContent = net.mateName; $('mateText').textContent = '0'; mateChip.hidden = false;
+    scoreEl.hidden = false; bestMini.hidden = true;
+    autoBtn.hidden = !autoAllowed; gunBtn.hidden = !gunAllowed; micBtn.hidden = !net.voice; emoBtn.hidden = false;
+    state = 'count'; net.countT = 3.2;
+    setMusic(null);
+    showPop('Играем с: ' + net.mateName, 'long');
+  }
+  function tryRestart() {
+    if (net.rematch.me && net.rematch.mate && net.host) { const seed = Math.floor(Math.random() * 4294967296); netSend({ t: 'restart', seed }); beginOnlineRun(seed); }
   }
   function onNet(m) {
     if (m.t === 'start') {
-      net.waiting = false; net.on = true; online = true; net.host = !!m.host; net.seed = m.seed >>> 0;
-      net.mateName = String(m.name || 'Друг'); net.voice = !!m.voice;
-      gameMode = 'story';
-      net.rs = { x: 0, y: 0, z: 0, s: 'count', sc: 0, alive: true, gone: false, fall: 0 };
-      waitScreen.hidden = true;
-      paintButt(hero, net.host ? 'purple' : 'orange'); paintButt(mate, net.host ? 'orange' : 'purple');
-      newRun();
-      const c0 = getCyl(0);
-      px = targetX = c0.all[net.host ? 0 : 2].x;
-      net.rs.x = c0.all[net.host ? 2 : 0].x;
-      mate.root.position.set(net.rs.x, 0, 0); mate.root.rotation.set(0, 0, 0); mate.root.visible = true;
-      $('mateName').textContent = net.mateName; $('mateText').textContent = '0'; mateChip.hidden = false;
-      scoreEl.hidden = false; bestMini.hidden = true;
-      autoBtn.hidden = !autoAllowed; gunBtn.hidden = !gunAllowed; micBtn.hidden = !net.voice;
-      state = 'count'; net.countT = 3.2;
-      showPop('Играем с: ' + net.mateName, 'long');
+      net.waiting = false; net.on = true; online = true; net.host = !!m.host;
+      net.mateName = String(m.name || 'Друг'); net.voice = !!m.voice; net.token = m.token || null;
+      beginOnlineRun(m.seed);
       return;
     }
     if (!net.on) return;
     const r = net.rs;
     if (m.t === 'st') { r.x = m.x; r.y = m.y; r.z = m.z; r.s = m.s; r.sc = m.sc; $('mateText').textContent = m.sc; if (!$('overScreen').hidden) updateOverMate(); }
     else if (m.t === 'dead') { r.alive = false; r.sc = m.sc; r.fall = 0.001; $('mateText').textContent = m.sc + ' · выбыл'; if (alive()) showPop(net.mateName + ' выбыл!'); updateOverMate(); }
-    else if (m.t === 'left') { r.gone = true; mate.root.visible = false; if (alive()) showPop(net.mateName + ' вышел из игры', 'long'); $('mateText').textContent = 'вышел'; updateOverMate(); }
+    else if (m.t === 'left') loseFriend(net.mateName + ' вышел из игры');
+    else if (m.t === 'lag') { net.partnerLag = true; if (alive()) showPop('У друга пропала связь, ждём…'); }
+    else if (m.t === 'back') { net.partnerLag = false; if (alive()) showPop(net.mateName + ' снова в игре'); }
+    else if (m.t === 'resumed') { net.resumeTry = 0; if (net.ws) net.ws.__resuming = false; if (alive()) showPop('Связь восстановлена'); }
+    else if (m.t === 'resume-failed') loseFriend('Связь с другом потеряна');
+    else if (m.t === 'emo') { if (mate.root.visible) showEmote(mate.root, m.e); }
+    else if (m.t === 'rematch') { net.rematch.mate = true; showPop(net.mateName + ' хочет реванш!', 'long'); updateOverMate(); tryRestart(); }
+    else if (m.t === 'restart') { if (state === 'over' || state === 'fall') beginOnlineRun(m.seed); }
     else if (m.t === 'hz') { if (boss && state === 'boss' && (boss.phase === 'fight' || boss.phase === 'intro' || boss.phase === 'wait')) { boss.phase = 'fight'; const keep = boss.shots; boss.shots = m.aid; spawnHazard(boss, m.o); boss.shots = Math.max(keep, m.aid + 1); if (pipsEl.hidden) { pipsEl.hidden = false; } } }
     else if (m.t === 'weapon') { if (boss && state === 'boss' && boss.phase !== 'shot' && boss.phase !== 'win') { if (boss.model.g) showWeapon(boss, m.wx); } }
     else if (m.t === 'shot') { if (boss && state === 'boss') fireWeapon(boss); }
@@ -2217,7 +2274,41 @@
     if (!net.on && !(net.rs)) return;
     const r = net.rs; if (!r) return;
     $('overBosses').textContent = r.gone ? net.mateName + ' вышел из игры' : r.alive ? net.mateName + ' ещё прыгает: ' + r.sc : net.mateName + ': ' + r.sc + ' очков';
+    const box = $('onlineOverBtns');
+    box.hidden = !net.on || r.gone;
+    $('watchBtn').hidden = !r.alive; $('rematchBtn').hidden = r.alive;
+    $('rematchBtn').textContent = net.rematch && net.rematch.me ? 'Ждём друга…' : net.rematch && net.rematch.mate ? 'Принять реванш' : 'Реванш';
+    if (spectating && !r.alive) stopWatching();
   }
+  // after you fall in online you can watch your friend, and ask for a rematch when both are out
+  var spectating = false;
+  function stopWatching() { spectating = false; if (state === 'over') $('overScreen').hidden = false; }
+  $('watchBtn').addEventListener('click', () => { spectating = true; $('overScreen').hidden = true; });
+  $('rematchBtn').addEventListener('click', () => { if (!net.rematch || net.rematch.me) return; net.rematch.me = true; netSend({ t: 'rematch' }); updateOverMate(); tryRestart(); });
+  // quick reactions above your butt
+  const emoBtn = $('emoBtn'), emoRow = $('emoRow');
+  const emotes = [];
+  function showEmote(root, e) {
+    if (!['😂', '👍', '😡', '💩'].includes(e)) return;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    const g = cv.getContext('2d'); g.font = '96px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(e, 64, 72);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+    sp.scale.set(1.2, 1.2, 1); scene.add(sp);
+    emotes.push({ sp, root, t: 0 });
+  }
+  function updateEmotes(dt) {
+    for (let k = emotes.length - 1; k >= 0; k--) {
+      const em = emotes[k]; em.t += dt;
+      em.sp.position.copy(em.root.position).add(new V3(0, 2.3 + em.t * 0.8, 0));
+      em.sp.material.opacity = Math.min(1, 2.2 - em.t * 1.2);
+      if (em.t > 1.8) { scene.remove(em.sp); em.sp.material.map.dispose(); em.sp.material.dispose(); emotes.splice(k, 1); }
+    }
+  }
+  emoBtn.addEventListener('click', e => { e.stopPropagation(); emoRow.hidden = !emoRow.hidden; emoBtn.blur(); });
+  emoRow.querySelectorAll('button').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation(); emoRow.hidden = true;
+    const em = b.textContent; showEmote(player, em); netSend({ t: 'emo', e: em });
+  }));
   $('onlineBtn').addEventListener('click', () => goOnline(null));
   $('waitBack').addEventListener('click', showMenu);
   setInterval(() => { const d = $('waitDots'); if (d && !waitScreen.hidden) d.textContent = '.'.repeat(1 + (Math.floor(Date.now() / 450) % 3)); }, 150);
@@ -2400,7 +2491,7 @@
   }
   async function refreshMe() {
     const r = await api('me');
-    if (r.ok) { account = r.me; incoming = r.incoming || 0; }
+    if (r.ok) { account = r.me; incoming = r.incoming || 0; if (r.day != null) serverDay = r.day; }
     renderMe();
     return r;
   }
@@ -2501,6 +2592,7 @@
       <div class="stats3">
         <div class="stat"><strong>${a.best}</strong><span>рекорд</span></div>
         <div class="stat"><strong>${a.weekBest}</strong><span>за неделю</span></div>
+        <div class="stat"><strong>${a.dayBest || 0}</strong><span>испытание дня</span></div>
         <div class="stat"><strong>${a.bosses}</strong><span>боссов</span></div>
         <div class="stat"><strong>${a.games}</strong><span>игр</span></div>
       </div>
@@ -2519,17 +2611,17 @@
     openPanel('Лидерборд', 'board');
     if (needAccount('Лидерборд')) return;
     panelTab = tab;
-    setTabs([['all', 'За всё время'], ['week', 'За неделю'], ['friends', 'Друзья']], tab, t => openBoard(t));
+    setTabs([['all', 'Всё время'], ['week', 'Неделя'], ['day', 'День'], ['friends', 'Друзья']], tab, t => openBoard(t));
     panelBody.innerHTML = '<div class="empty">Загружаем…</div>';
     const r = await api('leaderboard', { scope: tab });
     if (panelKind !== 'board' || panelTab !== tab) return;
     if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить. Проверь интернет.</div>'; return; }
-    if (!r.top.length) panelBody.innerHTML = `<div class="empty">${tab === 'week' ? 'На этой неделе ещё никто не играл в «Бесконечный». Будь первым!' : 'Пока пусто. Сыграй в «Бесконечный», и твой результат появится здесь.'}</div>`;
+    if (!r.top.length) panelBody.innerHTML = `<div class="empty">${tab === 'day' ? 'Сегодня ещё никто не проходил «Испытание дня». Будь первым!' : tab === 'week' ? 'На этой неделе ещё никто не играл в «Бесконечный». Будь первым!' : 'Пока пусто. Сыграй в «Бесконечный», и твой результат появится здесь.'}</div>`;
     else panelBody.innerHTML = r.top.map(x => `<div class="row${x.uid === r.myUid ? ' me' : ''}"><span class="place p${x.place}">${x.place}</span>${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid}</small></div><span class="pts">${x.score}</span></div>`).join('');
     const inTop = r.mine && r.top.some(x => x.uid === r.myUid);
     panelFoot.hidden = !!inTop;
     panelFoot.innerHTML = r.mine ? `<div class="row me"><span class="place">${r.mine.place}</span>${avaImg(account.avatar, 'mid')}<div class="who"><b>Ты${inTop ? '' : ' (вне топа)'}</b><small>ID ${account.uid}</small></div><span class="pts">${r.mine.score}</span></div>`
-      : `<div class="hint">Ты ещё не в таблице. Сыграй в «Бесконечный» без автопилота.</div>`;
+      : `<div class="hint">Ты ещё не в таблице. Сыграй в ${tab === 'day' ? '«Испытание дня»' : '«Бесконечный»'} без автопилота.</div>`;
   }
 
   // friends
@@ -2559,7 +2651,7 @@
     if (panelKind !== 'friends' || panelTab !== tab) return;
     if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить.</div>'; return; }
     if (!r.list.length) { panelBody.innerHTML = `<div class="empty">Друзей пока нет. Найди друга по ID во вкладке «Поиск». Твой ID: ${account.uid}</div>`; return; }
-    panelBody.innerHTML = r.list.map(x => `<div class="row" data-uid="${x.uid}" data-name="${esc(x.name)}">${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid} · рекорд ${x.best}</small></div>
+    panelBody.innerHTML = r.list.map(x => `<div class="row" data-uid="${x.uid}" data-name="${esc(x.name)}">${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid} · ${r.now - (x.seen || 0) < 150000 ? '<span class="online-dot">● в игре</span>' : x.seen ? 'был(а) ' + ago(x.seen, r.now) : 'давно не заходил(а)'}</small></div>
       <button class="mini" type="button" data-act="invite">Позвать</button><button class="mini soft" type="button" data-act="del" aria-label="Удалить из друзей">✕</button></div>`).join('');
     panelBody.querySelectorAll('.row').forEach(row => {
       const uid = +row.dataset.uid, name = row.dataset.name;
@@ -2628,11 +2720,13 @@
   $('mShop').addEventListener('click', () => showPop('Магазин скоро откроется'));
   $('friendPlayBtn').addEventListener('click', () => openFriendPick());
 
+  setInterval(() => { if (API_OK && !document.hidden) api('ping'); }, 60000);
+
   // results go to the server: endless runs for the leaderboard, every game for the profile
   async function sendResult(mode, finished) {
     if (!API_OK) return null;
     const secs = Math.round((performance.now() - runStart) / 1000);
-    const r = await api('score', { mode, score, secs, bosses: bossesWon, auto: autoUsed, finished: !!finished });
+    const r = await api('score', { mode, score, secs, bosses: bossesWon, auto: autoUsed, finished: !!finished, day: dailyDay(), row: lastDeath.row, boss: lastDeath.boss, reason: lastDeath.reason });
     if (r.ok && r.newBest) account && (account.best = r.best);
     return r;
   }
@@ -2722,7 +2816,7 @@
   function pauseGame() {
     if (!inRun() || !pauseScreen.hidden) return;
     pauseScreen.hidden = false;
-    $('pauseNote').textContent = net.on ? 'В онлайне игра не останавливается: друг прыгает дальше.' : (gameMode === 'endless' ? 'Если выйти в меню, забег закончится и результат засчитается.' : '');
+    $('pauseNote').textContent = net.on ? 'В онлайне игра не останавливается: друг прыгает дальше.' : (endlessLike() ? 'Если выйти в меню, забег закончится и результат засчитается.' : '');
     if (!net.on) { paused = true; applySettings(); }
   }
   function resumeGame() { pauseScreen.hidden = true; if (paused) { paused = false; last = performance.now(); applySettings(); } }
@@ -2731,7 +2825,7 @@
   $('pauseSettings').addEventListener('click', openSettings);
   $('pauseMenu').addEventListener('click', () => {
     pauseScreen.hidden = true; paused = false;
-    if (!net.on && (gameMode === 'endless') && score > 0) sendResult('endless', false);
+    if (!net.on && (endlessLike()) && score > 0) sendResult('endless', false);
     showMenu();
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden && !net.on) pauseGame(); });
@@ -2740,6 +2834,7 @@
   // ---------- one "back" for everything: our buttons, Telegram's back button and the Android back gesture ----------
   function handleBack() {
     if (!modal.hidden) { closeModal(); return; }
+    if (spectating) { stopWatching(); return; }
     if (!panel.hidden) { closePanel(); return; }
     if (!pauseScreen.hidden) { resumeGame(); return; }
     if (!waitScreen.hidden) { showMenu(); return; }
@@ -2772,26 +2867,28 @@
     cyls = cyls.filter(c => { if (c.i < curIdx - 2) { dropCyl(c); return false; } return true; });
   }
 
-  function newRun() {
+  function newRun(startRow = 0) {
     clearBoss();
     fin = null; jet = null;
     if (owner) owner.g.visible = false;
     endFx(true); shield = false; bubble.visible = false; $('shieldChip').hidden = true;
     playerScaleT = PLAYER_SCALE; player.scale.setScalar(PLAYER_SCALE); nightK = 0; coinRain = 0; fireworks = [];
-    lrnd = mulberry(online ? net.seed : (Math.random() * 4294967296) >>> 0);
-    resetWorld();
+    lrnd = mulberry(online ? net.seed : gameMode === 'daily' ? (dailyDay() * 2654435761) >>> 0 : (Math.random() * 4294967296) >>> 0);
+    resetWorld(startRow);
     scenery.reset();
     curIdx = 0; hopT = 0; hopDur = 0.6; px = targetX = 0; py = 0; pz = 0;
     score = 0; combo = 0; camX = 0; bossBlend = 0; finBlend = 0; bossesWon = 0; autoUsed = false; runStart = performance.now();
     player.rotation.set(0, 0, 0); player.position.set(0, 0, 0);
+    if (startRow) { curIdx = startRow; const c = getCyl(startRow); px = targetX = c.x; pz = c.z; }
     scoreEl.textContent = '0';
   }
 
-  function startPlay(mode) {
+  function startPlay(mode, from) {
     ensureAudio();
     if (typeof mode === 'string') gameMode = mode;
     $('endBtn').textContent = 'Играть снова';
-    newRun();
+    newRun(from ? from.row : 0);
+    if (from) { score = from.score || 0; bossesWon = from.bosses || 0; scoreEl.textContent = score; }
     state = 'play'; hopT = 0;
     $('startScreen').hidden = true; $('overScreen').hidden = true; $('endScreen').hidden = true;
     scoreEl.hidden = false; bestMini.hidden = best === 0;
@@ -2802,28 +2899,52 @@
     updateBestLabels();
     setMusic('main');
   }
-  $('playBtn').addEventListener('click', () => startPlay('story'));
+  const loadCkpt = () => { try { return JSON.parse(localStorage.getItem('popa-ckpt') || 'null'); } catch (e) { return null; } };
+  const saveCkpt = v => { try { if (v) localStorage.setItem('popa-ckpt', JSON.stringify(v)); else localStorage.removeItem('popa-ckpt'); } catch (e) {} };
+  $('playBtn').addEventListener('click', () => {
+    const ck = loadCkpt();
+    if (!ck || ck.boss < 2) { startPlay('story'); return; }
+    openModal('Сюжет', 'Ты дошёл до босса ' + ck.boss + ' из 10.', [
+      ['С начала', 'ghost', () => { closeModal(); saveCkpt(null); startPlay('story'); }],
+      ['С босса ' + ck.boss, '', () => { closeModal(); startPlay('story', { row: Math.max(0, ck.boss * BOSS_EVERY - 4), score: ck.score, bosses: ck.boss - 1 }); }]
+    ]);
+  });
+  $('dailyBtn').addEventListener('click', () => startPlay('daily'));
   $('endlessBtn').addEventListener('click', () => startPlay('endless'));
   $('againBtn').addEventListener('click', () => net.on ? showMenu() : startPlay(gameMode));
   $('endBtn').addEventListener('click', () => net.on ? showMenu() : startPlay(gameMode));
   $('overMenu').addEventListener('click', () => showMenu());
+  function shareResult() {
+    const what = net.on ? 'в онлайне' : gameMode === 'daily' ? 'в испытании дня' : gameMode === 'endless' ? 'в бесконечном режиме' : 'в сюжете';
+    const text = `Я набрал ${score} очков ${what} в «Попа-Прыг» и победил боссов: ${bossesWon}. Побьёшь?`;
+    const link = 'https://t.me/share/url?url=' + encodeURIComponent('https://t.me/buttjump_bot') + '&text=' + encodeURIComponent(text);
+    const tgw = window.Telegram && window.Telegram.WebApp;
+    if (tgw && tgw.initData && tgw.openTelegramLink) { try { tgw.openTelegramLink(link); return; } catch (e) {} }
+    if (navigator.share) { navigator.share({ text: text + ' https://t.me/buttjump_bot' }).catch(() => {}); return; }
+    showPop('Поделиться можно в игре через бота', 'long');
+  }
+  $('shareBtn').addEventListener('click', shareResult);
+  $('endShare').addEventListener('click', shareResult);
   $('endMenu').addEventListener('click', () => showMenu());
 
   function hideHud() {
-    scoreEl.hidden = true; bestMini.hidden = true; autoBtn.hidden = true; gunBtn.hidden = true; micBtn.hidden = true;
+    scoreEl.hidden = true; bestMini.hidden = true; autoBtn.hidden = true; gunBtn.hidden = true; micBtn.hidden = true; emoBtn.hidden = true; emoRow.hidden = true;
     $('fxChip').hidden = true; $('shieldChip').hidden = true; bossBar.hidden = true;
   }
+  let lastDeath = { row: 0, boss: -1, reason: '' };
   function gameOver() {
+    lastDeath = { row: curIdx, boss: boss ? boss.n : -1, reason: deathReason };
     state = 'over';
     const isNew = score > best;
     if (isNew) { best = score; saveBest(); }
     $('overLabel').textContent = deathReason + ' Очков:';
     $('finalScore').textContent = score;
     $('newBest').hidden = !isNew;
-    $('overBosses').textContent = 'Боссов побеждено: ' + bossesWon + (gameMode === 'endless' ? '' : ' из 10');
+    $('overBosses').textContent = 'Боссов побеждено: ' + bossesWon + (endlessLike() ? '' : ' из 10');
     $('overRank').textContent = '';
     $('againBtn').textContent = net.on ? 'В меню' : 'Ещё раз';
     $('overMenu').hidden = net.on;
+    $('onlineOverBtns').hidden = true;
     if (net.on) { $('overLabel').textContent = 'Ты выбыл! ' + deathReason + ' Очков:'; updateOverMate(); }
     updateBestLabels();
     hideHud();
@@ -2833,12 +2954,13 @@
     setTimeout(() => $('againBtn').focus({ preventScroll: true }), 50);
     const mode = net.on ? 'online' : gameMode;
     if (API_OK) {
-      if (mode === 'endless') $('overRank').textContent = 'Отправляем результат…';
+      const ranked = mode === 'endless' || mode === 'daily';
+      if (ranked) $('overRank').textContent = 'Отправляем результат…';
       sendResult(mode, false).then(r => {
-        if (mode !== 'endless') return;
+        if (!ranked) return;
         const el = $('overRank');
         if (!r || !r.ok) el.textContent = 'Не удалось отправить результат';
-        else if (r.counted) el.textContent = (r.newBest ? 'Новый рекорд! ' : '') + 'Место в лидерборде: ' + r.place;
+        else if (r.counted) el.textContent = (r.newBest ? 'Новый рекорд! ' : '') + (mode === 'daily' ? 'Место в испытании дня: ' : 'Место в лидерборде: ') + r.place;
         else el.textContent = { auto: 'С автопилотом результат не идёт в лидерборд', noname: 'Выбери имя в «Профиле», чтобы попасть в лидерборд', check: 'Результат не прошёл проверку' }[r.why] || '';
       });
     }
@@ -2986,7 +3108,7 @@
   function startBoss(c) {
     const n = c.bossN;
     const def = BOSSES[n], model = getBossModel(n);
-    const level = gameMode === 'endless' ? Math.floor((Math.round(c.i / BOSS_EVERY) - 1) / 10) : 0;   // each lap of ten bosses is harder
+    const level = endlessLike() ? Math.floor((Math.round(c.i / BOSS_EVERY) - 1) / 10) : 0;   // each lap of ten bosses is harder
     endFx(true);
     state = 'boss';
     boss = { c, n, def, model, phase: 'intro', t: 0, shots: 0, dodged: 0, nextShot: 0, hopT: 0, wx: 0, weaponOn: false,
@@ -2998,6 +3120,7 @@
     model.mats.forEach(m => { m.emissive.setHex(m.userData.e0); m.emissiveIntensity = m.userData.ei0; m.opacity = m.transparent ? m.opacity : 1; });
     (def.enter || sfx.roar)();
     showHint('boss-' + n, def.name, BOSS_HINTS[n]);
+    if (!net.on && gameMode === 'story') { const nb = Math.round(c.i / BOSS_EVERY); const ck = loadCkpt(); if (!ck || ck.boss < nb) saveCkpt({ boss: nb, score }); }
     $('bossTag').textContent = 'Босс ' + (n + 1) + '/10';
     bossText.textContent = def.name;
     pipsEl.hidden = true;
@@ -3047,10 +3170,11 @@
       if (k >= 1 && friendExpected() && !friendHere(c)) { b.phase = 'wait'; showPop('Ждём друга у босса…', 'long'); }
       else if (k >= 1) {
         b.phase = 'fight'; b.nextShot = 0.6;
+        if (friendExpected() && friendHere(c)) { b.duo = true; b.attacks += 2; }
         bossText.textContent = 'Уклоняйся'; pipsEl.hidden = false; setPips(0, b.attacks);
       }
     } else if (b.phase !== 'win') {
-      if (b.phase === 'wait' && (!friendExpected() || friendHere(c))) { b.phase = 'fight'; b.nextShot = 0.8; pipsEl.hidden = false; setPips(0, b.attacks); showPop('Друг здесь!'); }
+      if (b.phase === 'wait' && (!friendExpected() || friendHere(c))) { b.phase = 'fight'; b.nextShot = 0.8; if (friendExpected()) { b.duo = true; b.attacks += 2; } pipsEl.hidden = false; setPips(0, b.attacks); showPop('Друг здесь!'); }
       g.position.x += (hoverX - g.position.x) * (1 - Math.exp(-dt * 2));
       g.position.y = hoverY; g.position.z = hoverZ;
     }
@@ -3066,6 +3190,7 @@
         if (b.nextShot <= 0 && authority()) {
           atkX = pickTarget(b);
           def.attack(b);
+          if (b.duo && ['fire', 'snow', 'bee', 'slime', 'bolt', 'dark'].includes(def.style) && rnd() < 0.6) { atkX = Math.abs(atkX - px) < 0.01 ? net.rs.x : px; def.attack(b); }
           b.shots++;
           b.nextShot = (def.gap[0] + rnd() * (def.gap[1] - def.gap[0])) * b.gapMul - b.shots * 0.02;
         }
@@ -3173,6 +3298,7 @@
 
   // ---------- finale ----------
   function startFinale(c) {
+    if (!net.on) saveCkpt(null);
     endFx(true);
     state = 'finale';
     if (!owner) owner = buildOwner();
@@ -3245,10 +3371,31 @@
     }
   }
 
+  // ---------- graphics quality: drops by itself on a slow phone and remembers it ----------
+  let quality = 2;
+  try { const q = localStorage.getItem('popa-q'); if (q !== null) quality = +q; } catch (e) {}
+  function applyQuality() {
+    renderer.setPixelRatio(quality >= 2 ? Math.min(window.devicePixelRatio || 1, 2) : 1);
+    const sh = quality >= 1;
+    if (renderer.shadowMap.enabled !== sh) { renderer.shadowMap.enabled = sh; sun.castShadow = sh; scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); }); }
+    resize();
+  }
+  applyQuality();
+  const perf = { t: 0, n: 0 };
+  function watchFps(realDt) {
+    if (paused || !inRun() || realDt > 0.5) return;
+    perf.t += realDt; perf.n++;
+    if (perf.t < 4) return;
+    const fps = perf.n / perf.t; perf.t = 0; perf.n = 0;
+    if (fps < 40 && quality > 0) { quality--; applyQuality(); try { localStorage.setItem('popa-q', String(quality)); } catch (e) {} }
+  }
+
   // ---------- loop ----------
   var last = performance.now(), frameNo = 0;
   function frame(now) {
-    const dt = paused ? 0 : Math.min(0.05, (now - last) / 1000); last = now;
+    const realDt = (now - last) / 1000;
+    const dt = paused ? 0 : Math.min(0.05, realDt); last = now;
+    if (!window.__skip) watchFps(realDt);
     time += dt;
 
     if (autoOn && (state === 'play' || state === 'boss')) { targetX = autoTarget(); autoUsed = true; }
@@ -3438,7 +3585,15 @@
     else if (scene.background !== skyTex) scene.background = skyTex;
 
     updatePoops(dt);
+    updateEmotes(dt);
     if (vc.talkT > 0) { vc.talkT -= dt; mateChip.classList.toggle('talk', vc.talkT > 0); }
+
+    // our own connection went silent: drop it and reconnect to the same game
+    if (net.on && !net.leaving && net.token && net.ws && net.rs && !net.rs.gone && !net.partnerLag && performance.now() - (net.lastRx || 0) > 4000) {
+      const old = net.ws; old.onclose = null; old.onmessage = null; try { old.close(); } catch (e) {}
+      net.lastRx = performance.now();
+      tryResume(old.__resuming ? (net.resumeTry || 0) + 1 : 0);
+    }
 
     // the friend
     if (net.on && net.rs) {
@@ -3480,6 +3635,12 @@
       const on = online ? 1 : 0;
       camera.position.set(cx, 7.2 + 1.5 * b + (state === 'jet' ? 1.2 : 0) + gz + on * 2.4, pz + 6.6 + 2.8 * b + gz + on * 2.6);
       camera.lookAt(camX * 1.05 + (bossCamX - camX * 1.05) * b, 2.0 * b, pz - 5 - 1 * b);
+    } else if (spectating && mate.root.visible) {
+      const mp = mate.root.position;
+      while (nextIdx <= lastIdx() && zCursor > mp.z - 90) makeCyl();
+      cyls = cyls.filter(c => { if (c.z > mp.z + 14) { dropCyl(c); return false; } return true; });
+      camera.position.lerp(new V3(mp.x * 0.6, 9.6, mp.z + 9.2), 1 - Math.exp(-dt * 4));
+      camera.lookAt(mp.x * 0.6, 0, mp.z - 5);
     } else {
       camera.lookAt(px * 0.6, py * 0.5, camera.position.z - 11.6);
     }
@@ -3498,9 +3659,12 @@
 
   // tiny hook for automated checks
   window.__popa = {
-    info: () => ({ state, px, pz, curIdx, score, online, host: net.host, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
+    info: () => ({ state, px, pz, curIdx, score, online, host: net.host, tok: !!net.token, rt: net.resumeTry, ws: net.ws && net.ws.readyState, leaving: net.leaving, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
       fx: fx && fx.e.id, shield, fin: fin && fin.phase, hz: hz.length, tx: targetX, haz: hz.map(h => [+h.x.toFixed(2), +h.t.toFixed(2), h.w, h.style]) }),
     steer: x => { targetX = x; },
+    dropNet: () => { if (net.ws) net.ws.close(); },
+    kill: () => { if (!alive()) return; deathReason = 'Мимо!'; state = 'fall'; fallTime = 0; fallV.set(0, -2, -2); fallSpin = 3; clearBoss(); },
+    msgs: () => window.__pops || [],
     rowInfo: i => { const c = getCyl(i); const k = c.all.find(q => q.special) || c; return { x: k.x, z: k.z, special: k.special }; },
     auto: v => { autoOn = v; autoBtn.setAttribute('aria-pressed', String(v)); },
     secret: id => { const e = EFFECTS.find(q => q.id === id); const s = { x: px, z: pz, flash: 0 }; const old = pickEffect; triggerSecretWith(e, s); }

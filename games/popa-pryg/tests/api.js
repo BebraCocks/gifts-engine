@@ -55,3 +55,18 @@ const call = async (who, op, body = {}) => {
   out('A invites C (not friend)', await call(A, 'invite', { uid: c.uid }));
   out('avatar reroll changes', (await call(A, 'avatar')).me.avatar !== a.avatar);
 })();
+// daily challenge, friend online status and fall statistics
+(async () => {
+  await new Promise(r => setTimeout(r, 15000));
+  const base = 700000000 + Math.floor(Math.random() * 1e6);
+  const D = sign(base + 7, 'Даша');
+  await call(D, 'name', { name: 'Даша' });
+  const me = await call(D, 'me');
+  console.log('server day', me.day);
+  console.log('daily 500   ', JSON.stringify(await call(D, 'score', { mode: 'daily', score: 500, secs: 60, bosses: 1, day: me.day, row: 61, boss: 0, reason: 'Мимо!' })));
+  console.log('daily stale ', JSON.stringify(await call(D, 'score', { mode: 'daily', score: 900, secs: 60, bosses: 1, day: me.day - 5 })));
+  console.log('day board   ', JSON.stringify((await call(D, 'leaderboard', { scope: 'day' })).top.slice(0, 3).map(r => [r.name, r.score])));
+  console.log('ping        ', JSON.stringify(await call(D, 'ping')));
+  const st = await (await fetch(BASE + '/stats')).json();
+  console.log('stats       ', JSON.stringify({ players: st.players, byDistance: st.byDistance, byReason: st.byReason }));
+})();

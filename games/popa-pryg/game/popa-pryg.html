@@ -176,6 +176,73 @@
   .stat { background: #f6f1ff; border-radius: 12px; padding: 7px 4px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .stat strong { font-weight: 900; font-size: 19px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .stat span { font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8a79b5; }
+  .screen { z-index: 20; }
+  .screen.panel { z-index: 25; }
+  .screen.modal { z-index: 30; background: rgba(26,12,60,.55); align-items: center; }
+  .pop { z-index: 40; }
+  .menu-card { gap: 9px; }
+  .me-row { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: #f6f1ff; border-radius: 14px; padding: 6px 10px; cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+  .me-text { display: flex; flex-direction: column; min-width: 0; }
+  .me-text b { font-weight: 900; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .me-text small { font-weight: 700; font-size: 11px; color: #8a79b5; }
+  .ava { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; background: #e7dcff; display: block; }
+  .ava.big { width: 92px; height: 92px; }
+  .ava.mid { width: 40px; height: 40px; }
+  .menu-main, .menu-play { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .tile { position: relative; overflow: hidden; border: 0; border-radius: 14px; padding: 10px 6px; min-height: 64px; cursor: pointer;
+    background: #f6f1ff; color: var(--ink); font: 900 13px var(--display); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    box-shadow: 0 4px 0 #ddd0f5; }
+  .tile:active { transform: translateY(3px); box-shadow: 0 1px 0 #ddd0f5; }
+  .tile-ico { font-size: 20px; line-height: 1; }
+  .tile small { font-weight: 700; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+  .tile.locked { background: #c9cbd1; color: #5b5f69; box-shadow: 0 4px 0 #a9acb4; cursor: not-allowed; filter: grayscale(1); }
+  .tile.locked:active { transform: none; box-shadow: 0 4px 0 #a9acb4; }
+  .tile .chains { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .badge { position: absolute; top: 6px; right: 8px; min-width: 18px; height: 18px; border-radius: 9px; background: #ff3b2f; color: #fff; font: 900 11px/18px var(--display); padding: 0 5px; }
+  .tile:focus-visible, .me-row:focus-visible, .x:focus-visible, .tab:focus-visible, .mini:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+  .sheet { width: min(380px, 100%); max-height: 100%; background: var(--card); border-radius: 22px; box-sizing: border-box;
+    display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 0 rgba(42,20,87,.18), 0 24px 60px rgba(20,50,130,.3); }
+  .screen.panel { align-items: stretch; justify-content: center; }
+  .screen.panel .sheet { margin: 0 auto; height: 100%; }
+  .sheet.small { padding: 18px 16px 14px; gap: 10px; text-align: center; height: auto; width: min(320px, 100%); }
+  .sheet.small h2 { margin: 0; font: 900 20px var(--display); color: var(--ink); text-wrap: balance; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 14px 8px 18px; }
+  .sheet-head h2 { margin: 0; font: 900 22px var(--display); color: var(--ink); }
+  .x { width: 34px; height: 34px; border-radius: 50%; border: 0; background: #f0eafc; color: var(--ink); font: 900 15px var(--display); cursor: pointer; flex-shrink: 0; }
+  .tabs { display: flex; gap: 4px; margin: 0 14px 6px; background: #f0eafc; padding: 4px; border-radius: 12px; }
+  .tab { flex: 1; min-width: 0; border: 0; border-radius: 9px; padding: 8px 4px; background: transparent; color: #6d5a9c; font: 900 12.5px var(--display); cursor: pointer; position: relative; white-space: nowrap; }
+  .tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 2px 0 rgba(42,20,87,.12); }
+  .tab .badge { top: -4px; right: -2px; }
+  .sheet-body { flex: 1; overflow-y: auto; padding: 6px 14px 14px; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .sheet-foot { border-top: 2px solid #f0eafc; padding: 10px 14px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: #f8f5ff; min-width: 0; }
+  .row.me { background: #fff3c4; }
+  .row .place { width: 26px; text-align: center; font: 900 15px var(--display); color: #8a79b5; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .row .place.p1 { color: #e0a800; } .row .place.p2 { color: #8f99a8; } .row .place.p3 { color: #c07a3a; }
+  .who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+  .who b { font-weight: 900; font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who small { font-weight: 700; font-size: 10.5px; color: #8a79b5; }
+  .row .pts { font: 900 15px var(--display); color: var(--ink); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .mini { border: 0; border-radius: 10px; padding: 7px 10px; font: 900 12px var(--display); cursor: pointer; background: var(--butt); color: #fff; flex-shrink: 0; }
+  .mini.ok { background: #1f9d55; width: 36px; padding: 7px 0; font-size: 15px; }
+  .mini.no { background: #ff3b2f; width: 36px; padding: 7px 0; font-size: 15px; }
+  .mini.soft { background: #ece6fa; color: #6d5a9c; }
+  .mini:disabled { opacity: .55; cursor: default; }
+  .empty { text-align: center; color: #8a79b5; font-weight: 700; font-size: 13.5px; line-height: 1.45; padding: 18px 8px; text-wrap: balance; }
+  .search { display: flex; gap: 8px; }
+  .field { flex: 1; min-width: 0; box-sizing: border-box; font: 700 16px var(--display); color: var(--ink); background: #f8f5ff; border: 2px solid #e2d8f7; border-radius: 12px; padding: 8px 10px;
+    -webkit-user-select: text; user-select: text; touch-action: manipulation; }
+  .field:focus { outline: none; border-color: var(--butt); }
+  .hint { font-weight: 700; font-size: 11.5px; color: #8a79b5; text-align: left; }
+  .hint.bad { color: var(--shoe); }
+  .profile-top { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0 6px; text-align: center; }
+  .profile-name { font: 900 21px var(--display); color: var(--ink); word-break: break-word; max-width: 100%; }
+  .id-row { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: #8a79b5; }
+  .btn.sm { font-size: 14px; padding: 8px 12px; }
+  .stats3 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
   @media (prefers-reduced-motion: reduce) { .swipe i::after { animation: none; } .pop.show { animation-duration: .01s; } }
 </style>
 
@@ -199,14 +266,53 @@
 <div class="hit-flash" id="hitFlash"></div>
 
 <div class="screen" id="startScreen">
-  <div class="card">
+  <div class="card menu-card">
     <h1 class="title">Попа<span>-</span>Прыг</h1>
-    <p class="lead">Попа прыгает сама, ты ведёшь её пальцем. <strong>Каждые 50 цилиндров ждёт босс.</strong> Победи всех и узнай, чья это попа.</p>
-    <div class="swipe"><i></i> веди пальцем</div>
-    <div class="menu-btns"><button class="btn" id="playBtn" type="button">Соло</button><button class="btn online" id="onlineBtn" type="button">Онлайн</button></div>
+    <button class="me-row" id="meRow" type="button" hidden><img class="ava" id="meAva" alt=""><span class="me-text"><b id="meName"></b><small id="meId"></small></span></button>
+    <div class="menu-main" id="menuMain">
+      <button class="btn" id="mPlay" type="button">Играть</button>
+      <div class="tiles">
+        <button class="tile" id="mProfile" type="button">Профиль</button>
+        <button class="tile" id="mFriends" type="button">Друзья<span class="badge" id="reqBadge" hidden>0</span></button>
+        <button class="tile" id="mBoard" type="button">Лидерборд</button>
+        <button class="tile locked" id="mShop" type="button" aria-disabled="true">Магазин<small>скоро</small>
+          <svg class="chains" viewBox="0 0 120 70" aria-hidden="true" preserveAspectRatio="none">
+            <g fill="none" stroke="#6b6f7a" stroke-width="3.2"><g transform="rotate(18 60 35)">
+              <rect x="-6" y="31" width="16" height="9" rx="4.5"/><rect x="8" y="31" width="16" height="9" rx="4.5"/><rect x="22" y="31" width="16" height="9" rx="4.5"/><rect x="36" y="31" width="16" height="9" rx="4.5"/><rect x="50" y="31" width="16" height="9" rx="4.5"/><rect x="64" y="31" width="16" height="9" rx="4.5"/><rect x="78" y="31" width="16" height="9" rx="4.5"/><rect x="92" y="31" width="16" height="9" rx="4.5"/><rect x="106" y="31" width="16" height="9" rx="4.5"/></g>
+            <g transform="rotate(-18 60 35)">
+              <rect x="-6" y="31" width="16" height="9" rx="4.5"/><rect x="8" y="31" width="16" height="9" rx="4.5"/><rect x="22" y="31" width="16" height="9" rx="4.5"/><rect x="36" y="31" width="16" height="9" rx="4.5"/><rect x="50" y="31" width="16" height="9" rx="4.5"/><rect x="64" y="31" width="16" height="9" rx="4.5"/><rect x="78" y="31" width="16" height="9" rx="4.5"/><rect x="92" y="31" width="16" height="9" rx="4.5"/><rect x="106" y="31" width="16" height="9" rx="4.5"/></g></g>
+            <g transform="translate(60 37)"><path d="M-7 -4 v-5 a7 7 0 0 1 14 0 v5" fill="none" stroke="#4a4e58" stroke-width="3"/><rect x="-10" y="-4" width="20" height="15" rx="3" fill="#7d818c" stroke="#4a4e58" stroke-width="2"/><circle cx="0" cy="3" r="2.2" fill="#3a3d45"/></g>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="menu-play" id="menuPlay" hidden>
+      <div class="label">Одиночный</div>
+      <div class="menu-btns"><button class="btn" id="playBtn" type="button">Сюжет</button><button class="btn" id="endlessBtn" type="button">Бесконечный</button></div>
+      <div class="label">Онлайн</div>
+      <div class="menu-btns"><button class="btn online" id="onlineBtn" type="button">Случайный</button><button class="btn online" id="friendPlayBtn" type="button">С другом</button></div>
+      <button class="btn ghost" id="playBack" type="button">Назад</button>
+    </div>
     <label class="code" for="codeInput"><span>Секретный<br>код</span><input id="codeInput" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="······" aria-describedby="codeNote"></label>
     <div class="code-note" id="codeNote" aria-live="polite"></div>
-    <div class="label" id="bestStart"></div>
+  </div>
+</div>
+
+<div class="screen panel" id="panel" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+    <div class="sheet-head"><h2 id="panelTitle">Профиль</h2><button class="x" id="panelClose" type="button" aria-label="Закрыть">✕</button></div>
+    <div class="tabs" id="panelTabs" role="tablist" hidden></div>
+    <div class="sheet-body" id="panelBody"></div>
+    <div class="sheet-foot" id="panelFoot" hidden></div>
+  </div>
+</div>
+
+<div class="screen modal" id="modal" hidden>
+  <div class="sheet small" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h2 id="modalTitle"></h2>
+    <p class="lead" id="modalText"></p>
+    <div id="modalExtra"></div>
+    <div class="menu-btns" id="modalBtns"></div>
   </div>
 </div>
 
@@ -222,8 +328,9 @@
     <div class="big-score" id="finalScore">0</div>
     <div class="newbest" id="newBest" hidden>Новый рекорд!</div>
     <div class="label" id="overBosses"></div>
+    <div class="label" id="overRank"></div>
     <div class="label" id="bestOver"></div>
-    <button class="btn" id="againBtn" type="button">Ещё раз</button>
+    <div class="menu-btns"><button class="btn ghost" id="overMenu" type="button">Меню</button><button class="btn" id="againBtn" type="button">Ещё раз</button></div>
   </div>
 </div>
 
@@ -236,7 +343,7 @@
       <div class="stat"><strong id="endBosses">10/10</strong><span>боссов</span></div>
     </div>
     <div class="newbest" id="endBest" hidden>Новый рекорд!</div>
-    <button class="btn" id="endBtn" type="button">Играть снова</button>
+    <div class="menu-btns"><button class="btn ghost" id="endMenu" type="button">Меню</button><button class="btn" id="endBtn" type="button">Играть снова</button></div>
   </div>
 </div>
 
@@ -250,6 +357,7 @@
   const mulberry = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   let lrnd = Math.random;   // level randomness: seeded, so both online players get the same track
   let online = false;
+  let gameMode = 'story';   // story: 10 bosses and the ending; endless: bosses in random order forever
   const LANE = 2.3;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -265,7 +373,9 @@
   const GOLD_N = TEST || FIN_TEST ? 5 : 20;
   const GOLD_START = LAST_BOSS + REG_AFTER + 1;
   const FINAL_IDX = GOLD_START + GOLD_N;
+  const lastIdx = () => gameMode === 'endless' ? Infinity : FINAL_IDX;
   function kindOf(i) {
+    if (gameMode === 'endless') return i > 0 && i % BOSS_EVERY === 0 ? 'boss' : 'normal';
     if (i > 0 && i <= LAST_BOSS && i % BOSS_EVERY === 0) return 'boss';
     if (i >= GOLD_START && i < FINAL_IDX) return 'gold';
     if (i === FINAL_IDX) return 'final';
@@ -275,7 +385,7 @@
   function rollSecrets() {
     secretSet = new Set();
     if (FIN_TEST || online) return;
-    for (let k = 0; k < BOSS_COUNT; k++) {
+    for (let k = 0; k < (gameMode === 'endless' ? 100 : BOSS_COUNT); k++) {
       const a = k * BOSS_EVERY + (TEST ? 3 : 5), b = (k + 1) * BOSS_EVERY - (TEST ? 3 : 5);
       secretSet.add(TEST ? a : a + Math.floor(rnd() * (b - a + 1)));
     }
@@ -542,7 +652,7 @@
     specialMap = new Map();
     const list = online ? SPECIALS.concat(['swap', 'swap']) : SPECIALS;
     let i = TEST ? 4 : 10;
-    const end = FIN_TEST ? 0 : LAST_BOSS + REG_AFTER;
+    const end = FIN_TEST ? 0 : gameMode === 'endless' ? 5000 : LAST_BOSS + REG_AFTER;
     if (location.hash === '#specials') { let q = 0; for (let k = 3; k < 100; k += 6) if (kindOf(k) === 'normal' && k % BOSS_EVERY <= BOSS_EVERY - 4) specialMap.set(k, list[q++ % list.length]); return; }
     while (i < end) {
       const m = i % BOSS_EVERY;
@@ -705,7 +815,7 @@
     lastX = multi ? centre : x;
     const c = { i, kind, x, baseX: x, z, r, baseR: r, g, mesh, mat, color: mat.color.getHex(), bounce: 0, bv: 0, flash: 0, alt: null, extra: [] };
     c.all = [c];
-    if (kind === 'boss') decorateBossPlatform(g, r, Math.round(i / BOSS_EVERY) - 1, c);
+    if (kind === 'boss') { c.bossN = bossFor(i); decorateBossPlatform(g, r, c.bossN, c); }
     if (multi) {
       c.centre = centre;
       for (let k = 1; k < 3; k++) { const e = makePlain(xs[k], z, rs[k], kind); e.i = i; e.parent = c; c.extra.push(e); c.all.push(e); }
@@ -723,6 +833,19 @@
     lastR = Math.max(rowR, hasSecret || ghostFork ? altR : 0);
     cyls.push(c);
     return c;
+  }
+  // story: bosses in order; endless: every ten bosses come in a fresh shuffled order
+  let bossSeq = [];
+  function bossFor(i) {
+    const k = Math.round(i / BOSS_EVERY) - 1;
+    if (gameMode !== 'endless') return k % 10;
+    while (bossSeq.length <= k) {
+      const bag = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+      for (let q = 9; q > 0; q--) { const j = Math.floor(lrnd() * (q + 1)); [bag[q], bag[j]] = [bag[j], bag[q]]; }
+      if (bossSeq.length && bag[0] === bossSeq[bossSeq.length - 1]) [bag[0], bag[9]] = [bag[9], bag[0]];
+      bossSeq.push(...bag);
+    }
+    return bossSeq[k];
   }
   const getCyl = i => cyls.find(c => c.i === i);
   function freeDeep(obj) {
@@ -743,12 +866,12 @@
       if (k.extraObjs) k.extraObjs.forEach(o => { scene.remove(o); freeDeep(o); });
     }
   }
-  function fillCyls() { while (nextIdx <= FINAL_IDX && nextIdx < curIdx + 22) makeCyl(); }
+  function fillCyls() { while (nextIdx <= lastIdx() && nextIdx < curIdx + 22) makeCyl(); }
 
   function resetWorld() {
     cyls.forEach(dropCyl);
     cyls = []; nextIdx = 0; lastX = 0; lastColor = -1; zCursor = 0; lastR = 1.25 * CYL_SCALE;
-    pathX = PATH_OFF.slice(); pathW = [1, 1, 1];
+    pathX = PATH_OFF.slice(); pathW = [1, 1, 1]; bossSeq = [];
     rollSecrets();
     rollSpecials();
     curIdx = 0;
@@ -1512,6 +1635,7 @@
     const st = STY[o.style];
     if (net.on && authority()) netSend({ t: 'hz', aid: b.shots, o: { kind: o.kind, style: o.style, x: o.x, w: o.w, dur: o.dur, homing: o.homing, fake: o.fake, quiet: o.quiet } });
     const h = Object.assign({ t: 0, aid: b.shots, st, from: b.model.mouth.getWorldPosition(new V3()), w: 0.5, dur: 1.2 }, o);
+    if (b.level) h.dur *= Math.max(0.7, 1 - 0.07 * b.level);
     h.mark = makeMarker(h.w, st.mark, st.strike === 'laser' || st.strike === 'paw' || st.barrel);
     h.mark.position.set(h.x, 0.04, b.c.z);
     if (!st.strike) { h.mesh = makeProjectile(st); h.mesh.position.copy(h.from); }
@@ -1598,7 +1722,7 @@
         const hit = Math.abs(px - h.x) < h.w + (h.mark.userData.base === 1 ? 0.25 : 0.3);
         if (hit && !hitPlayer(b)) return;
         b.pending[h.aid]--;
-        if (b.pending[h.aid] === 0 && !b.failed[h.aid]) { b.dodged++; setPips(b.dodged, b.def.attacks); sfx.dodge(b.dodged); }
+        if (b.pending[h.aid] === 0 && !b.failed[h.aid]) { b.dodged++; setPips(b.dodged, b.attacks); sfx.dodge(b.dodged); }
       }
     }
   }
@@ -1785,6 +1909,7 @@
   let fx = null, shield = false, nightK = 0, playerScaleT = PLAYER_SCALE, coinRain = 0, fireworks = [];
   let autoOn = false;
   let nextHop = {}, disco = 0;
+  let autoUsed = false, runStart = performance.now();
 
   const scoreEl = $('score'), bestMini = $('bestMini'), popEl = $('pop');
   const fxChipEl = $('fxChip'), shieldChipEl = $('shieldChip');
@@ -1803,7 +1928,7 @@
   let fxChipUntil = 0, shieldChipUntil = 0;
   function updateBestLabels() {
     const t = best > 0 ? 'Рекорд: ' + best : '';
-    $('bestStart').textContent = t; $('bestOver').textContent = t; bestMini.textContent = t;
+    $('bestOver').textContent = t; bestMini.textContent = t;
   }
   function addScore(n) { score += n; scoreEl.textContent = score; }
 
@@ -1853,7 +1978,7 @@
     for (const e of EFFECTS) { r -= e.w; if (r <= 0) return e; }
     return EFFECTS[0];
   }
-  function nextStopIdx(from) { for (let i = from + 1; i <= FINAL_IDX; i++) { const k = kindOf(i); if (k === 'boss' || k === 'final' || k === 'gold') return i; } return FINAL_IDX; }
+  function nextStopIdx(from) { const end = Math.min(lastIdx(), from + 400); for (let i = from + 1; i <= end; i++) { const k = kindOf(i); if (k === 'boss' || k === 'final' || k === 'gold') return i; } return end; }
   function updateFxChip() {
     const chip = $('fxChip');
     const txt = fx ? fx.e.name + ' · ' + fx.left : disco > 0 ? 'Диско ×2 · ' + disco : '';
@@ -1987,21 +2112,32 @@
     hideHud(); clearBoss();
     if (owner) owner.g.visible = false;
     fin = null;
-    state = 'ready'; newRun();
+    state = 'ready'; gameMode = 'story'; newRun();
     setMusic(null);
+    showMain(); closeModal(); panel.hidden = true; refreshMe();
     $('startScreen').hidden = false;
   }
-  function goOnline() {
+  function goOnline(room, friendName, delivered) {
     ensureAudio();
+    if (typeof room !== 'string') room = null;
     $('startScreen').hidden = true;
     waitScreen.hidden = false;
-    $('waitTitle').firstChild.textContent = 'Ждём второго игрока';
-    $('waitNote').textContent = 'Попроси друга открыть игру и тоже нажать «Онлайн».';
+    net.room = room;
+    if (room && friendName) {
+      $('waitTitle').firstChild.textContent = 'Ждём: ' + friendName;
+      $('waitNote').textContent = delivered === false ? 'Приглашение не дошло: друг ещё ни разу не открывал бота @buttjump_bot. Пусть откроет его и нажмёт «Старт».' : 'Приглашение отправлено ему в Telegram. Как только он нажмёт «Прыгать вместе», игра начнётся.';
+    } else if (room) {
+      $('waitTitle').firstChild.textContent = 'Подключаемся к другу';
+      $('waitNote').textContent = 'Если друг уже вышел, нажми «Назад».';
+    } else {
+      $('waitTitle').firstChild.textContent = 'Ищем соперника';
+      $('waitNote').textContent = 'Ждём, пока кто-нибудь ещё нажмёт «Онлайн → Случайный». Голосового чата тут нет.';
+    }
     if (!WS_URL) { $('waitTitle').firstChild.textContent = 'Онлайн работает в Telegram'; $('waitNote').textContent = 'Открой игру через бота @buttjump_bot.'; return; }
     net.waiting = true;
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(WS_URL + (room ? '?room=' + encodeURIComponent(room) : ''));
     net.ws = ws;
-    ws.onopen = () => ws.send(JSON.stringify({ t: 'hello', name: myName }));
+    ws.onopen = () => ws.send(JSON.stringify({ t: 'hello', name: playerName(), avatar: account && account.uid ? account.avatar : null }));
     ws.binaryType = 'arraybuffer';
     ws.onmessage = ev => { if (typeof ev.data !== 'string') { playVoice(new Uint8Array(ev.data)); return; } let m; try { m = JSON.parse(ev.data); } catch (e) { return; } onNet(m); };
     ws.onclose = () => {
@@ -2013,7 +2149,8 @@
   function onNet(m) {
     if (m.t === 'start') {
       net.waiting = false; net.on = true; online = true; net.host = !!m.host; net.seed = m.seed >>> 0;
-      net.mateName = (m.name || 'Друг').slice(0, 16);
+      net.mateName = String(m.name || 'Друг'); net.voice = !!m.voice;
+      gameMode = 'story';
       net.rs = { x: 0, y: 0, z: 0, s: 'count', sc: 0, alive: true, gone: false, fall: 0 };
       waitScreen.hidden = true;
       paintButt(hero, net.host ? 'purple' : 'orange'); paintButt(mate, net.host ? 'orange' : 'purple');
@@ -2024,7 +2161,7 @@
       mate.root.position.set(net.rs.x, 0, 0); mate.root.rotation.set(0, 0, 0); mate.root.visible = true;
       $('mateName').textContent = net.mateName; $('mateText').textContent = '0'; mateChip.hidden = false;
       scoreEl.hidden = false; bestMini.hidden = true;
-      autoBtn.hidden = !autoAllowed; gunBtn.hidden = !gunAllowed; micBtn.hidden = false;
+      autoBtn.hidden = !autoAllowed; gunBtn.hidden = !gunAllowed; micBtn.hidden = !net.voice;
       state = 'count'; net.countT = 3.2;
       showPop('Играем с: ' + net.mateName, 'long');
       return;
@@ -2045,7 +2182,7 @@
     const r = net.rs; if (!r) return;
     $('overBosses').textContent = r.gone ? net.mateName + ' вышел из игры' : r.alive ? net.mateName + ' ещё прыгает: ' + r.sc : net.mateName + ': ' + r.sc + ' очков';
   }
-  $('onlineBtn').addEventListener('click', goOnline);
+  $('onlineBtn').addEventListener('click', () => goOnline(null));
   $('waitBack').addEventListener('click', showMenu);
   setInterval(() => { const d = $('waitDots'); if (d && !waitScreen.hidden) d.textContent = '.'.repeat(1 + (Math.floor(Date.now() / 450) % 3)); }, 150);
 
@@ -2159,6 +2296,311 @@
     src.start(vc.next); vc.next += buf.duration;
   }
 
+  // ---------- avatars: a butt in random shorts on a coloured circle, always the same for one number ----------
+  const avaCache = new Map();
+  function avatarURL(seed, size = 96) {
+    if (seed == null) return '';
+    const key = seed + ':' + size;
+    if (avaCache.has(key)) return avaCache.get(key);
+    const r = mulberry(seed >>> 0), pick = a => a[Math.floor(r() * a.length)];
+    const cv = document.createElement('canvas'); cv.width = cv.height = size;
+    const g = cv.getContext('2d'), s = size / 100;
+    g.scale(s, s);
+    g.fillStyle = pick(['#ffd6e7', '#c8f0ff', '#fff1b8', '#d9f7c8', '#e6dcff', '#ffe0c4', '#c9f2ea', '#ffd0d0']);
+    g.beginPath(); g.arc(50, 50, 50, 0, Math.PI * 2); g.fill();
+    g.save(); g.translate(50, 54); g.scale(1.32, 1.32); g.translate(-50, -54);
+    const shorts = pick(['#a43cff', '#ff8a1a', '#22b8ff', '#ff3fd0', '#3ac46a', '#ff3b2f', '#4f6bff', '#ffc400', '#2a2a33']);
+    const skin = pick(['#ffc39a', '#f1b07f', '#d68f5c', '#a8693d', '#ffd8bf']);
+    const shoe = pick(['#ff3b2f', '#2f6bff', '#1d1d24', '#3ac46a', '#ff8a1a']);
+    // legs, socks, shoes
+    for (const x of [38, 62]) {
+      g.fillStyle = skin; g.fillRect(x - 4, 60, 8, 18);
+      g.fillStyle = '#fff'; g.fillRect(x - 5, 74, 10, 5);
+      g.fillStyle = shoe; g.beginPath(); g.ellipse(x, 82, 8, 5, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#fff'; g.fillRect(x - 8, 84, 16, 3);
+    }
+    // cheeks and waistband
+    g.fillStyle = shorts;
+    g.beginPath(); g.arc(39, 52, 15, 0, Math.PI * 2); g.arc(61, 52, 15, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(49.2, 40, 1.6, 22);
+    g.fillStyle = shorts; g.beginPath(); g.roundRect ? g.roundRect(23, 32, 54, 10, 5) : g.rect(23, 32, 54, 10); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.25)'; g.fillRect(26, 34, 48, 2);
+    // an accessory now and then
+    const acc = Math.floor(r() * 7);
+    if (acc === 1) { g.fillStyle = pick(['#ff3b2f', '#1d1d24', '#22b8ff']); g.beginPath(); g.arc(50, 31, 13, Math.PI, 0); g.fill(); g.fillRect(48, 27, 24, 4); }
+    else if (acc === 2) { g.fillStyle = '#ff5fa2'; g.beginPath(); g.moveTo(50, 37); g.lineTo(40, 31); g.lineTo(40, 43); g.closePath(); g.moveTo(50, 37); g.lineTo(60, 31); g.lineTo(60, 43); g.closePath(); g.fill(); g.beginPath(); g.arc(50, 37, 3, 0, Math.PI * 2); g.fill(); }
+    else if (acc === 3) { g.strokeStyle = '#1d1d24'; g.lineWidth = 2.5; g.fillStyle = 'rgba(30,30,40,.75)'; for (const x of [39, 61]) { g.beginPath(); g.arc(x, 50, 6.5, 0, Math.PI * 2); g.fill(); g.stroke(); } g.beginPath(); g.moveTo(45.5, 50); g.lineTo(54.5, 50); g.stroke(); }
+    else if (acc === 4) { g.fillStyle = '#ffc400'; g.beginPath(); g.moveTo(36, 31); g.lineTo(36, 20); g.lineTo(43, 26); g.lineTo(50, 17); g.lineTo(57, 26); g.lineTo(64, 20); g.lineTo(64, 31); g.closePath(); g.fill(); }
+    else if (acc === 5) { g.strokeStyle = '#2a2a33'; g.lineWidth = 3; g.beginPath(); g.arc(50, 37, 22, Math.PI * 1.08, Math.PI * 1.92); g.stroke(); g.fillStyle = '#2a2a33'; g.fillRect(25, 33, 7, 11); g.fillRect(68, 33, 7, 11); }
+    g.restore();
+    const url = cv.toDataURL('image/png');
+    avaCache.set(key, url);
+    return url;
+  }
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const avaImg = (seed, cls = '') => seed == null ? `<span class="ava ${cls}" aria-hidden="true"></span>` : `<img class="ava ${cls}" src="${avatarURL(seed)}" alt="">`;
+  const glen = s => { try { return [...new Intl.Segmenter('ru', { granularity: 'grapheme' }).segment(s)].length; } catch (e) { return [...s].length; } };
+  function ago(at, now) {
+    const m = Math.max(0, Math.floor((now - at) / 60000));
+    if (m < 1) return 'только что';
+    if (m < 60) return m + ' мин назад';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + ' ч назад';
+    const d = Math.floor(h / 24);
+    return d === 1 ? 'вчера' : d + ' дн назад';
+  }
+
+  // ---------- server account (works inside Telegram only) ----------
+  const TGW = window.Telegram && window.Telegram.WebApp;
+  const TG_INIT = TGW && TGW.initData ? TGW.initData : '';
+  const API_OK = !!TG_INIT && /workers\.dev$/.test(location.hostname);
+  let account = null, incoming = 0;
+  async function api(op, body) {
+    if (!API_OK) return { ok: false, error: 'offline' };
+    try {
+      const r = await fetch('/api/' + op, { method: 'POST', headers: { 'content-type': 'application/json', 'X-Tg-Init': TG_INIT }, body: JSON.stringify(body || {}) });
+      return await r.json();
+    } catch (e) { return { ok: false, error: 'net' }; }
+  }
+  async function refreshMe() {
+    const r = await api('me');
+    if (r.ok) { account = r.me; incoming = r.incoming || 0; }
+    renderMe();
+    return r;
+  }
+  function renderMe() {
+    const row = $('meRow');
+    if (!API_OK) { row.hidden = true; return; }
+    row.hidden = false;
+    if (account && account.uid) {
+      $('meAva').src = avatarURL(account.avatar); $('meAva').hidden = false;
+      $('meName').textContent = account.name; $('meId').textContent = 'ID ' + account.uid;
+    } else {
+      $('meAva').hidden = true;
+      $('meName').textContent = 'Ты пока без имени'; $('meId').textContent = 'Нажми, чтобы выбрать имя';
+    }
+    const b = $('reqBadge'); b.hidden = !incoming; b.textContent = incoming;
+  }
+  const playerName = () => (account && account.name) || myName;
+
+  // ---------- panels and dialogs ----------
+  const panel = $('panel'), panelBody = $('panelBody'), panelTabs = $('panelTabs'), panelFoot = $('panelFoot');
+  let panelKind = null, panelTab = null;
+  function openPanel(title, kind) {
+    panelKind = kind; $('panelTitle').textContent = title;
+    panelTabs.hidden = true; panelFoot.hidden = true; panelBody.innerHTML = '';
+    panel.hidden = false;
+  }
+  function closePanel() { panel.hidden = true; panelKind = null; renderMe(); }
+  $('panelClose').addEventListener('click', closePanel);
+  function setTabs(tabs, active, onPick) {
+    panelTabs.hidden = false;
+    panelTabs.innerHTML = tabs.map(([id, label, badge]) => `<button class="tab" type="button" role="tab" data-tab="${id}" aria-selected="${id === active}">${label}${badge ? `<span class="badge">${badge}</span>` : ''}</button>`).join('');
+    panelTabs.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => onPick(b.dataset.tab)));
+  }
+  function needAccount(where) {
+    if (!API_OK) { panelBody.innerHTML = `<div class="empty">${where} работают в игре через бота @buttjump_bot.</div>`; return true; }
+    if (!account || !account.uid) {
+      panelBody.innerHTML = `<div class="empty">Чтобы открыть ${where === 'Друзья' ? 'друзей' : 'лидерборд'}, сначала выбери себе имя в разделе «Профиль».</div><button class="btn" type="button" id="goProfile">Открыть профиль</button>`;
+      $('goProfile').addEventListener('click', () => openProfile());
+      return true;
+    }
+    return false;
+  }
+  const modal = $('modal');
+  function openModal(title, text, buttons, extra = '') {
+    $('modalTitle').textContent = title; $('modalText').textContent = text; $('modalText').hidden = !text;
+    $('modalExtra').innerHTML = extra;
+    const box = $('modalBtns'); box.innerHTML = '';
+    buttons.forEach(([label, cls, fn]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + cls; b.textContent = label; b.addEventListener('click', fn); box.appendChild(b); });
+    modal.hidden = false;
+  }
+  const closeModal = () => { modal.hidden = true; };
+  function confirmBox(title, text, yes, onYes) { openModal(title, text, [['Нет', 'ghost', closeModal], [yes, '', () => { closeModal(); onYes(); }]]); }
+
+  // name dialog: on first launch, and from the profile
+  function openNameModal(first) {
+    const cur = account && account.name ? account.name : '';
+    openModal(first ? 'Как тебя зовут?' : 'Новое имя', first ? 'Имя увидят друзья и лидерборд. Можно буквы, цифры, символы и эмодзи.' : '',
+      [[first ? 'Позже' : 'Отмена', 'ghost', closeModal], ['Готово', '', submitName]],
+      `<input class="field" id="nameField" type="text" autocomplete="off" enterkeyhint="done" placeholder="Например, Попа-Король 👑" value="${esc(cur)}"><div class="hint" id="nameHint">0/24</div>`);
+    const f = $('nameField'), h = $('nameHint');
+    const upd = () => { const n = glen(f.value.trim()); h.textContent = n + '/24'; h.className = 'hint' + (n > 24 ? ' bad' : ''); };
+    f.addEventListener('input', upd); upd();
+    f.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') submitName(); });
+    setTimeout(() => f.focus(), 50);
+    async function submitName() {
+      const v = f.value.trim();
+      if (!v) { h.textContent = 'Напиши имя'; h.className = 'hint bad'; return; }
+      if (glen(v) > 24) { h.textContent = 'Не больше 24 символов'; h.className = 'hint bad'; return; }
+      h.textContent = 'Сохраняем…'; h.className = 'hint';
+      const r = await api('name', { name: v });
+      if (!r.ok) { h.textContent = r.error === 'offline' || r.error === 'net' ? 'Нет связи с сервером' : r.error; h.className = 'hint bad'; return; }
+      const wasNew = !account || !account.uid;
+      await refreshMe();
+      closeModal();
+      showPop(wasNew ? 'Твой ID: ' + account.uid : 'Имя сохранено', 'long');
+      if (panelKind === 'profile') openProfile();
+    }
+  }
+
+  // profile
+  async function openProfile() {
+    openPanel('Профиль', 'profile');
+    if (!API_OK) { panelBody.innerHTML = '<div class="empty">Профиль работает в игре через бота @buttjump_bot.</div>'; return; }
+    panelBody.innerHTML = '<div class="empty">Загружаем…</div>';
+    await refreshMe();
+    if (panelKind !== 'profile') return;
+    const a = account || {};
+    if (!a.uid) {
+      panelBody.innerHTML = `<div class="profile-top"><span class="ava big" aria-hidden="true"></span><div class="profile-name">Без имени</div></div>
+        <div class="empty">Выбери имя, и тебе выдадут ID и аватарку. С ними можно попасть в лидерборд и добавлять друзей.</div>
+        <button class="btn" type="button" id="pName">Выбрать имя</button>`;
+      $('pName').addEventListener('click', () => openNameModal(false));
+      return;
+    }
+    panelBody.innerHTML = `<div class="profile-top">${avaImg(a.avatar, 'big')}<div class="profile-name">${esc(a.name)}</div>
+        <div class="id-row">ID ${a.uid}<button class="mini soft" type="button" id="pCopy">Копировать</button></div></div>
+      <div class="menu-btns"><button class="btn sm online" type="button" id="pName">Сменить имя</button><button class="btn sm ghost" type="button" id="pAva">Другая аватарка</button></div>
+      <div class="stats3">
+        <div class="stat"><strong>${a.best}</strong><span>рекорд</span></div>
+        <div class="stat"><strong>${a.weekBest}</strong><span>за неделю</span></div>
+        <div class="stat"><strong>${a.bosses}</strong><span>боссов</span></div>
+        <div class="stat"><strong>${a.games}</strong><span>игр</span></div>
+      </div>
+      <div class="row"><div class="who"><b>Сюжет</b><small>${a.story ? 'Пройден: попа нашла хозяина' : 'Ещё не пройден'}</small></div></div>`;
+    $('pName').addEventListener('click', () => openNameModal(false));
+    $('pAva').addEventListener('click', async () => { const r = await api('avatar'); if (r.ok) { await refreshMe(); openProfile(); } });
+    $('pCopy').addEventListener('click', e => {
+      const t = String(a.uid);
+      const done = () => { e.target.textContent = 'Готово'; setTimeout(() => { e.target.textContent = 'Копировать'; }, 1200); };
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(done).catch(() => showPop('Твой ID: ' + t, 'long')); else showPop('Твой ID: ' + t, 'long');
+    });
+  }
+
+  // leaderboard
+  async function openBoard(tab = 'all') {
+    openPanel('Лидерборд', 'board');
+    if (needAccount('Лидерборд')) return;
+    panelTab = tab;
+    setTabs([['all', 'За всё время'], ['week', 'За неделю'], ['friends', 'Друзья']], tab, t => openBoard(t));
+    panelBody.innerHTML = '<div class="empty">Загружаем…</div>';
+    const r = await api('leaderboard', { scope: tab });
+    if (panelKind !== 'board' || panelTab !== tab) return;
+    if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить. Проверь интернет.</div>'; return; }
+    if (!r.top.length) panelBody.innerHTML = `<div class="empty">${tab === 'week' ? 'На этой неделе ещё никто не играл в «Бесконечный». Будь первым!' : 'Пока пусто. Сыграй в «Бесконечный», и твой результат появится здесь.'}</div>`;
+    else panelBody.innerHTML = r.top.map(x => `<div class="row${x.uid === r.myUid ? ' me' : ''}"><span class="place p${x.place}">${x.place}</span>${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid}</small></div><span class="pts">${x.score}</span></div>`).join('');
+    const inTop = r.mine && r.top.some(x => x.uid === r.myUid);
+    panelFoot.hidden = !!inTop;
+    panelFoot.innerHTML = r.mine ? `<div class="row me"><span class="place">${r.mine.place}</span>${avaImg(account.avatar, 'mid')}<div class="who"><b>Ты${inTop ? '' : ' (вне топа)'}</b><small>ID ${account.uid}</small></div><span class="pts">${r.mine.score}</span></div>`
+      : `<div class="hint">Ты ещё не в таблице. Сыграй в «Бесконечный» без автопилота.</div>`;
+  }
+
+  // friends
+  async function openFriends(tab = 'list') {
+    openPanel('Друзья', 'friends');
+    if (needAccount('Друзья')) return;
+    panelTab = tab;
+    setTabs([['list', 'Друзья'], ['search', 'Поиск'], ['requests', 'Заявки', incoming || '']], tab, t => openFriends(t));
+    if (tab === 'search') return renderSearch();
+    panelBody.innerHTML = '<div class="empty">Загружаем…</div>';
+    if (tab === 'requests') {
+      const r = await api('requests');
+      if (panelKind !== 'friends' || panelTab !== tab) return;
+      if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить.</div>'; return; }
+      incoming = r.list.length; renderMe();
+      if (!r.list.length) { panelBody.innerHTML = '<div class="empty">Новых заявок нет.</div>'; return; }
+      panelBody.innerHTML = r.list.map(x => `<div class="row" data-uid="${x.uid}">${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid} · ${ago(x.at, r.now)}</small></div>
+        <button class="mini ok" type="button" data-act="yes" aria-label="Принять">✓</button><button class="mini no" type="button" data-act="no" aria-label="Отклонить">✕</button></div>`).join('');
+      panelBody.querySelectorAll('.row').forEach(row => row.querySelectorAll('.mini').forEach(btn => btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const res = await api('respond', { uid: +row.dataset.uid, accept: btn.dataset.act === 'yes' });
+        if (res.ok) { showPop(btn.dataset.act === 'yes' ? 'Теперь вы друзья!' : 'Заявка отклонена'); await refreshMe(); openFriends('requests'); }
+      })));
+      return;
+    }
+    const r = await api('friends');
+    if (panelKind !== 'friends' || panelTab !== tab) return;
+    if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить.</div>'; return; }
+    if (!r.list.length) { panelBody.innerHTML = `<div class="empty">Друзей пока нет. Найди друга по ID во вкладке «Поиск». Твой ID: ${account.uid}</div>`; return; }
+    panelBody.innerHTML = r.list.map(x => `<div class="row" data-uid="${x.uid}" data-name="${esc(x.name)}">${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid} · рекорд ${x.best}</small></div>
+      <button class="mini" type="button" data-act="invite">Позвать</button><button class="mini soft" type="button" data-act="del" aria-label="Удалить из друзей">✕</button></div>`).join('');
+    panelBody.querySelectorAll('.row').forEach(row => {
+      const uid = +row.dataset.uid, name = row.dataset.name;
+      row.querySelector('[data-act="invite"]').addEventListener('click', () => inviteFriend(uid, name));
+      row.querySelector('[data-act="del"]').addEventListener('click', () => confirmBox('Удалить из друзей?', `«${name}» пропадёт из твоего списка друзей. Ты уверен?`, 'Удалить', async () => {
+        const res = await api('unfriend', { uid }); if (res.ok) { showPop('Удалён из друзей'); openFriends('list'); }
+      }));
+    });
+  }
+  function renderSearch() {
+    panelBody.innerHTML = `<div class="search"><input class="field" id="findId" type="text" inputmode="numeric" autocomplete="off" placeholder="ID друга, например 1"><button class="mini" type="button" id="findGo">Найти</button></div>
+      <div class="hint">Твой ID: ${account.uid}. Скажи его другу, чтобы он нашёл тебя.</div><div id="findOut"></div>`;
+    const f = $('findId');
+    f.addEventListener('input', () => { f.value = f.value.replace(/\D/g, '').slice(0, 9); });
+    f.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') go(); });
+    $('findGo').addEventListener('click', go);
+    async function go() {
+      const out = $('findOut');
+      if (!f.value) { out.innerHTML = '<div class="hint bad">Введи ID</div>'; return; }
+      out.innerHTML = '<div class="empty">Ищем…</div>';
+      const r = await api('find', { uid: +f.value });
+      if (!r.ok) { out.innerHTML = `<div class="empty">${esc(r.error === 'net' ? 'Нет связи с сервером' : r.error)}</div>`; return; }
+      const u = r.user;
+      const label = { none: 'Отправить заявку', sent: 'Заявка отправлена', incoming: 'Принять заявку', friend: 'Уже в друзьях', self: 'Это ты' }[r.rel];
+      out.innerHTML = `<div class="row">${avaImg(u.avatar, 'mid')}<div class="who"><b>${esc(u.name)}</b><small>ID ${u.uid} · рекорд ${u.best}</small></div><button class="mini" type="button" id="findAct" ${r.rel === 'none' || r.rel === 'incoming' ? '' : 'disabled'}>${label}</button></div>`;
+      const btn = $('findAct');
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const res = r.rel === 'incoming' ? await api('respond', { uid: u.uid, accept: true }) : await api('request', { uid: u.uid });
+        if (!res.ok) { btn.disabled = false; showPop(res.error || 'Ошибка'); return; }
+        btn.textContent = r.rel === 'incoming' || res.rel === 'friend' ? 'Теперь вы друзья' : 'Заявка отправлена';
+        if (r.rel === 'incoming' || res.rel === 'friend') { showPop('Теперь вы друзья!'); await refreshMe(); }
+      });
+    }
+    setTimeout(() => f.focus(), 50);
+  }
+
+  // play together with a friend: the bot sends them an invite into a private room
+  async function inviteFriend(uid, name) {
+    const r = await api('invite', { uid });
+    if (!r.ok) { showPop(r.error || 'Не получилось позвать', 'long'); return; }
+    closePanel();
+    goOnline(r.room, name, r.delivered);
+  }
+  async function openFriendPick() {
+    openPanel('Играть с другом', 'pick');
+    if (needAccount('Друзья')) return;
+    panelBody.innerHTML = '<div class="empty">Загружаем…</div>';
+    const r = await api('friends');
+    if (panelKind !== 'pick') return;
+    if (!r.ok) { panelBody.innerHTML = '<div class="empty">Не получилось загрузить.</div>'; return; }
+    if (!r.list.length) { panelBody.innerHTML = '<div class="empty">Сначала добавь друга во вкладке «Друзья → Поиск».</div><button class="btn" type="button" id="goFriends">Найти друга</button>'; $('goFriends').addEventListener('click', () => openFriends('search')); return; }
+    panelBody.innerHTML = '<div class="hint">Друг получит приглашение от бота в Telegram. В игре с другом работает голосовой чат.</div>' +
+      r.list.map(x => `<div class="row" data-uid="${x.uid}" data-name="${esc(x.name)}">${avaImg(x.avatar, 'mid')}<div class="who"><b>${esc(x.name)}</b><small>ID ${x.uid}</small></div><button class="mini" type="button">Позвать</button></div>`).join('');
+    panelBody.querySelectorAll('.row').forEach(row => row.querySelector('.mini').addEventListener('click', () => inviteFriend(+row.dataset.uid, row.dataset.name)));
+  }
+
+  // ---------- menu wiring ----------
+  const showMain = () => { $('menuMain').hidden = false; $('menuPlay').hidden = true; };
+  $('mPlay').addEventListener('click', () => { $('menuMain').hidden = true; $('menuPlay').hidden = false; ensureAudio(); });
+  $('playBack').addEventListener('click', showMain);
+  $('mProfile').addEventListener('click', () => openProfile());
+  $('meRow').addEventListener('click', () => (account && account.uid ? openProfile() : openNameModal(false)));
+  $('mFriends').addEventListener('click', () => openFriends(incoming ? 'requests' : 'list'));
+  $('mBoard').addEventListener('click', () => openBoard('all'));
+  $('mShop').addEventListener('click', () => showPop('Магазин скоро откроется'));
+  $('friendPlayBtn').addEventListener('click', () => openFriendPick());
+
+  // results go to the server: endless runs for the leaderboard, every game for the profile
+  async function sendResult(mode, finished) {
+    if (!API_OK) return null;
+    const secs = Math.round((performance.now() - runStart) / 1000);
+    const r = await api('score', { mode, score, secs, bosses: bossesWon, auto: autoUsed, finished: !!finished });
+    if (r.ok && r.newBest) account && (account.best = r.best);
+    return r;
+  }
+
   // ---------- lifecycle ----------
   function clearBoss() {
     if (boss) { boss.model.g.visible = false; boss.weapon.g.visible = false; if (boss.model.beam) boss.model.beam.visible = false; }
@@ -2181,15 +2623,16 @@
     resetWorld();
     scenery.reset();
     curIdx = 0; hopT = 0; hopDur = 0.6; px = targetX = 0; py = 0; pz = 0;
-    score = 0; combo = 0; camX = 0; bossBlend = 0; finBlend = 0; bossesWon = 0;
+    score = 0; combo = 0; camX = 0; bossBlend = 0; finBlend = 0; bossesWon = 0; autoUsed = false; runStart = performance.now();
     player.rotation.set(0, 0, 0); player.position.set(0, 0, 0);
     scoreEl.textContent = '0';
   }
 
-  function startPlay() {
+  function startPlay(mode) {
     ensureAudio();
+    if (typeof mode === 'string') gameMode = mode;
     $('endBtn').textContent = 'Играть снова';
-    if (state !== 'ready') newRun();
+    newRun();
     state = 'play'; hopT = 0;
     $('startScreen').hidden = true; $('overScreen').hidden = true; $('endScreen').hidden = true;
     scoreEl.hidden = false; bestMini.hidden = best === 0;
@@ -2200,9 +2643,12 @@
     updateBestLabels();
     setMusic('main');
   }
-  $('playBtn').addEventListener('click', startPlay);
-  $('againBtn').addEventListener('click', () => net.on ? showMenu() : startPlay());
-  $('endBtn').addEventListener('click', () => net.on ? showMenu() : startPlay());
+  $('playBtn').addEventListener('click', () => startPlay('story'));
+  $('endlessBtn').addEventListener('click', () => startPlay('endless'));
+  $('againBtn').addEventListener('click', () => net.on ? showMenu() : startPlay(gameMode));
+  $('endBtn').addEventListener('click', () => net.on ? showMenu() : startPlay(gameMode));
+  $('overMenu').addEventListener('click', () => showMenu());
+  $('endMenu').addEventListener('click', () => showMenu());
 
   function hideHud() {
     scoreEl.hidden = true; bestMini.hidden = true; autoBtn.hidden = true; gunBtn.hidden = true; micBtn.hidden = true;
@@ -2215,8 +2661,10 @@
     $('overLabel').textContent = deathReason + ' Очков:';
     $('finalScore').textContent = score;
     $('newBest').hidden = !isNew;
-    $('overBosses').textContent = 'Боссов побеждено: ' + bossesWon + ' из 10';
+    $('overBosses').textContent = 'Боссов побеждено: ' + bossesWon + (gameMode === 'endless' ? '' : ' из 10');
+    $('overRank').textContent = '';
     $('againBtn').textContent = net.on ? 'В меню' : 'Ещё раз';
+    $('overMenu').hidden = net.on;
     if (net.on) { $('overLabel').textContent = 'Ты выбыл! ' + deathReason + ' Очков:'; updateOverMate(); }
     updateBestLabels();
     hideHud();
@@ -2224,6 +2672,17 @@
     clearBoss();
     $('overScreen').hidden = false;
     setTimeout(() => $('againBtn').focus({ preventScroll: true }), 50);
+    const mode = net.on ? 'online' : gameMode;
+    if (API_OK) {
+      if (mode === 'endless') $('overRank').textContent = 'Отправляем результат…';
+      sendResult(mode, false).then(r => {
+        if (mode !== 'endless') return;
+        const el = $('overRank');
+        if (!r || !r.ok) el.textContent = 'Не удалось отправить результат';
+        else if (r.counted) el.textContent = (r.newBest ? 'Новый рекорд! ' : '') + 'Место в лидерборде: ' + r.place;
+        else el.textContent = { auto: 'С автопилотом результат не идёт в лидерборд', noname: 'Выбери имя в «Профиле», чтобы попасть в лидерборд', check: 'Результат не прошёл проверку' }[r.why] || '';
+      });
+    }
   }
 
   // ---------- input ----------
@@ -2232,7 +2691,6 @@
   canvas.addEventListener('pointerdown', e => {
     dragging = true; lastPX = e.clientX;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
-    if (state === 'ready') startPlay();
   });
   canvas.addEventListener('pointermove', e => {
     if (!dragging) { lastPX = e.clientX; return; }
@@ -2247,7 +2705,6 @@
   const keys = {};
   window.addEventListener('keydown', e => {
     keys[e.key] = true;
-    if ((e.key === ' ' || e.key === 'Enter') && state === 'ready') { e.preventDefault(); startPlay(); }
   });
   window.addEventListener('keyup', e => { keys[e.key] = false; });
 
@@ -2367,12 +2824,14 @@
     return px;
   }
   function startBoss(c) {
-    const n = Math.round(c.i / BOSS_EVERY) - 1;
+    const n = c.bossN;
     const def = BOSSES[n], model = getBossModel(n);
+    const level = gameMode === 'endless' ? Math.floor((Math.round(c.i / BOSS_EVERY) - 1) / 10) : 0;   // each lap of ten bosses is harder
     endFx(true);
     state = 'boss';
     boss = { c, n, def, model, phase: 'intro', t: 0, shots: 0, dodged: 0, nextShot: 0, hopT: 0, wx: 0, weaponOn: false,
-             weapon: getWeapon(def.weapon), sFrom: new V3(), st: 0, fallV: new V3(), pending: {}, failed: {}, pullT: 2.5, pullDir: 0, wind: 0 };
+             weapon: getWeapon(def.weapon), sFrom: new V3(), st: 0, fallV: new V3(), pending: {}, failed: {}, pullT: 2.5, pullDir: 0, wind: 0,
+             level, attacks: def.attacks + 2 * level, gapMul: Math.max(0.55, 1 - 0.12 * level) };
     bossCamX = c.x;
     model.g.visible = true; model.g.rotation.set(0, 0, 0); model.g.scale.setScalar(model.baseScale);
     model.g.position.set(c.x + 6, 10, c.z - 34);
@@ -2427,10 +2886,10 @@
       if (k >= 1 && friendExpected() && !friendHere(c)) { b.phase = 'wait'; showPop('Ждём друга у босса…', 'long'); }
       else if (k >= 1) {
         b.phase = 'fight'; b.nextShot = 0.6;
-        bossText.textContent = 'Уклоняйся'; pipsEl.hidden = false; setPips(0, def.attacks);
+        bossText.textContent = 'Уклоняйся'; pipsEl.hidden = false; setPips(0, b.attacks);
       }
     } else if (b.phase !== 'win') {
-      if (b.phase === 'wait' && (!friendExpected() || friendHere(c))) { b.phase = 'fight'; b.nextShot = 0.8; pipsEl.hidden = false; setPips(0, def.attacks); showPop('Друг здесь!'); }
+      if (b.phase === 'wait' && (!friendExpected() || friendHere(c))) { b.phase = 'fight'; b.nextShot = 0.8; pipsEl.hidden = false; setPips(0, b.attacks); showPop('Друг здесь!'); }
       g.position.x += (hoverX - g.position.x) * (1 - Math.exp(-dt * 2));
       g.position.y = hoverY; g.position.z = hoverZ;
     }
@@ -2440,18 +2899,18 @@
     mdl.update(time, b.wind);
 
     if (b.phase === 'fight') {
-      if (b.shots < def.attacks) {
+      if (b.shots < b.attacks) {
         b.nextShot -= dt;
         b.wind = clamp(1 - b.nextShot / 0.4, 0, 1);
         if (b.nextShot <= 0 && authority()) {
           atkX = pickTarget(b);
           def.attack(b);
           b.shots++;
-          b.nextShot = def.gap[0] + rnd() * (def.gap[1] - def.gap[0]) - b.shots * 0.02;
+          b.nextShot = (def.gap[0] + rnd() * (def.gap[1] - def.gap[0])) * b.gapMul - b.shots * 0.02;
         }
       } else {
         b.wind *= Math.exp(-dt * 8);
-        if (authority() && b.dodged >= def.attacks && !hz.length) {
+        if (authority() && b.dodged >= b.attacks && !hz.length) {
           b.phase = 'weapon'; b.t = 0; b.weaponOn = false;
           bossText.textContent = 'Отлично!'; pipsEl.hidden = true;
         }
@@ -2502,7 +2961,7 @@
         sfx.boom(1.4);
         mdl.mats.forEach(m => { m.emissive.setHex(0xffffff); });
         b.fallV.set((rnd() - 0.5) * 3, 4, -3);
-        const reward = 25 + 25 * (b.n + 1);
+        const reward = (25 + 25 * (b.n + 1)) * (1 + b.level);
         addScore(reward);
         bossesWon++;
         showPop('Победа! +' + reward, 'long');
@@ -2565,6 +3024,7 @@
     hideHud(); scoreEl.hidden = false;
     mate.root.visible = false; mateChip.hidden = true;
     if (net.on) $('endBtn').textContent = 'В меню';
+    $('endMenu').hidden = net.on;
     showPop('Кто это плачет?', 'long');
   }
   function updateFinale(dt) {
@@ -2613,6 +3073,7 @@
         $('endScore').textContent = score; $('endBest').hidden = !isNew; $('endBosses').textContent = bossesWon + '/10';
         scoreEl.hidden = true;
         $('endScreen').hidden = false;
+        sendResult(net.on ? 'online' : 'story', true);
         setTimeout(() => $('endBtn').focus({ preventScroll: true }), 50);
       }
     }
@@ -2629,7 +3090,7 @@
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     time += dt;
 
-    if (autoOn && (state === 'play' || state === 'boss')) targetX = autoTarget();
+    if (autoOn && (state === 'play' || state === 'boss')) { targetX = autoTarget(); autoUsed = true; }
     if (keys.ArrowLeft || keys.a) targetX = Math.max(-7, targetX - 7 * dt * (fx && fx.e.id === 'mirror' ? -1 : 1));
     if (keys.ArrowRight || keys.d) targetX = Math.min(7, targetX + 7 * dt * (fx && fx.e.id === 'mirror' ? -1 : 1));
 
@@ -2642,7 +3103,7 @@
       net.countT -= dt;
       const after = Math.ceil(net.countT);
       if (after !== before && after > 0 && after <= 3) { showPop(String(after)); sfx.coin(0); }
-      if (net.countT <= 0) { state = 'play'; hopT = 0; showPop('Поехали!'); setMusic('main'); }
+      if (net.countT <= 0) { state = 'play'; hopT = 0; runStart = performance.now(); showPop('Поехали!'); setMusic('main'); }
     } else if (state === 'ready') {
       idleT += dt;
       const t = (idleT % 0.7) / 0.7;
@@ -2887,5 +3348,21 @@
   newRun();
   updateBestLabels();
   requestAnimationFrame(frame);
+
+  // links from the bot: ?room=… joins a friend's game, ?tab=requests opens friend requests
+  {
+    const qs = new URLSearchParams(location.search);
+    const joinRoom = qs.get('room'), openTab = qs.get('tab');
+    if (joinRoom || openTab) { try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {} }
+    renderMe();
+    if (API_OK) refreshMe().then(r => {
+      if (joinRoom) return;
+      if (openTab === 'requests') { openFriends('requests'); return; }
+      let asked = false;
+      try { asked = localStorage.getItem('popa-name-asked') === '1'; } catch (e) {}
+      if (r.ok && account && !account.uid && !asked) { try { localStorage.setItem('popa-name-asked', '1'); } catch (e) {} openNameModal(true); }
+    });
+    if (joinRoom) goOnline(joinRoom.replace(/[^A-Za-z0-9]/g, '').slice(0, 12), null);
+  }
 })();
 </script>

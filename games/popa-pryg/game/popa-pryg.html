@@ -1407,6 +1407,7 @@
     night: { url: 'music/night.mp3', loopStart: 16.0101, loopEnd: 92.2005 },   // plays instead of main in the dark theme
     boss: { url: 'music/boss.mp3', loopStart: 17.1835, loopEnd: 113.1835 },    // every boss except the dark twin
     dark: { url: 'music/dark.mp3', loopStart: 10.0348, loopEnd: 114.0348 },    // the dark twin, last boss
+    finale: { url: 'music/finale.mp3', loopStart: 19.0406, loopEnd: 115.0406 }, // golden road and the dance with the owner
   };
   const TRACK_GAIN = 2.6;   // the music bus is quiet for the code songs; recorded tracks are mastered louder
   const trackBuf = {};
@@ -3858,7 +3859,7 @@
 
   // tiny hook for automated checks
   window.__popa = {
-    info: () => ({ state, music: music.name + (music.src ? ":track" : music.song ? ":code" : ""), px, pz, curIdx, score, online, host: net.host, tok: !!net.token, rt: net.resumeTry, ws: net.ws && net.ws.readyState, leaving: net.leaving, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
+    info: () => ({ state, music: music.name + (music.src ? ":track" : music.song ? ":code" : ""), tracks: Object.keys(trackBuf).map(k => k + (trackBuf[k] ? "+" : "-")).join(","), px, pz, curIdx, score, online, host: net.host, tok: !!net.token, rt: net.resumeTry, ws: net.ws && net.ws.readyState, leaving: net.leaving, geo: renderer.info.memory.geometries, tex: renderer.info.memory.textures, rows: cyls.length, voiceIn: window.__vcount || 0, mic: vc.on, mate: net.rs && { ...net.rs }, bossesWon, phase: boss && boss.phase, boss: boss && boss.n, dodged: boss && boss.dodged,
       fx: fx && fx.e.id, shield, fin: fin && fin.phase, hz: hz.length, tx: targetX, haz: hz.map(h => [+h.x.toFixed(2), +h.t.toFixed(2), h.w, h.style]) }),
     steer: x => { targetX = x; },
     dropNet: () => { if (net.ws) net.ws.close(); },

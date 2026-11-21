@@ -660,3 +660,9 @@ https://drive.google.com/file/d/1CH30PtQIMFGT3q0-pWynuC-cwORde6I9/view
 Наклейки ChatGPT (input/decor/emotes.png, objects.png) — эмоции над Митой и предметы роскоши по краям. 66,6 с.
 Во время рекламы Мита пока лежит старыми позами ChatGPT. В описание: «Музыка: Spy Glass — Kevin MacLeod (incompetech.com), CC BY 4.0».
 https://drive.google.com/file/d/14uJRZ8mW2W1hGtZfg7MkbfqiScZPLc5w/view
+
+## 2026-11-21 · 50-mita-black v6c — собрано
+Отзыв на v6b: в начале звуки сливались с речью — щелчки на 0,1/0,35 с убраны, «отсчёт цифр» на 3,5 с заменён тихой монеткой,
+кружение и вспышка тише (озвучку автор оставил). Мита во время рекламы — клип Gemini (input/mita/video/ad_lie.mp4, 16:9,
+лежит, болтает ногой, зевает) вместо старых поз ChatGPT. 66,6 с.
+https://drive.google.com/file/d/185Q1bvQpc9MH9kKFS780Ee9508IM-eCJ/view

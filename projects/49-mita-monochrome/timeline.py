@@ -8,7 +8,7 @@ HERE = Path(__file__).resolve().parent
 META = json.loads((HERE / 'voice' / 'lines.json').read_text(encoding='utf-8'))
 TAKES = {m['line']: HERE / 'voice' / f"L{m['line']:02d}.wav" for m in META}
 HAS_NARRATION = True
-LEAD = 0.3
+LEAD = 0.05          # v6: голос с первой доли секунды (зрители уходили на 0:01)
 AD_GAP = 0.3
 
 

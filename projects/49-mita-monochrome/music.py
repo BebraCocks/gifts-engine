@@ -1,4 +1,5 @@
-"""Музыка: «Your Reality» (Dan Salvato), фортепианный кавер Torby Brand — выбор автора 2026-11-15.
+"""Музыка v6: «Almost New» — Kevin MacLeod (incompetech.com), CC BY 4.0 — выбор автора 2026-11-21 (вместо «Your Reality»).
+В описании ролика: «Музыка: Almost New — Kevin MacLeod (incompetech.com), CC BY 4.0».
 Трек идёт с начала во времени содержания (OFFSET — смещение в треке). Под речью приглушается; на «Все. До одного»
 замедляется и стихает (жутковатый финал). beats_in_content() — сильные доли для монтажа «под бит»."""
 import functools
@@ -7,8 +8,8 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-TRACK = HERE / 'input' / 'music' / 'your_reality_piano_torby_brand.mp3'
-OFFSET = 0.25          # первая нота трека (~0,58 с) попадает на начало первой фразы
+TRACK = HERE / 'input' / 'music' / 'incompetech' / 'Almost_New.mp3'
+OFFSET = 0.0           # v6: трек звучит с первого кадра
 LEVEL_DB = -27.5       # автор: ещё чуть тише (v4: −26 → −27,5 дБ)
 DUCK_DB = -7.0         # дополнительное приглушение под речью
 

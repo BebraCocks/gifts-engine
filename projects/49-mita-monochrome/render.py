@@ -420,7 +420,7 @@ def confetti(d, mp, S, t):
 
 # ------------------------------------------------------------------ headline
 HEADS = [  # (с, по, строки, малая подпись); v3 — компактно: одна строка, «Вид N» акцентом
-    (0.0, ON[3] - 0.15, ('Почему одинаковые подарки', 'стоят по-разному?'), 'Мита объясняет'),
+    (0.0, ON[3] - 0.15, ('Подарки одинаковые,', 'а цена — в 10 раз выше?'), 'Мита объясняет'),   # v6
     (ON[3] - 0.15, E.TYPE1, ('Монохром',), None),
     (E.TYPE1, E.TYPE2, ('Вид 1 · цвет в цвет',), None),
     (E.TYPE2, E.SEEN, ('Вид 2 · одинаковые названия',), None),
@@ -435,7 +435,7 @@ HEAD_Y = 172
 
 def headline(cv, t):
     for t0, t1, lines, sub in HEADS:
-        a = appear(t, t0, 0.3) * (1 - appear(t, t1 - 0.25, 0.25))
+        a = (1.0 if t0 <= 0 else appear(t, t0, 0.3)) * (1 - appear(t, t1 - 0.25, 0.25))   # v6: заголовок хука — с 1-го кадра
         if a <= 0:
             continue
         y = HEAD_Y + 10 * (1 - a)
@@ -535,11 +535,11 @@ def scene_hook(cv, t):
     out = appear(t, E.TYPE1 - 0.35, 0.35)
     if out >= 1:
         return
-    a0 = appear(t, 0.05, 0.4)
+    a0 = 1.0                                 # v6: подарки видны с первого кадра (зрители уходили на 0:01)
     focus = appear(t, E.INTRO, 0.4)          # «правая — монохром»: левая уходит в тень, правая в центр
     spin_away = appear(t, E.SPIN - 0.2, 0.4)
     for j, c in enumerate((left, right)):
-        tj = E.HOOK_POPS[j] - 0.08
+        tj = -0.6                            # v6: без появления — сразу на месте
         a = appear(t, tj, 0.35) * a0 * (1 - out)
         pop = fx.ease_out_back(fx.clamp01((t - tj) / 0.5)) if t < tj + 0.5 else 1.0
         s = 1.1 * (0.6 + 0.4 * pop) * (1 + 0.02 * beat_pulse(t, 8))
@@ -570,7 +570,7 @@ def scene_hook(cv, t):
                 price = None
         if price is not None:
             put(cv, text(rub(price), 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, ls, a)
-        elif t > 0.6:
+        else:
             put(cv, text('≈ ? ₽', 44, 'Heavy', ACCENT), cx, cy + 268 * s / 1.25, ls, a)
         if j == 1 and t >= E.PRICE_X10:
             k = t - E.PRICE_X10
@@ -578,6 +578,11 @@ def scene_hook(cv, t):
             put(cv, fx.solid_pill('×10', (236, 72, 120), 40), min(cx + 130 * s, 990), cy - 150 * s, 0.6 + 0.4 * ps, a)
         if j == 1 and focus > 0 and t < E.COUNTER - 0.1:
             put(cv, fx.solid_pill('МОНОХРОМ', (30, 24, 48), 30), cx, cy - 190 * s, 1.0, a * focus)
+    # v6: пока подарки крупно в центре — под ними вопрос (кадр не пустой, зритель ищет разницу сам)
+    qa = hook_push(t, overshoot=False) * (1 - appear(t, E.PRICE_X10 - 0.2, 0.3))
+    if qa > 0:
+        q = fx.solid_pill('В ЧЁМ РАЗНИЦА?', (30, 24, 48), 46, WHITE)
+        put(cv, q, 540, 1430 + 6 * math.sin(t * 3), 1.0 + 0.03 * math.sin(t * 5), qa)
     # счётчик видов 1 · 2 · 3
     for j in range(3):
         tj = E.COUNTER + 0.29 * j

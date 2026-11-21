@@ -2193,7 +2193,7 @@
   ]
  },
  "49-mita-monochrome": {
-  "date": "2026-11-15",
+  "date": "2026-11-21",
   "sounds": [
    "botanica-v4/button/button-cursor-select-01.flac#0",
    "botanica-v4/button/correct-approve-button-09.flac#0",
@@ -2202,11 +2202,11 @@
    "botanica-v4/button/granular-button-select-22.flac#0",
    "botanica-v4/button/granular-button-select-27.flac#0",
    "botanica-v4/button/granular-button-select-32.flac#0",
-   "botanica-v4/button/mechanical-click-01.flac#0",
    "botanica-v4/button/mechanical-click-03.flac#0",
+   "botanica-v4/button/mechanical-click-05.flac#0",
    "botanica-v4/button/metalic-click-01.flac#0",
    "botanica-v4/button/mouse-click-cursor-button-02.flac#0",
-   "botanica-v4/button/mouse-click-cursor-button-03.flac#0",
+   "botanica-v4/button/mouse-click-cursor-button-04.flac#0",
    "botanica-v4/button/mouse-cursor-click-03.flac#0",
    "botanica-v4/button/pop-up-01.flac#0",
    "botanica-v4/button/pop-up-02.flac#0",
@@ -2228,7 +2228,7 @@
    "botanica-v4/transition/whoosh/deep-mini-whoosh-08.flac#0",
    "botanica-v4/transition/whoosh/deep-mini-whoosh-10.flac#0",
    "botanica-v4/transition/whoosh/deep-mini-whoosh-15.flac#0",
-   "botanica-v4/transition/whoosh/deeper-fx-whoosh-02.flac#0"
+   "botanica-v4/transition/whoosh/whoosh-15.flac#0"
   ]
  },
  "50-mita-black": {

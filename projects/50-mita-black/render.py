@@ -908,7 +908,7 @@ HEADS = [
 def headline(cv, t):
     dark = False
     for t0, t1, s, sub in HEADS:
-        a = appear(t, t0, 0.3) * (1 - appear(t, t1 - 0.25, 0.25))
+        a = (1.0 if t0 <= 0 else appear(t, t0, 0.3)) * (1 - appear(t, t1 - 0.25, 0.25))   # v5: заголовок хука с 1-го кадра
         if a <= 0:
             continue
         y = 150 + 10 * (1 - a)
@@ -922,12 +922,33 @@ def headline(cv, t):
 TILE = 300
 
 
-def card(cv, c, cx, cy, s, a, t_anim, price_txt=None, price_col=None, label=True, dim=0.0):
+@functools.lru_cache(None)
+def qmark():
+    """Стилизованный «?» для скрытой карточки: белый, толстая винная обводка, мягкая тень."""
+    f = ImageFont.truetype(str(UFONT / 'Unbounded-ExtraBold.ttf'), 190)
+    im = Image.new('RGBA', (260, 300), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.text((130, 158), '?', font=f, anchor='mm', fill=(255, 255, 255, 255), stroke_width=12, stroke_fill=WINE + (255,))
+    sh = Image.new('RGBA', im.size, (40, 10, 30, 0))
+    sh.putalpha(im.getchannel('A').point(lambda v: int(v * 0.45)))
+    out = Image.new('RGBA', im.size, (0, 0, 0, 0))
+    out.alpha_composite(sh.filter(ImageFilter.GaussianBlur(10)), (0, 0))
+    out.alpha_composite(im)
+    return out
+
+
+def card(cv, c, cx, cy, s, a, t_anim, price_txt=None, price_col=None, label=True, dim=0.0, blur=0.0):
     if a <= 0:
         return
     a *= 1 - 0.7 * dim
     put(cv, fx.soft_shadow(TILE, TILE, 46, 26, 0.6), cx, cy + 14 * s, s, a)
-    put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t_anim), cx, cy, s, a)
+    tile = gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t_anim)
+    if blur > 0.01:                                     # v5: «мыльная» карточка на хуке, раскрывается по реплике
+        tile = tile.filter(ImageFilter.GaussianBlur(22 * blur))
+    put(cv, tile, cx, cy, s, a)
+    if blur > 0.01:
+        wob = math.sin(t_anim * 3.1 + cx) * 0.06
+        put(cv, qmark(), cx, cy + 6 * math.sin(t_anim * 2.4), s * (0.75 + 0.25 * blur) * (1 + 0.04 * math.sin(t_anim * 5)), a * blur, wob)
     if label:
         put(cv, text(c['gift'], 30, 'Heavy'), cx, cy - (TILE / 2 + 30) * s, s, a)
         bcol = INK if c['backdrop'] == 'Black' else MUTED
@@ -940,13 +961,18 @@ def pop_in(t, t0, d=0.45):
     return fx.ease_out_back(fx.clamp01((t - t0) / d)) if t < t0 + d else 1.0
 
 
-def pair(cv, t, left, right, t_in, t_out, cy=500, s0=1.0, lp=None, rp=None, gap=520, rcol=None):
+def pair(cv, t, left, right, t_in, t_out, cy=500, s0=1.0, lp=None, rp=None, gap=520, rcol=None, reveal=None):
     out = appear(t, t_out - 0.3, 0.3) if t_out else 0.0
     for j, c in enumerate((left, right)):
         tj = t_in + 0.25 * j
         a = appear(t, tj, 0.3) * (1 - out)
         s = s0 * (0.6 + 0.4 * pop_in(t, tj)) * (1 + 0.02 * beat_pulse(t, 8))
-        card(cv, c, 540 + (j - 0.5) * gap, cy, s, a, t - tj, (lp, rp)[j], rcol if j else None)
+        b = 0.0
+        if reveal:                                      # v5: до своего слова карточка размыта и под «?»
+            b = 1 - ease((t - reveal[j]) / 0.35)
+            if t >= reveal[j]:
+                s *= 1 + 0.08 * math.sin(math.pi * min(1.0, (t - reveal[j]) / 0.4))   # лёгкий «пульс» при раскрытии
+        card(cv, c, 540 + (j - 0.5) * gap, cy, s, a, t - tj, (lp, rp)[j], rcol if j else None, blur=b)
 
 
 # ---- 1. хук: кекс обычный vs чёрный
@@ -956,7 +982,10 @@ def scene_hook(cv, t):
     L, R = lot('Whip Cupcake', 'floor'), lot('Whip Cupcake', 'black_floor')
     k = fx.clamp01((t - E.HOOK_PRICE) / 0.6)
     rp = None if k >= 1 else (rub(int(round((L['rub'] + (R['rub'] - L['rub']) * ease(k)) / 10) * 10)) if k > 0 else '≈ ? ₽')
-    pair(cv, t, L, R, 0.1, E.SPIN - 0.1, cy=520, s0=1.05, rp=rp)
+    pair(cv, t, L, R, -0.8, E.SPIN - 0.1, cy=520, s0=1.05, rp=rp, reveal=(E.REVEAL_L, E.REVEAL_R))   # v5: с 1-го кадра, «мыльные» под «?»
+    qa = 1 - appear(t, E.HOOK_PRICE + 0.3, 0.3)
+    if qa > 0:                                                            # v5: вопрос-крючок под заголовком
+        put(cv, fx.solid_pill('ЗА ЧТО ПЕРЕПЛАТА?', WINE, 34), 540, 238 + 4 * math.sin(t * 3), 1.0 + 0.03 * math.sin(t * 5), qa)
 
 
 # ---- 3. чёрный — самый дорогой: три пары (без множителей), потом Мита берёт кекс
@@ -1311,7 +1340,9 @@ def side_panels(cv, t):
         im = utext(big, 46, 'ExtraBold', big_col)
         put(cv, im, x, SIDE_Y - 10, s * min(1.0, 200 / im.width), a)
         put(cv, utext(bot, 20, 'SemiBold', MUTED), x, SIDE_Y + 85, s, a)
-    bars(cv, t, 0.9, E.SPIN - 0.3, 438, 2452, '438 ₽', '2 452 ₽')
+    txt_panel(LX, -0.5, E.HOOK_PRICE - 0.1, 'один и тот же', 'кекс', 'Whip Cupcake', INK)   # v5: с 1-го кадра, без цены
+    bars(cv, t, E.HOOK_PRICE - 0.1, E.SPIN - 0.3, 438, 2452, '438 ₽', '2 452 ₽')          # цены — только после «больше»
+    txt_panel(RX, -0.5, E.HOOK_PRICE + 0.4, 'чёрный фон', 'дороже?', 'почему?')
     txt_panel(RX, E.HOOK_PRICE + 0.4, E.SPIN - 0.3, 'чёрный фон', 'дороже', 'Whip Cupcake')
     txt_panel(LX, E.X7 + 0.6, E.PUMPKIN, 'коллекций', '121', 'с чёрным фоном')
     txt_panel(RX, E.X7 + 1.0, E.PUMPKIN, 'чёрный фон', 'дороже', 'почти везде')

@@ -54,14 +54,13 @@ class Drift(anim.Track):
 
 
 # ------------------------------------------------------------------ дорожки
-HOOK_T = Drift([(0.0, 'hook_peek'), (1.15, 'hook_in_a'), (1.38, 'hook_w1'), (1.6, 'hook_in_b'), (1.82, 'hook_w2'),
-                (2.04, 'hook_step'), (2.26, 'hook_w3'), (2.5, 'hook_in_c'), (2.85, 'hook_wave'), (3.2, 'hook_in_c'),
-                (3.55, 'hook_wave'), (4.0, 'hook_in_c')], dur=0.22,
-               drift={'hook_in_c': 'hook_wave', 'hook_peek': 'hook_in_a'}, amt=0.08)
+HOOK_T = Drift([(0.0, 'hook_wave'), (0.5, 'hook_in_c'), (1.0, 'hook_wave'), (1.5, 'hook_in_c'), (2.0, 'hook_wave'),
+                (2.6, 'hook_in_c'), (3.2, 'hook_wave'), (3.8, 'hook_in_c')], dur=0.22,
+               drift={'hook_in_c': 'hook_wave'}, amt=0.08)          # v5: Мита в центре и машет с 1-го кадра (без выглядывания)
 
 
 def hook_x(t):
-    return 962 + (540 - 962) * ease((t - 1.0) / 1.55)
+    return 540.0                                                         # v5: сразу в центре
 
 
 CARD_T = Drift([(SPIN_END, 'jump_calm'), (E.CARD_GRAB, 'card_in_a'), (E.CARD_GRAB + 0.45, 'card_1'),

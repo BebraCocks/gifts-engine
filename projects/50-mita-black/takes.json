@@ -1,90 +1,74 @@
 {
- "_note": "Fish Audio drama-3, голос Миты 6dc11f3f…, 2026-11-16, первый проход.",
+ "_note": "Fish drama-3, голос Миты. v5 (2026-11-21): перезалив — новый текст; v4 — voice/raw/v4.",
+ "_v4": {
+  "L01": [
+   "61216acfbfe34545873bd2fdbacbfdfd"
+  ],
+  "L02": [
+   "1dc93815505245278fe430fcc5e0aa2a"
+  ],
+  "L03": [
+   "0dd98488448c4c728cee0706866cff7b"
+  ],
+  "L04": [
+   "13964194c6d4483ea5e001f81788a54d"
+  ],
+  "L05": [
+   "d15cd81b242e42c9909706040c1405c5"
+  ],
+  "L06": [
+   "491fd4c7b7e14f4da3bb71537f207f08"
+  ],
+  "L07": [
+   "ca273a681bf04e2fa3c941f18c573d2a"
+  ],
+  "L08": [
+   "80096fa3cebe4b5b826cbfbacd05d4e5"
+  ],
+  "L09": [
+   "158a9ee3b41b4d80ac25e4ed22cd690e"
+  ],
+  "L10": [
+   "846c235dc023444d9d3fbb88c0c03265"
+  ],
+  "L11": [
+   "bed035742c994860b594de6521085677"
+  ],
+  "L12": [
+   "08970def14d14074be55013c93dd9a1b"
+  ]
+ },
  "L01": [
-  "61216acfbfe34545873bd2fdbacbfdfd"
- ],
- "L02": [
-  "1dc93815505245278fe430fcc5e0aa2a"
+  "ae1f2ff9b6014d03b3ac52a155d46fd2"
  ],
  "L03": [
-  "0dd98488448c4c728cee0706866cff7b"
+  "374f6dfce4a84ddcb29d076eb4b41f06"
  ],
  "L04": [
-  "13964194c6d4483ea5e001f81788a54d"
+  "3bbff8e85d1442ea89811f1603afef00"
  ],
  "L05": [
-  "d15cd81b242e42c9909706040c1405c5"
+  "640dc4ef4b4b469d8b40ccd6315eb286"
  ],
  "L06": [
-  "491fd4c7b7e14f4da3bb71537f207f08"
+  "2983e77352bb454cbd57891bc4ddd2af"
  ],
  "L07": [
-  "ca273a681bf04e2fa3c941f18c573d2a"
+  "c19124dee10346beb98046263f4c2bcf"
  ],
  "L08": [
-  "80096fa3cebe4b5b826cbfbacd05d4e5"
+  "607ef626469942608d83b4583070a157"
  ],
  "L09": [
-  "158a9ee3b41b4d80ac25e4ed22cd690e"
+  "57b3c7969be34dc88ec210a22ab19c5f"
  ],
  "L10": [
-  "846c235dc023444d9d3fbb88c0c03265"
+  "6d51d3b2d3e644c9b79ca220f533262f"
  ],
  "L11": [
-  "bed035742c994860b594de6521085677"
+  "e57c3455b4df4430b60cffd011edc420"
  ],
  "L12": [
-  "08970def14d14074be55013c93dd9a1b"
- ],
- "_L12_v1_old": [
-  "f94d416f0be64973ae6a70130dff1b97"
- ],
- "_L01_v1_old": [
-  "68a182dd293a4e928387f78a8ed93391"
- ],
- "_L01_v3_old": [
-  "7a1bd4f5128943329d7fd75424cb9152"
- ],
- "_L12_v2_old": [
-  "c2458c21f1e04cd99a3dba917f0fa206"
- ],
- "_L12_variants": {
-  "A": "013f128f5df74100b2bd043a8cc9bcb0",
-  "B": "7c6b4c00d88e4633bdbf060772fa51ae"
- },
- "_L12_v3_old": [
-  "84f9ba8533f44b2f98ea5cc7e5059e44"
- ],
- "_L12_variants_v2": {
-  "1": "6e34ab4047d54257ac335495ba707320",
-  "2": "28a973db987c45688e53e2530d8943d4",
-  "3": "4f73bc8f4f594ddda10cea9ccf29153d"
- },
- "_L12_A_old": [
-  "013f128f5df74100b2bd043a8cc9bcb0"
- ],
- "_L09_v1_old": [
-  "53953b5eb376425282a484960a9667ca"
- ],
- "_L04_v1_old": [
-  "7d9f9cc4a019443d8acef67850206a3c"
- ],
- "_L03_v2_old": [
-  "60f99bd889a54a3ab991b9956926b870"
- ],
- "_L04_v2_old": [
-  "c5e3ef8233e94a5e9a5b8d331b53d1d4"
- ],
- "_L06_v2_old": [
-  "7a47ed1b43884db58abd1829941b8817"
- ],
- "_L07_v2_old": [
-  "1dda7df1dd3d4d6487f50eed3adb607a"
- ],
- "_L08_v2_old": [
-  "924407f2a59f4f1e95058cd6ef9a9c5c"
- ],
- "_L04_v3_ufc_old": [
-  "58ea9afc3e8b46e5a7fa67b44d88bc73"
+  "951fb61782624e1dad05c59033ca1cd5"
  ]
 }

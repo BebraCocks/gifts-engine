@@ -1378,23 +1378,27 @@ def lie_frames():
     return names
 
 
+AD_S = 0.95                       # v6c: клип Gemini «лежит» (1280×720): фигура x 142–1137, подошва/бок y 619
+
+
+@functools.lru_cache(maxsize=40)
+def ad_lie_sprite(i):
+    k = Image.fromarray(M5.key(M5.raw('ad_lie', i)))
+    return k.resize((round(k.width * AD_S), round(k.height * AD_S)), Image.BILINEAR)
+
+
 def ad_overlay(c, t):
-    """Во время рекламы Мита лежит на боку под баннером в полный рост (баннер ничем не закрыт)."""
+    """Во время рекламы Мита лежит на боку под баннером в полный рост — клип Gemini (баннер ничем не закрыт)."""
     ph = BR.phase(t)
     if ph is None:
         return c
     a, bt = ph['dim'], ph['bt']
     cv = np.dstack([c.astype(np.float32), np.full(c.shape[:2], 255, np.float32)])
-    u = max(0.0, bt)
-    names = lie_frames()
-    if bt > BR.B - 1.5:
-        k = (bt - (BR.B - 1.5)) / 0.6
-        fr = anim.morph('lie_1', 'lie_half', ease(k * 2)) if k < 0.5 else anim.morph('lie_half', 'lie_3', ease(k * 2 - 1))
-    else:
-        fr = anim.pingpong(names, u, 3.4)
+    n = M5.reader('ad_lie').n
+    i = int(min(n - 1, round((max(0.0, bt) + 0.3) * M5.CFPS)))
+    im = ad_lie_sprite(i)
     put(cv, soft_glow((200, 170, 230), 1000, 120), 540, 1595, 1.0, 0.6 * a)
-    by, _ = anim.breathe(t)
-    M3.put_mita(cv, fr, 540, 1600, 1.0, 333, a, sy=1 + 0.5 * (by - 1), shadow=False, anchor_x=768)
+    fx.over(cv, (im, int(round(548 - 639.5 * AD_S)), int(round(1600 - 619 * AD_S))), a)
     return cv[..., :3]
 
 

@@ -5,3 +5,5 @@
 - Описание: Мита знает всё о гифтах 👀 Подписывайся, пока не поздно 🔪
 - Аватар: channel/avatar.png (2048², Fish nano-banana). Баннер: channel/banner.png (2752×1536, Fish + надпись Unbounded, make_banner.py). Кредиты: 2×1350.
 - Широкий баннер: channel/banner_wide.png (3200×1200, ≈2,67:1 — как в окне обрезки приложения; Мита слева — Fish, надпись и бледные NFT-модели — make_banner_wide.py).
+
+- 2026-11-21: новая аватарка avatar.png (= avatar_v2.png, ChatGPT автора, 9/10): Мита подмигивает, «тсс», маленький подарок, голубой фон. Старая — avatar_v1.png.

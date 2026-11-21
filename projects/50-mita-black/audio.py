@@ -38,11 +38,10 @@ def envelope(v):
 def sfx_layer(n, kit):
     fx = np.zeros((n, 2))
     a = kit.add
-    a(fx, 'pop', 0.1, gain_db=-16, label='хук: кекс 1')
-    a(fx, 'pop', 0.35, gain_db=-16, label='хук: кекс 2')
-    a(fx, 'counter', E.HOOK_PRICE, gain_db=-18, label='цена чёрного растёт')
-    a(fx, 'whoosh*', E.SPIN + SPIN_DUR * 0.3, align='peak', gain_db=-13, label='кружение')
-    a(fx, 'sparkle', E.SPIN + 0.45, gain_db=-13, label='вспышка: смена наряда → готика')
+    # v6c (автор): в начале звуки сливались с речью — щелчки на 0,1/0,35 с убраны, «счётчик» заменён тихой монеткой
+    a(fx, 'coin', E.HOOK_PRICE + 0.55, gain_db=-24, label='цена чёрного выросла (тихо)')
+    a(fx, 'whoosh-short', E.SPIN + 0.35, align='peak', gain_db=-17, label='кружение')
+    a(fx, 'sparkle', E.SPIN + 0.45, gain_db=-17, label='вспышка: смена наряда → готика')
     for j, tj in enumerate((E.X7 + 0.1, 8.25, E.CARD_GRAB)):
         a(fx, 'popup', tj, gain_db=-18, label=f'пара в нишах {j + 1}')
     a(fx, 'coin', E.CARD_SHOW, gain_db=-17, label='цена кекса на чёрном')

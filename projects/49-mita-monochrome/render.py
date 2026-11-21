@@ -195,6 +195,7 @@ POSES = [  # (с какого времени, поза, смена наряда)
     (E.TYPE3_ZOOM, 'bw_proud', False),
     (E.WHY, 'bw_think', False),
     (E.OUTRO, 'bw_wink', False),
+    (E.BRAG, 'bw_point', True),           # v6: «Похвастайся…» — показывает на зрителя, подмигивает (картинка автора)
     (E.CREEPY, 'bw_creepy', False),
 ]
 
@@ -726,7 +727,7 @@ def scene_outro(cv, t):
         put(cv, gift_tile(c['gift'], c['model'], c['backdrop'], TILE, t - tj), XS[j], 470, s, a)
         put(cv, text(('цвет в цвет', 'названия', 'чёрно-белый')[j], 28, 'Semibold', MUTED), XS[j], 630, 1.0, a)
     k = appear(t, E.OUTRO + 0.9, 0.35)
-    put(cv, fx.solid_pill('Пиши в комментариях', (236, 72, 120), 34), 540, 700, 0.8 + 0.2 * k, k)
+    put(cv, fx.solid_pill('Похвастайся в комментариях', (236, 72, 120), 34), 540, 700, 0.8 + 0.2 * k, k)
 
 
 # ------------------------------------------------------------------ v4: наполнение кадра

@@ -34,8 +34,8 @@ const api = (init, op, body) => fetch(`${BASE}/api/${op}`, { method: 'POST', hea
   await A.click('#panelClose');
   const B = await mk('Боря', initB);
   await B.fill('#nameField', 'Боря'); await B.click('#modalBtns .btn:not(.ghost)'); await B.waitForTimeout(1500);
-  const bId = (await B.textContent('#meId')).replace(/\D/g, '');
-  const aId = (await A.textContent('#meId')).replace(/\D/g, '');
+  const bText = await B.textContent('#meId'); console.log('B me row:', bText); const bId = (bText.match(/ID (\d+)/) || [])[1];
+  const aId = (await A.textContent('#meId')).match(/ID (\d+)/)[1];
   console.log('ids A/B:', aId, bId);
   // A finds B and sends a request
   await A.click('#mFriends'); await A.waitForTimeout(1200);

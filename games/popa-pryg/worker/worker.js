@@ -168,6 +168,22 @@ function cleanName(raw) {
 const weekKey = t => Math.floor((t + 3 * 3600e3 + 3 * 86400e3) / 604800e3);   // weeks start on Monday 00:00 Moscow time
 const dayKey = t => Math.floor((t + 3 * 3600e3) / 86400e3);                       // days start at 00:00 Moscow time
 
+// ---------- economy: coins, experience, levels, upgrades ----------
+// level L needs round(100 * L^1.5) xp to reach L + 1; every new level pays 20 * L coins
+const xpNeed = L => Math.round(100 * Math.pow(L, 1.5));
+function levelInfo(xp) {
+  let L = 1, left = Math.max(0, xp);
+  while (left >= xpNeed(L) && L < 999) { left -= xpNeed(L); L++; }
+  return { level: L, into: left, need: xpNeed(L) };
+}
+const UPGRADES = { magnet: 5, piggy: 5, shield: 5, luck: 5 };   // id -> max level
+const UPG_COST = [60, 150, 350, 800, 1600];                      // price of level 1..5
+const readUpg = u => { try { const o = JSON.parse(u.upg || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } };
+function econ(u) {
+  const li = levelInfo(u.xp || 0);
+  return { coins: u.coins || 0, xp: u.xp || 0, level: li.level, levelInto: li.into, levelNeed: li.need, upg: readUpg(u) };
+}
+
 // ---------- accounts: profiles, IDs, scores, friends (one Durable Object with SQLite) ----------
 
 export class Accounts {
@@ -188,6 +204,8 @@ export class Accounts {
       CREATE TABLE IF NOT EXISTS deaths (day INTEGER, mode TEXT, bucket INTEGER, boss INTEGER, reason TEXT, n INTEGER, PRIMARY KEY (day, mode, bucket, boss, reason));
     `);
     try { this.sql.exec('ALTER TABLE users ADD COLUMN seen INTEGER DEFAULT 0'); } catch (e) {}
+    for (const col of ['coins INTEGER DEFAULT 0', 'xp INTEGER DEFAULT 0', 'level INTEGER DEFAULT 1', "upg TEXT DEFAULT '{}'"])
+      try { this.sql.exec('ALTER TABLE users ADD COLUMN ' + col); } catch (e) {}
   }
   rows(q, ...b) { return this.sql.exec(q, ...b).toArray(); }
   row(q, ...b) { return this.rows(q, ...b)[0] || null; }
@@ -229,7 +247,7 @@ export class Accounts {
       const incoming = me.uid ? this.row('SELECT COUNT(*) AS n FROM requests WHERE dst = ?', me.uid).n : 0;
       const wk = me.uid ? this.row('SELECT best FROM weekly WHERE uid = ? AND week = ?', me.uid, weekKey(Date.now())) : null;
       const dy = me.uid ? this.row('SELECT best FROM daily WHERE uid = ? AND day = ?', me.uid, dayKey(Date.now())) : null;
-      return send({ ok: true, me: { uid: me.uid, name: me.name, avatar: me.avatar, best: me.best, weekBest: wk ? wk.best : 0, dayBest: dy ? dy.best : 0, story: !!me.story, bosses: me.bosses, games: me.games }, incoming, day: dayKey(Date.now()) });
+      return send({ ok: true, me: { uid: me.uid, name: me.name, avatar: me.avatar, best: me.best, weekBest: wk ? wk.best : 0, dayBest: dy ? dy.best : 0, story: !!me.story, bosses: me.bosses, games: me.games, ...econ(me) }, upgCost: UPG_COST, upgMax: UPGRADES, incoming, day: dayKey(Date.now()) });
     }
     if (op === 'ping') return send({ ok: true });
 
@@ -265,13 +283,28 @@ export class Accounts {
       }
       const plausible = secs >= 5 && score <= secs * 35 + bosses * 1500 + 300;
       const today = dayKey(Date.now());
+      // coins and experience: only for honest runs without the autopilot; coins picked up are capped by run time
+      let eco = { earned: 0, xpGained: 0, levelUp: 0, reward: 0 };
+      if (plausible && !b.auto) {
+        const upg = readUpg(me);
+        const picked = Math.max(0, Math.min(Math.floor(+b.coins || 0), Math.floor(secs * 0.7) + 5));
+        let earned = Math.round(picked * (1 + 0.1 * Math.min(5, upg.piggy || 0))) + bosses * 10;
+        if (b.mode === 'daily' && me.uid && !this.row('SELECT 1 AS x FROM daily WHERE uid = ? AND day = ?', me.uid, today)) earned += 25;   // first daily try of the day
+        const xpGained = score + bosses * 50;
+        const before = levelInfo(me.xp || 0).level, after = levelInfo((me.xp || 0) + xpGained).level;
+        let reward = 0; for (let L = before + 1; L <= after; L++) reward += 20 * (L - 1);
+        this.sql.exec('UPDATE users SET coins = coins + ?, xp = xp + ?, level = ? WHERE tg = ?', earned + reward, xpGained, after, who.id);
+        eco = { earned, xpGained, levelUp: after > before ? after : 0, reward };
+        me = this.userByTg(who.id);
+      }
+      eco = { ...eco, ...econ(me) };
       if (b.mode === 'daily' && !b.auto && plausible && me.uid && (+b.day === today || +b.day === today - 1)) {
         const cur = this.row('SELECT best FROM daily WHERE uid = ? AND day = ?', me.uid, +b.day);
         const newDay = !cur || score > cur.best;
         if (newDay) this.sql.exec('INSERT INTO daily (uid, day, best, at) VALUES (?, ?, ?, ?) ON CONFLICT (uid, day) DO UPDATE SET best = excluded.best, at = excluded.at', me.uid, +b.day, score, Date.now());
         const r = this.row('SELECT best, at FROM daily WHERE uid = ? AND day = ?', me.uid, +b.day);
         const place = this.row('SELECT COUNT(*) + 1 AS p FROM daily WHERE day = ? AND (best > ? OR (best = ? AND at < ?))', +b.day, r.best, r.best, r.at).p;
-        return send({ ok: true, counted: true, newBest: newDay, best: r.best, place });
+        return send({ ok: true, counted: true, newBest: newDay, best: r.best, place, eco });
       }
       const counts = b.mode === 'endless' && !b.auto && plausible && me.uid;
       let newBest = false, newWeek = false;
@@ -283,7 +316,19 @@ export class Accounts {
       }
       me = this.userByTg(who.id);
       const place = counts && me.best > 0 ? this.row('SELECT COUNT(*) + 1 AS p FROM users WHERE uid IS NOT NULL AND best > ?', me.best).p : null;
-      return send({ ok: true, counted: !!counts, why: !['endless', 'daily'].includes(b.mode) ? 'mode' : b.auto ? 'auto' : !me.uid ? 'noname' : !plausible ? 'check' : b.mode === 'daily' ? 'day' : null, newBest, newWeek, best: me.best, place });
+      return send({ ok: true, eco, counted: !!counts, why: !['endless', 'daily'].includes(b.mode) ? 'mode' : b.auto ? 'auto' : !me.uid ? 'noname' : !plausible ? 'check' : b.mode === 'daily' ? 'day' : null, newBest, newWeek, best: me.best, place });
+    }
+
+    if (op === 'upgrade') {
+      const id = String(b.id || '');
+      if (!(id in UPGRADES)) return send({ ok: false, error: 'Нет такого улучшения' }, 400);
+      const upg = readUpg(me), lv = Math.min(UPGRADES[id], Math.max(0, Math.floor(upg[id] || 0)));
+      if (lv >= UPGRADES[id]) return send({ ok: false, error: 'Уже максимум' }, 400);
+      const cost = UPG_COST[lv];
+      if ((me.coins || 0) < cost) return send({ ok: false, error: 'Не хватает попкоинов' }, 400);
+      upg[id] = lv + 1;
+      this.sql.exec('UPDATE users SET coins = coins - ?, upg = ? WHERE tg = ? AND coins >= ?', cost, JSON.stringify(upg), who.id, cost);
+      return send({ ok: true, ...econ(this.userByTg(who.id)) });
     }
 
     if (op === 'leaderboard') {
@@ -291,21 +336,21 @@ export class Accounts {
       let top, mine = null;
       if (scope === 'day') {
         const dk = dayKey(Date.now());
-        top = this.rows('SELECT u.uid, u.name, u.avatar, d.best AS score FROM daily d JOIN users u ON u.uid = d.uid WHERE d.day = ? AND u.name IS NOT NULL ORDER BY d.best DESC, d.at ASC LIMIT 50', dk);
+        top = this.rows('SELECT u.uid, u.name, u.avatar, u.level, d.best AS score FROM daily d JOIN users u ON u.uid = d.uid WHERE d.day = ? AND u.name IS NOT NULL ORDER BY d.best DESC, d.at ASC LIMIT 50', dk);
         if (me.uid) { const r = this.row('SELECT best, at FROM daily WHERE uid = ? AND day = ?', me.uid, dk); if (r) mine = { score: r.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM daily WHERE day = ? AND (best > ? OR (best = ? AND at < ?))', dk, r.best, r.best, r.at).p }; }
       } else if (scope === 'week') {
         const wk = weekKey(Date.now());
-        top = this.rows('SELECT u.uid, u.name, u.avatar, w.best AS score FROM weekly w JOIN users u ON u.uid = w.uid WHERE w.week = ? AND u.name IS NOT NULL ORDER BY w.best DESC, w.at ASC LIMIT 50', wk);
+        top = this.rows('SELECT u.uid, u.name, u.avatar, u.level, w.best AS score FROM weekly w JOIN users u ON u.uid = w.uid WHERE w.week = ? AND u.name IS NOT NULL ORDER BY w.best DESC, w.at ASC LIMIT 50', wk);
         if (me.uid) { const r = this.row('SELECT best, at FROM weekly WHERE uid = ? AND week = ?', me.uid, wk); if (r) mine = { score: r.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM weekly WHERE week = ? AND (best > ? OR (best = ? AND at < ?))', wk, r.best, r.best, r.at).p }; }
       } else if (scope === 'friends') {
         if (!me.uid) return needName();
-        top = this.rows('SELECT u.uid, u.name, u.avatar, u.best AS score FROM users u WHERE u.uid = ? OR u.uid IN (SELECT b FROM friends WHERE a = ?) ORDER BY u.best DESC, u.best_at ASC LIMIT 100', me.uid, me.uid);
+        top = this.rows('SELECT u.uid, u.name, u.avatar, u.level, u.best AS score FROM users u WHERE u.uid = ? OR u.uid IN (SELECT b FROM friends WHERE a = ?) ORDER BY u.best DESC, u.best_at ASC LIMIT 100', me.uid, me.uid);
         const i = top.findIndex(r => r.uid === me.uid); if (i >= 0) mine = { score: top[i].score, place: i + 1 };
       } else {
-        top = this.rows('SELECT uid, name, avatar, best AS score FROM users WHERE uid IS NOT NULL AND name IS NOT NULL AND best > 0 ORDER BY best DESC, best_at ASC LIMIT 50');
+        top = this.rows('SELECT uid, name, avatar, level, best AS score FROM users WHERE uid IS NOT NULL AND name IS NOT NULL AND best > 0 ORDER BY best DESC, best_at ASC LIMIT 50');
         if (me.uid && me.best > 0) mine = { score: me.best, place: this.row('SELECT COUNT(*) + 1 AS p FROM users WHERE uid IS NOT NULL AND (best > ? OR (best = ? AND best_at < ?))', me.best, me.best, me.best_at).p };
       }
-      return send({ ok: true, scope, top: top.map((r, i) => ({ place: i + 1, uid: r.uid, name: r.name, avatar: r.avatar, score: r.score })), mine, myUid: me.uid });
+      return send({ ok: true, scope, top: top.map((r, i) => ({ place: i + 1, uid: r.uid, name: r.name, avatar: r.avatar, level: r.level || 1, score: r.score })), mine, myUid: me.uid });
     }
 
     if (!me.uid) return needName();

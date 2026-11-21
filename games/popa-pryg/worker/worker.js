@@ -290,7 +290,8 @@ export class Accounts {
       if (plausible && !b.auto) {
         const upg = readUpg(me);
         const picked = Math.max(0, Math.min(Math.floor(+b.coins || 0), Math.floor(secs * 0.7) + 5));
-        let earned = Math.round(picked * (1 + 0.1 * Math.min(5, upg.piggy || 0))) + bosses * 10;
+        const bags = Math.max(0, Math.min(Math.floor(+b.bags || 0), Math.floor(secs / 90) + 1));   // sacks of 50: rare, at most one per 1.5 minutes
+        let earned = Math.round((picked + 50 * bags) * (1 + 0.1 * Math.min(5, upg.piggy || 0))) + bosses * 10;
         if (b.mode === 'daily' && me.uid && !this.row('SELECT 1 AS x FROM daily WHERE uid = ? AND day = ?', me.uid, today)) earned += 25;   // first daily try of the day
         const xpGained = score + bosses * 50;
         const before = levelInfo(me.xp || 0).level, after = levelInfo((me.xp || 0) + xpGained).level;

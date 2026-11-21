@@ -27,8 +27,9 @@ const call = async (who, op, body = {}) => {
   for (let k = 0; k < 6; k++) await call(A, 'score', { mode: 'story', score: 900, secs: 120, bosses: 3, coins: 40 });
   const m1 = (await call(A, 'me')).me;
   out('after 6 big runs', { coins: m1.coins, xp: m1.xp, level: m1.level, into: m1.levelInto, need: m1.levelNeed, upg: m1.upg });
-  let r; for (let k = 0; k < 6; k++) r = await call(A, 'upgrade', { id: 'magnet' });
-  out('magnet x6 (last)', r);
+  let r; for (let k = 0; k < 6; k++) r = await call(A, 'upgrade', { id: 'shield' });
+  out('shield x6 (last)', r);
+  out('magnet is gone', await call(A, 'upgrade', { id: 'magnet' }));
   out('daily first try bonus', (await call(A, 'score', { mode: 'daily', score: 200, secs: 40, bosses: 0, coins: 0, day: (await call(A, 'me')).day })).eco);
   const lb = await call(A, 'leaderboard', { scope: 'all' });
   out('leaderboard has level', lb.top.slice(0, 2));

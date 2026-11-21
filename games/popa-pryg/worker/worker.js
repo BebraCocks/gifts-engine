@@ -176,7 +176,7 @@ function levelInfo(xp) {
   while (left >= xpNeed(L) && L < 999) { left -= xpNeed(L); L++; }
   return { level: L, into: left, need: xpNeed(L) };
 }
-const UPGRADES = { magnet: 5, piggy: 5, shield: 5, luck: 5 };   // id -> max level
+const UPGRADES = { piggy: 5, shield: 5, luck: 5 };   // id -> max level (the magnet was removed; its coins are given back)
 const UPG_COST = [60, 150, 350, 800, 1600];                      // price of level 1..5
 const readUpg = u => { try { const o = JSON.parse(u.upg || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } };
 function econ(u) {
@@ -240,6 +240,8 @@ export class Accounts {
     this.sql.exec('INSERT OR IGNORE INTO users (tg, first, created) VALUES (?, ?, ?)', who.id, who.first, Date.now());
     this.sql.exec('UPDATE users SET seen = ? WHERE tg = ?', Date.now(), who.id);
     let me = this.userByTg(who.id);
+    { const u = readUpg(me); if (u.magnet) { let back = 0; for (let k = 0; k < Math.min(5, u.magnet); k++) back += UPG_COST[k]; delete u.magnet;
+      this.sql.exec('UPDATE users SET coins = coins + ?, upg = ? WHERE tg = ?', back, JSON.stringify(u), who.id); me = this.userByTg(who.id); } }
     const needName = () => send({ ok: false, error: 'noname' }, 400);
     const b = body || {};
 

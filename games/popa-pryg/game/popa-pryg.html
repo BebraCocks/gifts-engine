@@ -2823,7 +2823,6 @@
   // profile
   // ---------- upgrades for popcoins ----------
   const UPG_INFO = [
-    { id: 'magnet', name: 'Монетный магнит', ico: '🧲', what: L => `Собираешь монету, даже если приземлился не в центре: ${50 + 10 * L}% цилиндра вместо 50%` },
     { id: 'piggy', name: 'Копилка', ico: '🐷', what: L => `+${10 * L}% попкоинов за каждый забег` },
     { id: 'shield', name: 'Щит на старте', ico: '🛡️', what: L => L ? `Щит в начале забега спасает от первого падения в первые ${20 * L} прыжков` : 'Щит в начале забега спасает от первого падения' },
     { id: 'luck', name: 'Удача', ico: '🍀', what: L => `Шанс лишнего секретного цилиндра на отрезке: ${12 * L}%` },
@@ -3350,7 +3349,7 @@
   function land(c) {
     haptic('light');
     const dist = Math.abs(px - c.x);
-    if (c.coin && c.coin.visible && dist < c.r * (0.5 + 0.1 * upgLv('magnet'))) {
+    if (c.coin && c.coin.visible && dist < c.r * 0.5) {
       c.coin.visible = false; runCoins++; coinCountEl.textContent = runCoins;
       coinHud.classList.remove('bump'); void coinHud.offsetWidth; coinHud.classList.add('bump');
       playSample('coin', () => sfx.coin(0)); burst(c.x, c.z, 0xffd60a, 10, 1.1, 0.8);

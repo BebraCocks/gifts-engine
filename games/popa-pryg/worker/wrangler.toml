@@ -1,0 +1,35 @@
+name = "popa-pryg"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[[rules]]
+type = "Data"
+globs = ["**/*.jpg"]
+fallthrough = true
+
+[[durable_objects.bindings]]
+name = "LOBBY"
+class_name = "Lobby"
+
+[[durable_objects.bindings]]
+name = "ACCOUNTS"
+class_name = "Accounts"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Lobby"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Accounts"]
+
+
+# music (and other big files) live in KV, so the worker bundle stays small
+[[kv_namespaces]]
+binding = "MEDIA"
+id = "afd8add8c45c4b62bfe2f5afb37f3d20"

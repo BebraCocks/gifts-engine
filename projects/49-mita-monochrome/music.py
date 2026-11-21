@@ -10,7 +10,7 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 TRACK = HERE / 'input' / 'music' / 'incompetech' / 'Almost_New.mp3'
 OFFSET = 0.0           # v6: трек звучит с первого кадра
-LEVEL_DB = -27.5       # автор: ещё чуть тише (v4: −26 → −27,5 дБ)
+LEVEL_DB = -30.0       # v6 автор: музыку чуть тише (−27,5 → −30 дБ)
 DUCK_DB = -7.0         # дополнительное приглушение под речью
 
 

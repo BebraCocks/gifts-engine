@@ -262,6 +262,24 @@ def wind(cv, t, front):
     fx.over(cv, fx.draw_rgba((cx - 520, base - MITA_H - 260, cx + 520, base + 40), draw))
 
 
+@functools.lru_cache(None)
+def hook_closeup():
+    im = Image.open(MITA / 'hook_point.png').convert('RGBA')
+    h = 700
+    return im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+
+
+def draw_hook_closeup(cv, t):
+    """v6, первые ~4 с: Мита крупным планом снизу показывает на подарки (первый кадр заполнен и с эмоцией)."""
+    p = hook_push(t, overshoot=False)
+    if p <= 0:
+        return
+    im = hook_closeup()
+    tk = talk(t)
+    y = 1995 + (1 - p) * 760 + math.sin(t * 2.4) * 6 - 10 * tk
+    put(cv, im, 700 + math.sin(t * 0.9) * 5, y - im.height / 2, 1.0 + 0.01 * tk, 1.0, 0.0)
+
+
 def draw_mita(cv, t):
     t0, name, change = pose_at(t)
     mirror = False
@@ -582,7 +600,7 @@ def scene_hook(cv, t):
     qa = hook_push(t, overshoot=False) * (1 - appear(t, E.PRICE_X10 - 0.2, 0.3))
     if qa > 0:
         q = fx.solid_pill('В ЧЁМ РАЗНИЦА?', (30, 24, 48), 46, WHITE)
-        put(cv, q, 540, 1430 + 6 * math.sin(t * 3), 1.0 + 0.03 * math.sin(t * 5), qa)
+        put(cv, q, 540, 575 + 6 * math.sin(t * 3), 1.0 + 0.03 * math.sin(t * 5), qa)
     # счётчик видов 1 · 2 · 3
     for j in range(3):
         tj = E.COUNTER + 0.29 * j
@@ -1124,6 +1142,7 @@ def render_at(t):
     drifting_gifts(cv, t)
     progress(cv, t)
     headline(cv, t)
+    draw_hook_closeup(cv, t)                 # v6: крупная Мита — за ценами, чтобы цены читались
     scene_hook(cv, t)
     scene_type1(cv, t)
     scene_type2(cv, t)

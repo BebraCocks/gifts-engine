@@ -131,3 +131,41 @@ Mystery Mask (Jester Hat, 0,5%), Twin Faces (Lucky Locket, 3%).
 5. Dark Knight (0,1%) — Бэтмен; в цикле вылетают летучие мыши; самая редкая из пяти.
 
 Запас: Billy Puppet («Пила», 0,2%), Frontman («Игра в кальмара», crafted).
+
+## Красивые сочетания «модель + фон» до 30 000 ₽ (2026-11-22)
+
+Источник: fragment.com, лоты «в продаже», самый дешёвый лот с этой моделью и фоном на 2026-11-22; курс 1 TON = 76,65 ₽ (tonapi.io).
+Отбор: цвета всех 7644 моделей (api.changes.tg) сравнены с цветами фонов, 708 лучших пар проверены на Fragment, 105 найдены в продаже, 29 отобраны глазами.
+Данные: [data/beautiful_combos_2026-11-22.json](data/beautiful_combos_2026-11-22.json). Цены меняются — перед роликом перепроверить.
+
+| Группа | Подарок | Модель / фон | TON | ₽ | Лот |
+|---|---|---|---|---|---|
+| В цвет фона | Clover Pin | Celtic Knot / Old Gold | 10 | 770 | [cloverpin-54010](https://fragment.com/gift/cloverpin-54010) |
+| В цвет фона | Instant Ramen | Arcane Bowl / Navy Blue | 10 | 770 | [instantramen-254427](https://fragment.com/gift/instantramen-254427) |
+| В цвет фона | Clover Pin | Lollipop / Burgundy | 11 | 840 | [cloverpin-131518](https://fragment.com/gift/cloverpin-131518) |
+| В цвет фона | Instant Ramen | First Date / Purple | 14 | 1070 | [instantramen-254415](https://fragment.com/gift/instantramen-254415) |
+| В цвет фона | Lol Pop | Dark Sky / Cobalt Blue | 15 | 1150 | [lolpop-304637](https://fragment.com/gift/lolpop-304637) |
+| В цвет фона | Clover Pin | Ruby Clover / Strawberry | 25 | 1920 | [cloverpin-110367](https://fragment.com/gift/cloverpin-110367) |
+| В цвет фона | Stellar Rocket | Green Jelly / Mint Green | 25 | 1920 | [stellarrocket-55603](https://fragment.com/gift/stellarrocket-55603) |
+| В цвет фона | Lunar Snake | Timelock / Emerald | 28 | 2150 | [lunarsnake-113422](https://fragment.com/gift/lunarsnake-113422) |
+| В цвет фона | Victory Medal | Viking / Amber | 40 | 3070 | [victorymedal-24032](https://fragment.com/gift/victorymedal-24032) |
+| В цвет фона | Snoop Dogg | Black Diamond / Electric Indigo | 45 | 3450 | [snoopdogg-152219](https://fragment.com/gift/snoopdogg-152219) |
+| В цвет фона | Homemade Cake | Pink Velvet / Purple | 50 | 3830 | [homemadecake-99997](https://fragment.com/gift/homemadecake-99997) |
+| В цвет фона | Liberty Figure | Ruby Flame / Strawberry | 55 | 4220 | [libertyfigure-105101](https://fragment.com/gift/libertyfigure-105101) |
+| В цвет фона | Witch Hat | Nebula Mist / Electric Purple | 99 | 7590 | [witchhat-44144](https://fragment.com/gift/witchhat-44144) |
+| В цвет фона | Bonded Ring | Anaconda / Dark Green | 120 | 9200 | [bondedring-1493](https://fragment.com/gift/bondedring-1493) |
+| В цвет фона | Toy Bear | Chocolate / Amber | 150 | 11500 | [toybear-13540](https://fragment.com/gift/toybear-13540) |
+| Контраст | Mirage Lamp | Ruby Moon / Deep Cyan | 15 | 1150 | [miragelamp-44421](https://fragment.com/gift/miragelamp-44421) |
+| Контраст | Bow Tie | Cherries / Deep Cyan | 22 | 1690 | [bowtie-11962](https://fragment.com/gift/bowtie-11962) |
+| Контраст | Bling Binky | Violetta / Mint Green | 35 | 2680 | [blingbinky-7897](https://fragment.com/gift/blingbinky-7897) |
+| Контраст | Voodoo Doll | Jellousy / Grape | 65 | 4980 | [voodoodoll-12974](https://fragment.com/gift/voodoodoll-12974) |
+| Контраст | Signet Ring | Tony Stark / Moonstone | 150 | 11500 | [signetring-429](https://fragment.com/gift/signetring-429) |
+| Контраст | Bling Binky | Night Bat / Cyberpunk | 210 | 16100 | [blingbinky-1284](https://fragment.com/gift/blingbinky-1284) |
+| Монохром | Desk Calendar | Groundhog Day / Ivory White | 25 | 1920 | [deskcalendar-163494](https://fragment.com/gift/deskcalendar-163494) |
+| Монохром | Star Notepad | Negative / Ivory White | 27 | 2070 | [starnotepad-51679](https://fragment.com/gift/starnotepad-51679) |
+| Монохром | Ginger Cookie | Opposite / Ivory White | 28 | 2150 | [gingercookie-149389](https://fragment.com/gift/gingercookie-149389) |
+| Монохром | Swag Bag | Darkness / Ivory White | 75 | 5750 | [swagbag-46673](https://fragment.com/gift/swagbag-46673) |
+| Монохром | Candy Cane | Negativus / Black | 131 | 10040 | [candycane-191380](https://fragment.com/gift/candycane-191380) |
+| Монохром | Liberty Figure | Diamond / Black | 140 | 10730 | [libertyfigure-141968](https://fragment.com/gift/libertyfigure-141968) |
+| Монохром | Jester Hat | Sketchy / Black | 199 | 15250 | [jesterhat-143381](https://fragment.com/gift/jesterhat-143381) |
+| Монохром | Winter Wreath | Old Movie / Black | 250 | 19160 | [winterwreath-8639](https://fragment.com/gift/winterwreath-8639) |

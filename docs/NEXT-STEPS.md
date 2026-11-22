@@ -666,3 +666,6 @@ https://drive.google.com/file/d/14uJRZ8mW2W1hGtZfg7MkbfqiScZPLc5w/view
 кружение и вспышка тише (озвучку автор оставил). Мита во время рекламы — клип Gemini (input/mita/video/ad_lie.mp4, 16:9,
 лежит, болтает ногой, зевает) вместо старых поз ChatGPT. 66,6 с.
 https://drive.google.com/file/d/185Q1bvQpc9MH9kKFS780Ee9508IM-eCJ/view
+
+## 2026-11-22 · Подборка красивых сочетаний до 30 000 ₽
+29 лотов Fragment (в цвет фона / контраст / монохром) — раздел в [IDEAS.md](IDEAS.md). Ждём выбора автора: тема ролика или покупка.

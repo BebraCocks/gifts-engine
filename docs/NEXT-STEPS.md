@@ -696,3 +696,7 @@ v5 — без рекламы (автор), 116,2 с: https://drive.google.com/fi
 Тема автора, шутки и визуализация кодом, голос серии 1,18×, пуки/рвота/урчание кодом (`synth.py`) + Botanica.
 Без рекламы — с этого дня RubUp не добавлять (правило в начале AGENTS.md). 104,7 с.
 https://drive.google.com/file/d/1wyVWj_hQfjS-OjOpvW7g4FfV41BMRhf2/view
+
+## 2026-11-23 · 62-bullshit «Что будет, если постоянно нести х*йню» — собрано
+Тема автора, всё кодом, голос серии, звуки кодом + Botanica, без рекламы. 100,2 с.
+https://drive.google.com/file/d/1cZW6YMY3__eqBAHulYtknhapLO9UERKT/view

@@ -683,3 +683,9 @@ https://drive.google.com/file/d/1opkWgVcFjTF-JWNixS3bUURkka9iTLVx/view
 причин»), всё нарисовано кодом, голос серии drama-3 1,15×, SFX Botanica + пуки/гул кодом, RubUp перед «Через секунду ты летишь».
 107 с. https://drive.google.com/file/d/131xWF1ag5kHRAUoHzO3Miq-pb1FvyvcI/view
 Дальше: 60-fan «Что будет, если насрать на вентилятор» (тема автора).
+
+## 2026-11-23 · 60-fan «Что будет, если насрать на вентилятор» — собрано
+Тема автора, расчёты в раскадровке (100 км/ч кончик лопасти, 65 ударов/с, 1/7 с до стены, идиома «shit hits the fan»).
+Всё кодом, голос серии 1,22×, звуки кодом (гул, удары, шлепки, распыление) + Botanica, RubUp перед «Большая часть улетает…».
+103,6 с. https://drive.google.com/file/d/1ViekUQ4yEGo-fNJgQFHe5fORcsRiDspq/view
+Замечание: файлы > ~40 МБ Apps Script не принимает — для Drive пережимать (CRF 20–23).

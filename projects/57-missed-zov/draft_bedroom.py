@@ -79,7 +79,7 @@ def audio():
         return np.pad(a, ((0, max(0, n - len(a))), (0, 0)))[:n]
     mus = dec(BLD / 'lunar_abyss.mp3')
     room = dec(BLD / 'veo_01_bedroom.mp4')            # тишина комнаты и вибрация из Gemini
-    mix = mus * 0.85 + room * 0.6
+    mix = mus * 0.18 + room * 0.6              # музыка тихо, 18 % (автор, 2026-11-23)
     for txt, v, t0, _ in MSGS:
         va = dec(BLD / 'voice' / v, ('-af', 'atempo=1.15'))
         i = int((t0 + 0.05) * SR)

@@ -44,7 +44,11 @@ def bubble(text):
                      spacing=10, align='center')
     return im
 
-BUB = [bubble(m[0]) for m in MSGS]
+def png_bubble(i, width=900):              # плашки нарисованы в ChatGPT (refs/ui)
+    im = Image.open(HERE / 'refs' / 'ui' / f'bubble_{i}.png').convert('RGBA')
+    return im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+
+BUB = [png_bubble(i + 1) for i in range(len(MSGS))]
 ease_out_back = lambda x: 1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2
 
 def overlay(frame, t):
@@ -61,8 +65,8 @@ def overlay(frame, t):
         if a < 1:
             im.putalpha(im.getchannel('A').point(lambda v: int(v * a)))
         bw = bim.width                         # держим пузырь целиком в кадре
-        cx = 40 + bw / 2 if side == 'L' else W - 40 - bw / 2
-        cy = 330 + (70 if side == 'R' else 0)
+        cx = 20 + bw / 2 if side == 'L' else W - 20 - bw / 2
+        cy = 300 + (90 if side == 'R' else 0)
         frame.alpha_composite(im, (int(cx - w / 2), int(cy - h / 2)))
     return frame
 

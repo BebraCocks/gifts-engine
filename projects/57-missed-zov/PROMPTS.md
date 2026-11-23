@@ -118,6 +118,8 @@ him, extreme low angle, the giant boss looms above. + STYLE
 поэтому их видно издалека, и настоящий выделяется в толпе. Лицо у всех как у Миседа, телосложение в
 основном тоже, отличаются рост и ширина, у четверых третья рука или нога.
 Каждый раз прикладывайте лист персонажа `refs/missed_sheet.png`. Готовый лист режем на три кадра.
+Листы 1–3 сделаны на фоне арены (оценки 9, 8, 9). С листа 4 фон однотонный, цвета, которого нет
+на фейках этого листа, чтобы их было легко вырезать.
 
 **Лист 1**
 ```
@@ -155,7 +157,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: coral red skin, an upside-down face, wearing a Hawaiian shirt and sandals.
 Center: sky blue skin, three ears, wearing a denim jacket and jeans, hunched posture.
 Right: olive green skin, a head too small for the body, wearing a gym tank top and joggers.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -165,7 +167,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: turquoise skin, a red cap with the text "Mlssed" and a red varsity jacket, slightly taller.
 Center: magenta skin, a white T-shirt with a cheap print "Misseed" and ripped skinny jeans, a bit shorter.
 Right: pale violet skin, a neon green hoodie with the text "Mised_official".
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid pure white #FFFFFF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -175,7 +177,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: tomato red skin, a blue sports jersey with the text "Missed_Support" and shorts, wider shoulders.
 Center: aqua cyan skin, an office shirt with a name tag "Real Missed 100%", three arms.
 Right: golden yellow skin, a sash "Missed2" over a cheap shiny tuxedo.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -185,7 +187,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: indigo blue skin, a yellow-and-blue baseball jacket with the text "M1ssed".
 Center: peach orange skin, a cape with the text "MissedGifts" over a cheap superhero spandex suit, a little chubby belly.
 Right: emerald green skin, an orange hi-vis vest, a hard hat and a huge wrench, shouting "I'll upgrade your gift!".
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -195,7 +197,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: rose pink skin, fishing waders and a bucket hat, holding a fishing rod with a glowing link on the hook, three legs.
 Center: steel blue skin, a white shirt, blue tie, headset and a badge "Telegram Support".
 Right: lemon yellow skin, a giant QR code on his forehead, wearing a grey tech-bro zip vest.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -205,7 +207,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: crimson red skin, a red Santa suit carrying a sack of stolen gifts, short and round.
 Center: sand beige skin, a brown poncho, holding a sign "send 100 stars".
 Right: neon green skin, a sparkly gold game-show host blazer, spinning a fake lottery wheel.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key blue #0000FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -215,7 +217,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: royal purple skin, a brown lawyer suit and glasses, holding a contract scroll "sign here".
 Center: hot pink skin, a neon pink tracksuit, shouting into a megaphone "free NFT".
 Right: cobalt blue skin, a red courier uniform, holding a gift box with a trap inside.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -225,7 +227,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: amber orange skin, a purple fortune-teller robe and turban, holding a crystal ball "guaranteed profit".
 Center: silver grey skin, a white suit and gold sunglasses like a crypto influencer, holding a stack of fake screenshots, three arms.
 Right: jade green skin, a green banker vest and visor, counting on an abacus.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key blue #0000FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -235,7 +237,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: cherry red skin, a white doctor coat and stethoscope, sign "account check-up".
 Center: lilac skin, a beige trench coat and fedora, hugging a piggy bank labeled "seed phrase".
 Right: chartreuse skin, red laser eyes, a thick gold chain and a white tracksuit.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key blue #0000FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -245,7 +247,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: navy blue skin, sunglasses, a gold grill and a leopard print jacket.
 Center: salmon pink skin, a samurai topknot, a blue kimono and a wooden sword.
 Right: charcoal grey skin, a leather biker jacket with spikes and a red bandana.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -255,7 +257,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: cyan skin, a pirate coat, an eye patch and a hook hand, three legs.
 Center: mustard yellow skin, a cowboy hat, a brown leather vest and twin water pistols, bow-legged stance.
 Right: plum purple skin, a dark blue ninja outfit and mask, only the black eyes visible.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -265,7 +267,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: brick red skin, a ski mask and a black-and-white striped robber shirt, carrying a loot bag.
 Center: seafoam green skin, a red satin boxing robe and red boxing gloves.
 Right: electric blue skin, a silver cyber jacket, a glowing visor and neon tubes.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -275,7 +277,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: tangerine skin, knight armor and helmet made of cardboard.
 Center: dusty pink skin, a Viking helmet, a fur vest and a plastic axe.
 Right: moss green skin, a green wrestling singlet and a championship belt made of tinfoil.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key blue #0000FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -285,7 +287,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: violet skin, a huge fur coat and rings on every finger.
 Center: ice blue skin, a purple velvet suit, a top hat and a monocle like a fake millionaire.
 Right: apricot skin, a tiny body and a gigantic head, wearing a yellow baby onesie.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -295,7 +297,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: forest green skin, a hyper-muscular body with the original small face, a tight white tank top (mini-boss).
 Center: made of melted dripping wax, wearing a waiter outfit with a bow tie.
 Right: denim blue skin, inflatable like a pool toy, wearing flamingo swim shorts.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -305,7 +307,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: made entirely of colorful chat stickers glued together.
 Center: a body made of spam emails, wearing an envelope-print shirt.
 Right: a flat cardboard cutout of Missed held up by a hand from behind.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
@@ -315,7 +317,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: pastel green skin, a jockey outfit, riding on the back of a smaller clone.
 Center: copper skin, a swarm of thirty palm-sized clones in tiny orange shirts running like ants.
 Right: a dark shadow silhouette with glowing fake-checkmark eyes.
-Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Background: a perfectly flat solid chroma key blue #0000FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 

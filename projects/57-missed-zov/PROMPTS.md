@@ -297,8 +297,8 @@ Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the
 ```
 Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. No floating objects, signs, text or speech bubbles around them; everything that makes each one different is on his body or in his hands. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
 Left: forest green skin, a hyper-muscular body with the original small face, a tight white tank top (mini-boss).
-Center: made of melted dripping wax, wearing a waiter outfit with a bow tie, holding a serving tray like a shield.
-Right: denim blue skin, inflatable like a pool toy, wearing flamingo swim shorts, holding a pool noodle like a sword.
+Center: made of melted dripping orange wax, wearing a waiter outfit with a bow tie, holding a serving tray like a shield.
+Right: denim blue skin, inflatable like a pool toy, wearing yellow palm-tree print swim shorts, holding an orange pool noodle like a sword.
 Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```

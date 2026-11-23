@@ -21,6 +21,8 @@ Missed: a small bald humanoid creature with a large smooth egg-shaped head, pale
 huge fully black glossy eyes with no whites, long pointed elf ears sticking straight out sideways,
 tiny nose, small sly closed-mouth smile, very thin long neck, skinny doll-like body.
 Same face and proportions in every shot. He stays thin and calm, never muscular.
+He is completely silent: mouth always closed, never talks, never shouts. Cool, cold, unbothered,
+a quiet heavy aura around him.
 ```
 
 **STYLE (2D-аниме):**
@@ -325,46 +327,73 @@ seen from behind. + STYLE 3D
 
 ## 5. 2D-ключевые кадры по сюжету
 
-1. **Комната:**
+Мисед всю дорогу **молчит**: ни слов, ни криков, рот закрыт. Всё играет взгляд и аура.
+
+1. **Берёт телефон:**
 ```
-MISSED sits on a couch in a dark room at night, his face lit only by a phone screen, notification
-bubbles pile up in the air around him with texts like "Missed, your double scammed me",
-"Missed, a fake stole my gift". Tired expression. + STYLE
+Dark room at night, a phone on a table buzzes and lights up with a flood of notifications,
+MISSED's thin hand slowly picks it up, his calm face lit from below by the screen. + STYLE
 ```
-2. **Вздох:**
+2. **Читает (вставка экрана):**
 ```
-Close-up of MISSED, eyes half closed, a long tired sigh, a small cloud of breath, heavy ink
-shadows, the glow of the phone below. + STYLE
+Close-up of a phone screen in a dark room, a chat list flooded with messages addressed to Missed:
+"Missed, your double scammed me", "Missed, a fake took my gift", "Missed, someone with your name
+asked for my stars", "Missed, help". Reflections of the screen in MISSED's black eyes. + STYLE
 ```
-3. **Втягивание:**
+3. **Молчаливый взгляд:**
+```
+Extreme close-up of MISSED, completely silent, mouth closed, the glow of the phone below, his black
+eyes slowly narrow, heavy ink shadows fall over his face, a faint aura starts to flicker around his
+ears. + STYLE
+```
+4. **Втягивание:**
 ```
 The phone screen cracks and bursts into pixels, MISSED is pulled into the screen in a spiral of
 light and chat bubbles, dynamic perspective, motion blur. + STYLE
 ```
-4. **Выход:**
+5. **Приземление на арену:**
 ```
-MISSED walks slowly into the ARENA ring, his silhouette backlit by spotlights, hundreds of clones
-around the ring, the crowd in the stands frozen in silence. + STYLE
+MISSED lands on one knee in the center of a gigantic ARENA, the impact cracks the floor of chat
+bubbles and sends up dust, hundreds of fake clones encircle him from every side, they laugh,
+giggle and point at him mockingly, extreme wide shot from above, he is a tiny figure in the
+center. + STYLE
 ```
-5. **Окружили:**
+6. **Фейки смеются:**
+```
+Close-ups of several fake clones of MISSED laughing hysterically: one giggling behind his hand,
+one bent over with laughter, one with a wide mocking grin and tears of laughter, distorted
+fisheye angles, sweat and spit, heavy ink shadows. + STYLE
+```
+7. **Атака со всех сторон:**
+```
+Dozens of fake clones leap at MISSED at once from every direction, frozen mid-air in a dramatic
+radial composition, MISSED stands still in the center, silent, eyes calm, a split second before
+he strikes. + STYLE
+```
+8. **Ответный удар:**
+```
+MISSED moves in a blur, a single strike, the attacking fake clones are blasted outward in a ring
+shockwave, speed lines radiating from him, impact flash. + STYLE
+```
+9. **Окружили:**
 ```
 The lights go dark, only MISSED's black eyes reflect the light, dozens of fake clones close in on
 him from all sides, the spectators cover their mouths in fear. + STYLE
 ```
-6. **Пробуждение:**
+10. **Пробуждение:**
 ```
 Extreme close-up of MISSED's black eye, a reflection of lightning inside, then a white-blue aura
 erupts, his ears glow, debris rises from the floor. + STYLE
 ```
-7. **Возвращение подарков:**
+11. **Возвращение подарков:**
 ```
 Hundreds of colorful gifts burst out of defeated clones and fly in glowing arcs toward the cheering
 spectators in the stands, confetti of chat bubbles, triumphant mood. + STYLE
 ```
-8. **Финал:**
+12. **Финал:**
 ```
-MISSED back on the couch in the dark room, satisfied smile, the phone buzzes again with a new
-message "Missed, there's another one...", he rolls his eyes. + STYLE
+MISSED back in the dark room, silent, a faint satisfied smile, the phone buzzes again with a new
+message "Missed, there's another one...", he silently rolls his eyes. + STYLE
 ```
 
 ---
@@ -373,11 +402,22 @@ message "Missed, there's another one...", he rolls his eyes. + STYLE
 
 Прикладывайте лист персонажа и кадр босса. Длина каждой сцены 5–8 секунд, потом режем под бит.
 
-1. **Облёт при выходе:**
+1. **Приземление и облёт:**
 ```
-Cinematic 3D: the camera orbits 360 degrees around small calm MISSED standing in the center of the
-ARENA, hundreds of fake clones around the ring, spotlights sweep, spam ash falling, slow and epic.
-+ STYLE 3D
+Cinematic 3D: MISSED falls from a glowing pixel portal in the sky and lands on one knee in the
+center of a gigantic ARENA, the floor cracks, dust rises. He slowly stands up, silent. The camera
+orbits 360 degrees around him: hundreds of fake clones encircle him, laughing, giggling and pointing.
+Spotlights sweep, spam ash falling. + STYLE 3D
+Audio: heavy landing impact, then a chorus of mocking laughter and giggles from the clones,
+crowd murmur, no music, MISSED makes no sound.
+```
+1а. **Фейки бросаются:**
+```
+Cinematic 3D: the laughter stops abruptly, all the fake clones charge at MISSED at once from every
+side, he stands still, then a single blur-fast strike sends a shockwave that throws them all back,
+slow motion at the moment of impact. + STYLE 3D
+Audio: battle cries without words, running footsteps, a deep whoosh, a massive impact boom,
+MISSED makes no sound.
 ```
 2. **Появление босса:**
 ```
@@ -420,6 +460,34 @@ impact flash, keep the character's face and proportions unchanged.
 ```
 Действия: «sword slash and clones bursting», «hypnotic spiral spreading», «lightning strikes»,
 «aura exploding», «slow walk forward», «clones closing in».
+
+## Звук
+
+Музыка главная, звуки лежат под ней и подчёркивают удары.
+
+- **Мисед молчит.** Никаких реплик, криков и вздохов вслух. От него слышны только удары, свист
+  оружия и гул ауры.
+- **Сообщения в начале:** вибрация телефона и звук уведомлений, на каждое сообщение свой.
+- **Приземление на арену:** глухой тяжёлый удар и треск пола.
+- **Фейки:**
+  - разные смешки: хихиканье, гогот, писклявое «хи-хи», злорадное «хе-хе»;
+  - насмешливый гул толпы;
+  - когда бросаются в атаку, боевые выкрики без слов и топот;
+  - побеждённые фейки взвизгивают и рассыпаются со звуком глитча.
+- **Оружие:**
+  - световой меч гудит и свистит при взмахе;
+  - гипноспираль звучит «вязко», с эхом;
+  - череп бьёт треском молний;
+  - кукла вуду — укол иглы и стон босса;
+  - золотая рука — металлический звон и самый мощный удар в ролике.
+- **Босс:** низкий рёв, тяжёлые шаги, от которых трясётся камера.
+- **Финальный удар:** перед ним полная тишина на один удар музыки, потом взрыв.
+
+**Где взять звуки:**
+- Gemini/Veo генерирует звук вместе с видео. Для этого в 3D-промптах есть строка `Audio:`.
+- В нашем паке есть свисты, удары, глитчи и нарастания.
+- Смеха и выкриков в паке нет. Их можно сгенерировать в Fish Audio (платно, сначала покажу цену)
+  или взять из звука, который сгенерирует Veo.
 
 ## Монтаж
 

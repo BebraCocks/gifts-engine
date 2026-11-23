@@ -54,6 +54,25 @@
 Cinematic 3D animated movie shot, 8 seconds, vertical 9:16. Use the attached keyframes in order: sleeping, phone lights up, reaching for the phone, holding the phone, close-up of the face. 0-2 s: complete stillness, Missed sleeps peacefully in the moonlit bedroom, only dust particles float in the moonbeam. 2-3 s: the smartphone on the bedside table suddenly lights up with a cold blue glow and buzzes, the light spills over the room, one of his long ears twitches. 3-5 s: his huge black eyes snap open, he sits up in one smooth motion and reaches for the phone. 5-6.5 s: he picks it up and holds it with both hands, the blue screen light on his face. 6.5-8 s: slow dramatic push-in to an extreme close-up of his face, notification bubbles reflected in his glossy black eyes, his eyes slowly narrow. Keep the character, room and lighting exactly as in the keyframes. Smooth cinematic camera, shallow depth of field, volumetric moonlight. Audio: quiet room tone, phone vibration buzz. No dialogue, no music, Missed makes no sound.
 ```
 
+### Плашки сообщений через ChatGPT (автор, 2026-11-23)
+
+Прозрачный фон, приложить `refs/frames/3d_05_closeup.jpg` как референс стиля. Анимацию появления делаем в монтаже.
+
+**Плашка 1**
+```
+Use the attached image only as a style and color reference. Create a single 3D chat message bubble as a standalone UI element on a fully transparent background (PNG with alpha). Style: glossy dark-glass messenger bubble with soft rounded corners and a small tail at the bottom, deep navy-blue semi-transparent glass body, glowing cold blue neon rim light, subtle inner glow and reflections, soft blue outer glow, matching the moonlit night mood and cinematic 3D lighting of the reference. Inside the bubble, bold clean white Russian text in two lines, perfectly spelled exactly as written: "Мисед, меня заскамил / твой двойник!". The text is large and easy to read. No avatar, no phone, no background scene, no extra text or icons. Wide horizontal format, the bubble fills most of the image.
+```
+
+**Плашка 2**
+```
+Use the attached image only as a style and color reference. Create a single 3D chat message bubble as a standalone UI element on a fully transparent background (PNG with alpha). Style: glossy dark-glass messenger bubble with soft rounded corners and a small tail at the bottom, deep navy-blue semi-transparent glass body, glowing cold blue neon rim light, subtle inner glow and reflections, soft blue outer glow, matching the moonlit night mood and cinematic 3D lighting of the reference. Inside the bubble, bold clean white Russian text in two lines, perfectly spelled exactly as written: "Мисед, фейк забрал / мой подарок!". The text is large and easy to read. No avatar, no phone, no background scene, no extra text or icons. Wide horizontal format, the bubble fills most of the image.
+```
+
+**Плашка 3**
+```
+Use the attached image only as a style and color reference. Create a single 3D chat message bubble as a standalone UI element on a fully transparent background (PNG with alpha). Style: glossy dark-glass messenger bubble with soft rounded corners and a small tail at the bottom, deep navy-blue semi-transparent glass body, glowing cold blue neon rim light, subtle inner glow and reflections, soft blue outer glow, matching the moonlit night mood and cinematic 3D lighting of the reference. Inside the bubble, bold clean white Russian text in two lines, perfectly spelled exactly as written: "Он сказал, что улучшит / мой подарок...". The text is large and easy to read. No avatar, no phone, no background scene, no extra text or icons. Wide horizontal format, the bubble fills most of the image.
+```
+
 ### Втягивание в телефон: ключевые кадры (приложить `refs/frames/3d_05_closeup.jpg` и `3d_04_holding.jpg`)
 
 Видео спальни из Gemini готово (9/10), черновик сцены: `draft_bedroom.py`.

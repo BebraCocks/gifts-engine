@@ -113,194 +113,195 @@ him, extreme low angle, the giant boss looms above. + STYLE
 
 ## 3. Двойники: 20 листов по 3 фейка
 
-**Чёрное худи носит только настоящий Мисед.** У каждого фейка своя одежда и свой цвет под его «тему»,
+**Чёрное худи и персиковая кожа только у настоящего Миседа.** У каждого фейка свой цвет кожи, своя одежда
+и свой цвет одежды под его «тему»,
 поэтому их видно издалека, и настоящий выделяется в толпе. Лицо у всех как у Миседа, телосложение в
 основном тоже, отличаются рост и ширина, у четверых третья рука или нога.
 Каждый раз прикладывайте лист персонажа `refs/missed_sheet.png`. Готовый лист режем на три кадра.
 
 **Лист 1**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a low-resolution pixelated copy with glitchy jpeg artifacts, wearing a bright green tracksuit, slightly taller than Missed.
-Center: a fake blue checkmark badly drawn with a marker on his forehead, wearing a plain white T-shirt and blue jeans, a bit shorter.
-Right: mismatched eyes, one huge and one tiny, wearing a red flannel shirt and khaki shorts, wider shoulders.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: light blue skin, a low-resolution pixelated copy with glitchy jpeg artifacts, wearing a bright green tracksuit, slightly taller than Missed.
+Center: lime green skin, a fake blue checkmark badly drawn with a marker on his forehead, wearing a plain white T-shirt and blue jeans, a bit shorter.
+Right: lavender purple skin, mismatched eyes, one huge and one tiny, wearing a red flannel shirt and khaki shorts, wider shoulders.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 2**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: one ear pointing up and the other down, wearing a yellow raincoat and rubber boots, even skinnier.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: mint green skin, one ear pointing up and the other down, wearing a yellow raincoat and rubber boots, even skinnier.
 Center: green skin like a color copy error, wearing an orange jumpsuit.
-Right: ears sticking upward like a rabbit, wearing pink pajamas and bunny slippers, a little chubby belly.
+Right: bubblegum pink skin, ears sticking upward like a rabbit, wearing pink pajamas and bunny slippers, a little chubby belly.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 3**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a glitching body with RGB split and scanlines, wearing a purple windbreaker, tall and lanky.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: teal skin, a glitching body with RGB split and scanlines, wearing a purple windbreaker, tall and lanky.
 Center: drawn in crayon like a child's sketch, wearing a striped kids' sweater, short and stocky.
-Right: stretched vertically like a wrongly resized image, wearing a grey business suit.
+Right: cool grey skin, stretched vertically like a wrongly resized image, wearing a grey business suit.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 4**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: an upside-down face, wearing a Hawaiian shirt and sandals.
-Center: three ears, wearing a denim jacket and jeans, hunched posture.
-Right: a head too small for the body, wearing a gym tank top and joggers.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: coral red skin, an upside-down face, wearing a Hawaiian shirt and sandals.
+Center: sky blue skin, three ears, wearing a denim jacket and jeans, hunched posture.
+Right: olive green skin, a head too small for the body, wearing a gym tank top and joggers.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 5**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a red cap with the text "Mlssed" and a red varsity jacket, slightly taller.
-Center: a white T-shirt with a cheap print "Misseed" and ripped skinny jeans, a bit shorter.
-Right: a neon green hoodie with the text "Mised_official".
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: turquoise skin, a red cap with the text "Mlssed" and a red varsity jacket, slightly taller.
+Center: magenta skin, a white T-shirt with a cheap print "Misseed" and ripped skinny jeans, a bit shorter.
+Right: pale violet skin, a neon green hoodie with the text "Mised_official".
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 6**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a blue sports jersey with the text "Missed_Support" and shorts, wider shoulders.
-Center: an office shirt with a name tag "Real Missed 100%", three arms.
-Right: a sash "Missed2" over a cheap shiny tuxedo.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: tomato red skin, a blue sports jersey with the text "Missed_Support" and shorts, wider shoulders.
+Center: aqua cyan skin, an office shirt with a name tag "Real Missed 100%", three arms.
+Right: golden yellow skin, a sash "Missed2" over a cheap shiny tuxedo.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 7**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a yellow-and-blue baseball jacket with the text "M1ssed".
-Center: a cape with the text "MissedGifts" over a cheap superhero spandex suit, a little chubby belly.
-Right: an orange hi-vis vest, a hard hat and a huge wrench, shouting "I'll upgrade your gift!".
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: indigo blue skin, a yellow-and-blue baseball jacket with the text "M1ssed".
+Center: peach orange skin, a cape with the text "MissedGifts" over a cheap superhero spandex suit, a little chubby belly.
+Right: emerald green skin, an orange hi-vis vest, a hard hat and a huge wrench, shouting "I'll upgrade your gift!".
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 8**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: fishing waders and a bucket hat, holding a fishing rod with a glowing link on the hook, three legs.
-Center: a white shirt, blue tie, headset and a badge "Telegram Support".
-Right: a giant QR code on his forehead, wearing a grey tech-bro zip vest.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: rose pink skin, fishing waders and a bucket hat, holding a fishing rod with a glowing link on the hook, three legs.
+Center: steel blue skin, a white shirt, blue tie, headset and a badge "Telegram Support".
+Right: lemon yellow skin, a giant QR code on his forehead, wearing a grey tech-bro zip vest.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 9**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a red Santa suit carrying a sack of stolen gifts, short and round.
-Center: a brown poncho, holding a sign "send 100 stars".
-Right: a sparkly gold game-show host blazer, spinning a fake lottery wheel.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: crimson red skin, a red Santa suit carrying a sack of stolen gifts, short and round.
+Center: sand beige skin, a brown poncho, holding a sign "send 100 stars".
+Right: neon green skin, a sparkly gold game-show host blazer, spinning a fake lottery wheel.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 10**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a brown lawyer suit and glasses, holding a contract scroll "sign here".
-Center: a neon pink tracksuit, shouting into a megaphone "free NFT".
-Right: a red courier uniform, holding a gift box with a trap inside.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: royal purple skin, a brown lawyer suit and glasses, holding a contract scroll "sign here".
+Center: hot pink skin, a neon pink tracksuit, shouting into a megaphone "free NFT".
+Right: cobalt blue skin, a red courier uniform, holding a gift box with a trap inside.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 11**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a purple fortune-teller robe and turban, holding a crystal ball "guaranteed profit".
-Center: a white suit and gold sunglasses like a crypto influencer, holding a stack of fake screenshots, three arms.
-Right: a green banker vest and visor, counting on an abacus.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: amber orange skin, a purple fortune-teller robe and turban, holding a crystal ball "guaranteed profit".
+Center: silver grey skin, a white suit and gold sunglasses like a crypto influencer, holding a stack of fake screenshots, three arms.
+Right: jade green skin, a green banker vest and visor, counting on an abacus.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 12**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a white doctor coat and stethoscope, sign "account check-up".
-Center: a beige trench coat and fedora, hugging a piggy bank labeled "seed phrase".
-Right: red laser eyes, a thick gold chain and a white tracksuit.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: cherry red skin, a white doctor coat and stethoscope, sign "account check-up".
+Center: lilac skin, a beige trench coat and fedora, hugging a piggy bank labeled "seed phrase".
+Right: chartreuse skin, red laser eyes, a thick gold chain and a white tracksuit.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 13**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: sunglasses, a gold grill and a leopard print jacket.
-Center: a samurai topknot, a blue kimono and a wooden sword.
-Right: a leather biker jacket with spikes and a red bandana.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: navy blue skin, sunglasses, a gold grill and a leopard print jacket.
+Center: salmon pink skin, a samurai topknot, a blue kimono and a wooden sword.
+Right: charcoal grey skin, a leather biker jacket with spikes and a red bandana.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 14**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a pirate coat, an eye patch and a hook hand, three legs.
-Center: a cowboy hat, a brown leather vest and twin water pistols, bow-legged stance.
-Right: a dark blue ninja outfit and mask, only the black eyes visible.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: cyan skin, a pirate coat, an eye patch and a hook hand, three legs.
+Center: mustard yellow skin, a cowboy hat, a brown leather vest and twin water pistols, bow-legged stance.
+Right: plum purple skin, a dark blue ninja outfit and mask, only the black eyes visible.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 15**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a ski mask and a black-and-white striped robber shirt, carrying a loot bag.
-Center: a red satin boxing robe and red boxing gloves.
-Right: a silver cyber jacket, a glowing visor and neon tubes.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: brick red skin, a ski mask and a black-and-white striped robber shirt, carrying a loot bag.
+Center: seafoam green skin, a red satin boxing robe and red boxing gloves.
+Right: electric blue skin, a silver cyber jacket, a glowing visor and neon tubes.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 16**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: knight armor and helmet made of cardboard.
-Center: a Viking helmet, a fur vest and a plastic axe.
-Right: a green wrestling singlet and a championship belt made of tinfoil.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: tangerine skin, knight armor and helmet made of cardboard.
+Center: dusty pink skin, a Viking helmet, a fur vest and a plastic axe.
+Right: moss green skin, a green wrestling singlet and a championship belt made of tinfoil.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 17**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a huge fur coat and rings on every finger.
-Center: a purple velvet suit, a top hat and a monocle like a fake millionaire.
-Right: a tiny body and a gigantic head, wearing a yellow baby onesie.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: violet skin, a huge fur coat and rings on every finger.
+Center: ice blue skin, a purple velvet suit, a top hat and a monocle like a fake millionaire.
+Right: apricot skin, a tiny body and a gigantic head, wearing a yellow baby onesie.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 18**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a hyper-muscular body with the original small face, a tight white tank top (mini-boss).
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: forest green skin, a hyper-muscular body with the original small face, a tight white tank top (mini-boss).
 Center: made of melted dripping wax, wearing a waiter outfit with a bow tie.
-Right: inflatable like a pool toy, wearing flamingo swim shorts.
+Right: denim blue skin, inflatable like a pool toy, wearing flamingo swim shorts.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
 **Лист 19**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
 Left: made entirely of colorful chat stickers glued together.
 Center: a body made of spam emails, wearing an envelope-print shirt.
 Right: a flat cardboard cutout of Missed held up by a hand from behind.
@@ -310,9 +311,9 @@ Blurred background: an underground fighting arena built from giant chat message 
 
 **Лист 20**
 ```
-Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face (bald egg-shaped head, pale peach-pink skin, huge black eyes, long ears sticking out sideways) and mostly his slim build. IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: a jockey outfit, riding on the back of a smaller clone.
-Center: a swarm of thirty palm-sized clones in tiny orange shirts running like ants.
+Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
+Left: pastel green skin, a jockey outfit, riding on the back of a smaller clone.
+Center: copper skin, a swarm of thirty palm-sized clones in tiny orange shirts running like ants.
 Right: a dark shadow silhouette with glowing fake-checkmark eyes.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
@@ -321,7 +322,7 @@ Blurred background: an underground fighting arena built from giant chat message 
 **Групповой кадр армии:**
 ```
 Hundreds of FAKE clones of MISSED filling the entire ARENA and stands, all in different bright
-outfits and colors (tracksuits, suits, costumes, caps, chains, scam signs), none in a black hoodie, all staring at the single real MISSED standing alone in the
+outfits and different bright skin colors (blue, green, purple, yellow, red...), none in a black hoodie, all staring at the single real MISSED standing alone in the
 center of the ring, top-down epic wide shot. + STYLE
 ```
 

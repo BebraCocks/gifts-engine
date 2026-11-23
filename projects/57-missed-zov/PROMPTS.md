@@ -37,6 +37,30 @@
 
 Готово: `refs/frames/3d_01_bedroom.jpg` (9/10).
 
+### Ключевые кадры спальни для Gemini (приложить `refs/frames/3d_01_bedroom.jpg`)
+
+Кадр 1 — уже готов (спит). Кадры 2–5 делаем по нему, потом отдаём все в Gemini для видео до 10 секунд.
+
+**Кадр 2. Телефон загорается**
+```
+Use the attached image as the exact reference for the character Missed, the bedroom, the camera style and the lighting. Same 3D style, same room, same night mood. The same shot as the reference: Missed is still asleep in bed, eyes closed. The smartphone on the bedside table suddenly lights up with a bright cold blue glow, small vibration lines around it, the blue light spills across the table, the blanket and the side of his face. One of his long ears twitches slightly. Stylized high-quality 3D animated movie render, volumetric light, shallow depth of field, vertical 9:16.
+```
+
+**Кадр 3. Просыпается и садится**
+```
+Use the attached image as the exact reference for the character Missed, the bedroom, the camera style and the lighting. Same 3D style, same room, same night mood. Missed has just woken up: his huge black eyes are open, he is sitting up in bed, the blanket sliding off, his body turned toward the glowing smartphone on the bedside table, one hand reaching for it. Calm, unbothered face, mouth closed. The phone's cold blue glow lights his face from the side. Stylized high-quality 3D animated movie render, volumetric light, shallow depth of field, vertical 9:16.
+```
+
+**Кадр 4. Берёт телефон**
+```
+Use the attached image as the exact reference for the character Missed, the bedroom, the camera style and the lighting. Same 3D style, same room, same night mood. Missed sits on the bed holding the glowing smartphone with both hands in front of his chest, looking down at the screen. The screen faces him, away from the camera. The cold blue light from the screen lights his face and hoodie from below, the rest of the room stays dark blue. Medium shot, camera slightly closer than before. Stylized high-quality 3D animated movie render, volumetric light, shallow depth of field, vertical 9:16.
+```
+
+**Кадр 5. Смотрит в экран (крупно)**
+```
+Use the attached image as the exact reference for the character Missed, the bedroom, the camera style and the lighting. Same 3D style, same room, same night mood. Close-up of Missed's face lit from below by the phone screen in the dark bedroom. His huge glossy black eyes reflect many small glowing notification bubbles. Calm, focused, slightly narrowed eyes, mouth closed. Blue light, soft rim light from the moonlit window behind him. Stylized high-quality 3D animated movie render, volumetric light, shallow depth of field, vertical 9:16.
+```
+
 ### 3D-промпты начала
 
 **3D-1. Лист персонажа в 3D** (приложить `refs/missed_sheet.png`)

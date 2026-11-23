@@ -52,3 +52,5 @@ counter, riser, cartoon-*, glitch, sub-drop, foley уборки и др. Муз�
   кадры раз в 3 с и обе рекламы просмотрены. Drive: https://drive.google.com/file/d/1nsUYsN_Erv3E4kS_8HiMuBgNXQHccaLZ/view
   Синтезированные звуки на слух не проверены — за автором.
 - 2026-11-23 · v5: автор — без рекламы RubUp вообще (`events.AD_STOPS = []`). 116,2 с.
+  Собран `renders/60-fan/fan_v5.mp4` (35,3 МБ, 116,2 с, −16,2 LUFS), полностью декодируется, кадры раз в 4 с просмотрены.
+  Drive: https://drive.google.com/file/d/1di3SdN1bnSUKLD9IaoKMTYgKiP_IisQt/view

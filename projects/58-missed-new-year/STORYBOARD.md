@@ -30,3 +30,6 @@ sub-drop, glitch, исчезновение подарков, power-down, sparkle
 
 ### Статус
 - 2026-11-23: автор сказал «собирай»; озвучка отправлена (`build/review/voice_only.mp3`), полная сборка запущена.
+- 2026-11-23: собран `renders/58-missed-new-year/gift_by_merit_v1.mp4` (1080×1920, 60 fps, H.264 + AAC, 69,3 с),
+  полностью декодируется; проверены кадры раз в 3 с. Просмотр в движении и прослушивание микса — за автором.
+  Загружен в Google Drive «TikTok»: https://drive.google.com/file/d/1gg-DdGaRg1vv63BTwG0vDLGD2KDU4gbG/view

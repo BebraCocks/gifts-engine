@@ -268,7 +268,7 @@ Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the
 Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. No floating objects, signs, text or speech bubbles around them; everything that makes each one different is on his body or in his hands. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
 Left: brick red skin, a ski mask and a black-and-white striped robber shirt, a loot bag in one hand and a crowbar in the other.
 Center: seafoam green skin, a red satin boxing robe and red boxing gloves on his hands.
-Right: electric blue skin, a silver cyber jacket, a glowing visor and neon tubes on the body, holding a neon whip.
+Right: electric blue skin, a silver cyber jacket, a glowing cyan visor and cyan neon tubes on the body, holding a cyan neon whip.
 Background: a perfectly flat solid chroma key magenta #FF00FF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```

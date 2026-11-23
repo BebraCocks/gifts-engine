@@ -12,6 +12,39 @@
 
 ---
 
+## НОВОЕ НАПРАВЛЕНИЕ (решение автора, 2026-11-23): весь ролик в 3D
+
+Идея упрощается: почти все сцены делаем в 3D (Gemini/Veo), музыку автор подберёт новую.
+Начало: Мисед лежит на кровати, телефон на тумбочке. 1,5–2 секунды ничего не происходит,
+потом экран загорается, Мисед садится, берёт телефон и смотрит в него. Над ним на секунду
+всплывают и исчезают надписи-сообщения, каждое озвучено своим голосом Fish Audio
+(озвучка готова: `build/voice/msg_01…08.mp3`, голоса — в `docs` ниже). Мисед молчит.
+
+Голоса сообщений (Fish Audio, модель drama-3):
+- «Девушка» `0786b17418a146dfa037e87e5f112953` — сообщения 1 и 7;
+- «Дерзкий Парень» `6ada82e315e648b6a30a2e2210844cbf` — 2 и 8;
+- «Подросток» `47eabb7c72f247758b9d55fa4eeede28` — 3;
+- «Девушка» `7ac07cd587b2454090ae01f3ab9f0fd4` — 4;
+- «Энергичный подросток» `9bbc7f0a18ba45bc8058ef56638ec030` — 5;
+- «Adam» `4177b0a68e4e46879c8e228ae388934f` — 6.
+
+### 3D-промпты начала
+
+**3D-1. Лист персонажа в 3D** (приложить `refs/missed_sheet.png`)
+```
+Use the attached character sheet as the exact reference. Turn this character into a high-quality stylized 3D animated movie character, like a modern 3D animation feature: Missed, a cartoon alien mascot with a large smooth bald egg-shaped head, pale peach-pink skin with soft subsurface scattering, huge glossy black eyes with reflections, long pointed ears sticking straight out sideways, tiny nose, small sly closed-mouth smile, long slim neck, black oversized hoodie with soft fabric folds, black cargo pants, white sneakers. Character turnaround: front, 3/4, side and back views, full body, plus a face close-up. Neutral light grey studio background, soft studio lighting, clean 3D render, vertical 9:16.
+```
+
+**3D-2. Первый кадр: спальня** (приложить готовый 3D-лист персонажа)
+```
+Use the attached 3D character sheet as the exact reference for Missed. Cinematic 3D animated movie still: a cozy dark bedroom at night, Missed lies on his back on a bed under a blanket, eyes closed, calm. On the bedside table next to him lies a smartphone with a dark screen. Soft blue moonlight from the window, deep shadows, quiet atmosphere. Medium-wide shot from the side, the bed and the bedside table both clearly visible. Stylized high-quality 3D render, volumetric light, shallow depth of field, vertical 9:16.
+```
+
+**3D-3. Видео начала** (Veo, image-to-video из кадра 3D-2)
+```
+Animate this 3D scene. For the first two seconds nothing moves, the room is quiet. Then the smartphone on the bedside table lights up and vibrates, its cold blue glow fills the room. Missed opens his eyes, slowly sits up in bed, reaches over, picks up the phone and looks at the screen with a calm, unbothered face, mouth closed. Slow subtle camera push-in. Keep the character exactly as in the reference. Audio: quiet room tone, then phone vibration buzz. No dialogue, no music, Missed makes no sound.
+```
+
 ## Стиль: оживлённая цветная манга (решение автора, 2026-11-23)
 
 Не чёрно-белая манга и не плавное аниме, а **цветная манга, которую оживили** (motion manga):

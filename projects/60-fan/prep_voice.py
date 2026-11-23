@@ -44,7 +44,7 @@ def squeeze(a, thr_db=-42, max_gap=0.32, keep=0.28):
     return np.concatenate(out)
 
 
-for p in sorted((HERE / 'voice').glob('L*.mp3')):
+for p in sorted((HERE / 'voice').glob('*.mp3')):
     a = squeeze(load(p))
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-',
                     '-af', f'atempo={TEMPO}', str(OUT / (p.stem + '.wav'))], input=a.tobytes(), check=True)

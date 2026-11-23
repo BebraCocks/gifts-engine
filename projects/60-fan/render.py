@@ -21,9 +21,9 @@ from kit import (W, H, FPS, INK, YEL, RED, WHITE, SKIN, HOOD, POO, POO_D, POO_L,
                  spring, lerp, mix, noise, font, text_spr, put, canvas, done, P, oval, rrect, thick, grad_t, hero,
                  head_spr, body_spr, talk_open, panel, label, counter_text, pop, gauge, bar, stamp, draw_caps,
                  blueprint)  # noqa: E402
-from events import AD_STOP  # noqa: E402
+from events import AD_STOPS  # noqa: E402
 
-BR = banner.Breaks([AD_STOP], cy=H / 2)
+BR = banner.Breaks(AD_STOPS, cy=H / 2)
 METAL = (196, 204, 220)
 FAN_BLUE = (90, 170, 240)
 
@@ -169,7 +169,7 @@ def splat_time(i):
         return S['L11'] + 0.2 + (i / 46) * 2.6
     # при повороте брызги идут «волной» слева направо и обратно
     ph = x / W
-    return S['L12'] + 1.0 + ph * 2.4 + (0 if i % 2 else 2.4 * (1 - ph))
+    return S['K12'] + 1.0 + ph * 2.4 + (0 if i % 2 else 2.4 * (1 - ph))
 
 
 def room_front(im, t, dirty=True, light=1.0):
@@ -508,6 +508,8 @@ def sc09(t):
         d.line((x0, y0 + k * 200, x1, y0 + k * 200), fill=(220, 214, 200), width=3)
     # мебель сверху
     d.rounded_rectangle((180, 460, 420, 600), 20, fill=(150, 190, 240), outline=INK, width=5)   # диван
+    d.ellipse((250, 500, 330, 560), fill=(246, 160, 70), outline=INK, width=4)                 # кот спит
+    label(im, 'кот', 290, 630, 36, (120, 110, 100), 0)
     d.rectangle((640, 440, 900, 480), fill=(40, 40, 60))                                        # ТВ
     d.rounded_rectangle((720, 900, 900, 1180), 16, fill=(240, 200, 150), outline=INK, width=5)  # кровать
     # вентилятор сверху
@@ -559,7 +561,7 @@ def eye(im, cx, cy, r, lid):
 
 def sc10(t):
     """Моргание (1/3 с) против брызг (1/7 с)."""
-    u = t - S['L10']
+    u = t - S['K10']
     im = blueprint(t, (24, 30, 60), (50, 30, 70))
     # циклический повтор: брызги долетают раньше, чем закрылся глаз
     cyc = 1.6
@@ -608,7 +610,7 @@ def sc11(t):
 
 def sc12(t):
     """Режим поворота: разбрызгиватель обходит всю комнату."""
-    u = t - S['L12']
+    u = t - S['K12']
     im = grad_t((214, 228, 246), (200, 216, 240))
     room_front(im, t)
     yaw = 0.9 * math.sin(u * 1.4) if u > 0.8 else 0
@@ -623,6 +625,12 @@ def sc12(t):
             pts.append((540 + math.cos(a) * rr, 1300 + math.sin(a) * rr * 0.9, r * (1 - ph * 0.5)))
         drops(im, pts)
     label(im, 'РЕЖИМ ПОВОРОТА', 540, 1700, 72, WHITE, 8, pop(u - 0.4), alpha=1.0)
+    dur12 = E['K12'] - S['K12']
+    for j, (txt, x, y) in enumerate((('ТЕБЕ', 300, 460), ('ДРУЗЬЯМ', 790, 520), ('КОТУ', 280, 1120),
+                                     ('ДАЖЕ ПОТОЛКУ', 760, 380))):
+        v = u - (dur12 * 0.45 + j * 0.45)
+        if v > 0:
+            put(im, text_spr(txt, 62, YEL, 'Heavy', 8), x, y, pop(v), (-6, 5, -4, 4)[j])
     d = ImageDraw.Draw(im)
     d.arc((340, 1560, 740, 1660), 200, 340, fill=YEL + (255,), width=8)
     return im
@@ -708,45 +716,328 @@ def bin_spr():
     return done(im)
 
 
+def check(im, x, y, ok=True):
+    d = ImageDraw.Draw(im)
+    d.ellipse((x - 26, y - 26, x + 26, y + 26), fill=((70, 190, 90) if ok else RED) + (255,), outline=INK, width=4)
+    if ok:
+        d.line((x - 12, y, x - 3, y + 10, x + 13, y - 10), fill=WHITE, width=7, joint='curve')
+    else:
+        d.line((x - 10, y - 10, x + 10, y + 10), fill=WHITE, width=7)
+        d.line((x + 10, y - 10, x - 10, y + 10), fill=WHITE, width=7)
+
+
 def sc14(t):
-    """Уборка полдня; вентилятор — в мусорку."""
-    u = t - S['L14']
-    dur = E['L14'] - S['L14']
+    """Уборка: стены и потолок 100 %, репутация 0 %; вентилятор — в мусорку."""
+    u = t - S['K14']
+    dur = E['K14'] - S['K14']
     im = grad_t((214, 228, 246), (200, 216, 240))
     room_front(im, t, dirty=False)
-    # грязь уходит по мере уборки
-    clean = eo(u / (dur * 0.6))
+    clean = eo(u / (dur * 0.35))
     for i, (x, y, r, seed, grp) in enumerate(SPLATS):
         if (i / len(SPLATS)) > clean:
             put(im, splat_spr(seed % 12), x, y, r / 40, (seed * 37) % 360)
-    # часы: стрелки крутятся
-    d = ImageDraw.Draw(im)
-    cx, cy, R = 850, 300, 110
-    d.ellipse((cx - R - 8, cy - R - 8, cx + R + 8, cy + R + 8), fill=INK)
-    d.ellipse((cx - R, cy - R, cx + R, cy + R), fill=WHITE)
-    a = math.radians(-90 + u * 720)
-    d.line((cx, cy, cx + math.cos(a) * 90, cy + math.sin(a) * 90), fill=INK, width=8)
-    a = math.radians(-90 + u * 60)
-    d.line((cx, cy, cx + math.cos(a) * 60, cy + math.sin(a) * 60), fill=RED, width=10)
-    label(im, 'полдня', cx, cy + R + 50, 50, INK, 0)
-    # герой с ведром
+    # шкалы прогресса уборки
+    panel(im, (50, 360, 1030, 860), (20, 24, 40, 235), ol=WHITE, w=4)
+    rows = (('Стены', eo(u / 1.4), 0.0), ('Потолок', eo((u - 0.6) / 1.4), 0.6),
+            ('Репутация перед друзьями', 0.0, 2.2))
+    for i, (name, frac, t0) in enumerate(rows):
+        y = 470 + i * 140
+        a = cl((u - t0) / 0.3)
+        if a <= 0:
+            continue
+        rep = i == 2
+        if rep:   # шкала дёргается, но не растёт
+            frac = 0.03 + 0.02 * max(0, math.sin(u * 9))
+        bar(im, 90, y, 640, 40, frac, (90, 200, 110) if not rep else RED, name, '', a)
+        label(im, f'{int(frac * 100) if not rep else 0}%', 830, y + 20, 56, YEL if not rep else RED, 0, alpha=a)
+        if frac > 0.99 or rep:
+            check(im, 960, y + 20, not rep)
+    if u > 3.0:
+        stamp(im, 'НИКОГДА', 600, 1010, u - 3.0, RED, 100, -6)
+    # герой с ведром трёт стену
     sway = 30 * math.sin(t * 10)
-    hero(im, 330 + sway * 0.2, 1500, 0.8, 'strain' if u < dur * 0.6 else 'calm', 0, chair=False)
-    put(im, bucket_spr(), 140, 1700, 0.9)
-    d.ellipse((330 + 180 + sway - 40, 1180 - 30, 330 + 180 + sway + 40, 1180 + 30), fill=(250, 220, 80),
-              outline=INK, width=5)
+    hero(im, 330 + sway * 0.2, 1560, 0.75, 'strain' if u < 3.0 else 'scared', 0, chair=False)
+    put(im, bucket_spr(), 130, 1740, 0.85)
+    d = ImageDraw.Draw(im)
+    d.ellipse((500 + sway - 40, 1240 - 30, 500 + sway + 40, 1240 + 30), fill=(250, 220, 80), outline=INK, width=5)
     # вентилятор летит в мусорку
-    v = u - dur * 0.6
-    put(im, bin_spr(), 860, 1660, 0.9)
+    v = u - dur * 0.72
+    put(im, bin_spr(), 860, 1700, 0.85)
     if v > 0:
         k = eo(v / 0.9)
-        fx = lerp(560, 860, k)
-        fy = lerp(1200, 1560, k) - 300 * math.sin(math.pi * k)
-        put(im, grille_spr(), fx, fy, 0.45 * (1 - 0.3 * k), 300 * k)
-        if k >= 1:
-            stamp(im, 'НА ВЫБРОС', 740, 1380, v - 0.9, RED, 64, 8)
+        fx = lerp(620, 860, k)
+        fy = lerp(1300, 1620, k) - 300 * math.sin(math.pi * k)
+        put(im, grille_spr(), fx, fy, 0.42 * (1 - 0.3 * k), 300 * k)
     else:
-        fan(im, 620, 1250, t, 0.55, 0.0)
+        fan(im, 650, 1320, t, 0.5, 0.0)
+    return im
+
+
+# ------------------------------------------------------------------ новые гэги (v3)
+@functools.lru_cache(32)
+def friend_spr(kind='girl', expr='smile'):
+    """Друг/подруга по пояс, 440x560, центр лица (220, 230)."""
+    im, d = canvas(440, 560)
+    cx, cy = 220, 230
+    shirt = (240, 140, 60) if kind == 'girl' else (130, 90, 200)
+    hair = (120, 60, 30) if kind == 'girl' else (30, 26, 40)
+    if kind == 'girl':
+        rrect(d, (cx - 140, cy - 120, cx + 140, cy + 200), 110, hair)
+    rrect(d, (cx - 170, cy + 160, cx + 170, 560), 80, shirt)
+    rrect(d, (cx - 36, cy + 90, cx + 36, cy + 170), 10, SKIN)
+    oval(d, cx, cy, 120, 126, SKIN)
+    if kind == 'girl':
+        d.chord(P(cx - 126, cy - 136, cx + 126, cy + 20), 180, 360, fill=hair)
+        d.chord(P(cx - 60, cy - 120, cx + 130, cy - 10), 180, 360, fill=hair)
+    else:
+        for k in range(9):
+            a = math.radians(200 + k * 17.5)
+            oval(d, cx + math.cos(a) * 112, cy - 20 + math.sin(a) * 112, 40, 40, hair, None)
+    ey = cy - 10
+    if expr == 'smile':
+        for s_ in (-1, 1):
+            oval(d, cx + s_ * 44, ey, 13, 16, INK, None)
+            oval(d, cx + s_ * 44 + 4, ey - 6, 5, 5, WHITE, None)
+        d.chord(P(cx - 50, cy + 30, cx + 50, cy + 90), 0, 180, fill=(140, 40, 50), outline=INK, width=5 * SS)
+    elif expr == 'shock':
+        for s_ in (-1, 1):
+            oval(d, cx + s_ * 46, ey - 4, 26, 32, WHITE, INK, 5)
+            oval(d, cx + s_ * 46, ey - 2, 7, 8, INK, None)
+        oval(d, cx, cy + 70, 24, 30, (120, 40, 50))
+    else:   # disgust: прищур, язык
+        for s_ in (-1, 1):
+            d.line(P(cx + s_ * 46 - 22, ey - 6 * s_, cx + s_ * 46 + 22, ey + 6 * s_), fill=INK, width=8 * SS)
+        d.arc(P(cx - 50, cy + 40, cx + 50, cy + 90), 200, 340, fill=INK, width=7 * SS)
+        oval(d, cx + 10, cy + 84, 22, 24, (236, 110, 120))
+    for s_ in (-1, 1):
+        d.ellipse(P(cx + s_ * 78 - 18, cy + 30, cx + s_ * 78 + 18, cy + 46), fill=(240, 150, 140, 140))
+    return done(im)
+
+
+FRECKLES = [(random.Random(i).uniform(-95, 95), random.Random(i + 31).uniform(-60, 80),
+             random.Random(i + 77).uniform(4, 11)) for i in range(34)]
+
+
+def freckles(im, cx, cy, scale, k, seed=0):
+    d = ImageDraw.Draw(im)
+    n = int(len(FRECKLES) * k)
+    for i in range(n):
+        fx, fy, r = FRECKLES[(i + seed * 7) % len(FRECKLES)]
+        r *= scale
+        x, y = cx + fx * scale, cy + fy * scale
+        d.ellipse((x - r, y - r, x + r, y + r), fill=POO_D)
+        d.ellipse((x - r * 0.6, y - r * 0.7, x + r * 0.5, y + r * 0.3), fill=POO)
+
+
+def scF1(t):
+    """Друзья рядом — «веснушки»."""
+    u = t - S['F1']
+    dur = E['F1'] - S['F1']
+    im = room_bg(t)
+    hit = 1.0
+    k = eo((u - hit) / 1.2)
+    for i, (kind, x) in enumerate((('girl', 285), ('boy', 800))):
+        expr = 'smile' if u < hit else ('shock' if u < dur * 0.62 else ('disgust' if i else 'smile'))
+        bob = 6 * math.sin(t * 3 + i)
+        put(im, friend_spr(kind, expr), x, 1300 + bob, 1.3)
+        freckles(im, x, 1300 - 65 + bob, 1.3, k, i)
+        if u > dur * 0.8:   # аромат — волнистые линии
+            d = ImageDraw.Draw(im)
+            for j in range(3):
+                xs = x - 60 + j * 60
+                pts = [(xs + 14 * math.sin(yy / 18 + t * 6 + j), yy) for yy in range(860, 980, 8)]
+                d.line(pts, fill=(130, 170, 60, 230), width=7)
+    # брызги летят на лица
+    if hit - 0.4 < u < hit + 0.2:
+        v = (u - hit + 0.4) / 0.6
+        pts = [(540 + dx * 500 * v, 1500 - 300 * v + dy * 120, r) for dx, dy, r in DROPS[:70]]
+        drops(im, pts)
+    # «фильтр» как в соцсетях
+    if u > hit + 0.6:
+        panel(im, (190, 380, 890, 500), (255, 255, 255, 240), r=60)
+        label(im, 'ФИЛЬТР: ВЕСНУШКИ', 540, 440, 58, (200, 90, 140), 0, pop(u - hit - 0.6))
+    tags = (('модные', 0.5), ('натуральные', 0.66), ('с ароматом', 0.82))
+    for j, (txt, f) in enumerate(tags):
+        v = u - dur * f
+        if v > 0:
+            y = 580 + j * 100
+            put(im, text_spr(txt, 60, INK, 'Heavy', 0), 520, y, pop(v))
+            check(im, 520 + 200 if j != 1 else 520 + 230, y, True)
+    return im
+
+
+@functools.lru_cache(8)
+def cat_spr(eyes='sleep'):
+    im, d = canvas(560, 360)
+    org = (246, 160, 70)
+    thick(d, [(470, 260), (530, 200), (520, 120)], 34, org)            # хвост
+    oval(d, 300, 250, 200, 90, org)                                    # туловище
+    for x in (180, 230):
+        oval(d, x, 320, 34, 22, org)                                   # лапы
+    for s_ in (-1, 1):                                                 # уши
+        d.polygon([tuple(P(150 + s_ * 50, 110)), tuple(P(150 + s_ * 70, 40)), tuple(P(150 + s_ * 10, 80))],
+                  fill=org, outline=INK, width=6 * SS)
+    oval(d, 150, 170, 100, 88, org)                                    # голова
+    if eyes == 'sleep':
+        for s_ in (-1, 1):
+            d.arc(P(150 + s_ * 40 - 20, 150, 150 + s_ * 40 + 20, 180), 20, 160, fill=INK, width=6 * SS)
+    else:
+        for s_ in (-1, 1):
+            oval(d, 150 + s_ * 40, 165, 18, 16, (180, 230, 90), INK, 4)
+            oval(d, 150 + s_ * 40, 165, 5, 13, INK, None)
+            d.line(P(150 + s_ * 40 - 24, 132 + (12 if s_ > 0 else -0), 150 + s_ * 40 + 24, 132 + (0 if s_ > 0 else 12)),
+                   fill=INK, width=8 * SS)
+    oval(d, 150, 195, 10, 7, (230, 110, 120), None)
+    for s_ in (-1, 1):
+        for k in range(2):
+            d.line(P(150 + s_ * 30, 200 + k * 10, 150 + s_ * 95, 192 + k * 18), fill=INK, width=3 * SS)
+    return done(im)
+
+
+SPOTS = [(random.Random(i).uniform(-170, 170), random.Random(i + 9).uniform(-60, 60), random.Random(i + 4).uniform(10, 20))
+         for i in range(16)] + [(random.Random(i).uniform(-90, -10), random.Random(i + 2).uniform(-120, -50),
+                                 random.Random(i + 6).uniform(7, 12)) for i in range(5)]
+
+
+def scC1(t):
+    """Кот на диване становится леопардом."""
+    u = t - S['C1']
+    dur = E['C1'] - S['C1']
+    im = room_bg(t)
+    d = ImageDraw.Draw(im)
+    # диван
+    d.rounded_rectangle((80, 1060, 1000, 1300), 50, fill=(110, 150, 220), outline=INK, width=8)
+    d.rounded_rectangle((80, 1240, 1000, 1500), 40, fill=(90, 130, 200), outline=INK, width=8)
+    for x in (60, 960):
+        d.rounded_rectangle((x, 1180, x + 80, 1520), 30, fill=(110, 150, 220), outline=INK, width=8)
+    angry = u > dur * 0.55
+    cx, cy = 540, 1250
+    tail = 0 if not angry else 6 * math.sin(t * 14)
+    put(im, cat_spr('angry' if angry else 'sleep'), cx, cy - 40 + 2 * math.sin(t * 2), 1.3, tail * 0.2)
+    # пятна-розетки
+    k = eo((u - 0.4) / 1.0)
+    n = int(len(SPOTS) * k)
+    for i in range(n):
+        sx, sy, r = SPOTS[i]
+        x, y = cx + 1.3 * (30 + sx), cy - 40 + 1.3 * (70 + sy)
+        if i >= 16:
+            x, y = cx + 1.3 * (-100 + sx), cy - 40 + 1.3 * (sy + 40)
+        d.ellipse((x - r - 4, y - r - 4, x + r + 4, y + r + 4), fill=POO_D)
+        d.ellipse((x - r * 0.55, y - r * 0.55, x + r * 0.55, y + r * 0.55), fill=(200, 130, 60))
+    if not angry:
+        for j in range(3):
+            ph = (t * 0.7 + j / 3) % 1
+            label(im, 'z', cx - 120 + ph * 80, cy - 140 - ph * 160, int(40 + ph * 30), WHITE, 5, alpha=1 - ph)
+    # КОТ -> ЛЕОПАРД
+    panel(im, (160, 400, 920, 600), (255, 255, 255, 240))
+    if u < 1.4:
+        label(im, 'КОТ', 540, 500, 110, INK, 0)
+    else:
+        label(im, 'КОТ', 330, 500, 80, (160, 160, 170), 0)
+        d = ImageDraw.Draw(im)
+        d.line((250, 505, 410, 495), fill=RED, width=10)
+        label(im, 'ЛЕОПАРД', 670, 500, 90, (200, 120, 40), 0, pop(u - 1.4))
+    if angry:
+        stamp(im, 'ОБИДЕЛСЯ НАВСЕГДА', 540, 820, u - dur * 0.55 - 0.3, RED, 64, -5)
+    return im
+
+
+def scT1(t):
+    """Телевизор: один канал — коричневый."""
+    u = t - S['T1']
+    dur = E['T1'] - S['T1']
+    im = grad_t((40, 40, 60), (20, 20, 34))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 1450, W, H), fill=(90, 64, 46))
+    d.rounded_rectangle((70, 560, 1010, 1180), 30, fill=(24, 26, 36), outline=INK, width=10)
+    # коричневый «шум» на экране
+    rnd = np.random.default_rng(int(t * 20))
+    noise_ = rnd.random((36, 60))
+    pal = np.array([POO_D, POO, POO_L], np.float32)
+    img = pal[(noise_ * 2.999).astype(int)]
+    scr = Image.fromarray(img.astype(np.uint8), 'RGB').resize((880, 560), Image.NEAREST).convert('RGBA')
+    im.alpha_composite(scr, (100, 590))
+    for k in range(4):
+        put(im, splat_spr(k + 3), 180 + k * 230, 700 + (k % 2) * 300, 0.7, k * 60)
+    d.rectangle((420, 1180, 660, 1240), fill=INK)
+    d.rounded_rectangle((300, 1240, 780, 1280), 12, fill=INK)
+    # номер канала растёт, картинка та же
+    ch = 1 + int(max(0, u - 0.2) / 0.35)
+    put(im, text_spr(f'КАНАЛ {min(ch, 99)}', 52, (120, 255, 120), 'Heavy', 5), 840, 650)
+    # пульт в руке
+    hx, hy = 820, 1560
+    d.rounded_rectangle((hx - 50, hy - 180, hx + 50, hy + 120), 30, fill=(50, 50, 60), outline=INK, width=6)
+    for k in range(6):
+        d.ellipse((hx - 30 + (k % 2) * 40, hy - 140 + (k // 2) * 50, hx - 10 + (k % 2) * 40, hy - 120 + (k // 2) * 50),
+                  fill=(200, 200, 210) if int(u / 0.35) % 6 != k else RED)
+    d.ellipse((hx - 90, hy + 40, hx + 90, hy + 200), fill=SKIN, outline=INK, width=6)
+    v = u - dur * 0.62
+    if v > 0:
+        stamp(im, 'КОРИЧНЕВЫЙ', 540, 1360, v, (200, 130, 70), 100, -5)
+    return im
+
+
+@functools.lru_cache(8)
+def plumber_spr(state='calm'):
+    im, d = canvas(460, 640)
+    cx, cy = 230, 220
+    rrect(d, (cx - 180, cy + 150, cx + 180, 640), 70, (60, 110, 200))          # комбинезон
+    rrect(d, (cx - 110, cy + 150, cx + 110, cy + 300), 20, (230, 230, 240))
+    face = SKIN if state != 'green' else (170, 210, 120)
+    oval(d, cx, cy, 115, 120, face)
+    d.chord(P(cx - 125, cy - 140, cx + 125, cy + 10), 180, 360, fill=RED)        # кепка
+    rrect(d, (cx - 20, cy - 70, cx + 160, cy - 40), 14, RED)
+    oval(d, cx, cy + 50, 70, 22, (90, 60, 40), None)                            # усы
+    for s_ in (-1, 1):
+        if state == 'calm':
+            oval(d, cx + s_ * 42, cy - 10, 12, 14, INK, None)
+        else:
+            d.line(P(cx + s_ * 42 - 18, cy - 20, cx + s_ * 42 + 18, cy), fill=INK, width=7 * SS)
+            d.line(P(cx + s_ * 42 + 18, cy - 20, cx + s_ * 42 - 18, cy), fill=INK, width=7 * SS)
+    oval(d, cx, cy + 18, 20, 16, (230, 160, 140))
+    return done(im)
+
+
+def scP1(t):
+    """Сантехник нюхает — зовёт экзорциста."""
+    u = t - S['P1']
+    dur = E['P1'] - S['P1']
+    im = grad_t((232, 224, 210), (214, 204, 188))
+    d = ImageDraw.Draw(im)
+    # коридор: дверь в твою комнату с зелёной дымкой
+    d.rectangle((640, 520, 1000, 1500), fill=(150, 100, 60), outline=INK, width=10)
+    d.ellipse((660, 1000, 690, 1030), fill=YEL)
+    lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(lay).rectangle((560, 480, 1080, 1560), fill=(150, 170, 80, 110))
+    im.alpha_composite(lay.filter(ImageFilter.GaussianBlur(30)))
+    d = ImageDraw.Draw(im)
+    for j in range(4):
+        ph = (t * 0.6 + j / 4) % 1
+        xs = 640 - ph * 260
+        d.line([(xs + 16 * math.sin(yy / 22 + t * 5 + j), yy) for yy in range(820, 1060, 10)],
+               fill=(130, 160, 60, int(230 * (1 - ph))), width=8)
+    d.rectangle((0, 1500, W, H), fill=(150, 120, 90))
+    sniff = 1.4
+    state = 'calm' if u < sniff else 'green'
+    enter = eo(u / 0.6)
+    sway = 0 if u < sniff + 0.6 else 10 * math.sin(t * 8)
+    # вантуз
+    px = lerp(-200, 330, enter) + 250
+    d.line((px, 1000, px, 1420), fill=(150, 100, 60), width=18)
+    d.chord((px - 70, 1380, px + 70, 1500), 180, 360, fill=RED, outline=INK, width=5)
+    put(im, plumber_spr(state), lerp(-200, 330, enter) + sway, 1200, 1.4, sway * 0.3)
+    if sniff < u < sniff + 1.2:
+        label(im, '*нюх-нюх*', 360, 700, 70, INK, 0, pop(u - sniff), -6)
+    v = u - (sniff + 1.0)
+    if v > 0:
+        # телефон и пузырь
+        d = ImageDraw.Draw(im)
+        d.rounded_rectangle((120, 900, 200, 1060), 14, fill=(30, 30, 40), outline=INK, width=4)
+        panel(im, (80, 400, 700, 640), (255, 255, 255, 245), r=40)
+        d = ImageDraw.Draw(im)
+        d.polygon([(260, 640), (310, 640), (240, 720)], fill=WHITE)
+        label(im, 'Алло,', 390, 470, 60, INK, 0, pop(v))
+        label(im, 'экзорцист?', 390, 560, 74, RED, 0, pop(v - 0.15))
     return im
 
 
@@ -808,11 +1099,11 @@ def sc16(t):
     return im
 
 
-SCENES = [('L01', sc01), ('L02', sc02), ('L03', sc03), ('L04', sc04), ('L05', sc05), ('L06', sc06), ('L07', sc07),
-          ('L08', sc08), ('L09', sc09), ('L10', sc10), ('L11', sc11), ('L12', sc12), ('L13', sc13), ('L14', sc14),
-          ('L15', sc15), ('L16', sc16)]
+SCENES = [('L01', sc01), ('L02', sc02), ('L03', sc03), ('L04', sc04), ('L05', sc05), ('L07', sc07), ('L08', sc08),
+          ('L09', sc09), ('K10', sc10), ('L11', sc11), ('F1', scF1), ('C1', scC1), ('K12', sc12), ('T1', scT1),
+          ('L13', sc13), ('P1', scP1), ('K14', sc14), ('L15', sc15), ('L16', sc16)]
 STARTS = [0.0] + [S[k] - 0.12 for k, _ in SCENES[1:]]
-WIPES = {'L05', 'L09', 'L14', 'L16'}          # L11 идёт сразу после RubUp — без кляксы
+WIPES = {'L05', 'L09', 'L11', 'K14', 'L16'}     # стыки с RubUp (L07, P1) — без кляксы
 
 
 def splash_wipe(im, u, dur=0.6):

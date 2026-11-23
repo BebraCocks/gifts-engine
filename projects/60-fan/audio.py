@@ -13,10 +13,10 @@ import banner
 import sound
 import sfxkit
 from timeline import DUR, ON, END, S, E, TAKES, KEYS
-from events import AD_STOP
+from events import AD_STOPS
 
 SR = 48000
-BR = banner.Breaks([AD_STOP], cy=960)
+BR = banner.Breaks(AD_STOPS, cy=960)
 N = int(round(DUR * SR))
 
 
@@ -71,6 +71,31 @@ def spray(dur, seed=0):
     return st(x / np.abs(x).max())
 
 
+def meow():
+    """Обиженное «мяу»: тон 500→750→420 Гц с гармониками и вибрато."""
+    n = int(0.75 * SR)
+    t = np.arange(n) / SR
+    f = np.interp(t, [0, 0.25, 0.75], [500, 760, 420]) * (1 + 0.02 * np.sin(2 * np.pi * 7 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    x = sum(np.sin(ph * h) / h for h in range(1, 6))
+    x = filt(x, 2500) * np.minimum(1, t / 0.06) * np.minimum(1, (0.75 - t) / 0.2)
+    return st(x / np.abs(x).max())
+
+
+def tv_static(dur, seed=7):
+    r = np.random.default_rng(seed)
+    x = filt(r.standard_normal(int(dur * SR)), 6000) * 0.8
+    return st(x / np.abs(x).max())
+
+
+def sniff(seed=0):
+    r = np.random.default_rng(seed + 50)
+    n = int(0.22 * SR)
+    t = np.arange(n) / SR
+    x = filt(filt(r.standard_normal(n), 1200, 'high'), 5000) * np.sin(np.pi * t / 0.22) ** 2
+    return st(x / np.abs(x).max())
+
+
 def place(buf, a, t, gain_db=0.0):
     i = int(t * SR)
     if i >= len(buf):
@@ -82,7 +107,7 @@ def place(buf, a, t, gain_db=0.0):
 def sfx(kit):
     fx = np.zeros((N, 2))
     A = kit.add
-    wipes = {'L05', 'L09', 'L14', 'L16'}
+    wipes = {'L05', 'L09', 'L11', 'K14', 'L16'}
     for k in KEYS[1:]:
         t = S[k] - 0.12
         if k in wipes:
@@ -91,7 +116,7 @@ def sfx(kit):
         else:
             A(fx, 'whoosh-short', t, align='peak', gain_db=-18, label='смена сцены')
     # гул вентилятора: всё время, где вентилятор крутится (громкость по сценам)
-    hum_gain = {'L01': -20, 'L02': -19, 'L03': -21, 'L05': -23, 'L08': -19, 'L11': -22, 'L12': -20, 'L13': -24,
+    hum_gain = {'L01': -20, 'L02': -19, 'L03': -21, 'L05': -23, 'L08': -19, 'L11': -22, 'K12': -20, 'L13': -24,
                 'L15': -25}
     for k, g in hum_gain.items():
         d = E[k] - S[k] + 0.5
@@ -124,9 +149,6 @@ def sfx(kit):
     A(fx, 'cartoon-move', S['L05'] + 3.2, gain_db=-15, label='присаживается')
     A(fx, 'glitch-text', S['L05'] + 3.6, gain_db=-17, label='цензура')
     A(fx, 'cartoon-move', E['L05'] - 0.4, gain_db=-14, file='falling', label='отпускает')
-    # 6. замедленное падение
-    A(fx, 'downlifter', S['L06'], gain_db=-15, label='slow-mo')
-    A(fx, 'counter', S['L06'] + 0.2, gain_db=-18, label='таймер')
     # 7. удар
     place(fx, whack(1), S['L07'] + 0.25, -6)
     A(fx, 'impact', S['L07'] + 0.25, align='peak', gain_db=-10, label='БАМ')
@@ -146,10 +168,10 @@ def sfx(kit):
     # 10. моргание
     cyc = 1.6
     u = 0.0
-    while u < E['L10'] - S['L10']:
-        place(fx, splat(40 + int(u * 10)), S['L10'] + u + 0.14, -14)
+    while u < E['K10'] - S['K10']:
+        place(fx, splat(40 + int(u * 10)), S['K10'] + u + 0.14, -14)
         u += cyc
-    A(fx, 'error', S['L10'] + 2.0, gain_db=-13, label='НЕ УСПЕЛ')
+    A(fx, 'error', S['K10'] + 2.0, gain_db=-13, label='НЕ УСПЕЛ')
     # 11. стены, шторы, ТВ — и в лицо
     for i in range(46):
         if i % 3 == 0:
@@ -160,24 +182,55 @@ def sfx(kit):
         place(fx, splat(120 + k), S['L11'] + d11 - 3.4 + 1.2 + k * 0.05, -9)
     A(fx, 'voice', S['L11'] + d11 - 1.6, gain_db=-16, label='реакция')
     # 12. режим поворота
-    A(fx, 'transform', S['L12'] + 0.6, gain_db=-14, label='режим поворота')
-    place(fx, spray(6.0, 5), S['L12'] + 0.8, -21)
+    A(fx, 'transform', S['K12'] + 0.6, gain_db=-14, label='режим поворота')
+    place(fx, spray(6.0, 5), S['K12'] + 0.8, -21)
     for k in range(18):
-        place(fx, splat(200 + k), S['L12'] + 1.0 + k * 0.32, -16)
+        place(fx, splat(200 + k), S['K12'] + 1.0 + k * 0.32, -16)
+    # F1. друзья — «веснушки»
+    place(fx, spray(0.7, 11), S['F1'] + 0.6, -15)
+    for k in range(8):
+        place(fx, splat(300 + k), S['F1'] + 1.0 + k * 0.12, -14)
+    A(fx, 'sparkle', S['F1'] + 1.6, gain_db=-14, label='фильтр Веснушки')
+    for j, f in enumerate((0.5, 0.66, 0.82)):
+        A(fx, 'select-soft', S['F1'] + (E['F1'] - S['F1']) * f, gain_db=-13, label='галочка')
+    # C1. кот-леопард
+    for k in range(6):
+        place(fx, splat(400 + k), S['C1'] + 0.4 + k * 0.17, -16)
+    A(fx, 'transform', S['C1'] + 1.4, gain_db=-14, label='КОТ -> ЛЕОПАРД')
+    place(fx, meow(), S['C1'] + (E['C1'] - S['C1']) * 0.55, -9)
+    A(fx, 'impact', S['C1'] + (E['C1'] - S['C1']) * 0.55 + 0.3, align='peak', gain_db=-13, label='ОБИДЕЛСЯ')
+    # T1. телевизор: щелчки пульта, коричневый шум
+    place(fx, tv_static(E['T1'] - S['T1'] + 0.3), S['T1'] - 0.1, -24)
+    u = 0.2
+    while u < E['T1'] - S['T1']:
+        A(fx, 'click', S['T1'] + u, gain_db=-15, label='пульт')
+        u += 0.35 * 2
+    A(fx, 'cartoon-hit', S['T1'] + (E['T1'] - S['T1']) * 0.62, gain_db=-11, label='КОРИЧНЕВЫЙ')
     # 13. запах
     A(fx, 'bed', S['L13'], gain_db=-24, dur=(6, 200), tags=('dark',), label='тяжёлый воздух')
     A(fx, 'sub-drop', E['L13'] - 2.2, gain_db=-14, label='запах в коридоре')
     A(fx, 'voice', E['L13'] - 1.4, gain_db=-15, label='сосед')
-    # 14. уборка и мусорка
-    for k in range(4):
-        A(fx, 'foley', S['L14'] + 0.4 + k * 0.7, gain_db=-17, exclude_tags=('bassy',), label='трёт стены')
-    A(fx, 'spinback', S['L14'] + 0.2, gain_db=-17, label='часы крутятся')
-    d14 = E['L14'] - S['L14']
-    A(fx, 'cartoon-move', S['L14'] + d14 * 0.6, gain_db=-14, label='бросок')
-    A(fx, 'impact', S['L14'] + d14 * 0.6 + 0.9, align='peak', gain_db=-11, label='в мусорку')
+    # 14. уборка: шкалы, «НИКОГДА», мусорка
+    for k in range(3):
+        A(fx, 'foley', S['K14'] + 0.3 + k * 0.6, gain_db=-17, exclude_tags=('bassy',), label='трёт стены')
+    A(fx, 'confirm', S['K14'] + 1.4, gain_db=-15, label='стены 100%')
+    A(fx, 'confirm', S['K14'] + 2.0, gain_db=-15, label='потолок 100%')
+    A(fx, 'error', S['K14'] + 2.3, gain_db=-12, label='репутация 0%')
+    A(fx, 'impact', S['K14'] + 3.0, align='peak', gain_db=-11, label='НИКОГДА')
+    d14 = E['K14'] - S['K14']
+    A(fx, 'cartoon-move', S['K14'] + d14 * 0.72, gain_db=-14, label='бросок')
+    A(fx, 'cartoon-hit', S['K14'] + d14 * 0.72 + 0.9, gain_db=-11, label='в мусорку')
     # 15. идиома
     A(fx, 'scan', S['L15'] + 0.4, gain_db=-16, label='SH*T HITS THE FAN')
     A(fx, 'glitch', S['L15'] + (E['L15'] - S['L15']) * 0.55, gain_db=-14, label='всё к чертям')
+    # P1. сантехник
+    A(fx, 'cartoon-move', S['P1'], gain_db=-15, label='сантехник входит')
+    place(fx, sniff(), S['P1'] + 1.4, -11)
+    place(fx, sniff(1), S['P1'] + 1.75, -11)
+    A(fx, 'glitch-text', S['P1'] + 1.6, gain_db=-17, label='зеленеет')
+    for k in range(4):
+        A(fx, 'select', S['P1'] + 2.4 + k * 0.12, gain_db=-17, label='набирает номер')
+    A(fx, 'popup', S['P1'] + 2.4 + 0.6, gain_db=-12, label='Алло, экзорцист?')
     # 16. мама
     A(fx, 'click', S['L16'] + 1.55, gain_db=-10, label='ручка двери')
     A(fx, 'impact', S['L16'] + 1.9, align='peak', gain_db=-10, label='!')

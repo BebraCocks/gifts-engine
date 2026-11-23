@@ -89,6 +89,12 @@ for t in cues.JUMPS:
 # 6. звонок
 kit.add(fx, 'click', T['s6'] + 0.05, gain_db=-10)
 kit.add(fx, 'select', T['s6'] + 0.15, gain_db=-12)
+# 6b. Олег разводит жертву
+kit.add(fx, 'key-enter', T['sc_msg'], gain_db=-12)
+kit.add(fx, 'popup', T['sc_reply'], gain_db=-9)
+kit.add(fx, 'whoosh', T['sc_fly'] + 0.3, align='peak', gain_db=-12)
+kit.add(fx, 'coin', T['sc_fly'] + 0.6, gain_db=-12)
+kit.add(fx, 'impact', T['sc_stamp'], align='peak', gain_db=-8)
 # 7. обрыв музыки и приговор
 kit.add(fx, 'sub-drop', T['omm2'], gain_db=-9)
 kit.add(fx, 'glitch', T['omm3'], gain_db=-9)

@@ -125,7 +125,10 @@ for m in (72, 76, 79, 84):
     put(note(hz(m), 2.0, 'bell', 0.09), T['s5'] + (m - 72) * 0.03)
 section(T['s5'], T['s6'], HOPE, MEL_HOPE, drums=2)
 # 6: звонок — весёлый грув
-section(T['s6'], T['s7'], HOPE, MEL_HOPE, drums=1)
+section(T['s6'], T['s6b'], HOPE, MEL_HOPE, drums=1)
+# 6b: Олег — скамер, музыка мрачнеет
+section(T['s6b'], T['s7'], DARK, None, drums=1, gain=0.85)
+put(kick(0.6), T['sc_stamp'])
 # 7: чат Олега — мрачнее до «Ты уверен?»
 section(T['s7'], T['omm2'], DARK, None, drums=1, gain=0.8)
 # обрыв, затем гул и «сердцебиение» до исчезновения подарков

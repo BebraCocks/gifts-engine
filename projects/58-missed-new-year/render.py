@@ -583,6 +583,81 @@ def scene6(t):
     return im
 
 
+def scene6b(t):
+    """Олег — скамер: разводит жертву на подарок, штамп «СКАМЕР»."""
+    u = t - T['s6b']
+    im = gradient((60, 14, 24), (16, 6, 12)).copy()
+    snow(im, t, 0.15, 60)
+    # монитор с перепиской
+    mx0, my0, mx1, my1 = 80, 150, W - 80, 900
+    glow = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).rounded_rectangle((mx0 - 30, my0 - 30, mx1 + 30, my1 + 30), 60, fill=(255, 80, 90, 60))
+    im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(40)))
+    rrect(im, (mx0, my0, mx1, my1), 34, (12, 12, 18, 255), outline=(90, 90, 110, 255), width=10)
+    d = ImageDraw.Draw(im)
+    d.rectangle((W // 2 - 50, my1, W // 2 + 50, my1 + 70), fill=(50, 50, 60))
+    d.ellipse((mx0 + 40, my0 + 34, mx0 + 120, my0 + 114), fill=(240, 150, 170))
+    d.text((mx0 + 80, my0 + 74), 'А', font=font('Bold', 44), anchor='mm', fill=(255, 255, 255))
+    d.text((mx0 + 145, my0 + 52), 'Аня', font=font('Bold', 42), fill=(255, 255, 255))
+    d.line((mx0 + 30, my0 + 140, mx1 - 30, my0 + 140), fill=(50, 58, 84), width=3)
+    f = font('Semibold', 42)
+    def bubble(text, right, y, t0, col):
+        k = spring((t - t0) * 1.4, 2.2, 0.5) if t - t0 < 1.2 else 1.0
+        if t < t0:
+            return
+        tw = d.textlength(text, font=f)
+        bw, bh = tw + 64, 96
+        b = Image.new('RGBA', (int(bw), bh), (0, 0, 0, 0))
+        ImageDraw.Draw(b).rounded_rectangle((0, 0, bw - 1, bh - 1), 34, fill=col)
+        ImageDraw.Draw(b).text((32, bh // 2), text, font=f, anchor='lm', fill=(255, 255, 255))
+        b = b.resize((max(1, int(bw * k)), max(1, int(bh * k))))
+        x = (mx1 - 40 - b.width) if right else mx0 + 40
+        im.alpha_composite(b, (int(x), int(y + bh - b.height)))
+    bubble('Скинь подарок — я его улучшу', True, my0 + 200, T['sc_msg'], (90, 90, 110, 255))
+    bubble('Отправила!', False, my0 + 330, T['sc_reply'], (44, 50, 72, 255))
+    # Олег злорадствует
+    pose = dict(eyes='half', mouth='smirk', arms='phone') if t < T['sc_fly'] + 0.6 else dict(eyes='narrow', mouth='grin', arms='phone')
+    p = dimon_pose(t, pose)
+    put_char(im, ch('oleg', **p), W // 2, H + 360, 0.95, dy=-5 * math.sin(t * 2.5) - 10 * bump(t - T['sc_fly'] - 0.6, 5, 5))
+    # подарок жертвы улетает к Олегу (поверх Олега — прямо в руки)
+    g = gift_png('Plush Pepe', 220)
+    fu = t - T['sc_fly']
+    if fu < 0 and t >= T['sc_reply']:
+        im.alpha_composite(g, (mx0 + 60, my0 + 450))
+    elif 0 <= fu < 0.85:
+        k = eo(fu / 0.85)
+        x = mx0 + 60 + (W // 2 - 300 - mx0 - 60) * k
+        y = my0 + 450 + (1080 - my0 - 450) * k - 220 * math.sin(math.pi * k)
+        sc = 1 - 0.45 * k
+        gg = g.resize((max(1, int(220 * sc)), max(1, int(220 * sc))))
+        im.alpha_composite(gg, (int(x + 110 - gg.width / 2), int(y + 110 - gg.height / 2)))
+    # штамп «СКАМЕР»
+    su = t - T['sc_stamp']
+    if su >= 0:
+        sc = 1 + 1.6 * (1 - eo(su / 0.18))
+        st = Image.new('RGBA', (760, 220), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(st)
+        sd.rounded_rectangle((10, 10, 750, 210), 26, outline=(230, 40, 50, 255), width=16)
+        sd.text((380, 112), 'СКАМЕР', font=font('Heavy', 150), anchor='mm', fill=(230, 40, 50, 255))
+        st = st.rotate(-10, expand=True, resample=Image.BICUBIC)
+        st = st.resize((int(st.width * sc), int(st.height * sc)), Image.BILINEAR)
+        a = cl(su / 0.12)
+        st.putalpha(st.getchannel('A').point(lambda v: int(v * a)))
+        cy_ = 560 + int(8 * bump(su - 0.18, 7, 6))
+        im.alpha_composite(st, (W // 2 - st.width // 2, cy_ - st.height // 2))
+    # счётчик подарков Олега: подарок падает в него
+    got = t >= T['sc_fly'] + 0.85
+    pk = 1 + 0.25 * bump(t - T['sc_fly'] - 0.85, 4, 6)
+    pill = f'Подарков у Олега: {6 if got else 5}'
+    pf = font('Heavy', int(52 * pk))
+    pw = ImageDraw.Draw(im).textlength(pill, font=pf)
+    rrect(im, (W // 2 - pw / 2 - 40, 1130, W // 2 + pw / 2 + 40, 1230), 50, (40, 34, 52, 255) if not got else (60, 40, 30, 255),
+          outline=(255, 200, 80, 255) if got else (90, 90, 110, 255), width=5, shadow=False)
+    ImageDraw.Draw(im).text((W // 2, 1180), pill, font=pf, anchor='mm', fill=(255, 220, 120) if got else (255, 255, 255))
+    caption(im, 'Олег скамит людей на NFT', 1020, cl((t - V['N4']) / 0.3), 60, (255, 200, 200))
+    return im
+
+
 def scene8(t):
     im = gradient((40, 14, 24), (12, 6, 14)).copy()
     snow(im, t, 0.5, 160)
@@ -632,6 +707,8 @@ def render_at(t):
         im = scene5(t)
     elif s == 's6':
         im = scene6(t)
+    elif s == 's6b':
+        im = scene6b(t)
     elif s == 's7':
         im = chat_scene(t, 'oleg')
     elif s == 's8':

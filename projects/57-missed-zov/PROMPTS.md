@@ -132,7 +132,7 @@ Blurred background: an underground fighting arena built from giant chat message 
 **Лист 2**
 ```
 Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: mint green skin, one ear pointing up and the other down, wearing a yellow raincoat and rubber boots, even skinnier.
+Left: deep red skin, one ear pointing up and the other down, wearing a yellow raincoat and rubber boots, even skinnier.
 Center: green skin like a color copy error, wearing an orange jumpsuit.
 Right: bubblegum pink skin, ears sticking upward like a rabbit, wearing pink pajamas and bunny slippers, a little chubby belly.
 Blurred background: an underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.

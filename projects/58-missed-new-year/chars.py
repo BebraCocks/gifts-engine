@@ -57,6 +57,8 @@ def mouth(d, cx, cy, kind, w=70):
         d.arc(S((cx - w / 2, cy - w / 2.4, cx + w / 2, cy + w / 2.6)), 25, 155, fill=OUT, width=L)
     elif kind == 'smirk':
         d.arc(S((cx - w / 2.2, cy - w / 2.6, cx + w / 1.8, cy + w / 3)), 15, 95, fill=OUT, width=L)
+    elif kind == 'sad':
+        d.arc(S((cx - w / 2, cy + 2, cx + w / 2, cy + w / 1.6)), 205, 335, fill=OUT, width=L)
     elif kind == 'flat':
         d.line(S((cx - w / 3, cy + 4, cx + w / 3, cy + 4)), fill=OUT, width=L)
     elif kind == 'grin':
@@ -143,7 +145,7 @@ def missed(p=None):
             a = 2 * math.pi * j / 60
             x = ex + 78 * math.cos(a)
             y = ey + 48 * k * math.sin(a) * (1.15 if math.sin(a) > 0 else 0.85)
-            y -= sgn * (x - ex) * 0.32 * (-1)          # наклон: внешний угол вверх
+            y -= sgn * (x - ex) * 0.32                 # наклон: внешний угол вверх
             pts.append((x, y))
         d.polygon(S(pts), fill=(10, 10, 18), outline=OUT)
         if k > 0.3:
@@ -195,6 +197,12 @@ def human(p, skin, top_col, hair_fn, brow_col, extra_top=None, extra_face=None):
     mouth(d, hx, 520, p.get('mouth', 'smile'), 80)
     if extra_face:
         extra_face(im, hx)
+    if p.get('sweat'):                                # капли пота
+        d = ImageDraw.Draw(im)
+        for (sx, sy, r) in ((hx + 170, 250, 22), (hx - 175, 300, 16)):
+            d.polygon(S([(sx, sy - r * 1.8), (sx - r, sy), (sx + r, sy)]), fill=(150, 210, 255))
+            d.ellipse(S((sx - r, sy - r, sx + r, sy + r)), fill=(150, 210, 255), outline=OUT, width=4 * SS)
+            d.ellipse(S((sx - r * 0.4, sy - r * 0.5, sx - r * 0.05, sy - r * 0.1)), fill=(255, 255, 255))
     if p.get('arms'):
         arms(im, cx, 680, top_col, skin, p['arms'], 78)
         if p['arms'] == 'phone':
@@ -244,3 +252,19 @@ def oleg(p=None):
             x, y = cx + 92 * math.cos(a), 655 + 130 * math.sin(a)
             d.ellipse(S((x - 10, y - 10, x + 10, y + 10)), fill=(246, 200, 64), outline=(150, 110, 20), width=2 * SS)
     return human(p, skin, (46, 42, 52), hair, (30, 26, 36), top)
+
+
+# ---------------------------------------------------------------- кэш поз на диске (рисование одной позы ~10 с)
+import json, hashlib
+from pathlib import Path
+_CACHE = Path(__file__).resolve().parent / 'build' / 'chars'
+
+def get(who, **pose):
+    key = hashlib.md5(json.dumps([who, pose], sort_keys=True).encode()).hexdigest()[:12]
+    f = _CACHE / f'{who}_{key}.png'
+    if f.exists():
+        return Image.open(f).convert('RGBA')
+    _CACHE.mkdir(parents=True, exist_ok=True)
+    im = {'dimon': dimon, 'oleg': oleg, 'missed': missed}[who](pose)
+    im.save(f)
+    return im

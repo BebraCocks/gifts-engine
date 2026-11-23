@@ -96,6 +96,92 @@ def sniff(seed=0):
     return st(x / np.abs(x).max())
 
 
+def bp(x, lo, hi, order=2):
+    return sosfilt(butter(order, [lo, hi], 'band', fs=SR, output='sos'), x)
+
+
+def fart(dur=0.6, f0=95, wet=0.4, seed=0, fall=0.3, squeak=False):
+    """Пук: пила с «трепетом» сфинктера и шумом. squeak — короткий писклявый."""
+    r = np.random.default_rng(seed)
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    f = f0 * (1 - fall * t / dur) * (1 + 0.12 * np.sin(2 * np.pi * (5 + 4 * r.random()) * t))
+    if squeak:
+        f = f * (1 + 1.5 * np.sin(np.pi * t / dur))
+    ph = np.cumsum(f) / SR
+    saw = 2 * (ph % 1) - 1
+    flut = filt(np.sign(np.sin(2 * np.pi * (16 + 10 * r.random()) * t)) * 0.4 + 0.6, 50)
+    x = saw * flut + wet * filt(r.standard_normal(n), 900) * (1 + np.sin(2 * np.pi * 23 * t))
+    x = filt(x, 1400 if squeak else 800, order=4)
+    x *= np.minimum(1, t / 0.015) * np.minimum(1, (dur - t) / 0.1)
+    return st(x / (np.abs(x).max() + 1e-9))
+
+
+def sad_trombone_fart():
+    """Четыре нисходящих «ноты»-пука: ва-ва-ва-ваааа."""
+    parts = [fart(0.28, f, 0.2, seed=k, fall=0.05) for k, f in enumerate((150, 140, 132))]
+    parts.append(fart(1.0, 124, 0.3, seed=9, fall=0.25))
+    gap = np.zeros((int(0.05 * SR), 2))
+    return np.concatenate(sum([[p, gap] for p in parts], []))
+
+
+def plop():
+    n = int(0.3 * SR)
+    t = np.arange(n) / SR
+    x = np.sin(2 * np.pi * np.cumsum(900 * np.exp(-t * 18) + 200) / SR) * np.exp(-t * 14)
+    return st(x / np.abs(x).max())
+
+
+def squelch(seed=0):
+    """Мокрый «шмяк»."""
+    r = np.random.default_rng(seed + 70)
+    n = int(0.4 * SR)
+    t = np.arange(n) / SR
+    x = bp(r.standard_normal(n), 250, 2200) * np.exp(-t * 11) * (1 + 0.8 * np.sin(2 * np.pi * 31 * t))
+    x += 0.8 * np.sin(2 * np.pi * (180 - 120 * t) * t) * np.exp(-t * 16)
+    return st(x / np.abs(x).max())
+
+
+def glottal(n, f0, jitter, seed):
+    r = np.random.default_rng(seed)
+    t = np.arange(n) / SR
+    f = f0 * (1 + jitter * filt(r.standard_normal(n), 30) * 8)
+    ph = np.cumsum(f) / SR
+    return (2 * (ph % 1) - 1) ** 3, t
+
+
+def retch(seed=0, f0=120, long=True):
+    """Позыв к рвоте: два «хык» + «бэээ» (форманты Э/А с хрипом) + плеск."""
+    r = np.random.default_rng(seed + 90)
+    out = []
+    for k in range(2):                                   # «хык», «хык»
+        n = int(0.22 * SR)
+        g, t = glottal(n, f0 * 1.3, 0.02, seed + k)
+        x = bp(g + 0.6 * r.standard_normal(n), 400, 1300) * np.sin(np.pi * t / 0.22) ** 0.6
+        out += [x / np.abs(x).max(), np.zeros(int(0.12 * SR))]
+    if long:
+        n = int(0.9 * SR)
+        g, t = glottal(n, f0, 0.04, seed + 5)
+        g = g * (1 - 0.25 * t / 0.9)
+        rasp = r.standard_normal(n) * (1 + np.sin(2 * np.pi * 37 * t))
+        v = bp(g, 450, 900) + 0.7 * bp(g, 1100, 1800) + 0.9 * bp(rasp, 300, 2500)
+        v *= np.minimum(1, t / 0.05) * np.minimum(1, (0.9 - t) / 0.25)
+        out.append(v / np.abs(v).max())
+        n = int(0.5 * SR)
+        t = np.arange(n) / SR
+        sp = filt(r.standard_normal(n), 1600) * np.exp(-t * 7) * (1 + np.sin(2 * np.pi * 19 * t))
+        out.append(0.8 * sp / np.abs(sp).max())
+    return st(np.concatenate(out))
+
+
+def hiss(seed=3):
+    r = np.random.default_rng(seed)
+    n = int(0.6 * SR)
+    t = np.arange(n) / SR
+    x = filt(r.standard_normal(n), 3000, 'high') * np.minimum(1, t / 0.05) * np.exp(-t * 3)
+    return st(x / np.abs(x).max())
+
+
 def place(buf, a, t, gain_db=0.0):
     i = int(t * SR)
     if i >= len(buf):
@@ -235,6 +321,32 @@ def sfx(kit):
     A(fx, 'click', S['L16'] + 1.55, gain_db=-10, label='ручка двери')
     A(fx, 'impact', S['L16'] + 1.9, align='peak', gain_db=-10, label='!')
     A(fx, 'sub-drop', S['L16'] + 2.2, gain_db=-12, label='МАМА?!')
+    # --- пуки, рвота и прочие мерзкие звуки (кодом) ---
+    place(fx, fart(0.25, 230, 0.1, seed=1, squeak=True), S['L01'] + 1.3, -17)          # колбаска нервничает
+    place(fx, fart(0.9, 85, 0.6, seed=2, fall=0.35), E['L05'] - 0.75, -8)               # «…и отпускаешь»
+    place(fx, plop(), E['L05'] - 0.05, -14)
+    A(fx, 'voice', S['L05'] + 3.4, gain_db=-14, file='oppss', label='присел')
+    place(fx, squelch(1), S['L07'] + 0.25, -7)                                          # первый удар — шмяк
+    for k in range(6):
+        place(fx, squelch(10 + k), S['L08'] + 0.32 + k * 0.32, -15)
+    d11 = E['L11'] - S['L11']
+    place(fx, squelch(20), S['L11'] + d11 - 3.4 + 1.2, -8)                              # в лицо
+    place(fx, retch(1, 125), S['L11'] + d11 - 3.4 + 1.7, -8)                            # герой блюёт
+    dF = E['F1'] - S['F1']
+    A(fx, 'voice', S['F1'] + 1.05, gain_db=-12, file='scared-2', label='друзья в шоке')
+    place(fx, retch(2, 135, long=False), S['F1'] + dF * 0.62, -9)                     # друг давится
+    place(fx, fart(0.5, 110, 0.4, seed=3), S['F1'] + dF * 0.84, -13)                    # «…и с ароматом»
+    place(fx, hiss(), S['C1'] + (E['C1'] - S['C1']) * 0.55 + 0.75, -12)                 # кот шипит
+    place(fx, fart(0.3, 200, 0.1, seed=4, squeak=True), S['T1'] + (E['T1'] - S['T1']) * 0.62 + 0.15, -15)
+    place(fx, fart(1.4, 70, 0.7, seed=5, fall=0.2), S['L13'] + 0.3, -18)               # «хуже всего — запах»
+    place(fx, retch(3, 115), S['L13'] + (E['L13'] - S['L13']) * 0.8, -11)               # сосед в коридоре
+    place(fx, retch(4, 105), S['P1'] + 1.9, -8)                                         # сантехник
+    A(fx, 'cartoon', S['P1'] + 3.3, gain_db=-19, file='dizzy-birds', label='сантехник поплыл')
+    place(fx, retch(5, 128, long=False), S['K14'] + 0.9, -14)                          # уборка
+    A(fx, 'cartoon', S['K14'] + 3.3, gain_db=-17, file='crickets', label='неловкая тишина')
+    place(fx, sad_trombone_fart(), S['L15'] + (E['L15'] - S['L15']) * 0.55 + 0.1, -9)   # «всё пошло к чертям»
+    place(fx, fart(1.1, 90, 0.5, seed=6, fall=0.4), S['L16'] + 2.15, -7)                 # испуг перед мамой
+    A(fx, 'voice', S['L16'] + 2.0, gain_db=-12, file='scared.flac', label='МАМА?!')
     return fx
 
 

@@ -33,3 +33,7 @@ sub-drop, glitch, исчезновение подарков, power-down, sparkle
 - 2026-11-23: собран `renders/58-missed-new-year/gift_by_merit_v1.mp4` (1080×1920, 60 fps, H.264 + AAC, 69,3 с),
   полностью декодируется; проверены кадры раз в 3 с. Просмотр в движении и прослушивание микса — за автором.
   Загружен в Google Drive «TikTok»: https://drive.google.com/file/d/1gg-DdGaRg1vv63BTwG0vDLGD2KDU4gbG/view
+- 2026-11-23: v2 — по замечанию автора перед перепиской Олега добавлена сцена s6b «Олег — скамер» (разводит Аню на
+  Plush Pepe, счётчик 5→6, штамп «СКАМЕР», рассказчик: «Только Димон не знал: Олег скамит людей на NFT»).
+  `renders/58-missed-new-year/gift_by_merit_v2.mp4`, 69,8 с, декодируется полностью.
+  Drive: https://drive.google.com/file/d/1JrvY0f4Y-v6e3raCU3tNrSrkA7o2fGcj/view

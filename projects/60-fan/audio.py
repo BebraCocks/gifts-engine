@@ -82,7 +82,7 @@ def place(buf, a, t, gain_db=0.0):
 def sfx(kit):
     fx = np.zeros((N, 2))
     A = kit.add
-    wipes = {'L05', 'L09', 'L11', 'L14', 'L16'}
+    wipes = {'L05', 'L09', 'L14', 'L16'}
     for k in KEYS[1:]:
         t = S[k] - 0.12
         if k in wipes:

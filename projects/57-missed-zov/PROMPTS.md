@@ -5,8 +5,7 @@
 
 ## Как пользоваться
 
-1. Каждый раз прикладывайте к промпту картинку `0_missed_reference.jpg`, а когда будет готов лист
-   персонажа, прикладывайте его вместо неё. Без референса Мисед получится каждый раз разным.
+1. Каждый раз прикладывайте к промпту лист персонажа `refs/missed_sheet.png` (готов 2026-11-23). Без референса Мисед получится каждый раз разным.
 2. В кадрах с оружием прикладывайте ещё и картинку нужного подарка (`1_…5_….png`).
 3. В конец каждого промпта картинки добавляйте блок **STYLE** (2D) или **STYLE 3D**.
 4. Формат всех кадров 9:16, вертикальный.
@@ -17,9 +16,10 @@
 
 **MISSED (описание персонажа, вставлять везде, где он есть):**
 ```
-Missed: a small bald humanoid creature with a large smooth egg-shaped head, pale peach-pink skin,
+Missed: an original stylized cartoon alien mascot with a large smooth egg-shaped head, pale peach-pink skin,
 huge fully black glossy eyes with no whites, long pointed elf ears sticking straight out sideways,
-tiny nose, small sly closed-mouth smile, very thin long neck, skinny doll-like body.
+tiny nose, small sly closed-mouth smile, long slim neck. He wears a black oversized hoodie with the
+hood down, black cargo pants and white sneakers.
 Same face and proportions in every shot. He stays thin and calm, never muscular.
 He is completely silent: mouth always closed, never talks, never shouts. Cool, cold, unbothered,
 a quiet heavy aura around him.
@@ -121,13 +121,13 @@ him, extreme low angle, the giant boss looms above. + STYLE
 ```
 Character lineup sheet: three different FAKE clones of MISSED standing side by side, full body,
 same scale, evenly spaced, each one clearly separated. All three keep the same face as MISSED
-(bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body. Only the listed
+(bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, black cargo pants and white sneakers outfit. Only the listed
 change and small body differences: height, width, sometimes an extra arm or leg. Smug or shifty expressions. Blurred ARENA background. + STYLE
 ```
 
 **Лист 1**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: low-resolution pixelated body, blurry jpeg artifacts; body: slightly taller than Missed.
 Center: a fake checkmark badly drawn with a blue marker on his forehead; body: a bit shorter than Missed.
 Right: mismatched eyes, one huge and one tiny; body: slightly wider shoulders.
@@ -136,7 +136,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 2**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: one ear pointing up and the other pointing down; body: even skinnier than Missed.
 Center: green skin, like a color copy error; body: same build as Missed.
 Right: ears sticking upward like a rabbit; body: a little chubby belly.
@@ -145,7 +145,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 3**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: glitching body with visible RGB split and scanlines; body: noticeably taller and lanky.
 Center: drawn in crayon like a child's sketch.
 Right: stretched vertically like a wrongly resized image.
@@ -154,7 +154,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 4**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: upside-down face.
 Center: three ears.
 Right: head too small for the body.
@@ -163,7 +163,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 5**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a cap with the text "Mlssed"; body: short and stocky.
 Center: a T-shirt with the text "Misseed"; body: same build as Missed.
 Right: a hoodie with the text "Mised_official"; body: slightly hunched posture.
@@ -172,7 +172,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 6**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a sports jersey with the text "Missed_Support"; body: longer neck than Missed.
 Center: a name tag with the text "Real Missed 100%"; body: three arms.
 Right: a sash with the text "Missed2"; body: a bit shorter than Missed.
@@ -181,7 +181,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 7**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a baseball jacket with the text "M1ssed"; body: slightly wider hips.
 Center: a cape with the text "MissedGifts"; body: same build as Missed.
 Right: a hard hat and a huge wrench, shouting "I'll upgrade your gift!"; body: slightly taller than Missed.
@@ -190,7 +190,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 8**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a fishing rod with a glowing link hook; body: three legs.
 Center: a "Telegram Support" badge and a necktie; body: short and round.
 Right: a giant QR code tattooed on his forehead; body: same build as Missed.
@@ -199,7 +199,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 9**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a Santa suit carrying a sack of stolen gifts; body: slightly broader chest.
 Center: holding a sign "send 100 stars"; body: extra long arms reaching his knees.
 Right: a fake lottery wheel in his hands; body: a bit shorter than Missed.
@@ -208,7 +208,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 10**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a fake contract scroll "sign here"; body: same build as Missed.
 Center: a megaphone shouting "free NFT"; body: slightly taller than Missed.
 Right: a fake gift box with a trap inside; body: bow-legged stance.
@@ -217,7 +217,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 11**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a crystal ball labeled "guaranteed profit"; body: even skinnier than Missed.
 Center: a stack of fake screenshots in his hands; body: three arms.
 Right: a fake banker visor and an abacus; body: slightly wider shoulders.
@@ -226,7 +226,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 12**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a doctor coat and a stethoscope "account check-up"; body: same build as Missed.
 Center: a piggy bank with a slot labeled "seed phrase"; body: a little chubby belly.
 Right: laser eyes and a thick gold chain; body: tiny legs and normal body.
@@ -235,7 +235,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 13**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: sunglasses and a gold grill; body: slightly taller than Missed.
 Center: a samurai topknot and a wooden sword; body: short and stocky.
 Right: a biker leather jacket and spikes; body: same build as Missed.
@@ -244,7 +244,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 14**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a pirate eye patch and a hook hand; body: three legs.
 Center: a cowboy hat and twin water pistols; body: longer neck than Missed.
 Right: a ninja mask with only the black eyes visible; body: slightly taller than Missed.
@@ -253,7 +253,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 15**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a ski mask like a robber; body: a bit shorter than Missed.
 Center: a boxing robe and red gloves; body: slightly wider shoulders.
 Right: a cyber visor and neon tubes on the body; body: even skinnier than Missed.
@@ -262,7 +262,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 16**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a medieval knight helmet made of cardboard; body: same build as Missed.
 Center: a Viking helmet and a plastic axe; body: a little chubby belly.
 Right: a wrestling champion belt made of tinfoil; body: noticeably taller and lanky.
@@ -271,7 +271,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 17**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a fur coat and many rings; body: short and stocky.
 Center: a top hat and a monocle, like a fake millionaire; body: same build as Missed.
 Right: a tiny body and a gigantic head.
@@ -280,7 +280,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 18**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: hyper-muscular body with the original tiny face (mini-boss).
 Center: made of melted wax, dripping.
 Right: inflatable like a pool toy.
@@ -289,7 +289,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 19**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: made of chat stickers glued together.
 Center: a body made of spam emails.
 Right: a cardboard cutout held by someone behind.
@@ -298,7 +298,7 @@ gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatchi
 
 **Лист 20**
 ```
-Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his thin body, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
+Character lineup sheet: three different FAKE clones of MISSED standing side by side on the same ground line, full body, evenly spaced, heights can differ. All three keep the same face as MISSED (bald egg-shaped head, huge black eyes, sideways elf ears) and mostly his slim build, wearing a cheap knockoff of his black hoodie, cargo pants and sneakers outfit, only the listed change and small body differences (height, width, sometimes an extra limb). Smug or shifty expressions. Blurred background: underground fighting arena built from giant chat message bubbles, notification icons as spotlights, dark smoky stands.
 Left: a clone riding another smaller clone.
 Center: a swarm of 30 palm-sized clones running like ants.
 Right: a shadow silhouette with glowing fake checkmark eyes.

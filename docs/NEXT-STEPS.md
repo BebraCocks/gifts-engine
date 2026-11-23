@@ -688,4 +688,5 @@ https://drive.google.com/file/d/1opkWgVcFjTF-JWNixS3bUURkka9iTLVx/view
 Тема автора, расчёты в раскадровке (100 км/ч кончик лопасти, 65 ударов/с, 1/7 с до стены, идиома «shit hits the fan»).
 Всё кодом, голос серии 1,22×, звуки кодом (гул, удары, шлепки, распыление) + Botanica, RubUp перед «Большая часть улетает…».
 103,6 с. https://drive.google.com/file/d/1ViekUQ4yEGo-fNJgQFHe5fORcsRiDspq/view
+v4 (больше шуток, пуки/рвота кодом, две RubUp, 128,5 с): https://drive.google.com/file/d/1nsUYsN_Erv3E4kS_8HiMuBgNXQHccaLZ/view
 Замечание: файлы > ~40 МБ Apps Script не принимает — для Drive пережимать (CRF 20–23).

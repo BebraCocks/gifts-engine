@@ -339,6 +339,8 @@ center of the ring, top-down epic wide shot. + STYLE
 подделку чёрного худи настоящего Миседа, но мышцы её порвали. На груди огромная поддельная галочка,
 в неё и придётся финальный удар золотой рукой.
 
+Готово 2026-11-23: `refs/boss_sheet.png` (9.5) и `refs/boss_poster.png` (9).
+
 **4.1. Лист босса** (приложить `refs/missed_sheet.png`):
 ```
 Use the attached character sheet as the reference for the face and head shape. Character design sheet of the final boss "King of Fakes": a colossal hyper-muscular giant version of the cartoon alien mascot Missed, three times taller than him. Same bald egg-shaped head, long ears sticking out sideways and huge glossy black eyes, but the face is twisted into an arrogant, menacing grin with sharp teeth, and each eye has a tiny glowing blue checkmark-shaped pupil. His skin is a patchwork stitched together from many colors (light blue, lime green, purple, red, yellow, pink, teal) with visible stitches, as if made from all the fake clones. He wears a giant cheap knockoff of Missed's black hoodie, torn apart by his muscles, sleeves ripped off, hood hanging in shreds. On his bare chest glows a huge blue fake verification checkmark emblem with a thin crack in it. A heavy crown made of stolen Telegram gifts: gift boxes with ribbons, a plush frog, a golden cap, a crystal, a glowing star, held together with chains. A long tattered cape stitched from chat message bubbles with scam texts "send stars", "I'll upgrade your gift", "free NFT". Huge fists wrapped in chains, black cargo pants, giant torn white sneakers.

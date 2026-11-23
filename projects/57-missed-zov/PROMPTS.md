@@ -118,7 +118,7 @@ him, extreme low angle, the giant boss looms above. + STYLE
 поэтому их видно издалека, и настоящий выделяется в толпе. Лицо у всех как у Миседа, телосложение в
 основном тоже, отличаются рост и ширина, у четверых третья рука или нога.
 Каждый раз прикладывайте лист персонажа `refs/missed_sheet.png`. Готовый лист режем на три кадра.
-Листы 1–3 сделаны на фоне арены (оценки 9, 8, 9), листы 4–6 на однотонном (8, 9, 8.5), листы 7–9 (9, 8.5, 9), листы 10–12 (9, 9.5, 9).
+Листы 1–3 сделаны на фоне арены (оценки 9, 8, 9), листы 4–6 на однотонном (8, 9, 8.5), листы 7–9 (9, 8.5, 9), листы 10–12 (9, 9.5, 9), листы 13 и 15 (9, 9.5), лист 14 на переделку (7.5: настоящие револьверы, четыре ноги).
 Ничего не висит над фейками: все отличия на теле, на одежде или в руках, у многих в руках оружие.
  С листа 4 фон однотонный, цвета, которого нет
 на фейках этого листа, чтобы их было легко вырезать.
@@ -256,8 +256,8 @@ Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the
 **Лист 14**
 ```
 Use the attached character sheet as the reference for the face and head only. Character lineup sheet: three different FAKE copies of the cartoon alien mascot Missed standing side by side on the same ground line, full body, evenly spaced, heights can differ. No floating objects, signs, text or speech bubbles around them; everything that makes each one different is on his body or in his hands. All three keep his face shape (bald egg-shaped head, huge black eyes, long ears sticking out sideways) and mostly his slim build, but each has a different bright skin color (only the real Missed is pale peach-pink). IMPORTANT: none of them wears a black hoodie; each has a completely different outfit and color palette so they are easy to tell apart from far away. Smug, shifty, mocking expressions.
-Left: cyan skin, a pirate coat, an eye patch and a hook hand, holding a cutlass, three legs.
-Center: mustard yellow skin, a cowboy hat, a brown leather vest and twin water pistols in his hands, bow-legged stance.
+Left: cyan skin, a pirate coat, an eye patch and a hook hand, holding a cutlass, exactly three legs (not four).
+Center: mustard yellow skin, a cowboy hat, a brown leather vest, holding two bright orange-and-green plastic toy water pistols (clearly toys, not real guns), bow-legged stance.
 Right: plum purple skin, a dark blue ninja outfit and mask, only the black eyes visible, holding nunchucks.
 Background: a perfectly flat solid chroma key green #00FF00 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.

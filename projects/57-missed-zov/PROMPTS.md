@@ -167,7 +167,7 @@ Use the attached character sheet as the reference for the face and head only. Ch
 Left: turquoise skin, a red cap with the text "Mlssed" and a red varsity jacket, slightly taller.
 Center: magenta skin, a white T-shirt with a cheap print "Misseed" and ripped skinny jeans, a bit shorter.
 Right: pale violet skin, a neon green hoodie with the text "Mised_official".
-Background: a perfectly flat solid pure white #FFFFFF backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
+Background: a perfectly flat solid neutral mid-grey #808080 backdrop filling the whole frame, no arena, no floor, no shadows, no reflections, even lighting, clean sharp edges around the characters for easy cutout.
 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 

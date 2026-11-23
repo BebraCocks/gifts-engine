@@ -397,7 +397,7 @@ def sc06(t):
         d.line((520, yy, 600, yy), fill=WHITE + (160 - k * 35,), width=5)
     panel(im, (620, 450, 1010, 640), (20, 24, 40, 230), ol=WHITE, w=4)
     label(im, f'{0.32 * fall:.2f} с'.replace('.', ','), 815, 545, 100, GAS, 0)
-    label(im, 'SLOW-MO ×100', 540, 1780, 60, RED, 6, alpha=0.6 + 0.4 * math.sin(t * 6))
+    label(im, 'SLOW-MO', 815, 720, 60, RED, 6, alpha=0.6 + 0.4 * math.sin(t * 6))
     return im
 
 
@@ -440,8 +440,11 @@ def sc07(t):
             d.ellipse((540 - 300 * v * 3, 620 - 300 * v * 3, 540 + 300 * v * 3, 620 + 300 * v * 3),
                       outline=WHITE + (int(255 * (1 - v / 0.3)),), width=14)
         label(im, 'БАМ!', 760, 470, 130, YEL, 12, pop(v, 0.25), 10, alpha=cl(1.6 - v))
+        k = eo(v / 0.6)
+        pts = [(540 + dx * (80 + 380 * k), 760 + dy * (60 + 300 * k) + 40 * v, r * 0.8) for dx, dy, r in DROPS[:90]]
+        drops(im, pts)
     # теннисист
-    v = u - 3.0
+    v = u - 1.6
     if v > 0:
         panel(im, (60, 1180, 1020, 1760), (255, 255, 255, 230))
         put(im, tennis_spr(0 if (v % 1.2) < 0.6 else 1), 260, 1470, 0.9)
@@ -570,8 +573,8 @@ def sc10(t):
     elif ph > 0.04:
         pts = [(540 + dx * 500 * (1 - ph / 0.14), 760 + dy * 400 * (1 - ph / 0.14), r) for dx, dy, r in DROPS[:60]]
         drops(im, pts)
-    bar(im, 120, 1300, 840, 50, (1 / 7) / (1 / 3) * cl(u / 0.8), POO_L, 'Брызги долетают', '0,14 с')
-    bar(im, 120, 1480, 840, 50, 1.0 * cl((u - 0.5) / 0.8), (120, 200, 250), 'Моргание', '0,33 с')
+    bar(im, 100, 1300, 760, 50, 0.8 * (1 / 7) / (1 / 3) * cl(u / 0.8), POO_L, 'Брызги долетают', '0,14 с')
+    bar(im, 100, 1480, 760, 50, 0.8 * cl((u - 0.5) / 0.8), (120, 200, 250), 'Моргание', '0,33 с')
     if u > 2.0:
         stamp(im, 'НЕ УСПЕЛ', 540, 1700, u - 2.0, RED, 90, -6)
     return im
@@ -741,7 +744,7 @@ def sc14(t):
         fy = lerp(1200, 1560, k) - 300 * math.sin(math.pi * k)
         put(im, grille_spr(), fx, fy, 0.45 * (1 - 0.3 * k), 300 * k)
         if k >= 1:
-            stamp(im, 'НА ВЫБРОС', 840, 1360, v - 0.9, RED, 64, 8)
+            stamp(im, 'НА ВЫБРОС', 740, 1380, v - 0.9, RED, 64, 8)
     else:
         fan(im, 620, 1250, t, 0.55, 0.0)
     return im
@@ -766,7 +769,13 @@ def sc15(t):
         panel(im, (140, 1180, 940, 1420), (240, 74, 74, 250))
         label(im, '= всё пошло', 540, 1255, 70, WHITE, 0, pop(v))
         label(im, 'к чертям', 540, 1350, 70, WHITE, 0, pop(v - 0.1))
-    fan(im, 540, 1640, t, 0.4, 1.0, stand=False)
+    fan(im, 540, 1660, t, 0.6, 1.0, stand=False)
+    pts = []
+    for i, (dx, dy, r) in enumerate(DROPS[:80]):
+        ph = (t * 1.1 + i * 0.0125) % 1
+        a = -math.pi / 2 + dx * 0.9
+        pts.append((540 + math.cos(a) * (150 + 500 * ph), 1660 + math.sin(a) * (110 + 90 * ph), r * (1 - 0.5 * ph)))
+    drops(im, pts)
     return im
 
 

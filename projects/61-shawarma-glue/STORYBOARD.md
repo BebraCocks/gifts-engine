@@ -33,3 +33,6 @@ Botanica V4 через `sfxkit`: переходы, impact, error, crickets, horn
 ### Статус
 - 2026-11-23: сценарий, озвучка (отправлена автору), сцены и звук готовы; каждый кадр прогнан без ошибок; сборка
   `shawarma_glue_v1` запущена.
+- 2026-11-23: собран `renders/61-shawarma-glue/shawarma_glue_v1.mp4` (1080×1920, 60 fps, 104,7 с, без рекламы, −15,8 LUFS,
+  27,4 МБ), полностью декодируется, кадры раз в 3 с просмотрены. Drive: https://drive.google.com/file/d/1wyVWj_hQfjS-OjOpvW7g4FfV41BMRhf2/view
+  Синтезированные звуки на слух не проверены — за автором.

@@ -691,3 +691,8 @@ https://drive.google.com/file/d/1opkWgVcFjTF-JWNixS3bUURkka9iTLVx/view
 v4 (больше шуток, пуки/рвота кодом, две RubUp, 128,5 с): https://drive.google.com/file/d/1nsUYsN_Erv3E4kS_8HiMuBgNXQHccaLZ/view
 v5 — без рекламы (автор), 116,2 с: https://drive.google.com/file/d/1di3SdN1bnSUKLD9IaoKMTYgKiP_IisQt/view
 Замечание: файлы > ~40 МБ Apps Script не принимает — для Drive пережимать (CRF 20–23).
+
+## 2026-11-23 · 61-shawarma-glue «Шаурма с вокзала + суперклей» — собрано
+Тема автора, шутки и визуализация кодом, голос серии 1,18×, пуки/рвота/урчание кодом (`synth.py`) + Botanica.
+Без рекламы — с этого дня RubUp не добавлять (правило в начале AGENTS.md). 104,7 с.
+https://drive.google.com/file/d/1wyVWj_hQfjS-OjOpvW7g4FfV41BMRhf2/view

@@ -17,8 +17,8 @@
 Не чёрно-белая манга и не плавное аниме, а **цветная манга, которую оживили** (motion manga):
 - рисунок как в цветной манге: жирный чёрный контур, штриховка, растровые точки, яркие цвета;
 - часть кадров — страницы с 2–3 панелями, панели появляются по одной под бит;
-- движение ограниченное и жёсткое: позы держатся, двигаются аура, искры, пыль, спам, волосы плаща;
-  дёрганая анимация 8–12 кадров в секунду, резкие наезды, тряска, импакт-вспышки;
+- движение как в примере автора: кадр почти неподвижен, двигаются голова, глаза, дыхание, аура,
+  медленный наезд; в экшене одно резкое движение и пауза; кадр держится 3–5 секунд, жёсткие склейки;
 - звукоподражания крупными русскими буквами («БАМ!», «ХИ-ХИ», «ВЖУХ») добавляем в монтаже.
 
 Первые три кадра (`refs/frames/`) уже в этом стиле, оценки 9, 9.5, 9.
@@ -525,17 +525,27 @@ stands, the crowd cheers, MISSED stands alone in the light, camera pulls back to
 
 ---
 
-## 7. Оживление кадров (motion manga)
+## 7. Оживление кадров («живой комикс», как в примере автора)
 
-Каждый кадр оживляем коротко (3–5 секунд), жёстко и ограниченно, не как плавное аниме:
-```
-Animate this colored manga frame as a motion manga: limited, choppy animation at 8-12 frames per second, the characters hold their poses, only small parts move: [действие]. Sudden snap zoom, short camera shake on impact, screentone and ink lines stay crisp, keep the faces and proportions exactly unchanged, no smooth morphing.
-```
-Действия: «aura flickers and sparks fly», «speed lines rush past», «spam messages fall like ash»,
-«cape and dust flutter», «the sword slash flashes», «clones shake with laughter».
+Пример автора (2026-11-23): цветные комикс-кадры, каждый держится 3–5 секунд, жёсткие склейки.
+Внутри кадра почти всё неподвижно, движение маленькое: чуть поворачивается голова, щурятся глаза,
+дышит тело, медленный наезд камеры. В экшен-кадрах одно короткое резкое движение и снова пауза.
 
-Страницы с панелями не оживляем целиком: в монтаже показываем панели по одной под бит,
-с наездом камеры внутрь каждой.
+**Спокойные кадры:**
+```
+Animate this colored comic panel with subtle, minimal motion, like a living comic: the character stays almost still, only a slight head tilt, eyes slowly narrowing, gentle breathing, [действие]. Very slow camera push-in. Keep the drawing, ink lines, hatching and colors exactly as they are, no morphing, no extra movement.
+```
+Действия: «aura flickers at the tips of the ears», «phone light flickers on the face»,
+«spam messages slowly fall in the background», «the crowd sways in the stands».
+
+**Экшен-кадры:**
+```
+Animate this colored comic panel: one short, sharp, powerful motion — [действие] — then the pose freezes. Short camera shake on impact, a quick snap zoom. Keep the drawing, ink lines, hatching and colors exactly as they are, faces and proportions unchanged, no morphing.
+```
+Действия: «a fast sword slash and the clones burst apart», «a lightning strike from the skull»,
+«the giant fist slams down», «the golden fist punches forward».
+
+Страницы с панелями режем в монтаже на отдельные кадры и оживляем каждую панель отдельно.
 
 ## Звук
 

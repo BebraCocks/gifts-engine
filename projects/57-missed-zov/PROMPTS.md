@@ -119,7 +119,7 @@ him, extreme low angle, the giant boss looms above. + STYLE
 основном тоже, отличаются рост и ширина, у четверых третья рука или нога.
 Каждый раз прикладывайте лист персонажа `refs/missed_sheet.png`. Готовый лист режем на три кадра.
 Листы 1–3 сделаны на фоне арены (оценки 9, 8, 9), листы 4–6 на однотонном (8, 9, 8.5), листы 7–9 (9, 8.5, 9), листы 10–12 (9, 9.5, 9), листы 13 и 15 (9, 9.5), лист 14 на переделку (7.5: настоящие револьверы, четыре ноги),
-листы 16–18 (9, 9.5, 9).
+листы 16–18 (9, 9.5, 9), листы 19–20 (9.5, 9).
 Ничего не висит над фейками: все отличия на теле, на одежде или в руках, у многих в руках оружие.
  С листа 4 фон однотонный, цвета, которого нет
 на фейках этого листа, чтобы их было легко вырезать.
@@ -335,15 +335,23 @@ center of the ring, top-down epic wide shot. + STYLE
 
 ## 4. Босс — «Король фейков»
 
+**Идея.** Король собран из всех фейков сразу: кожа сшита лоскутами всех их цветов. Он надел гигантскую
+подделку чёрного худи настоящего Миседа, но мышцы её порвали. На груди огромная поддельная галочка,
+в неё и придётся финальный удар золотой рукой.
+
+**4.1. Лист босса** (приложить `refs/missed_sheet.png`):
 ```
-"King of Fakes": a colossal hyper-muscular giant with the face of MISSED (same bald egg head, black
-eyes, sideways elf ears) on a monstrous bodybuilder body with veins and extreme muscle definition,
-a crown made of stolen Telegram gifts, a long cape sewn from scam chat messages, a giant fake blue
-checkmark emblem glowing on his chest, towering over the ARENA, tiny MISSED in the foreground
-seen from behind. + STYLE 3D
+Use the attached character sheet as the reference for the face and head shape. Character design sheet of the final boss "King of Fakes": a colossal hyper-muscular giant version of the cartoon alien mascot Missed, three times taller than him. Same bald egg-shaped head, long ears sticking out sideways and huge glossy black eyes, but the face is twisted into an arrogant, menacing grin with sharp teeth, and each eye has a tiny glowing blue checkmark-shaped pupil. His skin is a patchwork stitched together from many colors (light blue, lime green, purple, red, yellow, pink, teal) with visible stitches, as if made from all the fake clones. He wears a giant cheap knockoff of Missed's black hoodie, torn apart by his muscles, sleeves ripped off, hood hanging in shreds. On his bare chest glows a huge blue fake verification checkmark emblem with a thin crack in it. A heavy crown made of stolen Telegram gifts: gift boxes with ribbons, a plush frog, a golden cap, a crystal, a glowing star, held together with chains. A long tattered cape stitched from chat message bubbles with scam texts "send stars", "I'll upgrade your gift", "free NFT". Huge fists wrapped in chains, black cargo pants, giant torn white sneakers.
+Layout: front view full body, back view full body showing the cape, side view, and a large face close-up with the grin and checkmark pupils.
+Background: a perfectly flat solid neutral mid-grey #808080, no shadows, clean edges.
+90s fighting-manga anime style, extreme muscle definition and veins, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
----
+**4.2. Постер-кадр** (приложить лист персонажа Миседа и готовый лист босса):
+```
+Use the attached images as references: the first for the real Missed (small, calm, black hoodie, pale peach-pink skin), the second for the boss "King of Fakes". Epic key art: the colossal King of Fakes towers over the arena, arms spread wide, crown of stolen gifts glinting, cape of scam chat bubbles flowing, the fake blue checkmark on his chest glowing, his shadow covering the ring. In the foreground, seen from behind, tiny real Missed stands calm and silent, hands in hoodie pocket, a faint white-blue aura around him. Underground fighting arena built from giant chat message bubbles, notification icons as spotlights, crowded dark stands, spam messages falling like ash, cracks in the floor. Extreme low angle, massive scale contrast.
+90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
+```
 
 ## 5. 2D-ключевые кадры по сюжету
 

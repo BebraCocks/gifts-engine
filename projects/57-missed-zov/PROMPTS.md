@@ -12,6 +12,17 @@
 
 ---
 
+## Стиль: оживлённая цветная манга (решение автора, 2026-11-23)
+
+Не чёрно-белая манга и не плавное аниме, а **цветная манга, которую оживили** (motion manga):
+- рисунок как в цветной манге: жирный чёрный контур, штриховка, растровые точки, яркие цвета;
+- часть кадров — страницы с 2–3 панелями, панели появляются по одной под бит;
+- движение ограниченное и жёсткое: позы держатся, двигаются аура, искры, пыль, спам, волосы плаща;
+  дёрганая анимация 8–12 кадров в секунду, резкие наезды, тряска, импакт-вспышки;
+- звукоподражания крупными русскими буквами («БАМ!», «ХИ-ХИ», «ВЖУХ») добавляем в монтаже.
+
+Первые три кадра (`refs/frames/`) уже в этом стиле, оценки 9, 9.5, 9.
+
 ## Общие блоки
 
 **MISSED (описание персонажа, вставлять везде, где он есть):**
@@ -27,9 +38,7 @@ a quiet heavy aura around him.
 
 **STYLE (2D-аниме):**
 ```
-gritty 90s fighting-manga anime style, heavy black ink hatching and cross-hatching, dramatic
-chiaroscuro lighting, intense shadows on faces, speed lines, dust and debris, cinematic low angle,
-high contrast, vertical 9:16, ultra detailed, epic atmosphere
+full-color manga style, like a colored manga page brought to life: bold black ink outlines, ink hatching and screentone dot shading, vivid colors, dramatic lighting, high contrast, speed lines, highly detailed, vertical 9:16
 ```
 
 **STYLE 3D:**
@@ -446,6 +455,21 @@ Use the attached character sheet as the exact reference for the character Missed
 Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, black oversized hoodie. Extreme close-up of Missed's face in a dark room, lit from below by a phone screen. His black eyes slowly narrow into a cold, focused stare, mouth closed, no words. Black ink shadows fall over the upper half of his face, and a faint white-blue aura starts to flicker around the tips of his ears, tiny sparks in the air. Tense, silent, the calm before the storm. 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
 ```
 
+**Кадр 4. Втягивание (страница из 3 панелей)** — приложить `refs/missed_sheet.png`
+```
+Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, black oversized hoodie, black cargo pants, white sneakers. A manga page with three dynamic diagonal panels separated by black gutters. Panel 1: close-up of a phone in Missed's hand, the glowing screen cracks like glass, light bursts through the cracks. Panel 2: Missed's hand and sleeve dissolving into glowing blue pixels and tiny chat bubbles. Panel 3: Missed's whole body pulled headfirst into a swirling vortex of light, pixels and chat bubbles, calm face, eyes open, mouth closed, motion blur and speed lines. Full-color manga style, like a colored manga page brought to life: bold black ink outlines, ink hatching and screentone dot shading, vivid colors, dramatic lighting, high contrast, speed lines, highly detailed, vertical 9:16.
+```
+
+**Кадр 5. Приземление на арену** — приложить `refs/missed_sheet.png`, `refs/fakes/sheet_05.jpg`, `refs/fakes/sheet_07.jpg`
+```
+Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, black oversized hoodie, black cargo pants, white sneakers. The other attached images show fake copies of Missed with different bright skin colors and outfits. Extreme wide shot from high above: Missed lands on one knee in the center of a gigantic underground fighting arena, the floor made of giant chat message bubbles cracks in a crater around him, dust rings burst outward. Hundreds of colorful fake copies (like the attached ones: red cap, neon hoodie, hard hat with wrench, superhero cape, varsity jacket and many others) surround him in a huge circle, laughing, pointing and mocking him. Notification icons hang above like stadium spotlights, dark stands full of spectators, spam messages falling like ash. Missed is a tiny calm figure in the center, the only one in a black hoodie. Full-color manga style, like a colored manga page brought to life: bold black ink outlines, ink hatching and screentone dot shading, vivid colors, dramatic lighting, high contrast, speed lines, highly detailed, vertical 9:16.
+```
+
+**Кадр 6. Фейки смеются (страница из 3 панелей)** — приложить `refs/fakes/sheet_01.jpg`, `refs/fakes/sheet_05.jpg`, `refs/fakes/sheet_07.jpg`
+```
+Use the attached images as references for fake copies of the cartoon alien mascot Missed (bald egg-shaped heads, huge black eyes, long ears sticking out sideways, each with his own bright skin color and outfit). A manga page with three horizontal panels separated by black gutters, close-ups of three different fakes laughing hysterically at someone off-screen. Panel 1: the light blue pixelated fake in a green tracksuit, giggling behind his hand, glitch artifacts. Panel 2: the turquoise fake in a red cap "Mlssed", head thrown back in loud laughter, tears in his eyes. Panel 3: the green fake in a hard hat, bent over laughing and pointing with his huge wrench. Distorted fisheye angles, mocking grins, sweat drops, dark arena background with spotlights. Full-color manga style, like a colored manga page brought to life: bold black ink outlines, ink hatching and screentone dot shading, vivid colors, dramatic lighting, high contrast, speed lines, highly detailed, vertical 9:16.
+```
+
 ---
 
 ## 6. 3D-сцены (Gemini / Veo, видео)
@@ -501,15 +525,17 @@ stands, the crowd cheers, MISSED stands alone in the light, camera pulls back to
 
 ---
 
-## 7. Оживление 2D-кадров (image-to-video)
+## 7. Оживление кадров (motion manga)
 
-Чтобы не вышло слайд-шоу, каждый 2D-кадр оживляем коротким движением (3–5 секунд):
+Каждый кадр оживляем коротко (3–5 секунд), жёстко и ограниченно, не как плавное аниме:
 ```
-Animate this anime frame: [действие], speed lines, camera push-in, debris and dust particles moving,
-impact flash, keep the character's face and proportions unchanged.
+Animate this colored manga frame as a motion manga: limited, choppy animation at 8-12 frames per second, the characters hold their poses, only small parts move: [действие]. Sudden snap zoom, short camera shake on impact, screentone and ink lines stay crisp, keep the faces and proportions exactly unchanged, no smooth morphing.
 ```
-Действия: «sword slash and clones bursting», «hypnotic spiral spreading», «lightning strikes»,
-«aura exploding», «slow walk forward», «clones closing in».
+Действия: «aura flickers and sparks fly», «speed lines rush past», «spam messages fall like ash»,
+«cape and dust flutter», «the sword slash flashes», «clones shake with laughter».
+
+Страницы с панелями не оживляем целиком: в монтаже показываем панели по одной под бит,
+с наездом камеры внутрь каждой.
 
 ## Звук
 

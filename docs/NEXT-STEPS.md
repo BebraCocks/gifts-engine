@@ -677,3 +677,9 @@ https://drive.google.com/file/d/185Q1bvQpc9MH9kKFS780Ee9508IM-eCJ/view
 Переходы: скан «ROUND 1», распаковка коробки, затвор камеры, свайп ленты. Жуть — плюшевый кактус (55 %), единственный наезд.
 Музыка «Raving Energy» — Kevin MacLeod (incompetech.com), CC BY 4.0, −30 дБ. 87,5 с.
 https://drive.google.com/file/d/1opkWgVcFjTF-JWNixS3bUURkka9iTLVx/view
+
+## 2026-11-23 · 59-fart-rocket «Реактивный пук» — собрано
+Сценарий автора из присланного ролика (все пуки за жизнь разом → реактивный взлёт → падающая звезда → «смерть от естественных
+причин»), всё нарисовано кодом, голос серии drama-3 1,15×, SFX Botanica + пуки/гул кодом, RubUp перед «Через секунду ты летишь».
+107 с. https://drive.google.com/file/d/131xWF1ag5kHRAUoHzO3Miq-pb1FvyvcI/view
+Дальше: 60-fan «Что будет, если насрать на вентилятор» (тема автора).

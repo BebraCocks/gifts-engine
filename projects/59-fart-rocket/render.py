@@ -865,10 +865,10 @@ def sc05(t):
         d = ImageDraw.Draw(im)
         sc = pop(v)
         r = 120 * sc
-        if r > 4:
+        if r > 30:
             d.ellipse((cx - r - 10, cy - r - 10, cx + r + 10, cy + r + 10), fill=INK)
             d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=WHITE)
-            d.rectangle((cx - 20 * sc, cy - r - 40 * sc, cx + 20 * sc, cy - r - 8), fill=INK)
+            d.rectangle((cx - 20 * sc, cy - r - 8 - 32 * sc, cx + 20 * sc, cy - r - 8), fill=INK)
             a = math.radians(-90 + 360 * cl(v / 1.0))
             d.pieslice((cx - r + 14, cy - r + 14, cx + r - 14, cy + r - 14), -90, -90 + 360 * cl(v / 1.0),
                        fill=GAS + (255,))

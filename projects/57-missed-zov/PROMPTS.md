@@ -426,6 +426,26 @@ MISSED back in the dark room, silent, a faint satisfied smile, the phone buzzes 
 message "Missed, there's another one...", he silently rolls his eyes. + STYLE
 ```
 
+### Готовые промпты начала (копировать целиком, прикладывать `refs/missed_sheet.png`)
+
+Текст сообщений на экране телефона не генерируем: русские буквы ИИ путает. Экран с сообщениями
+делаем в монтаже поверх кадра.
+
+**Кадр 1. Берёт телефон**
+```
+Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, small sly closed-mouth smile, black oversized hoodie, black cargo pants, white sneakers. A dark bedroom at night, Missed sits alone on a couch, a phone on the low table in front of him buzzes and lights up the room with a cold blue glow, notification light flashing. He slowly reaches for it with one hand, calm and silent, mouth closed. Medium shot, the only light comes from the phone screen, deep shadows. 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
+```
+
+**Кадр 2. Читает**
+```
+Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, black oversized hoodie. Close-up from slightly below: Missed holds a phone in front of his face in a dark room, his face lit only by the cold blue screen light, the glowing screen faces away from the camera. In his huge glossy black eyes we see tiny reflections of many notification bubbles. Calm, silent, mouth closed, heavy ink shadows across his face. 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
+```
+
+**Кадр 3. Молчаливый взгляд**
+```
+Use the attached character sheet as the exact reference for the character Missed: a cartoon alien mascot with a bald egg-shaped pale peach-pink head, huge glossy black eyes, long ears sticking out sideways, black oversized hoodie. Extreme close-up of Missed's face in a dark room, lit from below by a phone screen. His black eyes slowly narrow into a cold, focused stare, mouth closed, no words. Black ink shadows fall over the upper half of his face, and a faint white-blue aura starts to flicker around the tips of his ears, tiny sparks in the air. Tense, silent, the calm before the storm. 90s fighting-manga anime style, bold black ink hatching, dramatic chiaroscuro lighting, high contrast, highly detailed, vertical 9:16.
+```
+
 ---
 
 ## 6. 3D-сцены (Gemini / Veo, видео)

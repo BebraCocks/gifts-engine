@@ -2544,13 +2544,7 @@
   "sounds": [
    "botanica-v4/button/pop-up-01.flac#0",
    "botanica-v4/button/pop-up-02.flac#0",
-   "botanica-v4/button/pop-up-05.flac#0",
-   "botanica-v4/cartoon/cartoon-blink-point.flac#0",
-   "botanica-v4/cartoon/cartoon-blink-point.flac#2",
-   "botanica-v4/cartoon/cartoon-blink-point.flac#3",
-   "botanica-v4/cartoon/cartoon-wink-twinkle-2.flac#0",
-   "botanica-v4/cartoon/cartoon-wink-twinkle.flac#0",
-   "botanica-v4/transition/whoosh/deep-mini-whoosh-09.flac#0"
+   "botanica-v4/button/pop-up-03.flac#0"
   ]
  }
 }

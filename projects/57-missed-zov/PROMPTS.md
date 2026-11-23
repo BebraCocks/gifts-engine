@@ -54,6 +54,30 @@
 Cinematic 3D animated movie shot, 8 seconds, vertical 9:16. Use the attached keyframes in order: sleeping, phone lights up, reaching for the phone, holding the phone, close-up of the face. 0-2 s: complete stillness, Missed sleeps peacefully in the moonlit bedroom, only dust particles float in the moonbeam. 2-3 s: the smartphone on the bedside table suddenly lights up with a cold blue glow and buzzes, the light spills over the room, one of his long ears twitches. 3-5 s: his huge black eyes snap open, he sits up in one smooth motion and reaches for the phone. 5-6.5 s: he picks it up and holds it with both hands, the blue screen light on his face. 6.5-8 s: slow dramatic push-in to an extreme close-up of his face, notification bubbles reflected in his glossy black eyes, his eyes slowly narrow. Keep the character, room and lighting exactly as in the keyframes. Smooth cinematic camera, shallow depth of field, volumetric moonlight. Audio: quiet room tone, phone vibration buzz. No dialogue, no music, Missed makes no sound.
 ```
 
+### Втягивание в телефон: ключевые кадры (приложить `refs/frames/3d_05_closeup.jpg` и `3d_04_holding.jpg`)
+
+Видео спальни из Gemini готово (9/10), черновик сцены: `draft_bedroom.py`.
+
+**Кадр 6. Экран вспыхивает**
+```
+Use the attached images as the exact reference for the character Missed, the room and the 3D style. Close-up over Missed's shoulder: the smartphone in his hands suddenly flares with blinding white-blue light, glowing cracks spread across the screen like shattered glass, light rays burst out into the dark bedroom, tiny glowing chat bubbles and pixels start flying out of the screen. Missed's face lit hard by the light, eyes wide, calm. Cinematic 3D animated movie still, dramatic lighting, motion blur, vertical 9:16.
+```
+
+**Кадр 7. Затягивает в телефон**
+```
+Use the attached images as the exact reference for the character Missed and the 3D style. Missed is being pulled headfirst into the glowing smartphone screen: his head and shoulders are already dissolving into streams of blue pixels and chat bubbles that spiral into the screen, his long ears stretched by the pull, his hoodie flapping. The bedroom is warped and stretched around the phone like a vortex. Calm face, eyes open, mouth closed. Cinematic 3D animated movie still, strong motion blur, glowing particles, vertical 9:16.
+```
+
+**Кадр 8. Полёт сквозь цифровой туннель**
+```
+Use the attached images as the exact reference for the character Missed and the 3D style. Missed flies at high speed through an endless glowing digital tunnel made of chat message bubbles, notification icons and streams of light, his body stretched forward like a diver, hoodie fluttering, calm focused face. Bright light at the end of the tunnel. Speed lines, motion blur, deep perspective. Cinematic 3D animated movie still, vertical 9:16.
+```
+
+**Кадр 9. Приземление на арену**
+```
+Use the attached images as the exact reference for the character Missed and the 3D style. Missed lands on one knee in the center of a gigantic underground fighting arena, the floor made of giant glossy chat message bubbles cracks in a crater around him, a ring of dust and light bursts outward. Huge notification icons hang above like stadium spotlights, dark stands full of spectators all around, spam messages falling like ash. Low angle, epic scale, Missed small and calm in the center. Cinematic 3D animated movie still, volumetric light, vertical 9:16.
+```
+
 ### Ключевые кадры спальни для Gemini (приложить `refs/frames/3d_01_bedroom.jpg`)
 
 Кадр 1 — уже готов (спит). Кадры 2–5 делаем по нему, потом отдаём все в Gemini для видео до 10 секунд.

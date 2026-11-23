@@ -37,6 +37,23 @@
 
 Готово: `refs/frames/3d_01_bedroom.jpg` (9/10).
 
+### Музыка 3D-версии: Lunar Abyss (автор, 2026-11-23)
+
+136 BPM, удар 0,441 с. Структура трека:
+- 0–8,5 с — тихое вступление с пульсом → спальня, телефон, три сообщения;
+- 8,5–14 с — нарастание → Миседа затягивает в телефон;
+- 14 с — мощный вход → арена, три фейка, три жертвы на трибуне, три битвы (до ~97 с);
+- ~97–124 с — затишье → подарки возвращаются жертвам, Мисед дома;
+- 124 с — снова удар → финальный кадр. Итого около 2 минут.
+
+Кадры спальни 1–5 готовы (`refs/frames/3d_01…05`), оценки 9, 9, 8.5, 9, 9.5.
+
+**Видео спальни** (Gemini/Flow, 8 секунд; первый кадр `3d_01_bedroom`, последний `3d_05_closeup`,
+остальные — как референсы)
+```
+Cinematic 3D animated movie shot, 8 seconds, vertical 9:16. Use the attached keyframes in order: sleeping, phone lights up, reaching for the phone, holding the phone, close-up of the face. 0-2 s: complete stillness, Missed sleeps peacefully in the moonlit bedroom, only dust particles float in the moonbeam. 2-3 s: the smartphone on the bedside table suddenly lights up with a cold blue glow and buzzes, the light spills over the room, one of his long ears twitches. 3-5 s: his huge black eyes snap open, he sits up in one smooth motion and reaches for the phone. 5-6.5 s: he picks it up and holds it with both hands, the blue screen light on his face. 6.5-8 s: slow dramatic push-in to an extreme close-up of his face, notification bubbles reflected in his glossy black eyes, his eyes slowly narrow. Keep the character, room and lighting exactly as in the keyframes. Smooth cinematic camera, shallow depth of field, volumetric moonlight. Audio: quiet room tone, phone vibration buzz. No dialogue, no music, Missed makes no sound.
+```
+
 ### Ключевые кадры спальни для Gemini (приложить `refs/frames/3d_01_bedroom.jpg`)
 
 Кадр 1 — уже готов (спит). Кадры 2–5 делаем по нему, потом отдаём все в Gemini для видео до 10 секунд.

@@ -1,4 +1,4 @@
-"""Music bed of episode 1: «Блич — Тема боя 2» (трек автора, input/music/, не в Git), громкость 15 % (автор).
+"""Music bed of episode 1: «Блич — Тема боя 2» (трек автора, input/music/, не в Git), громкость 22 % (автор).
 Обрыв перед «Нет» в чате (M4) и возврат после паузы; затухание в конце. Build: python -B music.py"""
 import json
 import subprocess
@@ -7,7 +7,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 TRACK = ROOT / "input" / "music" / "bleach_battle_theme_2.mp3"
-VOLUME = 0.15
+VOLUME = 0.22
 OFFSET = 0.0  # с какого места трека начинаем
 
 
@@ -20,7 +20,7 @@ def build():
            f"if(lt(t,{cut1:.2f}),0,if(lt(t,{cut1 + 1.2:.2f}),(t-{cut1:.2f})/1.2,1))))':eval=frame")
     flt = (f"atrim={OFFSET}:{OFFSET + total},asetpts=PTS-STARTPTS,"
            # ровная громкость (автор: хор громкий): выравнивание + компрессор, затем +7 дБ, чтобы весь трек
-           # звучал как тихое начало на 15 %
+           # звучал как тихое начало на заданной громкости
            f"dynaudnorm=f=400:g=21:p=0.5:m=4:r=0.12,acompressor=threshold=0.1:ratio=4:attack=5:release=200,volume=2.3,{vol},afade=t=out:st={total - 1.5:.2f}:d=1.5")
     rev = HERE / "build" / "review"
     music = rev / "music_only.wav"

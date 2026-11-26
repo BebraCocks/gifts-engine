@@ -2962,5 +2962,44 @@
    "botanica-v4/typing/v2-typing-normal.flac#0",
    "botanica-v4/typing/v3-type-a-b-c.flac#0"
   ]
+ },
+ "64-missed-aizen": {
+  "date": "2026-11-26",
+  "sounds": [
+   "botanica-v4/button/button-cursor-select-01.flac#0",
+   "botanica-v4/button/button-cursor-select-03.flac#0",
+   "botanica-v4/button/button-cursor-select-05.flac#0",
+   "botanica-v4/button/granular-button-select-01.flac#0",
+   "botanica-v4/button/granular-button-select-23.flac#0",
+   "botanica-v4/button/granular-button-select-28.flac#0",
+   "botanica-v4/button/magnetic-button-13.flac#0",
+   "botanica-v4/button/mechanical-click-01.flac#0",
+   "botanica-v4/button/pop-up-01.flac#0",
+   "botanica-v4/button/sparkle-button.flac#0",
+   "botanica-v4/cartoon/cartoon-blink-point.flac#0",
+   "botanica-v4/cartoon/cartoon-coin.flac#0",
+   "botanica-v4/cartoon/cartoon-pop.flac#0",
+   "botanica-v4/cartoon/cartoon-slide-up-3.flac#0",
+   "botanica-v4/foley/demolition.flac#0",
+   "botanica-v4/foley/paper-texture-crunch-distort-01.flac#0",
+   "botanica-v4/foley/paper-texture-crunch-distort-02.flac#0",
+   "botanica-v4/foley/trash-paper-crunch-02.flac#0",
+   "botanica-v4/impact-hit/hit-impact-no-fx-04.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-01.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-07.flac#0",
+   "botanica-v4/impact-hit/hit-impact-with-fx-09.flac#0",
+   "botanica-v4/impact-hit/impact-sub-drop.flac#0",
+   "botanica-v4/transform/shimmer-sparkle-glimmer.flac#0",
+   "botanica-v4/transition/botanical/botanical-whoosh-05.flac#0",
+   "botanica-v4/transition/risers/riser-granular-04.flac#0",
+   "botanica-v4/transition/risers/riser-musical-01.flac#0",
+   "botanica-v4/transition/sparkle/sparkle-whoosh-04.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-01.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-02.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-05.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-08.flac#0",
+   "botanica-v4/transition/whoosh/deep-mini-whoosh-15.flac#0",
+   "botanica-v4/transition/whoosh/deeper-fx-whoosh-06.flac#0"
+  ]
  }
 }

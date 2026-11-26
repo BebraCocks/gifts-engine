@@ -18,7 +18,10 @@ def build():
     cut0, cut1 = m4["start"] - 0.45, m4["end"] + 0.9  # тишина вокруг «Нет»
     vol = (f"volume='{VOLUME}*if(lt(t,{cut0 - 0.25:.2f}),1,if(lt(t,{cut0:.2f}),({cut0:.2f}-t)/0.25,"
            f"if(lt(t,{cut1:.2f}),0,if(lt(t,{cut1 + 1.2:.2f}),(t-{cut1:.2f})/1.2,1))))':eval=frame")
-    flt = f"atrim={OFFSET}:{OFFSET + total},asetpts=PTS-STARTPTS,{vol},afade=t=out:st={total - 1.5:.2f}:d=1.5"
+    flt = (f"atrim={OFFSET}:{OFFSET + total},asetpts=PTS-STARTPTS,"
+           # ровная громкость (автор: хор громкий): выравнивание + компрессор, затем +7 дБ, чтобы весь трек
+           # звучал как тихое начало на 15 %
+           f"dynaudnorm=f=400:g=21:p=0.5:m=4:r=0.12,acompressor=threshold=0.1:ratio=4:attack=5:release=200,volume=2.3,{vol},afade=t=out:st={total - 1.5:.2f}:d=1.5")
     rev = HERE / "build" / "review"
     music = rev / "music_only.wav"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(TRACK), "-af", flt, "-ar", "48000", "-ac", "2", str(music)],

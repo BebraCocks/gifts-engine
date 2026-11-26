@@ -15,6 +15,7 @@ sys.path.insert(0, str(HERE.parents[1] / 'engine'))
 import sfxkit  # noqa: E402
 
 SR = 48000
+WITH_MUSIC = False  # автор, 2026-11-26: TikTok не даёт выложить с треком «Блича» — музыку убрали полностью
 CUES = json.loads((HERE / 'voice_cues.json').read_text())
 DUR = CUES['total']
 C = {c['id']: (c['start'], c['end']) for c in CUES['cues']}
@@ -41,7 +42,7 @@ def main():
     import render  # те же времена сцен, что и в кадре
     S = render.START
     voice = load(REV / 'voice_only.mp3')
-    music = load(REV / 'music_only.wav')
+    music = load(REV / 'music_only.wav') * (1.0 if WITH_MUSIC else 0.0)
     fx = np.zeros((N, 2), np.float32)
     kit = sfxkit.Kit(HERE)
     a = lambda *x, **k: kit.add(fx, *x, **k)  # noqa: E731

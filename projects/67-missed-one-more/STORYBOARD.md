@@ -24,3 +24,6 @@
   Тайминг 55,24 с (`timeline.py`), события `events.py`, музыка `music.py` (сонный лоу-фай + джингл), звуки `synth67.py` +
   `../66-missed-fridge/synth66.py`, микс `audio.py` (−16,1 LUFS), рендер `render.py` (спальня из 65, плашки/улица из 66).
   Хайлайты и звук отправлены автору; полная сборка — после «собирай».
+- 2026-11-27: собран `renders/67-missed-one-more/missed_one_more_v1.mp4` (1080×1920, 60 fps, 55,23 с, −16,2 LUFS),
+  декодируется полностью, кадры раз в 3 с просмотрены, петля: первый ≈ последний кадр.
+  Drive «TikTok»: https://drive.google.com/file/d/1Iwf1AQnxfc5cbJ8QGy92-Rze7pwIr4Z_/view

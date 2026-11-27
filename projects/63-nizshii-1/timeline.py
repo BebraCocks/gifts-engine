@@ -4,7 +4,7 @@ import re
 import wave
 from pathlib import Path
 import numpy as np
-from script import CLIPS, LEAD
+from script import CLIPS, LEAD, subtitle
 
 HERE = Path(__file__).resolve().parent
 TAKES = [HERE / 'voice' / 'clips' / f'{c[0]}.wav' for c in CLIPS]
@@ -65,7 +65,7 @@ if HAS_NARRATION:
         mask, hop = _speech_mask(TAKES[k])
         speech_t = np.cumsum(mask) * hop
         total = speech_t[-1] if len(speech_t) else 1.0
-        chunks = _chunks(c[5])
+        chunks = _chunks(subtitle(c))
         n_all = sum(len(x) for x in chunks)
         acc = 0
         starts = []

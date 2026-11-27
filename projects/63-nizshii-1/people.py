@@ -88,8 +88,8 @@ def pose(x, y, h, kind='stand', t=0.0, **kw):
         leg('L', D - 0.1, D - 0.03)
         leg('R', D + 0.1, D + 0.03)
     elif kind == 'crossed':
-        arm('L', D - 0.25, math.pi - 0.15)
-        arm('R', D + 0.25, -0.2)
+        arm('L', D - 0.08, math.pi - 0.32)
+        arm('R', D + 0.08, 0.32)
         leg('L', D - 0.12, D - 0.04)
         leg('R', D + 0.12, D + 0.04)
     elif kind == 'reach':
@@ -112,7 +112,7 @@ def pose(x, y, h, kind='stand', t=0.0, **kw):
         leg('R', D + 0.3 * s, D + 0.3 * s + max(0, math.sin(ph + math.pi + 0.9)) * 0.5)
         bob = abs(math.cos(ph)) * u * 0.08
         for k_ in list(j):
-            if k_ != 'head_tilt':
+            if isinstance(j[k_], tuple):
                 j[k_] = (j[k_][0], j[k_][1] - bob)
     elif kind == 'carry':
         arm('L', D - 0.35, D - 0.75)                # больной локоть прижат
@@ -702,9 +702,25 @@ def head(ctx, j, lk, fc=None):
         swollen = 'eyeL' in lk['scars'] and sx == 1
         op = fc['eye'] * (0.12 if swollen else 1.0)
         eh = u * 0.046 * max(0.04, op)
+        if op < 0.12 and not swollen:            # закрытый глаз: одно веко дугой и ресницы
+            ctx.move_to(ex - ew, ey - u * 0.005)
+            ctx.curve_to(ex - ew * 0.4, ey + u * 0.035, ex + ew * 0.4, ey + u * 0.035, ex + ew, ey - u * 0.005)
+            stroke(ctx, (30, 18, 18), u * 0.022, 0.9)
+            for k in range(5):
+                lx = ex - ew * 0.6 + k * ew * 0.3
+                ctx.move_to(lx, ey + u * 0.025)
+                ctx.line_to(lx - u * 0.008, ey + u * 0.045)
+                stroke(ctx, (30, 18, 18), u * 0.008, 0.7)
+            ctx.move_to(ex - ew * 0.9, ey - u * 0.04)
+            ctx.curve_to(ex - ew * 0.3, ey - u * 0.07, ex + ew * 0.4, ey - u * 0.07, ex + ew * 0.95, ey - u * 0.035)
+            stroke(ctx, shade(col, 0.6), u * 0.014, 0.45)
+            continue_eye = False
+        else:
+            continue_eye = True
         # белок
-        ellipse(ctx, ex, ey, ew, max(eh, 0.5))
-        fill(ctx, (196, 186, 176))
+        ellipse(ctx, ex, ey, ew, max(eh, 0.5)) if continue_eye else None
+        if continue_eye:
+            fill(ctx, (196, 186, 176))
         if op > 0.15:
             ix = ex + fc['gaze'][0] * ew * 0.4 + yaw * ew * 0.2
             iy = ey + fc['gaze'][1] * eh * 0.4
@@ -722,16 +738,17 @@ def head(ctx, j, lk, fc=None):
             ctx.fill()
             ctx.restore()
         # веко
-        ctx.move_to(ex - ew * 1.05, ey + u * 0.005)
-        ctx.curve_to(ex - ew * 0.5, ey - eh * 1.4, ex + ew * 0.5, ey - eh * 1.4, ex + ew * 1.05, ey)
-        stroke(ctx, (22, 14, 14), u * 0.034, 0.95)
-        ctx.move_to(ex - ew * 0.8, ey + eh * 0.9)
-        ctx.curve_to(ex - ew * 0.3, ey + eh * 1.3, ex + ew * 0.3, ey + eh * 1.3, ex + ew * 0.8, ey + eh * 0.8)
-        stroke(ctx, shade(col, 0.55), u * 0.012, 0.6)
-        ctx.move_to(ex - ew * 0.9, ey - eh * 1.3 - u * 0.03)                  # складка века
-        ctx.curve_to(ex - ew * 0.3, ey - eh * 2 - u * 0.04, ex + ew * 0.4, ey - eh * 2 - u * 0.04,
-                     ex + ew * 0.95, ey - eh * 1.1 - u * 0.03)
-        stroke(ctx, shade(col, 0.6), u * 0.014, 0.55)
+        if continue_eye:
+            ctx.move_to(ex - ew * 1.05, ey + u * 0.005)
+            ctx.curve_to(ex - ew * 0.5, ey - eh * 1.4, ex + ew * 0.5, ey - eh * 1.4, ex + ew * 1.05, ey)
+            stroke(ctx, (22, 14, 14), u * 0.034, 0.95)
+            ctx.move_to(ex - ew * 0.8, ey + eh * 0.9)
+            ctx.curve_to(ex - ew * 0.3, ey + eh * 1.3, ex + ew * 0.3, ey + eh * 1.3, ex + ew * 0.8, ey + eh * 0.8)
+            stroke(ctx, shade(col, 0.55), u * 0.012, 0.6)
+            ctx.move_to(ex - ew * 0.9, ey - eh * 1.3 - u * 0.03)                  # складка века
+            ctx.curve_to(ex - ew * 0.3, ey - eh * 2 - u * 0.04, ex + ew * 0.4, ey - eh * 2 - u * 0.04,
+                         ex + ew * 0.95, ey - eh * 1.1 - u * 0.03)
+            stroke(ctx, shade(col, 0.6), u * 0.014, 0.55)
         if swollen:
             blob(ctx, ex, ey - u * 0.01, ew * 1.35, u * 0.13, (110, 70, 96), outline=False)
             soft_line(ctx, [(ex - ew, ey + u * 0.01), (ex, ey + u * 0.03), (ex + ew, ey)], (30, 18, 22), u * 0.02, 0.8)
@@ -819,6 +836,9 @@ def head(ctx, j, lk, fc=None):
     ctx.restore()
 
 
+fc_mouth_dummy = 0
+
+
 def hair(ctx, lk, hw, hh, sh, u):
     kind, hc = lk.get('hair') or (None, None)
     import random
@@ -850,9 +870,9 @@ def hair(ctx, lk, hw, hh, sh, u):
         smooth_path(ctx, pts, tension=0.7)
         ctx.set_source(rad(-hw * 0.3 + sh, -hh * 0.95, 0, hh * 1.2, [(0, (54, 52, 60), 1), (0.6, hc, 1), (1, hc, 1)]))
         ctx.fill()
-        for k in range(90):
+        for k in range(40):
             a = math.pi * (0.92 + r.random() * 1.16)
-            rr = 0.86 + r.random() * 0.18
+            rr = 0.9 + r.random() * 0.12
             if math.pi * 1.25 < a < math.pi * 1.75 and r.random() < 0.7:
                 continue
             x0 = math.cos(a) * hw * rr + sh
@@ -861,7 +881,7 @@ def hair(ctx, lk, hw, hh, sh, u):
             ln = u * (0.04 + r.random() * 0.09)
             ctx.move_to(x0, y0)
             ctx.line_to(x0 + math.cos(ang) * ln, y0 + math.sin(ang) * ln)
-            stroke(ctx, (70, 70, 82) if r.random() < 0.25 else (8, 8, 10), u * (0.018 + r.random() * 0.02), 0.85)
+            stroke(ctx, (34, 34, 40) if r.random() < 0.2 else (8, 8, 10), u * (0.014 + r.random() * 0.012), 0.7)
     elif kind == 'long':                          # длинные волосы (№444)
         for k in range(60):
             sx = (k / 59 - 0.5) * 2
@@ -869,8 +889,8 @@ def hair(ctx, lk, hw, hh, sh, u):
             y0 = -hh * (0.95 - abs(sx) * 0.4)
             pts = [(x0, y0), (x0 + sx * hw * 0.3, y0 + hh * 0.5), (x0 + sx * hw * 0.42 + (r.random() - 0.5) * u * 0.1,
                                                                    hh * (0.8 + r.random() * 0.8))]
-            if abs(sx) < 0.4:
-                pts = [(x0, y0), (x0 + sx * hw * 0.7, y0 + hh * 0.3)]
+            if abs(sx) < 0.5:
+                continue
             smooth_path(ctx, pts, closed=False)
             stroke(ctx, shade(hc, 0.7 + r.random() * 0.8), u * 0.035, 0.85)
         pts = [(-hw * 0.98 + sh, -hh * 0.4), (-hw * 0.9 + sh, -hh * 0.88), (sh * 0.5, -hh * 1.08),
@@ -896,14 +916,23 @@ def hair(ctx, lk, hw, hh, sh, u):
     beard = lk.get('beard')
     if beard and beard[0] == 'full':
         bc = beard[1]
-        for k in range(90):
-            sx = (k / 89 - 0.5) * 2
-            x0 = sx * hw * 0.92 + sh * 1.2
-            y0 = hh * (0.05 + abs(sx) * 0.1)
-            pts = [(x0, y0), (x0 * 0.8, hh * (0.6 + (1 - abs(sx)) * 0.5)),
-                   (x0 * 0.5 + (r.random() - 0.5) * u * 0.1, hh * (0.9 + (1 - abs(sx)) * 0.55))]
+        pts = [(-hw * 0.92 + sh, hh * 0.0), (-hw * 0.8 + sh, hh * 0.6), (-hw * 0.4 + sh, hh * 1.25), (sh, hh * 1.45),
+               (hw * 0.4 + sh, hh * 1.25), (hw * 0.8 + sh, hh * 0.6), (hw * 0.92 + sh, hh * 0.0), (hw * 0.6 + sh, hh * 0.22),
+               (hw * 0.3 + sh, hh * 0.42), (sh, hh * 0.4), (-hw * 0.3 + sh, hh * 0.42), (-hw * 0.6 + sh, hh * 0.22)]
+        smooth_path(ctx, pts, tension=0.6)
+        ctx.set_source(rad(sh - hw * 0.2, hh * 0.5, 0, hh * 1.2, [(0, mixc(bc, (150, 140, 130), 0.3), 0.97), (1, bc, 0.97)]))
+        ctx.fill()
+        for k in range(120):
+            sx = (r.random() - 0.5) * 1.8
+            x0 = sx * hw * 0.9 + sh
+            y0 = hh * (0.1 + abs(sx) * 0.05 + r.random() * 0.5)
+            ln = hh * (0.25 + r.random() * 0.4)
+            pts = [(x0, y0), (x0 + sx * u * 0.03, y0 + ln * 0.5), (x0 * 0.92 + (r.random() - 0.5) * u * 0.06, y0 + ln)]
             smooth_path(ctx, pts, closed=False)
-            stroke(ctx, shade(bc, 0.7 + r.random() * 0.8), u * 0.04, 0.9)
+            stroke(ctx, shade(bc, 0.6 + r.random() * 0.9), u * 0.018, 0.7)
+        # рот в бороде — тёмная щель
+        ellipse(ctx, sh * 1.4, hh * 0.6, hw * 0.22, hh * 0.05 + fc_mouth_dummy * 0)
+        fill(ctx, (30, 20, 18), 0.8)
 
 
 # ── сборка ────────────────────────────────────────────────────────────────
@@ -963,3 +992,36 @@ def crowd_look(seed, female=None):
                 top=('tank', r.choice([(90, 92, 88), (110, 100, 86), (70, 76, 84)])) if fem else None,
                 number=str(r.randint(12, 989)), hair=hair, beard=beard, eyes=r.choice([(60, 44, 34), (70, 80, 90)]),
                 nails_black=r.random() < 0.5, finger_miss=r.random() < 0.2, scars=[])
+
+
+# ── второстепенные по книге ───────────────────────────────────────────────
+B58 = look(torso=(186, 140, 108), build='heavy', number='58', hair=('shaved', None), beard=('stubble', (40, 32, 28)),
+           arms={'L': ('strong', SKIN_OLD), 'R': ('strong', (196, 166, 146))},     # накачанные стариковские руки
+           legs={'L': ('normal', (170, 130, 100)), 'R': ('normal', (176, 136, 104))}, eyes=(50, 40, 34))
+LAME = look(torso=(170, 136, 112), build='slim', female=True, number='240', num_pos='collar',
+            arms={'L': ('thin', (150, 110, 86)), 'R': ('female', (176, 140, 114))},
+            legs={'L': ('thin', (190, 160, 130)), 'R': ('old', SKIN_OLD)}, top=('tank', (98, 90, 82)),
+            hair=('ragged', (90, 80, 72)), eyes=(70, 60, 50))
+BARS = look(torso=(184, 138, 104), build='muscle', number='107', hair=('buzz', (40, 32, 26)),
+            beard=('stubble', (46, 36, 30)), arms={'L': ('strong', (176, 132, 100)), 'R': ('strong', (172, 128, 96))},
+            legs={'L': ('muscle', (140, 98, 70)), 'R': ('muscle', (136, 94, 66))}, eyes=(60, 46, 34))
+BUKSA = look(torso=(222, 190, 170), build='slim', female=True, hair=('spiky', (236, 224, 170)),
+             arms={'L': ('female', (210, 176, 150)), 'R': ('female', (196, 160, 132))},
+             legs={'L': ('normal', (226, 196, 176)), 'R': ('thin', (200, 170, 150))}, top=('tank', (150, 90, 110)),
+             number='63', num_pos='collar', eyes=(70, 110, 130))
+P444 = look(torso=(196, 170, 120), build='thin', number='444', hair=('long', (58, 46, 36)),
+            beard=('full', (60, 48, 38)), spine=1.0, eyes=(70, 60, 46),
+            arms={'L': ('strong', SKIN_PALE), 'R': ('thin', SKIN_COAL)},             # белая и чёрная
+            legs={'L': ('thin', SKIN_YELLOW), 'R': ('thin', SKIN_YELLOW)})
+GUARD = look(torso=(190, 146, 112), build='muscle', hair=('shaved', None), beard=None, top=('tee', (24, 24, 26)),
+             shorts=(22, 22, 24), belt='baton', shoes=(26, 26, 28), eyes=(56, 44, 36),
+             arms={'L': ('strong', (186, 142, 108)), 'R': ('strong', (180, 136, 102))},
+             legs={'L': ('athletic', (180, 136, 102)), 'R': ('athletic', (180, 136, 102))})
+STRONGW = look(torso=(170, 126, 96), build='slim', female=True, top=('tank', (80, 84, 78)), number='305', num_pos='collar',
+               arms={'L': ('strong', (150, 110, 80)), 'R': ('strong', (160, 118, 88))},
+               legs={'L': ('athletic', (150, 110, 80)), 'R': ('strong', (140, 100, 74))}, hair=('ragged', (40, 30, 24)))
+GREYMAN = look(torso=(200, 170, 150), build='thin', number='512', hair=('buzz', (200, 196, 190)),
+               beard=('stubble', (200, 196, 190)), arms={'L': ('old', SKIN_OLD), 'R': ('thin', (190, 150, 120))},
+               legs={'L': ('old', SKIN_OLD), 'R': ('old', SKIN_OLD)})
+WEIRDO = look(torso=(176, 150, 130), build='thin', number='777', hair=('ragged', (80, 70, 60)), beard=('stubble', (60, 50, 40)),
+              arms={'L': ('thin', SKIN_OLIVE), 'R': ('old', SKIN_OLD)}, legs={'L': ('thin', SKIN_PALE), 'R': ('thin', SKIN_DARK)})

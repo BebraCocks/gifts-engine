@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 import kit
 import people as pp
-from kit import smooth_path, fill, stroke, ellipse, rad, lin, shade
+from kit import smooth_path, fill, stroke, ellipse, rad, lin, shade, mixc
 
 LIGHT = np.array([-0.5, -0.62, 0.6], np.float32)
 LIGHT /= np.linalg.norm(LIGHT)
@@ -244,14 +244,18 @@ FRONT_ARMS = {'crossed': ('L', 'R'), 'reach': ('R',), 'slap': ('R',), 'hips': ()
 STUMP_FRONT = True
 
 
-def render(j, lk, fc=None, box=None, back_arms=None, detail=1.0, extras=None):
+def render(j, lk, fc=None, box=None, back_arms=None, detail=1.0, extras=None, parts='all'):
     u = j['u']
     if back_arms is None:
         front = FRONT_ARMS.get(j.get('kind'), ())
         back_arms = tuple(s for s in ('L', 'R') if s not in front)
     xs = [v[0] for k, v in j.items() if isinstance(v, tuple)]
     ys = [v[1] for k, v in j.items() if isinstance(v, tuple)]
-    if box is None:
+    if box is None and parts == 'head':
+        hx, hy = j['head']
+        x0, y0 = int(hx - u * 1.0), int(hy - u * 1.15)
+        w, h = int(u * 2.0), int(u * 2.0)
+    elif box is None:
         x0, y0 = int(min(xs) - u * 1.2), int(min(ys) - u * 1.4)
         w, h = int(max(xs) - x0 + u * 1.2), int(max(ys) - y0 + u * 0.8)
     else:
@@ -266,6 +270,10 @@ def render(j, lk, fc=None, box=None, back_arms=None, detail=1.0, extras=None):
     order += [('neck',), ('torso',), ('flush',), ('shorts',), ('top',)]
     order += [('arm', s) for s in ('L', 'R') if s not in back_arms]
     order += [('flush',), ('head',)]
+    if parts == 'head':
+        order = [('head',)]
+    elif parts == 'body':
+        order = [o for o in order if o != ('head',)]
     for part in order:
         if part[0] in ('leg', 'arm'):
             limb_part(out, j, lk, part[0], part[1], x0, y0, w, h, ink, hil, sharp)
@@ -374,6 +382,13 @@ def limb_part(out, j, lk, which, side, x0, y0, w, h, ink, hil, sharp):
         smooth_path(m.ctx, fpts)
         fill(m.ctx, (255, 255, 255))
     comp_part(out, m, col, rim=0.9)
+    if which == 'leg' and lk.get('shoes'):
+        sm = Layer(w, h, x0, y0)
+        smooth_path(sm.ctx, [(x_, y_ + u * 0.02) for x_, y_ in foot_outline(c, u * 1.12, side, j)])
+        fill(sm.ctx, (255, 255, 255))
+        comp_part(out, sm, lk['shoes'], rim=1.0)
+        pp.soft_line(sharp.ctx, [(c[0] - u * 0.16, c[1] + u * 0.3), (c[0] + u * 0.18, c[1] + u * 0.3)], (220, 220, 220),
+                     u * 0.03, 0.6, smooth=False)
     ic, hc = ink.ctx, hil.ctx
     dk = shade(col, 0.35)
     # сустав: складки, «косточка»
@@ -392,7 +407,8 @@ def limb_part(out, j, lk, which, side, x0, y0, w, h, ink, hil, sharp):
         fill(hc, (255, 236, 210), 0.14)
         pp.soft_line(ic, [(b[0] - wsc[1] * 0.35, b[1] + wsc[1] * 0.35), (b[0], b[1] + wsc[1] * 0.5),
                           (b[0] + wsc[1] * 0.35, b[1] + wsc[1] * 0.35)], dk, u * 0.02, 0.5)
-        foot_details(sharp.ctx, ic, c, u, side, col, lk.get('nails_black') and old, j)
+        if not lk.get('shoes'):
+            foot_details(sharp.ctx, ic, c, u, side, col, lk.get('nails_black') and old, j)
     else:
         hand_details(sharp.ctx, ic, c, d, u, col, hk, side, old, flines, lk.get('finger_miss') and side == 'L')
         if lk.get('swollen_elbow') == side:
@@ -517,6 +533,13 @@ def torso_part(out, j, lk, x0, y0, w, h, ink, hil, sharp):
     sw = u * 1.02 * j.get('sw', 1.0)
     ic, hc = ink.ctx, hil.ctx
     dk = shade(col, 0.32)
+    if lk.get('back'):
+        pp.soft_line(ic, [(mid[0], mid[1] - u * 0.1), (mid[0] + lk.get('spine', 0) * u * 0.2, mid[1] + u * 1.2),
+                          (mid[0], hm[1] - u * 0.2)], dk, u * 0.045, 0.5)
+        for sx in (1, -1):
+            pp.soft_line(ic, [(mid[0] + sx * u * 0.25, mid[1] + u * 0.3), (mid[0] + sx * sw * 0.6, mid[1] + u * 0.55),
+                              (mid[0] + sx * u * 0.35, mid[1] + u * 1.1)], dk, u * 0.04, 0.45)
+        return
     if lk['build'] == 'muscle':
         for sx in (1, -1):
             # грудные: тень снизу, блик сверху
@@ -584,7 +607,7 @@ def torso_part(out, j, lk, x0, y0, w, h, ink, hil, sharp):
         pp.soft_line(ic, [(mid[0] + sw * 0.6, mid[1] + u * 0.2), (mid[0] + sw * 0.75, mid[1] + u * 1.2),
                           (mid[0] + sw * 0.5, mid[1] + u * 2.2)], dk, u * 0.06, 0.4)
     # номер и штрихкод — татуировки, слегка размыты кожей
-    if lk.get('number'):
+    if lk.get('number') and lk['num_pos'] != 'collar':
         num_tattoo(sharp.ctx, j, lk, mid, sw)
     if lk.get('barcode'):
         pp.barcode(sharp.ctx, j)
@@ -724,7 +747,7 @@ def top_part(out, j, lk, x0, y0, w, h):
         ellipse(dc, mid[0] + (r.random() - 0.5) * sw * 1.3, mid[1] + u * (0.7 + r.random() * 2.2),
                 u * (0.05 + r.random() * 0.12), u * (0.04 + r.random() * 0.07), r.random())
         fill(dc, shade(col, 0.55), 0.22)
-    if lk.get('number') and lk['num_pos'] == 'collar':
+    if lk.get('number') and lk['num_pos'] == 'collar' and not lk.get('back'):
         num_tattoo(dc, j, lk, mid, sw)
     if lk.get('top_print'):
         lk['top_print'](dc, mid, u)
@@ -753,6 +776,27 @@ def head_part(out, j, lk, fc, x0, y0, w, h, ink, hil, sharp):
     fill(c, (255, 255, 255))
     c.restore()
     comp_part(out, m, lk['head'], rim=1.0)
+    if lk.get('back'):                       # затылок: волосы закрывают голову, уши
+        f = Layer(w, h, x0, y0)
+        fc_ = f.ctx
+        fc_.save()
+        fc_.translate(cx, cy)
+        for sx in (1, -1):
+            pp.blob(fc_, sx * hw * 0.98, u * 0.02, u * 0.11, u * 0.19, shade(lk['head'], 0.85))
+        kind, hcol = lk.get('hair') or (None, None)
+        if kind and kind != 'shaved' and hcol:
+            pts = [(-hw * 1.0, -hh * 0.2), (-hw * 0.94, -hh * 0.86), (0, -hh * 1.06), (hw * 0.94, -hh * 0.86),
+                   (hw * 1.0, -hh * 0.2), (hw * 0.8, hh * (0.6 if kind == 'long' else 0.35)),
+                   (0, hh * (0.9 if kind == 'long' else 0.45)), (-hw * 0.8, hh * (0.6 if kind == 'long' else 0.35))]
+            smooth_path(fc_, pts)
+            fc_.set_source(rad(-hw * 0.3, -hh * 0.6, 0, hh * 1.5, [(0, mixc(hcol, (140, 130, 120), 0.25), 0.95),
+                                                                   (1, hcol, 0.95)]))
+            fc_.fill()
+            if kind == 'spiky':
+                pp.hair(fc_, lk, hw, hh, 0, u)
+        fc_.restore()
+        kit.over(out, f.rgba())
+        return
     # черты лица (чёткий слой) — используем people.head без заливки черепа
     f = Layer(w, h, x0, y0)
     pp.head(f.ctx, j, {**lk, '_no_skull': True}, fc2)

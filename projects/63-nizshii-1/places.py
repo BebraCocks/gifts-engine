@@ -344,14 +344,14 @@ def floor_top(w, h, seed=2, plate=360, wet=0.6):
         c.rectangle(gx + 8 + k * 22, gy + 6, 9, 178)
         fill(c, (56, 60, 62))
     arr = cv.premul()
-    # лужи и липкость: тёмные глянцевые пятна по шуму
-    n = kit.noise(h, w, 90, seed)
-    wetm = np.clip((n - (1 - wet)) * 4, 0, 1)
-    arr[..., :3] *= (1 - wetm[..., None] * 0.45)
-    hl = np.clip((n - (1 - wet) - 0.12) * 6, 0, 1) * kit.noise(h, w, 18, seed + 1)
-    arr[..., :3] += (hl ** 3)[..., None] * np.array([0.25, 0.32, 0.36], np.float32)
-    g = kit.noise(h, w, 40, seed + 5)
-    arr[..., :3] *= (0.8 + 0.35 * g[..., None]) * np.array([1.0, 0.98, 0.94], np.float32)
+    # лужи и липкость: мягкие тёмные мокрые пятна, редкие блики
+    n = kit.noise(h, w, 160, seed)
+    wetm = np.clip((n - (1 - wet)) * 2.5, 0, 1)
+    arr[..., :3] *= (1 - wetm[..., None] * 0.35)
+    hl = np.clip((n - 0.82) * 8, 0, 1)
+    arr[..., :3] += (hl ** 2)[..., None] * np.array([0.08, 0.1, 0.11], np.float32)
+    g = kit.noise(h, w, 80, seed + 5)
+    arr[..., :3] *= (0.88 + 0.18 * g[..., None]) * np.array([1.0, 0.98, 0.94], np.float32)
     kit.texture(arr, 0.18, 6, seed=seed + 3, fine=0.08)
     np.clip(arr, 0, 1, out=arr)
     return arr

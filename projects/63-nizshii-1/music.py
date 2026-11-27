@@ -6,11 +6,19 @@ import numpy as np
 from scipy.signal import butter, sosfilt, fftconvolve
 from timeline import DUR, SCENES
 
-MOOD = {'body': 'calm', 'face': 'calm', 'yorka_up': 'tension', 'yorka_look': 'calm', 'self': 'sad',
-        'corridor': 'tension', 'scan': 'tension', 'niche': 'calm', 'yorka_talk': 'sad', 'slap': 'tension',
-        'leave': 'calm', 'menu': 'calm', 'odin': 'sad', 'screen': 'tension', 'game': 'tension', 'slime': 'dark',
-        'kick': 'tension', 'bench': 'calm', 'talk444': 'sad', 'races': 'dark', 'medblock': 'dark', 'klux': 'calm',
-        'demote': 'sad', 'guard': 'calm', 'capsule': 'sad'}
+MOOD = {   # v2 (15,5 мин): настроение каждой сцены по книге
+    'dark': 'dark', 'body': 'calm', 'yorka_voice': 'tension', 'memory': 'sad', 'getup': 'tension', 'self': 'sad',
+    'yorka_close': 'calm', 'yorka_face': 'calm', 'corridor': 'tension', 'smiles': 'dark', 'number': 'calm',
+    'sphere': 'tension', 'scan': 'tension', 'slump': 'sad', 'niche_door': 'calm', 'niche': 'calm', 'cube': 'calm',
+    'yorka_talk': 'sad', 'slap': 'tension', 'elbow': 'tension', 'party': 'calm', 'leave': 'calm', 'menu': 'calm',
+    'odin': 'sad', 'screen': 'tension', 'push': 'tension', 'game': 'tension', 'lame': 'calm', 'walk': 'dark',
+    'ring': 'dark', 'tooth': 'dark', 'conveyor': 'dark', 'laugh': 'calm', 'bucket': 'dark', 'kick': 'tension',
+    'bars': 'tension', 'colossus': 'sad', 'trip': 'tension', 'count': 'sad', 'shower': 'calm', 'lunch': 'calm',
+    'wake444': 'calm', 'bottle': 'calm', 'talk444': 'sad', 'twins': 'calm', 'races': 'dark', 'promise': 'calm',
+    'medblock': 'dark', 'receiver': 'tension', 'rumors': 'dark', 'klux_map': 'calm', 'klux': 'calm',
+    'vending': 'calm', 'vending_arms': 'tension', 'evening': 'dark', 'demote': 'sad', 'guard': 'calm',
+    'poor_side': 'sad', 'capsule': 'calm', 'capsule_in': 'sad',
+}
 BEAT = 60 / 70
 
 

@@ -1,37 +1,38 @@
-"""«Низший» 1/1 — первые ~19 с части 1 в стиле графического романа (выбор агента 2026-11-24 по просьбе автора).
-Панели комикса на тёмной странице: чёрная рамка, растр, плашки системы (зелёный моноширинный), плашки мыслей Оди
-(кремовые), облачко речи Йорки, звуковые надписи «ТУК». Камера плавно едет внутри панели; панели сменяются наездом.
-Предыдущая версия (неоновая инфографика) — render_infographic_v1.py. Кадр — чистая функция времени.
+"""«Низший» 1/1 — первые ~19 с части 1. Анимация в нуарном стиле A (автор 2026-11-24: «анимация, а не комикс»,
+из текста — только неброские субтитры внизу). Предыдущие версии: render_infographic_v1.py, render_comic_v1.py.
 
-    python -B projects/63-nizshii-1/render.py --frames 60,300,520,700,860,1080
-    python -B engine/tools/build.py projects/63-nizshii-1 --approved --name nizshii_1_comic_v1
+Сцены: (1) вид сверху — Оди лежит на мокром полу; система «гидрирует» тело (цвет возвращается), «комплектует»
+(руки и ноги проявляются за зелёной линией сканера), «реанимирует» (тело вздрагивает на каждый удар сердца, начинается
+дыхание); (2) крупно лицо: веки дрожат и открываются, взгляд мечется, брови сводятся; (3) взгляд с пола вверх —
+Йорка нависает и трясёт его, губы двигаются по громкости её голоса; (4) взгляд вниз на свою грудь с номером 11,
+к нему тянется старческая рука. Нуарная обработка: тёмный тил в тенях, виньетка, зерно.
+
+    python -B projects/63-nizshii-1/render.py --frames 60,240,400,560,700,900,1100
+    python -B engine/tools/build.py projects/63-nizshii-1 --approved --name nizshii_1_anim_v1
 """
 import functools
 import math
 import sys
+import wave
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import paths  # noqa: E402
 HERE = paths.enter(__file__)
 import numpy as np  # noqa: E402
-from PIL import Image, ImageDraw, ImageFilter, ImageFont  # noqa: E402
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance  # noqa: E402
 import banner  # noqa: E402
 import frames  # noqa: E402
-import comic  # noqa: E402
-from timeline import S, E, DUR, CAPS, SC2, SC3, STAMP  # noqa: E402
+import anim  # noqa: E402
+from timeline import S, E, ON, END, KEYS, DUR, SC2, SC3, STAMP  # noqa: E402
 from events import AD_STOPS, OK, BEATS, MEMORY_DRAIN, NAME_GLITCH, FACE_GLITCH, HEY  # noqa: E402
 
 W, H, FPS = 1080, 1920, 60
 BR = banner.Breaks(AD_STOPS, cy=H / 2)
-F = HERE / 'fonts'
-INK = (0, 0, 0)
-PAGE = (20, 20, 24)
-GREEN = (96, 255, 150)
-CREAM = (246, 236, 204)
-RED = (214, 40, 36)
-YELLOW = (255, 214, 64)
-M = 34                                         # поле страницы
+SC4 = STAMP - 0.15
+SUBS = {'S1': 'Гидрация — успешно.', 'S2': 'Комплектация — успешно.', 'S3': 'Реанимация — успешно.',
+        'O2': 'И я не помню ничего.', 'O3': 'Ни имени.', 'O4': 'Ни лица.',
+        'Y1': '— Эй! Одиннадцатый! Очнись уже! Подъём!'}
 
 
 def cl(x, a=0.0, b=1.0):
@@ -52,22 +53,11 @@ def ramp(t, a, b):
     return cl((t - a) / (b - a)) if b > a else float(t >= a)
 
 
-def back(x, s=1.7):
-    x = cl(x) - 1
-    return 1 + x * x * ((s + 1) * x + s)
-
-
-@functools.lru_cache(None)
-def font(name, size):
-    return ImageFont.truetype(str(F / name), size)
-
-
-def osw(size):
-    return font('Oswald-700.ttf', size)
-
-
-def mono(size):
-    return font('JetBrainsMono-Bold.ttf', size)
+def bump(t, t0, rise=0.06, fall=0.35):
+    v = t - t0
+    if v < 0:
+        return 0.0
+    return min(1.0, v / rise) * math.exp(-max(0.0, v - rise) / fall)
 
 
 def put(base, spr, cx, cy, a=1.0, scale=1.0, rot=0.0):
@@ -76,306 +66,321 @@ def put(base, spr, cx, cy, a=1.0, scale=1.0, rot=0.0):
     if abs(scale - 1) > 1e-3:
         spr = spr.resize((max(1, int(spr.width * scale)), max(1, int(spr.height * scale))), Image.BILINEAR)
     if abs(rot) > 0.05:
-        spr = spr.rotate(rot, Image.BICUBIC, expand=True)
+        spr = spr.rotate(rot, Image.BILINEAR, expand=True)
     if a < 0.999:
         spr = spr.copy()
         spr.putalpha(spr.getchannel('A').point(lambda v: int(v * cl(a))))
     base.alpha_composite(spr, (int(round(cx - spr.width / 2)), int(round(cy - spr.height / 2))))
 
 
-# ------------------------------------------------------------------ спрайты (один раз на процесс)
-@functools.lru_cache(None)
-def lying(eyes):
-    """Оди лежит на полу по диагонали — вид сверху"""
-    im = comic.hero(eyes).crop((240, 520, 860, 1840))
-    im = im.resize((int(im.width * 0.72), int(im.height * 0.72)), Image.LANCZOS)
-    return im.rotate(-58, Image.BICUBIC, expand=True)
-
-
-@functools.lru_cache(None)
-def face_crop():
-    return comic.hero('half').crop((330, 520, 750, 1000)).resize((1008, 1152), Image.LANCZOS)
-
-
-@functools.lru_cache(None)
-def chest_crop():
-    return comic.hero('half').crop((370, 790, 770, 1130)).resize((1000, 850), Image.LANCZOS)
-
-
-@functools.lru_cache(None)
-def yorka_crop():
-    return comic.yorka().crop((360, 470, 780, 1260)).resize((714, 1343), Image.LANCZOS)
-
-
-@functools.lru_cache(None)
-def box(text, size, fg, bg, border=INK, pad=(26, 16), mono_font=False, bw=6, acc=None):
-    f = mono(size) if mono_font else osw(size)
-    bb = f.getbbox(text)
-    w, h = bb[2] - bb[0] + pad[0] * 2, bb[3] - bb[1] + pad[1] * 2
-    im = Image.new('RGBA', (w + 14, h + 14), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    d.rectangle((10, 10, w + 10, h + 10), fill=(0, 0, 0, 160))                   # сдвинутая тень, как в комиксе
-    d.rectangle((0, 0, w, h), fill=bg, outline=border, width=bw)
-    x = pad[0] - bb[0]
-    if acc and acc in text:
-        pre, post = text.split(acc, 1)
-        d.text((x, pad[1] - bb[1]), pre, font=f, fill=fg)
-        x += f.getlength(pre)
-        d.text((x, pad[1] - bb[1]), acc, font=f, fill=RED)
-        x += f.getlength(acc)
-        d.text((x, pad[1] - bb[1]), post, font=f, fill=fg)
-    else:
-        d.text((x, pad[1] - bb[1]), text, font=f, fill=fg)
-    return im
-
-
-@functools.lru_cache(None)
-def sfx_word(text, size, col, rot):
-    """звуковая надпись: цветная, с чёрной и белой обводкой"""
-    f = osw(size)
-    bb = f.getbbox(text)
-    w, h = bb[2] - bb[0] + 80, bb[3] - bb[1] + 80
-    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    d.text((40 - bb[0], 40 - bb[1]), text, font=f, fill=(255, 255, 255), stroke_width=22, stroke_fill=(255, 255, 255))
-    d.text((40 - bb[0], 40 - bb[1]), text, font=f, fill=col, stroke_width=10, stroke_fill=INK)
-    return im.rotate(rot, Image.BICUBIC, expand=True)
-
-
-# ------------------------------------------------------------------ панель
-def panel_frame(im, rect, content_fn, t):
-    """content_fn(t, w, h) -> RGBA; вставляется в прямоугольник с чёрной рамкой"""
-    x0, y0, x1, y1 = [int(v) for v in rect]
-    w, h = x1 - x0, y1 - y0
-    if w < 8 or h < 8:
-        return
-    c = content_fn(t, w, h)
-    im.alpha_composite(c, (x0, y0))
-    d = ImageDraw.Draw(im)
-    d.rectangle((x0, y0, x1, y1), outline=INK, width=14)
-    d.rectangle((x0 - 7, y0 - 7, x1 + 7, y1 + 7), outline=(236, 232, 222), width=4)
-
-
-def ken(src, t, t0, t1, w, h, z0, z1, c0, c1):
-    """камера внутри панели: зум z и центр c (в координатах исходника), плавно"""
-    u = eio(ramp(t, t0, t1))
-    z = z0 + (z1 - z0) * u
-    cx = c0[0] + (c1[0] - c0[0]) * u
-    cy = c0[1] + (c1[1] - c0[1]) * u
-    return src.transform((w, h), Image.AFFINE, (1 / z, 0, cx - w / 2 / z, 0, 1 / z, cy - h / 2 / z),
+def cam(src, w, h, z, cx, cy, rot=0.0):
+    """вырезать из src кадр w×h с центром (cx, cy), масштабом z и поворотом rot (градусы)"""
+    a = math.radians(rot)
+    c, s = math.cos(a) / z, math.sin(a) / z
+    return src.transform((w, h), Image.AFFINE, (c, s, cx - c * w / 2 - s * h / 2, -s, c, cy + s * w / 2 - c * h / 2),
                          resample=Image.BILINEAR)
 
 
-# ------------------------------------------------------------------ панель 1: тело на полу, система собирает
+# ------------------------------------------------------------------ голос Йорки -> рот
 @functools.lru_cache(None)
-def p1_world(eyes):
-    world = comic.floor_top().copy()
-    hero = lying(eyes)
-    world.alpha_composite(hero, (700 - hero.width // 2, 1180 - hero.height // 2))
-    return world
+def envelope():
+    with wave.open(str(HERE / 'voice' / 'clips' / 'Y1.wav')) as w:
+        x = np.frombuffer(w.readframes(w.getnframes()), '<i2').astype(np.float32).reshape(-1, 2).mean(1)
+        sr = w.getframerate()
+    hop = sr // 60
+    rms = np.array([np.sqrt(np.mean(x[i:i + hop] ** 2)) for i in range(0, len(x) - hop, hop)])
+    rms = np.convolve(rms, np.ones(3) / 3, 'same')
+    return np.clip(rms / (np.percentile(rms, 90) + 1e-6), 0, 1.2)
 
 
-def p1(t, w, h):
-    eyes = 'half' if t >= BEATS[-1] + 0.1 else 'closed'
-    src = p1_world(eyes)
-    img = ken(src, t, 0, SC2, w, h, 0.92, 1.25, (700, 1200), (820, 1000))
-    d = ImageDraw.Draw(img, 'RGBA')
-    # Гидрация: блики воды пробегают по полу; Комплектация: зелёные кольца на стыках; Реанимация: сердце
-    g = ramp(t, S['S1'], OK['S1'] + 0.4)
-    if 0 < g < 1:
-        for k in range(5):
-            r = 80 + 900 * ((g + k * 0.2) % 1)
-            d.ellipse((w / 2 - r, h * 0.55 - r * 0.5, w / 2 + r, h * 0.55 + r * 0.5), outline=(140, 200, 255, int(120 * (1 - g))),
-                      width=5)
-    s = ramp(t, OK['S2'] - 0.4, OK['S2'] + 0.6)
-    if 0 < s < 1:
-        img.alpha_composite(Image.new('RGBA', (w, h), (40, 255, 120, int(45 * math.sin(math.pi * s)))))
-    return img
+def yorka_mouth(t):
+    env = envelope()
+    i = int((t - S['Y1']) * 60)
+    return float(env[i]) if 0 <= i < len(env) else 0.0
 
 
-def p1_overlay(im, t):
-    """плашки поверх панели 1 (в координатах экрана)"""
-    if t < S['S3'] + 0.2:
-        a = eo(ramp(t, 0.25, 0.6)) * (1 - ramp(t, S['S3'] - 0.2, S['S3'] + 0.2))
-        put(im, box('НИЗШИЙ · ЧАСТЬ 1', 52, INK, YELLOW, bw=7), 290, 150, a, 0.9 + 0.1 * back(ramp(t, 0.25, 0.6)))
-    rows = [('S1', 'ГИДРАЦИЯ'), ('S2', 'КОМПЛЕКТАЦИЯ'), ('S3', 'РЕАНИМАЦИЯ')]
-    for k, (key, word) in enumerate(rows):
-        t0 = S[key] - 0.05
-        if t < t0:
-            continue
-        n = int(len(word) * ramp(t, t0, t0 + 0.4))
-        txt = word[:n] + (' — УСПЕШНО' if t >= OK[key] else '')
-        spr = box(f'> {txt:<25}', 36, GREEN, (6, 14, 10), border=GREEN, mono_font=True, bw=4)
-        y = 250 + k * 100
-        put(im, spr, 70 + spr.width / 2, y, eo(ramp(t, t0, t0 + 0.15)))
-    for k, b in enumerate(BEATS):                              # ТУК!
-        v = t - b
-        if 0 <= v < 0.75:
-            spr = sfx_word('ТУК!' if k < 2 else 'ТУК-ТУК!', 120 + 20 * k, RED, (-12, 9, -5)[k])
-            put(im, spr, (330, 760, 560)[k], (1250, 1120, 1450)[k], 1 - ramp(v, 0.5, 0.75), 0.6 + 0.4 * back(v / 0.18))
+# ------------------------------------------------------------------ сцена 1: тело на полу
+CROP = (200, 500, 900, 1860)                   # область тела в координатах позы стоя
 
 
-# ------------------------------------------------------------------ панель 2: лицо крупно, мысли
-def p2(t, w, h):
-    img = comic.corridor_bg().resize((w, int(w * 1920 / 1080)), Image.BILINEAR).crop((0, 300, w, 300 + h))
-    img = ken(img, t, SC2, SC3, w, h, 1.0, 1.08, (w / 2, h / 2), (w / 2, h / 2 - 30))
-    fc = face_crop()
-    z = 1.0 + 0.06 * eio(ramp(t, SC2, SC3))
-    put(img, fc, w / 2 + 10, h / 2 + 130, 1.0, z)
-    d = ImageDraw.Draw(img, 'RGBA')
-    if t >= FACE_GLITCH:                                       # «ни лица» — лицо зачёркивается штриховкой
-        u = eio(ramp(t, FACE_GLITCH, FACE_GLITCH + 0.7))
-        cx, cy = w / 2 + 10, h / 2 + 30
-        for k in range(int(26 * u)):
-            y = cy - 230 + k * 18
-            d.line((cx - 230, y, cx + 230, y - 60), fill=(0, 0, 0, 230), width=7)
-    if t >= MEMORY_DRAIN:                                      # знаки вопроса всплывают
-        for k in range(6):
-            v = (t - MEMORY_DRAIN - k * 0.35)
-            if v > 0:
-                x = 140 + (k * 157) % (w - 280)
-                y = 420 - 120 * v + 30 * math.sin(v * 3 + k)
-                f = osw(90 + 20 * (k % 3))
-                d.text((x, y), '?', font=f, fill=(255, 255, 255, int(200 * cl(1 - v / 3))), stroke_width=5,
-                       stroke_fill=INK)
-    return img
+@functools.lru_cache(None)
+def body_layers():
+    P = anim.hero_parts()
+    torso = Image.new('RGBA', (1080, 1920), (0, 0, 0, 0))
+    for k in ('shorts', 'neck', 'torso', 'head'):
+        torso.alpha_composite(P[k])
+    torso.alpha_composite(anim.hero_details())
+    # закрытые глаза и рот на маленькой голове
+    d = ImageDraw.Draw(torso)
+    for cx in (512, 568):
+        d.arc((cx - 18, 664, cx + 18, 684), 20, 160, fill=(60, 34, 28), width=4)
+    d.line((520, 742, 540, 739, 560, 742), fill=(80, 44, 36), width=4)
+    gray = ImageEnhance.Brightness(ImageEnhance.Color(torso).enhance(0.15)).enhance(0.62)
+    limbs = {}
+    for k in ('arm_l', 'arm_r', 'leg_l', 'leg_r'):
+        im = P[k].copy()
+        if k == 'arm_r':
+            im.alpha_composite(P['elbow'])
+        limbs[k] = im
+    return torso, gray, limbs
 
 
-def p2_overlay(im, t):
-    caps = [c for c in CAPS if c[0] < S['Y1'] - 0.1]
-    ys = [1330, 1480, 1630]
-    lines = []
-    for t0, t1, text, acc in caps:
-        if t0 - 0.02 <= t:
-            if lines and lines[-1][1] == 'И Я НЕ ПОМНЮ':
-                lines[-1] = (lines[-1][0], 'И Я НЕ ПОМНЮ НИЧЕГО.', 'НИЧЕГО.')
-            elif text != 'НИЧЕГО.':
-                lines.append((t0, text, acc))
-            else:
-                lines.append((t0, 'И Я НЕ ПОМНЮ ' + text, acc))
-    for k, (t0, text, acc) in enumerate(lines[:3]):
-        u = ramp(t, t0, t0 + 0.18)
-        spr = box(text, 74, INK, CREAM, acc=acc or None, bw=6)
-        x = 80 + spr.width / 2 + (k * 90 if k < 2 else 40)
-        put(im, spr, x, ys[k], eo(u), 0.85 + 0.15 * back(u))
+def scan_reveal(img, t0, t1, t, y0, y1):
+    """проявление сверху вниз за зелёной линией сканера; возвращает RGBA"""
+    u = eio(ramp(t, t0, t1))
+    if u <= 0:
+        return None
+    ys = y0 + (y1 - y0) * u
+    out = img.copy()
+    m = Image.new('L', img.size, 0)
+    ImageDraw.Draw(m).rectangle((0, 0, img.width, ys), fill=255)
+    out.putalpha(Image.composite(img.getchannel('A'), Image.new('L', img.size, 0), m))
+    if u < 1:
+        a = img.getchannel('A').crop((0, int(ys) - 10, img.width, int(ys) + 10))
+        line = Image.new('RGBA', a.size, (120, 255, 170, 255))
+        line.putalpha(a)
+        out.alpha_composite(line.filter(ImageFilter.GaussianBlur(3)), (0, int(ys) - 10))
+        out.alpha_composite(line, (0, int(ys) - 10))
+    return out
 
 
-# ------------------------------------------------------------------ панель 3: Йорка кричит
-def p3(t, w, h):
-    img = comic.action_bg().crop((0, 0, w, h))
-    img = ken(img, t, SC3, STAMP, w, h, 1.0, 1.1, (w / 2 + 100, h / 2), (w / 2 + 150, h / 2 - 40))
-    y = yorka_crop()
-    u = eo(ramp(t, SC3, SC3 + 0.35))
-    bob = math.sin(t * 11) * 6
-    put(img, y, w - 300 + 260 * (1 - u), h - 560 + bob, u, 1.0 + 0.04 * math.sin(t * 7))
-    return img
+def body_at(t):
+    torso, gray, limbs = body_layers()
+    hyd = eio(ramp(t, S['S1'] + 0.2, OK['S1'] + 0.5))
+    canvas = Image.new('RGBA', (1080, 1920), (0, 0, 0, 0))
+    windows = {'arm_l': (0.05, 0.8, 840, 1390), 'arm_r': (0.35, 1.1, 840, 1390),
+               'leg_l': (0.7, 1.5, 1290, 1850), 'leg_r': (0.95, 1.75, 1290, 1850)}
+    for k, (a, b, y0, y1) in windows.items():
+        im = scan_reveal(limbs[k], S['S2'] + a, S['S2'] + b, t, y0, y1)
+        if im:
+            canvas.alpha_composite(im)
+    breath = 0.0 if t < BEATS[0] else 0.012 * (0.5 - 0.5 * math.cos(2 * math.pi * (t - BEATS[0]) / 2.4))
+    tor = Image.blend(gray, torso, hyd) if hyd < 1 else torso
+    if breath > 0:
+        w2 = int(1080 * (1 + breath))
+        tor = tor.resize((w2, 1920), Image.BILINEAR).crop(((w2 - 1080) // 2, 0, (w2 - 1080) // 2 + 1080, 1920))
+    canvas.alpha_composite(tor)
+    return canvas.crop(CROP)
 
 
-def p3_overlay(im, t, rect):
-    caps = [c for c in CAPS if c[0] >= S['Y1'] - 0.1]
-    shown = [c for c in caps if t >= c[0] - 0.02]
-    if not shown:
-        return
-    f = osw(92)
-    lines = [c[2] for c in shown]
-    tw = max(f.getlength(s) for s in lines)
-    lh = 112
-    bw, bh = tw + 230, lh * len(lines) + 130
-    x0, y0 = rect[0] + 60, rect[1] + 180
-    lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    d = ImageDraw.Draw(lay)
-    tip = (rect[2] - 420, rect[1] + 640)
-    d.polygon([(x0 + bw * 0.55, y0 + bh - 20), (x0 + bw * 0.78, y0 + bh - 30), tip], fill=(255, 255, 255), outline=INK)
-    d.line([(x0 + bw * 0.55, y0 + bh - 10), tip, (x0 + bw * 0.78, y0 + bh - 20)], fill=INK, width=8)
-    d.ellipse((x0, y0, x0 + bw, y0 + bh), fill=(255, 255, 255), outline=INK, width=9)
-    for k, c in enumerate(shown):
-        v = t - c[0]
-        col = RED if c[3] else INK
-        sz = 1 + 0.18 * (1 - eo(v / 0.15))
-        spr = Image.new('RGBA', (int(tw) + 40, lh + 20), (0, 0, 0, 0))
-        ImageDraw.Draw(spr).text((spr.width / 2, spr.height / 2), c[2], font=f, fill=col, anchor='mm')
-        put(lay, spr, x0 + bw / 2, y0 + 65 + lh * k + lh / 2, eo(v / 0.1), sz)
-    k = back(ramp(t, shown[0][0], shown[0][0] + 0.2))
-    put(im, lay, W / 2 + (1 - k) * 40, H / 2, cl(k * 1.5), 0.9 + 0.1 * k)
+@functools.lru_cache(None)
+def floor_small():
+    return anim.floor_noir()
 
 
-# ------------------------------------------------------------------ панель 4: номер 11 на груди
-def p4(t, w, h):
-    img = Image.new('RGBA', (w, h), (30, 34, 40, 255))
-    c = chest_crop()
-    v = t - STAMP
-    put(img, c, w / 2, h / 2 + 60, 1.0, 1.0 + 0.08 * eio(ramp(t, STAMP, DUR)))
-    if v < 0.25:
-        img.alpha_composite(Image.new('RGBA', (w, h), (255, 255, 255, int(160 * (1 - v / 0.25)))))
-    return img
+def scene1(t):
+    floor = floor_small()
+    world = floor.copy()
+    body = body_at(t)
+    jolt = sum(bump(t, b, 0.04, 0.18) for b in BEATS)
+    body = body.rotate(-58 + 2.5 * jolt, Image.BILINEAR, expand=True)
+    sc = 0.82 * (1 + 0.03 * jolt)
+    body = body.resize((int(body.width * sc), int(body.height * sc)), Image.BILINEAR)
+    # мягкая тень тела на полу
+    sh = Image.new('RGBA', body.size, (0, 0, 0, 0))
+    sh.putalpha(body.getchannel('A').point(lambda v: int(v * 0.55)))
+    sh = sh.filter(ImageFilter.GaussianBlur(14))
+    world.alpha_composite(sh, (760 - body.width // 2 + 18, 1180 - body.height // 2 + 22))
+    world.alpha_composite(body, (760 - body.width // 2, 1180 - body.height // 2 - int(10 * jolt)))
+    u = eio(ramp(t, 0, SC2 + 0.5))
+    z = 0.9 + 0.55 * u
+    cx = 760 + 180 * u
+    cy = 1180 - 300 * u
+    return cam(world, W, H, z, cx, cy, rot=-6 + 10 * u)
 
 
-def p4_overlay(im, t):
-    v = t - STAMP
-    put(im, sfx_word('11', 300, (240, 240, 236), 0), W / 2 + 160, 860, eo(v / 0.08), 1 + 0.6 * (1 - eo(v / 0.2)))
-    spr = box('НОМЕР: 11 · СТАТУС: НИЗШИЙ', 40, GREEN, (6, 14, 10), border=GREEN, mono_font=True, bw=4)
-    put(im, spr, W / 2, 1560, eo(ramp(v, 0.35, 0.6)))
+# ------------------------------------------------------------------ сцена 2: лицо
+def face_params(t):
+    o = 0.0
+    for a, b, lvl in ((7.55, 7.75, 0.25), (7.75, 7.95, -0.25), (8.1, 8.8, 0.65), (MEMORY_DRAIN - 0.4, MEMORY_DRAIN, 0.2),
+                      (FACE_GLITCH - 0.2, FACE_GLITCH + 0.15, 0.25)):
+        o += lvl * eio(ramp(t, a, b))
+    for b in (9.85, 11.0, 12.2):                                   # моргания
+        v = abs(t - b)
+        if v < 0.09:
+            o *= v / 0.09
+    keys = [(7.0, 0.0), (8.8, -0.7), (9.5, 0.6), (10.2, -0.3), (10.9, 0.5), (FACE_GLITCH, 0.0), (13, 0.0)]
+    gx = 0.0
+    for (t0, v0), (t1, v1) in zip(keys, keys[1:]):
+        if t0 <= t < t1:
+            gx = v0 + (v1 - v0) * eio((t - t0) / (t1 - t0) * 1.6)
+    furrow = 0.25 + 0.5 * eio(ramp(t, NAME_GLITCH - 0.2, NAME_GLITCH + 0.3)) + 0.2 * eio(ramp(t, FACE_GLITCH, FACE_GLITCH + 0.3))
+    mouth = 0.12 * eio(ramp(t, FACE_GLITCH, FACE_GLITCH + 0.3)) * (0.6 + 0.4 * math.sin(t * 23))
+    return cl(o), (gx, 0.0), cl(furrow), max(0.0, mouth)
 
 
-# ------------------------------------------------------------------ монтаж
-FULL = (M, M + 40, W - M, H - M - 40)
+@functools.lru_cache(None)
+def face_bg():
+    f = anim.floor_noir().crop((200, 500, 1300, 2456)).resize((1080, 1920), Image.BILINEAR)
+    return f.filter(ImageFilter.GaussianBlur(6))
 
 
-def shake(t):
-    a = 0.0
-    for t0, amp in ((HEY, 26), (STAMP, 34), (BEATS[0], 8), (BEATS[1], 8), (BEATS[2], 10)):
-        v = t - t0
-        if 0 <= v < 0.45:
-            a += amp * math.exp(-v * 10)
-    return math.sin(t * 93) * a, math.cos(t * 71) * a
+def scene2(t):
+    img = face_bg().copy()
+    head = anim.hero_head_base().copy()
+    o, g, fr, mo = face_params(t)
+    anim.draw_hero_face(head, open_=o, gaze=g, furrow=fr, mouth=mo)
+    br = 1 + 0.012 * math.sin(2 * math.pi * (t - SC2) / 3.2)
+    shake = 0.0
+    if t >= FACE_GLITCH:
+        v = t - FACE_GLITCH
+        shake = 4 * math.sin(v * 9) * math.exp(-v * 2)
+    put(img, head, 540, 1010, 1.0, 1.02 * br, rot=-8 + shake + 3 * math.sin(t * 0.4))
+    u = eio(ramp(t, SC2, SC3))
+    return cam(img, W, H, 1.0 + 0.12 * u, 540, 960 - 60 * u, rot=0)
 
 
-def slide_rect(u, frm):
-    """панель въезжает: снизу ('up') или справа ('left') с перелётом"""
-    k = back(u, 1.2)
-    dx, dy = {'up': (0, H), 'left': (W, 0), 'zoom': (0, 0)}[frm]
-    x0, y0, x1, y1 = FULL
-    return (x0 + dx * (1 - k), y0 + dy * (1 - k), x1 + dx * (1 - k), y1 + dy * (1 - k))
+# ------------------------------------------------------------------ сцена 3: Йорка сверху
+@functools.lru_cache(None)
+def halo():
+    im = Image.new('RGBA', (900, 900), (0, 0, 0, 0))
+    ImageDraw.Draw(im).ellipse((150, 150, 750, 750), fill=(170, 200, 255, 120))
+    return im.filter(ImageFilter.GaussianBlur(120))
+
+
+def scene3(t):
+    img = anim.ceiling_noir().copy()
+    u = eo(ramp(t, SC3 - 0.1, SC3 + 0.45))
+    talking = S['Y1'] <= t < E['Y1']
+    shake = math.sin(t * 2 * math.pi * 3.4) * (7 if talking else 0) + 10 * bump(t, HEY, 0.04, 0.3)
+    yo = anim.yorka_base().copy()
+    blink = 1.0
+    for b in (14.6, 16.4):
+        v = abs(t - b)
+        if v < 0.08:
+            blink = v / 0.08
+    anim.draw_yorka_face(yo, mouth=yorka_mouth(t), blink=blink)
+    put(img, halo(), 560, 600, 0.9 * u)
+    rot = -14 + 3 * math.sin(t * 2 * math.pi * 1.7) * (1 if talking else 0.2)
+    put(img, yo, 520 + 300 * (1 - u), 860 - 500 * (1 - u) + shake, u, 1.08, rot=rot)
+    reach = 12 * math.sin(t * 2 * math.pi * 3.4) if talking else 0
+    ax, ay = 716 + 260 * (1 - u), 1284 + 300 * (1 - u)
+    put(img, anim.yorka_arm(), ax + shake * 2 + reach, ay + shake + reach * 0.6, u, 0.8, rot=4)
+    return cam(img, W, H, 1.02 + 0.06 * eio(ramp(t, SC3, SC4)), 540 + shake * 0.6, 960 + shake * 0.4)
+
+
+# ------------------------------------------------------------------ сцена 4: взгляд на грудь
+@functools.lru_cache(None)
+def chest():
+    P = anim.hero_parts()
+    full = Image.new('RGBA', (1080, 1920), (0, 0, 0, 0))
+    for k in ('shorts', 'arm_l', 'arm_r', 'elbow', 'neck', 'torso'):
+        full.alpha_composite(P[k])
+    full.alpha_composite(anim.hero_details())
+    c = full.crop((330, 800, 750, 1260)).resize((1260, 1380), Image.LANCZOS)
+    bg = anim.floor_noir().crop((300, 700, 1200, 2300)).resize((1080, 1920), Image.BILINEAR).filter(ImageFilter.GaussianBlur(10))
+    bg.alpha_composite(c, (-90, 260))
+    return bg
+
+
+@functools.lru_cache(None)
+def hand():
+    """старческая рука: тонкое предплечье, кисть, пальцы тянутся вверх"""
+    def draw(d, s):
+        def cap(a, b, ra, rb):
+            ang = math.atan2(b[1] - a[1], b[0] - a[0]) + math.pi / 2
+            pts = [(a[0] + ra * math.cos(ang), a[1] + ra * math.sin(ang)), (b[0] + rb * math.cos(ang), b[1] + rb * math.sin(ang)),
+                   (b[0] - rb * math.cos(ang), b[1] - rb * math.sin(ang)), (a[0] - ra * math.cos(ang), a[1] - ra * math.sin(ang))]
+            d.polygon([(x * s, y * s) for x, y in pts], fill=255)
+            for (x, y), r in ((a, ra), (b, rb)):
+                d.ellipse(((x - r) * s, (y - r) * s, (x + r) * s, (y + r) * s), fill=255)
+        cap((210, 1200), (210, 520), 54, 46)                     # предплечье
+        d.ellipse((130 * s, 300 * s, 300 * s, 540 * s), fill=255)  # ладонь
+        for k, (x, top) in enumerate(((150, 120), (195, 80), (240, 95), (280, 150))):
+            cap((x, 360), (x - 6 + k * 3, top), 22, 18)
+        cap((140, 450), (70, 330), 24, 19)                       # большой палец
+    m = anim.big_mask((420, 1260), draw)
+    im = anim.shade_rgba(m, (196, 176, 152))
+    d = ImageDraw.Draw(im)
+    for y in (180, 250, 300):                                    # морщины на суставах
+        d.line((140, y, 290, y - 6), fill=(130, 100, 80, 255), width=2)
+    return im
+
+
+def scene4(t):
+    img = chest().copy()
+    v = t - SC4
+    u = eio(ramp(v, 0.3, 1.5))
+    tremble = math.sin(t * 37) * 4
+    put(img, hand(), 760 - 40 * u + tremble, 2300 - 900 * u, 1.0, 1.0, rot=-24 + 8 * u)
+    return cam(img, W, H, 1.0 + 0.08 * eio(ramp(v, 0, 2)), 540, 960)
+
+
+# ------------------------------------------------------------------ обработка, субтитры, монтаж
+@functools.lru_cache(None)
+def vignette():
+    yy, xx = np.mgrid[0:H, 0:W]
+    r = ((xx - W / 2) / (W * 0.75)) ** 2 + ((yy - H * 0.46) / (H * 0.62)) ** 2
+    return np.clip(1.05 - 0.8 * r, 0.18, 1.0)[..., None].astype(np.float32)
+
+
+@functools.lru_cache(None)
+def grain(k):
+    g = np.random.default_rng(100 + k).normal(0, 7, (H // 2, W // 2)).astype(np.float32)
+    return np.kron(g, np.ones((2, 2), np.float32))[..., None]
+
+
+def grade(im, t):
+    a = np.asarray(im.convert('RGB'), np.float32)
+    lum = a.mean(-1, keepdims=True) / 255
+    a = a + (1 - lum) * np.array([-8, 4, 14], np.float32)          # тил в тенях
+    a = a * vignette() + grain(int(t * 24) % 8)
+    return np.clip(a, 0, 255).astype(np.uint8)
+
+
+@functools.lru_cache(None)
+def sub_spr(text):
+    f = ImageFont.truetype(str(paths.ROOT / 'input' / 'fonts' / 'SF-Pro-Text' / 'SF-Pro-Text-Semibold.otf'), 40) \
+        if hasattr(paths, 'ROOT') else ImageFont.truetype(
+            str(Path(__file__).resolve().parents[2] / 'input' / 'fonts' / 'SF-Pro-Text' / 'SF-Pro-Text-Semibold.otf'), 40)
+    bb = f.getbbox(text)
+    w, h = bb[2] - bb[0] + 40, bb[3] - bb[1] + 30
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    sh = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).text((20 - bb[0], 17 - bb[1]), text, font=f, fill=(0, 0, 0, 200))
+    im.alpha_composite(sh.filter(ImageFilter.GaussianBlur(4)))
+    ImageDraw.Draw(im).text((20 - bb[0], 15 - bb[1]), text, font=f, fill=(236, 236, 232, 225))
+    return im
+
+
+def subtitles(im, t):
+    for k, key in enumerate(KEYS):
+        t0, t1 = ON[k] - 0.05, END[k] + 0.2
+        if t0 <= t < t1:
+            a = ramp(t, t0, t0 + 0.12) * (1 - ramp(t, t1 - 0.15, t1))
+            put(im, sub_spr(SUBS[key]), W / 2, 1700, a)
+
+
+def mix(a, b, u):
+    r = 10 * math.sin(math.pi * u)
+    if r > 0.5:
+        small = (W // 4, H // 4)
+        a = a.resize(small, Image.BILINEAR).filter(ImageFilter.GaussianBlur(r / 4)).resize((W, H), Image.BILINEAR)
+        b = b.resize(small, Image.BILINEAR).filter(ImageFilter.GaussianBlur(r / 4)).resize((W, H), Image.BILINEAR)
+    return Image.blend(a, b, eio(u))
+
+
+CUTS = [(SC2, scene1, scene2), (SC3, scene2, scene3), (SC4, scene3, scene4)]
+SCENES = [(0, scene1), (SC2, scene2), (SC3, scene3), (SC4, scene4)]
+X = 0.25
 
 
 def render_at(t):
-    im = Image.new('RGBA', (W, H), PAGE + (255,))
-    sx, sy = shake(t)
-    if t < SC2 + 0.6:
-        r = FULL
-        if t >= SC2:                                           # старая панель отъезжает и темнеет
-            u = eio(ramp(t, SC2, SC2 + 0.6))
-            r = (FULL[0], FULL[1] - 300 * u, FULL[2], FULL[3] - 300 * u)
-        panel_frame(im, (r[0] + sx, r[1] + sy, r[2] + sx, r[3] + sy), p1, t)
-        p1_overlay(im, t)
-        if t >= SC2:
-            im.alpha_composite(Image.new('RGBA', (W, H), (0, 0, 0, int(150 * ramp(t, SC2, SC2 + 0.6)))))
-    if SC2 <= t < SC3 + 0.45:
-        r = slide_rect(ramp(t, SC2, SC2 + 0.55), 'up')
-        panel_frame(im, r, p2, t)
-        if t < SC3:
-            p2_overlay(im, t)
-    if SC3 <= t < STAMP + 0.5:
-        r = slide_rect(ramp(t, SC3, SC3 + 0.4), 'left')
-        r = (r[0] + sx, r[1] + sy, r[2] + sx, r[3] + sy)
-        panel_frame(im, r, p3, t)
-        if t < STAMP:
-            p3_overlay(im, t, r)
-        if HEY <= t < HEY + 0.3:
-            im.alpha_composite(Image.new('RGBA', (W, H), RED + (int(90 * (1 - (t - HEY) / 0.3)),)))
-    if t >= STAMP:
-        u = ramp(t, STAMP, STAMP + 0.18)
-        x0, y0, x1, y1 = FULL
-        k = back(u, 2.0)
-        cx, cy = W / 2 + sx, H / 2 + sy
-        hw, hh = (x1 - x0) / 2 * (0.4 + 0.6 * k), (y1 - y0) / 2 * (0.4 + 0.6 * k)
-        panel_frame(im, (cx - hw, cy - hh, cx + hw, cy + hh), p4, t)
-        p4_overlay(im, t)
-    a_in, a_out = ramp(t, 0, 0.3), ramp(t, DUR - 0.6, DUR)
-    k = a_in * (1 - a_out)
+    im = None
+    for c, a, b in CUTS:
+        if c - X <= t < c + X:
+            im = mix(a(t).convert('RGB'), b(t).convert('RGB'), (t - (c - X)) / (2 * X)).convert('RGBA')
+    if im is None:
+        fn = [f for s, f in SCENES if t >= s][-1]
+        im = fn(t)
+    out = Image.fromarray(grade(im, t)).convert('RGBA')
+    if HEY <= t < HEY + 0.25:
+        out.alpha_composite(Image.new('RGBA', (W, H), (255, 240, 230, int(70 * (1 - (t - HEY) / 0.25)))))
+    subtitles(out, t)
+    k = ramp(t, 0, 0.5) * (1 - ramp(t, DUR - 0.8, DUR))
     if k < 1:
-        im.alpha_composite(Image.new('RGBA', (W, H), (0, 0, 0, int(255 * (1 - k)))))
-    return np.asarray(im.convert('RGB')).copy()
+        out.alpha_composite(Image.new('RGBA', (W, H), (0, 0, 0, int(255 * (1 - k)))))
+    return np.asarray(out.convert('RGB')).copy()
 
 
 def frame_bytes(i):

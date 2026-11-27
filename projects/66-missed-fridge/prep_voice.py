@@ -16,7 +16,8 @@ STAS = 'asetrate=48000*1.0595,aresample=48000,atempo=0.9911'     # +1 полут
 
 for k in json.load(open(HERE / 'takes.json')):
     role = MISSED if k[0] in 'MI' else STAS
-    af = f'aresample=48000,{TRIM},{role},loudnorm=I=-16:TP=-1.5:LRA=7'
+    gap = ',silenceremove=stop_periods=-1:stop_duration=0.6:stop_threshold=-45dB:stop_silence=0.6' if k == 'M12' else ''
+    af = f'aresample=48000,{TRIM}{gap},{role},loudnorm=I=-16:TP=-1.5:LRA=7'
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(V / f'raw_{k}.mp3'), '-af', af,
                     '-ar', '48000', '-ac', '2', str(V / f'{k}.wav')], check=True)
 print('OK')

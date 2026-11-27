@@ -59,3 +59,7 @@
   (`synth.py`: будильники, храп, НЛО, луч) — кодом, SFX Botanica — `audio.py`. Микс −16,2 LUFS. Отправлено автору:
   `build/review/{voice_only,music_only,sfx_only,mix}.mp3`, `sfx_cues.txt`. Графика ещё не начата.
 - 2026-11-27: v2 — добавлена заставка 3,5 с (НЛО, «Я Мисед. Изучаю землян.»), серия ≈ 53 с, всего ≈ 57 с. Ждём правок.
+- 2026-11-27: собран `renders/65-missed-alien/missed_alarm_v1.mp4` (1080×1920, 60 fps, H.264 + AAC, 58,78 с, −16,2 LUFS),
+  декодируется полностью, кадры раз в 3 с просмотрены. Всё кодом: Мисед по оригинальному референсу (`art.py`), Димон,
+  комната ночь/утро, НЛО-заставка, Lottie Swiss Watch (оригинал). Рендер — `render.py`. Просмотр в движении и звук — за автором.
+  Drive «TikTok»: https://drive.google.com/file/d/13q2F6KHJ0n2ybUmslw1HyonhY2K4INAt/view

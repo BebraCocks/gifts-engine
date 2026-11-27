@@ -1,5 +1,5 @@
-"""Звук пробного фрагмента «Низшего»: голоса (клипы voice/clips), музыка кодом (music.py), SFX Botanica (sfxkit),
-сердцебиение синтезировано (в паке нет удара сердца). Без рекламы.
+"""Звук части 1: голоса (voice/clips, выровнены по громкости prep_voice.py), музыка кодом (music.py),
+SFX Botanica через sfxkit; удар сердца синтезирован (в паке нет). Без рекламы.
 Пишет build/mix.wav и build/review/{sfx_only,mix,voice_only,music_only}.mp3 + sfx_cues.txt."""
 import subprocess
 import sys
@@ -13,12 +13,14 @@ import banner
 import sound
 import sfxkit
 from music import music
-from timeline import DUR, ON, TAKES, S, E, SC2, SC3, STAMP
-from events import AD_STOPS, OK, BEATS, MEMORY_DRAIN, NAME_GLITCH, FACE_GLITCH, HEY
+from timeline import DUR, ON, TAKES, S, E, SCENES, KEYS
 
 SR = 48000
-BR = banner.Breaks(AD_STOPS, cy=960)
+BR = banner.Breaks([], cy=960)
 N = int(round(DUR * SR))
+D = {k: E[k] - S[k] for k in KEYS}
+OK = [S['A01'] + 1.15, S['A01'] + 3.55, S['A01'] + 6.0]
+BEATS = [OK[2] + i * 0.55 for i in range(3)]
 
 
 def place(buf, y, t, db):
@@ -29,7 +31,6 @@ def place(buf, y, t, db):
 
 
 def heartbeat():
-    """глухой двойной удар «лаб-даб»: синусы с падением высоты"""
     k = int(0.5 * SR)
     tt = np.arange(k) / SR
     out = np.zeros(k)
@@ -44,22 +45,45 @@ def heartbeat():
 def sfx(kit):
     fx = np.zeros((N, 2))
     A = kit.add
-    A(fx, 'power-up', 0.05, gain_db=-20, label='система включается')
-    for key in ('S1', 'S2', 'S3'):
-        A(fx, 'typing', S[key] - 0.02, gain_db=-22, fit=0.5, label=f'печать строки {key}')
-        A(fx, 'confirm', OK[key], gain_db=-19, label=f'УСПЕШНО {key}')
+    A(fx, 'power-up', 0.1, gain_db=-20, label='система включается')
+    for k, ok in enumerate(OK):
+        A(fx, 'confirm', ok, gain_db=-20, label=f'успешно {k + 1}')
     for j in range(4):
-        A(fx, 'click', S['S2'] + 0.35 + j * 0.16, gain_db=-17, file='metalic', label='конечность встаёт на место')
+        A(fx, 'click', OK[0] + 0.55 + j * 0.3, gain_db=-18, file='metalic', label='конечность на месте')
     for b in BEATS:
-        place(fx, heartbeat(), b - 0.02, -9)
-    A(fx, 'whoosh*', SC2, align='peak', gain_db=-17, dur=(0.6, 1.6), label='переход к профилю')
-    A(fx, 'power-down', MEMORY_DRAIN, gain_db=-18, label='память 0%')
-    A(fx, 'glitch-text', NAME_GLITCH, gain_db=-17, label='ИМЯ: НЕ НАЙДЕНО')
-    A(fx, 'glitch-text', FACE_GLITCH, gain_db=-17, label='ЛИЦО: НЕ НАЙДЕНО')
-    A(fx, 'whoosh-short', HEY, align='peak', gain_db=-16, label='Йорка врывается')
-    A(fx, 'impact', HEY, align='peak', gain_db=-15, label='ЭЙ!')
-    A(fx, 'impact', STAMP, align='peak', gain_db=-11, label='штамп 11')
-    A(fx, 'scan', STAMP + 0.35, gain_db=-21, label='штрихкод номера')
+        place(fx, heartbeat(), b - 0.02, -8)
+    for tt in (S['A02'] + 3.2, S['A02'] + 3.9):
+        place(fx, heartbeat(), tt, -12)                                       # боль пульсирует
+    for name, t0, t1, _ in SCENES[1:]:                                       # мягкий переход между сценами
+        A(fx, 'whoosh-short', t0, align='peak', gain_db=-24, label=f'→ {name}')
+    A(fx, 'impact', S['A04'] + 0.06, align='peak', gain_db=-15, label='Эй!')
+    A(fx, 'scan', S['A07'] + D['A07'] * 0.3, gain_db=-20, label='полусфера едет')
+    A(fx, 'scan', S['A08'], gain_db=-17, label='сканер')
+    A(fx, 'glitch-text', S['A08'] + 0.7, gain_db=-17, label='интерфейс')
+    A(fx, 'confirm', S['A08'] + D['A08'] * 0.8, gain_db=-17, label='активация')
+    for k in range(3):
+        A(fx, 'click', S['A09'] + D['A09'] * (0.38 + k * 0.055), gain_db=-15, label='укол')
+    A(fx, 'pop', S['A09'] + D['A09'] * 0.55, gain_db=-17, label='кубик')
+    A(fx, 'impact', S['A13'] + D['A13'] * 0.35, align='peak', gain_db=-12, label='пощёчина')
+    for k in range(5):
+        A(fx, 'select-soft', S['A15'] + 0.4 + k * D['A15'] * 0.16, gain_db=-20, label='строка меню')
+    A(fx, 'power-up', S['A17'] - 0.1, gain_db=-17, label='экран загорелся')
+    A(fx, 'impact', S['A18'] + 0.3, align='peak', gain_db=-16, label='толчок 58-го')
+    for k in range(7):
+        A(fx, 'select', S['A18'] + D['A18'] * (0.3 + k * 0.035), gain_db=-19, label='ход')
+    A(fx, 'confirm', S['A18'] + D['A18'] * 0.6, gain_db=-15, label='победа')
+    A(fx, 'error', S['A18'] + D['A18'] * 0.8, gain_db=-17, label='в счёт долга')
+    A(fx, 'impact', S['A20'] + D['A20'] * 0.28, align='peak', gain_db=-13, label='пинок ведра')
+    A(fx, 'error', S['A20'] + D['A20'] * 0.7, gain_db=-18, label='душ в долг')
+    A(fx, 'impact', S['A22'] + D['A22'] * 0.45, align='peak', gain_db=-18, label='отрежут руку')
+    for k, f in enumerate((0.12, 0.22, 0.32, 0.42, 0.52)):
+        A(fx, 'select-soft', S['A23'] + D['A23'] * f, gain_db=-19, label=f'раса {k + 1}')
+    A(fx, 'sparkle', S['A23'] + D['A23'] * 0.62, gain_db=-17, label='эльфы')
+    A(fx, 'error', S['A25'] + 0.3, gain_db=-16, label='медблок закрыт')
+    A(fx, 'power-down', S['A28'] - 0.1, gain_db=-15, label='понижение до УРН')
+    A(fx, 'glitch-text', S['A28'], gain_db=-16, label='УРН')
+    A(fx, 'pop', S['B29'] + D['B29'] * 0.55, gain_db=-17, label='жвачка')
+    A(fx, 'power-down', E['A30'] - 0.2, gain_db=-18, label='свет гаснет')
     return fx
 
 
@@ -69,7 +93,7 @@ def load_voice():
         data = sound.load_stereo(take, SR)
         i = round(ON[k] * SR)
         c = min(len(data), N - i)
-        voice[i:i + c] += data[:c] * 0.9
+        voice[i:i + c] += data[:c]
     return voice
 
 
@@ -96,18 +120,15 @@ def write_mp3(path, a):
 if __name__ == '__main__':
     kit = sfxkit.Kit(HERE)
     voice = load_voice()
-    mus = duck(music(N, SR), voice, 0.55) * 10 ** (-6 / 20)
+    mus = duck(music(N, SR), voice, 0.55) * 10 ** (-5 / 20)
     fx = duck(sfx(kit), voice, 0.4)
     content = voice + mus + fx
-    pk = np.abs(content).max()
-    if pk > 0.95:
-        k = 0.95 / pk
-        content, voice, mus, fx = content * k, voice * k, mus * k, fx * k
-    lufs = loudness(content)
-    k = 10 ** ((-16.0 - lufs) / 20)                      # громкость под соцсети: −16 LUFS
-    if np.abs(content).max() * k > 0.95:
-        k = 0.95 / np.abs(content).max()
+    k = 10 ** ((-16.0 - loudness(content)) / 20)
     content, voice, mus, fx = content * k, voice * k, mus * k, fx * k
+    r = subprocess.run([paths.ffmpeg(), '-v', 'error', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-',
+                        '-af', 'alimiter=limit=0.89:attack=3:release=60:level=disabled', '-f', 'f32le', '-'],
+                       input=content.astype('<f4').tobytes(), capture_output=True, check=True)
+    content = np.frombuffer(r.stdout, '<f4').reshape(-1, 2).astype(np.float64)[:N]   # пики срезает лимитер
     data = BR.audio(content, SR)
     out = paths.build(HERE) / 'mix.wav'
     with wave.open(str(out), 'wb') as w:
@@ -119,4 +140,4 @@ if __name__ == '__main__':
     rev = sfxkit.write_review(HERE, fx, data, BR, SR, kit.cues)
     write_mp3(rev / 'voice_only.mp3', voice)
     write_mp3(rev / 'music_only.mp3', mus)
-    print('OK mix', round(len(data) / SR, 2), 's; peak', round(float(pk), 2))
+    print('OK mix', round(len(data) / SR, 2), 's')

@@ -1,5 +1,5 @@
 """Общие моменты картинки и звука. Без рекламы RubUp (правило автора, 2026-11-23)."""
-from timeline import S, E, DUR, SC2, SC3, STAMP
+from timeline_test import S, E, DUR, SC2, SC3, STAMP
 
 AD_STOPS = []
 # «успешно» в каждой строке системы — доля длины клипа, где звучит слово

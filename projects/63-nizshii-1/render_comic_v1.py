@@ -19,8 +19,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont  # noqa: E402
 import banner  # noqa: E402
 import frames  # noqa: E402
 import comic  # noqa: E402
-from timeline import S, E, DUR, CAPS, SC2, SC3, STAMP  # noqa: E402
-from events import AD_STOPS, OK, BEATS, MEMORY_DRAIN, NAME_GLITCH, FACE_GLITCH, HEY  # noqa: E402
+from timeline_test import S, E, DUR, CAPS, SC2, SC3, STAMP  # noqa: E402
+from events_test import AD_STOPS, OK, BEATS, MEMORY_DRAIN, NAME_GLITCH, FACE_GLITCH, HEY  # noqa: E402
 
 W, H, FPS = 1080, 1920, 60
 BR = banner.Breaks(AD_STOPS, cy=H / 2)

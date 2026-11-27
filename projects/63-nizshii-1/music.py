@@ -1,16 +1,17 @@
-"""Музыка «Низшего», написана кодом (в комплекте нет музыкальной библиотеки, у Fish Audio нет музыкальной модели).
-Тёмный индустриальный эмбиент, ре минор, 70 BPM. Без шипящих шумовых слоёв (требование автора 2026-11-24):
-гул — только синусы и глубокий суббас; ревербератор с тёмным хвостом.
-
-Сцены: пробуждение — гул и редкие холодные колокола; профиль без памяти — холодные аккорды Dm–Bb;
-крик Йорки — тяжёлый пульс с металлическим лязгом; «11» — удар и затухание.
-music(n, sr) возвращает стерео (n, 2); audio.py сам приглушает музыку под голосом."""
+"""Музыка части 1 «Низшего» кодом (в комплекте нет музыкальной библиотеки). Тёмный индустриальный эмбиент ре минор
+без шипящих слоёв (требование автора 2026-11-24). Настроение по сценам (MOOD): гул идёт всё время, поверх
+плавно (1,5 с) включаются слои: calm — редкие холодные колокола; sad — аккорды Dm–Bb–Gm–A; tension — пульс 70 BPM
+с металлическим лязгом; dark — только низкий гул. music(n, sr) -> стерео; audio.py приглушает её под голосом."""
 import numpy as np
 from scipy.signal import butter, sosfilt, fftconvolve
-from timeline import S, E, DUR, SC2, SC3, STAMP
+from timeline import DUR, SCENES
 
-BPM = 70.0
-BEAT = 60.0 / BPM
+MOOD = {'body': 'calm', 'face': 'calm', 'yorka_up': 'tension', 'yorka_look': 'calm', 'self': 'sad',
+        'corridor': 'tension', 'scan': 'tension', 'niche': 'calm', 'yorka_talk': 'sad', 'slap': 'tension',
+        'leave': 'calm', 'menu': 'calm', 'odin': 'sad', 'screen': 'tension', 'game': 'tension', 'slime': 'dark',
+        'kick': 'tension', 'bench': 'calm', 'talk444': 'sad', 'races': 'dark', 'medblock': 'dark', 'klux': 'calm',
+        'demote': 'sad', 'guard': 'calm', 'capsule': 'sad'}
+BEAT = 60 / 70
 
 
 def hz(m):
@@ -29,6 +30,16 @@ def env_ad(n, a, d, sr):
     return e
 
 
+def layer_gain(n, sr, mood):
+    """огибающая слоя: 1 там, где сцена этого настроения, с переходами 1,5 с"""
+    g = np.zeros(n)
+    for name, t0, t1, _ in SCENES:
+        if MOOD.get(name) == mood:
+            g[int(t0 * sr):int(t1 * sr)] = 1.0
+    k = int(1.5 * sr)
+    return np.convolve(g, np.ones(k) / k, 'same')
+
+
 def music(n, sr=48000):
     rng = np.random.default_rng(11)
     t = np.arange(n) / sr
@@ -43,15 +54,17 @@ def music(n, sr=48000):
         L[a:b] += y * np.sqrt((1 - pan) / 2)
         R[a:b] += y * np.sqrt((1 + pan) / 2)
 
-    # 1. гул: D1, A1, D2 + глубокий суббас (шум только ниже 55 Гц — не слышен как шипение)
+    # гул всё время (синусы + суббас ниже 55 Гц)
     lfo = 0.75 + 0.25 * np.sin(2 * np.pi * 0.07 * t)
     drone = (np.sin(2 * np.pi * hz(26) * t) + 0.6 * np.sin(2 * np.pi * hz(33) * t + 1.0)
              + 0.35 * np.sin(2 * np.pi * hz(38.03) * t)) * lfo
     sub = filt(rng.standard_normal(n), 'lowpass', 55, sr, 4) * 3.0
-    fade_in = np.clip(t / 2.5, 0, 1)
-    add(0, (drone * 0.26 + sub * 0.08) * fade_in)
+    dark = layer_gain(n, sr, 'dark')
+    base = (drone * (0.22 + 0.1 * dark) + sub * 0.08) * np.clip(t / 2.5, 0, 1)
+    L += base
+    R += base
 
-    # 2. колокола пробуждения — на каждое «успешно» почти неслышный холодный звон
+    # calm: колокола каждые ~4 с
     def bell(m, dur=3.2):
         k = int(dur * sr)
         tt = np.arange(k) / sr
@@ -59,27 +72,37 @@ def music(n, sr=48000):
         mod = np.sin(2 * np.pi * f * 1.41 * tt) * 2.0 * np.exp(-tt / 0.6)
         return np.sin(2 * np.pi * f * tt + mod) * env_ad(k, 0.002, 1.0, sr)
 
-    for tb, m, pan in ((S['S1'] + 1.1, 69, -0.4), (S['S2'] + 1.25, 74, 0.4), (S['S3'] + 1.3, 77, 0.0)):
-        add(tb, bell(m), 0.07, pan)
+    calm = layer_gain(n, sr, 'calm')
+    notes = [69, 74, 77, 72, 76, 74, 69, 81]
+    for k, tb in enumerate(np.arange(1.0, n / sr, 4 * BEAT)):
+        g = calm[min(n - 1, int(tb * sr))]
+        if g > 0.05:
+            add(tb, bell(notes[k % len(notes)]), 0.06 * g, (-0.4, 0.4)[k % 2])
 
-    # 3. холодные аккорды профиля: Dm -> Bb (детюн-пилы, фильтр 650 Гц)
+    # sad: аккорды Dm–Bb–Gm–A по 4 такта
     def saw(f, k, det):
         ph = np.cumsum(np.full(k, f * det)) / sr
         return 2 * (ph % 1.0) - 1
 
-    half = (SC3 - SC2) / 2
-    for i, ch in enumerate([(50, 53, 57), (46, 50, 53)]):
-        t0 = SC2 - 0.4 + i * half
-        k = int((half + 1.6) * sr)
-        y = sum(saw(hz(m), k, det) for m in ch for det in (0.996, 1.0, 1.005))
+    sad = layer_gain(n, sr, 'sad')
+    chords = [(50, 53, 57), (46, 50, 53), (43, 46, 50), (45, 49, 52)]
+    clen = 8 * BEAT
+    pad = np.zeros(n)
+    for k, t0 in enumerate(np.arange(0, n / sr, clen)):
+        kk = int((clen + 1.5) * sr)
+        y = sum(saw(hz(m), kk, det) for m in chords[k % 4] for det in (0.996, 1.0, 1.005))
         y = filt(y, 'lowpass', 650, sr)
-        e = np.ones(k)
-        na, nr = int(1.2 * sr), int(1.4 * sr)
+        e = np.ones(kk)
+        na, nr = int(1.2 * sr), int(1.5 * sr)
         e[:na] = np.linspace(0, 1, na)
         e[-nr:] *= np.linspace(1, 0, nr)
-        add(t0, y * e, 0.030, -0.25 if i else 0.25)
+        a = int(t0 * sr)
+        b = min(n, a + kk)
+        pad[a:b] += (y * e)[:b - a]
+    L += pad * sad * 0.026
+    R += pad * sad * 0.026
 
-    # 4. тяжёлый пульс от крика Йорки до удара «11»
+    # tension: пульс и лязг
     def thud():
         k = int(0.6 * sr)
         tt = np.arange(k) / sr
@@ -87,7 +110,7 @@ def music(n, sr=48000):
         return np.sin(2 * np.pi * np.cumsum(f) / sr) * env_ad(k, 0.003, 0.18, sr)
 
     def clank(seed):
-        k = int(1.2 * sr)
+        k = int(1.0 * sr)
         r = np.random.default_rng(seed)
         burst = r.standard_normal(k) * env_ad(k, 0.001, 0.015, sr)
         y = np.zeros(k)
@@ -96,23 +119,15 @@ def music(n, sr=48000):
             y += filt(burst, 'bandpass', [f2 * 0.98, f2 * 1.02], sr) * env_ad(k, 0.001, d, sr) * g * 40
         return y
 
-    tb, j = S['Y1'], 0
-    while tb < STAMP - 0.2:
-        add(tb, thud(), 0.5)
-        if j % 2 == 1:
-            add(tb + 0.02, clank(100 + j), 0.09, -0.4 if j % 4 == 1 else 0.4)
-        tb += BEAT * 0.5          # ускорение: восьмые — тревога
-        j += 1
+    ten = layer_gain(n, sr, 'tension')
+    th = thud()
+    for j, tb in enumerate(np.arange(0, n / sr, BEAT)):
+        g = ten[min(n - 1, int(tb * sr))]
+        if g > 0.05:
+            add(tb, th, 0.45 * g)
+            if j % 2:
+                add(tb + 0.02, clank(100 + j % 16), 0.07 * g, -0.4 if j % 4 == 1 else 0.4)
 
-    # 5. удар «11»: низкий бум + аккорд ре минор, долгий хвост
-    k = int(3.0 * sr)
-    tt = np.arange(k) / sr
-    boom = np.sin(2 * np.pi * np.cumsum(40 + 60 * np.exp(-tt / 0.08)) / sr) * env_ad(k, 0.002, 0.7, sr)
-    add(STAMP, boom, 0.9)
-    y = sum(np.sin(2 * np.pi * hz(m) * tt) for m in (38, 50, 53, 57, 62)) * env_ad(k, 0.01, 1.2, sr)
-    add(STAMP, y, 0.07)
-
-    # реверб: тёмный хвост (IR до 2,5 кГц)
     irn = int(2.6 * sr)
     irt = np.arange(irn) / sr
     irs = []
@@ -122,7 +137,7 @@ def music(n, sr=48000):
     wl = fftconvolve(filt(L, 'highpass', 150, sr), irs[0])[:n]
     wr = fftconvolve(filt(R, 'highpass', 150, sr), irs[1])[:n]
     out = np.stack([L + wl * 0.45, R + wr * 0.45], 1)
-    out *= np.clip((DUR - t) / 1.2, 0, 1)[:, None]
+    out *= np.clip((DUR - t) / 2.0, 0, 1)[:, None]
     out = np.tanh(out * 1.5) / 1.5
-    out = filt(out.T, 'lowpass', 9000, sr).T          # без верхнего шороха
+    out = filt(out.T, 'lowpass', 9000, sr).T
     return out / (np.max(np.abs(out)) + 1e-9) * 0.5

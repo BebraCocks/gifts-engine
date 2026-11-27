@@ -235,11 +235,15 @@ def dimon(p=None):
     im = Image.new('RGBA', (W * SS, H * SS), (0, 0, 0, 0))
     cx, hx, hy = W / 2, W / 2 + p.get('look', 0) * 25, 560
     arms = p.get('arms', 'down')
+    HOOD = np.array(p.get('hood', [74, 122, 222]), float)
+    HOOD_SH = HOOD * 0.55
+    HAIR = np.array(p.get('hair', [120, 76, 44]), float)
+    HAIR_SH = HAIR * 0.58
     # худи
     hood = _mask(lambda d: d.rounded_rectangle(_P([(cx - 250, 860), (cx + 250, 1560)]), 170 * SS, fill=255))
     _layer(im, hood, base=HOOD, shadow=HOOD_SH, rim=(30, 40, 90), round_r=0.35, spec=0.12)
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle(_P([(cx - 130, 1230), (cx + 130, 1380)]), 40 * SS, outline=(52, 92, 186, 255), width=5 * SS)
+    d.rounded_rectangle(_P([(cx - 130, 1230), (cx + 130, 1380)]), 40 * SS, outline=tuple(int(c) for c in HOOD * 0.8) + (255,), width=5 * SS)
     for sgn in (-1, 1):
         d.line(_P([(cx + sgn * 40, 900), (cx + sgn * 46, 1060)]), fill=(235, 240, 255, 255), width=6 * SS)
     # капюшон-воротник
@@ -314,6 +318,12 @@ def dimon(p=None):
         if mo == 'brush':                      # зубная щётка торчит изо рта
             d.rounded_rectangle(_P([(mx + 5, my - 9), (mx + 190, my + 9)]), 8 * SS, fill=(90, 210, 200, 255))
             d.rounded_rectangle(_P([(mx - 30, my - 14), (mx + 20, my + 14)]), 6 * SS, fill=(245, 245, 255, 255))
+    if p.get('glasses'):
+        d = ImageDraw.Draw(im)
+        for sgn in (-1, 1):
+            ex, ey = hx + sgn * 82 + p.get('look', 0) * 10, hy + 30
+            d.rounded_rectangle(_P([(ex - 58, ey - 46), (ex + 58, ey + 46)]), 22 * SS, outline=(30, 30, 40, 255), width=8 * SS)
+        d.line(_P([(hx - 24, hy + 22), (hx + 24, hy + 22)]), fill=(30, 30, 40, 255), width=8 * SS)
     # руки
     def hand_at(x, y, sock=False):
         hm3 = _mask(lambda d: d.ellipse(_P([(x - 42, y - 40), (x + 42, y + 40)]), fill=255))
@@ -347,7 +357,7 @@ def dimon_legs(phase=0.0, amp=1.0):
     for sgn, ph in ((-1, phase), (1, phase + 0.5)):
         a = math.sin(2 * math.pi * ph) * 0.6 * amp
         knee = (cx + sgn * 90 + math.sin(a) * 210, 60 + math.cos(a) * 280)
-        b = a - 0.5 - 0.4 * max(0, math.sin(2 * math.pi * ph))
+        b = a - (0.5 + 0.4 * max(0, math.sin(2 * math.pi * ph))) * amp
         foot = (knee[0] + math.sin(b) * 250, knee[1] + math.cos(b) * 250)
         path = [(cx + sgn * 90, 20), knee, foot]
 

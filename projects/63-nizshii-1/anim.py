@@ -142,7 +142,7 @@ def hero_head_base():
         stubble(im2, (240, 240, 840, 1040), 26000, seed=2,
                 inside=lambda x, y: face_inside(x, y) and (y < 450 or y > 880 or x < 330 or x > 750))
         return im2
-    return cached('hero_head', make)
+    return cached('hero_head_big', make)
 
 
 SKIN_AT = {}

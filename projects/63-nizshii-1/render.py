@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'engine'))
 import paths  # noqa: E402
 HERE = paths.enter(__file__)
 import numpy as np  # noqa: E402
-from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance  # noqa: E402
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance, ImageChops  # noqa: E402
 import banner  # noqa: E402
 import frames  # noqa: E402
 import anim  # noqa: E402
@@ -160,6 +160,21 @@ def body_at(t):
         w2 = int(1080 * (1 + breath))
         tor = tor.resize((w2, 1920), Image.BILINEAR).crop(((w2 - 1080) // 2, 0, (w2 - 1080) // 2 + 1080, 1920))
     canvas.alpha_composite(tor)
+    a_body = canvas.getchannel('A')
+    fx = Image.new('RGBA', canvas.size, (0, 0, 0, 0))
+    dfx = ImageDraw.Draw(fx)
+    w_u = ramp(t, S['S1'] + 0.1, OK['S1'] + 0.7)                  # волна воды от головы к ногам
+    if 0 < w_u < 1:
+        y = 560 + 1300 * eio(w_u)
+        for k in range(14):
+            dfx.rectangle((0, y - k * 9, 1080, y - k * 9 + 9), fill=(120, 190, 255, int(150 * (1 - k / 14))))
+    pulse = sum(bump(t, b, 0.05, 0.25) for b in BEATS)
+    if pulse > 0.01:
+        dfx.ellipse((470, 830, 650, 1010), fill=(255, 40, 40, int(170 * min(1, pulse))))
+    if w_u > 0 or pulse > 0.01:
+        fx = fx.filter(ImageFilter.GaussianBlur(10))
+        fx.putalpha(ImageChops.multiply(fx.getchannel('A'), a_body))
+        canvas.alpha_composite(fx)
     return canvas.crop(CROP)
 
 
@@ -182,6 +197,15 @@ def scene1(t):
     sh = sh.filter(ImageFilter.GaussianBlur(14))
     world.alpha_composite(sh, (760 - body.width // 2 + 18, 1180 - body.height // 2 + 22))
     world.alpha_composite(body, (760 - body.width // 2, 1180 - body.height // 2 - int(10 * jolt)))
+    rip = Image.new('RGBA', world.size, (0, 0, 0, 0))
+    dr = ImageDraw.Draw(rip)
+    for k in range(4):                                             # круги по воде вокруг тела
+        v = (t - S['S1'] - k * 0.45) / 1.8
+        if 0 < v < 1:
+            r = 120 + 700 * eo(v)
+            dr.ellipse((760 - r, 1180 - r * 0.62, 760 + r, 1180 + r * 0.62), outline=(150, 200, 255, int(120 * (1 - v))),
+                       width=4)
+    world.alpha_composite(rip.filter(ImageFilter.GaussianBlur(2)))
     u = eio(ramp(t, 0, SC2 + 0.5))
     z = 0.9 + 0.55 * u
     cx = 760 + 180 * u
@@ -225,7 +249,7 @@ def scene2(t):
     if t >= FACE_GLITCH:
         v = t - FACE_GLITCH
         shake = 4 * math.sin(v * 9) * math.exp(-v * 2)
-    put(img, head, 540, 1010, 1.0, 1.02 * br, rot=-8 + shake + 3 * math.sin(t * 0.4))
+    put(img, head, 540, 850, 1.0, 1.02 * br, rot=-8 + shake + 3 * math.sin(t * 0.4))
     u = eio(ramp(t, SC2, SC3))
     return cam(img, W, H, 1.0 + 0.12 * u, 540, 960 - 60 * u, rot=0)
 
@@ -320,8 +344,25 @@ def grain(k):
     return np.kron(g, np.ones((2, 2), np.float32))[..., None]
 
 
+@functools.lru_cache(None)
+def shaft():
+    yy, xx = np.mgrid[0:H, 0:W]
+    d = np.abs((xx - 760) * 0.92 + (yy - 0) * 0.38 - 120) / 260                   # наклонный луч сверху справа
+    return (np.exp(-d ** 2) * np.clip(1 - yy / H * 0.9, 0, 1))[..., None].astype(np.float32) * np.array(
+        [70, 95, 130], np.float32)
+
+
+DUST = np.random.default_rng(4).random((90, 4))
+
+
 def grade(im, t):
     a = np.asarray(im.convert('RGB'), np.float32)
+    a = a + shaft() * (0.75 + 0.25 * math.sin(t * 1.7))
+    for x0, y0, sp, sz in DUST:                                    # пылинки в луче
+        x = int((x0 * W + math.sin(t * 0.6 + y0 * 9) * 30) % W)
+        y = int((y0 * H - t * (14 + 30 * sp)) % H)
+        r = 1 + int(sz * 2.5)
+        a[max(0, y - r):y + r, max(0, x - r):x + r] += 40 * (0.4 + sp)
     lum = a.mean(-1, keepdims=True) / 255
     a = a + (1 - lum) * np.array([-8, 4, 14], np.float32)          # тил в тенях
     a = a * vignette() + grain(int(t * 24) % 8)
@@ -348,7 +389,7 @@ def subtitles(im, t):
         t0, t1 = ON[k] - 0.05, END[k] + 0.2
         if t0 <= t < t1:
             a = ramp(t, t0, t0 + 0.12) * (1 - ramp(t, t1 - 0.15, t1))
-            put(im, sub_spr(SUBS[key]), W / 2, 1700, a)
+            put(im, sub_spr(SUBS[key]), W / 2, 1360, a)
 
 
 def mix(a, b, u):

@@ -62,11 +62,33 @@ def _rim(mask, col=(150, 105, 115), w=2.2, alpha=150):
     return lay
 
 
-def _layer(im, mask, **kw):
-    sh = _shade(mask, **kw)
+def _layer(im, mask, rim=(150, 105, 115), **kw):
+    """Заливка маски объёмом; считается только в рамке маски (быстро)."""
+    bb = mask.getbbox()
+    if not bb:
+        return
+    pad = 12 * SS
+    box = (max(0, bb[0] - pad), max(0, bb[1] - pad), min(mask.width, bb[2] + pad), min(mask.height, bb[3] + pad))
+    m = mask.crop(box)
+    sh = _shade(m, **kw)
     if sh is not None:
-        im.alpha_composite(sh)
-        im.alpha_composite(_rim(mask))
+        im.alpha_composite(sh, box[:2])
+        im.alpha_composite(_rim(m, col=rim), box[:2])
+
+
+def _overlay(im, mask, col, alpha=255):
+    lay = Image.new('RGBA', im.size, tuple(col[:3]) + (0,))
+    lay.putalpha(mask.point(lambda v: v * alpha // 255))
+    im.alpha_composite(lay)
+
+
+def _capsule(d, pts, w):
+    """Ломаная толстой «колбасой» со скруглёнными концами."""
+    pts = _P(pts)
+    d.line(pts, fill=255, width=int(w * SS), joint='curve')
+    r = w * SS / 2
+    for x, y in (pts[0], pts[-1]):
+        d.ellipse((x - r, y - r, x + r, y + r), fill=255)
 
 
 def missed(p=None):
@@ -92,6 +114,18 @@ def missed(p=None):
         dr.arc(_P([(cx + (10 if sgn > 0 else -150), 975), (cx + (150 if sgn > 0 else -10), 1025)]),
                200 if sgn > 0 else 270, 270 if sgn > 0 else 340, fill=(218, 178, 176, 255), width=3 * SS)
     dr.line(_P([(cx, 1040), (cx, 1170)]), fill=(224, 190, 184, 255), width=2 * SS)
+    arm = p.get('arm')
+    if arm:                              # тонкие руки: «mug» — кружка у груди, «reach» — протягивает вправо
+        if arm == 'mug':
+            path = [(cx + 178, 1040), (cx + 235, 1260), (cx + 95, 1250)]
+            hand = (cx + 72, 1240)
+        else:
+            path = [(cx + 178, 1040), (cx + 300, 990), (cx + 405, 935)]
+            hand = (cx + 435, 920)
+        am = _mask(lambda d: _capsule(d, path, 48))
+        _layer(im, am, base=SKIN * 0.97, rim=(140, 95, 105), round_r=0.5, spec=0.12)
+        hm2 = _mask(lambda d: d.ellipse(_P([(hand[0] - 38, hand[1] - 32), (hand[0] + 38, hand[1] + 32)]), fill=255))
+        _layer(im, hm2, rim=(140, 95, 105), round_r=0.5, spec=0.15)
     # тень головы на шее
     sh = Image.new('L', im.size, 0)
     ImageDraw.Draw(sh).ellipse(_P([(hx - 70, chin - 50), (hx + 70, chin + 40)]), fill=140)
@@ -182,3 +216,153 @@ def missed(p=None):
     if tilt:
         im = im.rotate(tilt, resample=Image.BICUBIC, center=(cx * SS, 1000 * SS))
     return im.resize((W, H), Image.LANCZOS)
+
+
+# ---------------------------------------------------------------- Димон
+DSKIN = np.array([250, 214, 188], float)
+DSKIN_SH = np.array([205, 150, 140], float)
+HOOD = np.array([74, 122, 222], float)
+HOOD_SH = np.array([40, 66, 150], float)
+HAIR = np.array([120, 76, 44], float)
+HAIR_SH = np.array([70, 40, 24], float)
+
+
+def dimon(p=None):
+    """Димон (сосед): круглая голова, тёмно-русые лохматые волосы, синее худи. Верх тела, низ холста — пояс.
+    eyes: open/closed/wide/half; mouth: smile/open/o/flat/shout/sleep/brush; arms: down/phone/count/plead/up;
+    props: sock (носок на руке)."""
+    p = p or {}
+    im = Image.new('RGBA', (W * SS, H * SS), (0, 0, 0, 0))
+    cx, hx, hy = W / 2, W / 2 + p.get('look', 0) * 25, 560
+    arms = p.get('arms', 'down')
+    # худи
+    hood = _mask(lambda d: d.rounded_rectangle(_P([(cx - 250, 860), (cx + 250, 1560)]), 170 * SS, fill=255))
+    _layer(im, hood, base=HOOD, shadow=HOOD_SH, rim=(30, 40, 90), round_r=0.35, spec=0.12)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle(_P([(cx - 130, 1230), (cx + 130, 1380)]), 40 * SS, outline=(52, 92, 186, 255), width=5 * SS)
+    for sgn in (-1, 1):
+        d.line(_P([(cx + sgn * 40, 900), (cx + sgn * 46, 1060)]), fill=(235, 240, 255, 255), width=6 * SS)
+    # капюшон-воротник
+    col = _mask(lambda d: d.rounded_rectangle(_P([(cx - 170, 820), (cx + 170, 930)]), 50 * SS, fill=255))
+    _layer(im, col, base=HOOD * 1.06, shadow=HOOD_SH, rim=(30, 40, 90), round_r=0.5, spec=0.1)
+    neck = _mask(lambda d: d.rounded_rectangle(_P([(hx - 50, 740), (hx + 50, 880)]), 40 * SS, fill=255))
+    _layer(im, neck, base=DSKIN * 0.95, shadow=DSKIN_SH, round_r=0.5, spec=0.05)
+    # уши
+    for sgn in (-1, 1):
+        em = _mask(lambda d, sgn=sgn: d.ellipse(_P([(hx + sgn * 215 - 36, hy - 10), (hx + sgn * 215 + 36, hy + 80)]), fill=255))
+        _layer(im, em, base=DSKIN, shadow=DSKIN_SH, round_r=0.5, spec=0.05)
+    # голова
+    head = _mask(lambda d: d.ellipse(_P([(hx - 225, hy - 250), (hx + 225, hy + 250)]), fill=255))
+    _layer(im, head, base=DSKIN, shadow=DSKIN_SH, rim=(150, 100, 90), round_r=0.42, spec=0.3)
+
+    # волосы: шапка с прядями-зубцами
+    def hair(d):
+        pts = []
+        for k in range(6, 175, 6):
+            a = math.radians(180 + k)
+            r = 250 + (22 if (k // 6) % 2 else 0)
+            pts.append((hx + r * math.cos(a), hy - 30 + r * 1.02 * math.sin(a)))
+        pts += [(hx + 238, hy - 10), (hx + 200, hy - 120)]
+        for k in range(7):                     # чёлка зубцами
+            x = hx + 200 - k * 66
+            pts += [(x - 33, hy - 70 if k % 2 else hy - 40), (x - 66, hy - 140)]
+        pts += [(hx - 215, hy - 110)]
+        d.polygon(_P(pts), fill=255)
+    hm = _mask(hair)
+    _layer(im, hm, base=HAIR, shadow=HAIR_SH, rim=(50, 28, 16), round_r=0.3, spec=0.25)
+    d = ImageDraw.Draw(im)
+    # брови
+    e = p.get('eyes', 'open')
+    by = hy - 40 if e != 'wide' else hy - 62
+    for sgn in (-1, 1):
+        tilt_b = {'plead': 18, 'shout': -14}.get(p.get('brows', ''), 0) * sgn
+        d.line(_P([(hx + sgn * 120, by - tilt_b), (hx + sgn * 40, by + tilt_b)]), fill=(90, 54, 30, 255), width=11 * SS)
+    # глаза
+    for sgn in (-1, 1):
+        ex, ey = hx + sgn * 82 + p.get('look', 0) * 10, hy + 30
+        if e == 'closed':
+            d.arc(_P([(ex - 30, ey - 22), (ex + 30, ey + 16)]), 20, 160, fill=(50, 30, 30, 255), width=6 * SS)
+        else:
+            rw, rh = {'open': (24, 30), 'half': (24, 12), 'wide': (34, 42)}[e]
+            if e == 'wide':
+                d.ellipse(_P([(ex - rw - 14, ey - rh - 14), (ex + rw + 14, ey + rh + 14)]), fill=(255, 255, 255, 255),
+                          outline=(60, 40, 40, 255), width=3 * SS)
+            d.ellipse(_P([(ex - rw, ey - rh), (ex + rw, ey + rh)]), fill=(40, 28, 30, 255))
+            d.ellipse(_P([(ex - 8, ey - rh * 0.6), (ex + 6, ey - rh * 0.6 + 13)]), fill=(255, 255, 255, 255))
+            if e == 'half':
+                d.line(_P([(ex - rw - 6, ey - rh), (ex + rw + 6, ey - rh)]), fill=(70, 45, 40, 255), width=6 * SS)
+    # нос, румянец
+    d.arc(_P([(hx - 16, hy + 70), (hx + 16, hy + 110)]), 300, 90, fill=(205, 150, 135, 255), width=5 * SS)
+    for sgn in (-1, 1):
+        bl = Image.new('L', im.size, 0)
+        ImageDraw.Draw(bl).ellipse(_P([(hx + sgn * 135 - 45, hy + 100), (hx + sgn * 135 + 45, hy + 150)]), fill=255)
+        _overlay(im, bl.filter(ImageFilter.GaussianBlur(14 * SS)), (240, 150, 140), 110)
+    d = ImageDraw.Draw(im)
+    mo, mx, my = p.get('mouth', 'smile'), hx, hy + 165
+    LIP = (120, 50, 55, 255)
+    if mo == 'smile':
+        d.arc(_P([(mx - 50, my - 34), (mx + 50, my + 22)]), 25, 155, fill=LIP, width=7 * SS)
+    elif mo == 'flat':
+        d.line(_P([(mx - 34, my), (mx + 34, my)]), fill=LIP, width=7 * SS)
+    elif mo == 'sleep':
+        d.ellipse(_P([(mx - 10, my - 6), (mx + 10, my + 10)]), fill=LIP)
+    elif mo in ('open', 'o', 'shout', 'brush'):
+        rw, rh = {'open': (38, 26), 'o': (20, 24), 'shout': (62, 58), 'brush': (30, 18)}[mo]
+        d.ellipse(_P([(mx - rw, my - rh), (mx + rw, my + rh)]), fill=(110, 30, 40, 255), outline=LIP, width=4 * SS)
+        if mo in ('open', 'shout'):
+            d.ellipse(_P([(mx - rw * 0.6, my + rh * 0.2), (mx + rw * 0.6, my + rh * 0.95)]), fill=(230, 110, 120, 255))
+        if mo == 'brush':                      # зубная щётка торчит изо рта
+            d.rounded_rectangle(_P([(mx + 5, my - 9), (mx + 190, my + 9)]), 8 * SS, fill=(90, 210, 200, 255))
+            d.rounded_rectangle(_P([(mx - 30, my - 14), (mx + 20, my + 14)]), 6 * SS, fill=(245, 245, 255, 255))
+    # руки
+    def hand_at(x, y, sock=False):
+        hm3 = _mask(lambda d: d.ellipse(_P([(x - 42, y - 40), (x + 42, y + 40)]), fill=255))
+        if sock:
+            _layer(im, hm3, base=np.array([240, 240, 240.]), shadow=np.array([170, 170, 190.]), rim=(90, 90, 110), round_r=0.5)
+            ImageDraw.Draw(im).line(_P([(x - 40, y + 5), (x + 40, y + 5)]), fill=(230, 80, 80, 255), width=8 * SS)
+        else:
+            _layer(im, hm3, base=DSKIN, shadow=DSKIN_SH, round_r=0.5, spec=0.1)
+    paths = {'down': [[(cx - 230, 950), (cx - 270, 1250), (cx - 250, 1420)], [(cx + 230, 950), (cx + 270, 1250), (cx + 250, 1420)]],
+             'phone': [[(cx - 230, 950), (cx - 230, 1220), (cx - 70, 1180)], [(cx + 230, 950), (cx + 230, 1220), (cx + 70, 1180)]],
+             'count': [[(cx - 230, 950), (cx - 270, 1250), (cx - 250, 1420)], [(cx + 230, 950), (cx + 340, 820), (cx + 330, 640)]],
+             'plead': [[(cx - 230, 950), (cx - 160, 800), (cx - 40, 700)], [(cx + 230, 950), (cx + 160, 800), (cx + 40, 700)]],
+             'up': [[(cx - 230, 950), (cx - 380, 760), (cx - 420, 560)], [(cx + 230, 950), (cx + 380, 760), (cx + 420, 560)]]}[arms]
+    for i, path in enumerate(paths):
+        am = _mask(lambda d, path=path: _capsule(d, path, 92))
+        _layer(im, am, base=HOOD * 1.03, shadow=HOOD_SH, rim=(30, 40, 90), round_r=0.5, spec=0.1)
+        hand_at(*path[-1], sock=(p.get('sock') and i == 0))
+    if arms == 'count':                        # пальцы
+        n = p.get('fingers', 3)
+        x, y = paths[1][-1]
+        for k in range(n):
+            fm = _mask(lambda d, k=k: _capsule(d, [(x - 30 + k * 20, y - 20), (x - 40 + k * 26, y - 90)], 22))
+            _layer(im, fm, base=DSKIN, shadow=DSKIN_SH, round_r=0.5, spec=0.05)
+    return im.resize((W, H), Image.LANCZOS)
+
+
+def dimon_legs(phase=0.0, amp=1.0):
+    """Ноги для бега: серые штаны, белые носки. Холст 1000×800, верх — пояс (стык с низом dimon())."""
+    im = Image.new('RGBA', (W * SS, 800 * SS), (0, 0, 0, 0))
+    cx = W / 2
+    for sgn, ph in ((-1, phase), (1, phase + 0.5)):
+        a = math.sin(2 * math.pi * ph) * 0.6 * amp
+        knee = (cx + sgn * 90 + math.sin(a) * 210, 60 + math.cos(a) * 280)
+        b = a - 0.5 - 0.4 * max(0, math.sin(2 * math.pi * ph))
+        foot = (knee[0] + math.sin(b) * 250, knee[1] + math.cos(b) * 250)
+        path = [(cx + sgn * 90, 20), knee, foot]
+
+        def leg(d, path=path):
+            d.rectangle((0, 0, 1, 1), fill=0)
+            pts = _P(path)
+            d.line(pts, fill=255, width=120 * SS, joint='curve')
+            r = 60 * SS
+            for x, y in pts:
+                d.ellipse((x - r, y - r, x + r, y + r), fill=255)
+        m = Image.new('L', im.size, 0)
+        leg(ImageDraw.Draw(m))
+        _layer(im, m, base=np.array([120, 124, 140.]), shadow=np.array([70, 72, 90.]), rim=(40, 40, 55), round_r=0.4, spec=0.08)
+        fm = Image.new('L', im.size, 0)
+        fx, fy = foot
+        ImageDraw.Draw(fm).ellipse(_P([(fx - 80, fy - 40), (fx + 80, fy + 45)]), fill=255)
+        _layer(im, fm, base=np.array([245, 245, 250.]), shadow=np.array([180, 180, 200.]), rim=(90, 90, 110), round_r=0.5)
+    return im.resize((W, 800), Image.LANCZOS)

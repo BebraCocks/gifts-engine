@@ -75,6 +75,11 @@
   .prow .del { color: var(--danger); }
   .addrow { display: flex; gap: 8px; margin-top: 8px; }
   .addrow button { width: auto; padding: 10px 14px; }
+  .boostbox { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .switch { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600;
+            font-size: 15px; margin: 0; cursor: pointer; }
+  .switch input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .pill.boost .dot { background: #ff3b7f; }
   .warn { color: var(--warn); font-size: 13px; margin-top: 6px; }
 </style>
 </head>
@@ -119,13 +124,29 @@
   <div class="muted" id="planInfo" style="margin-top:6px"></div>
   <label for="slug">Название коллекции (как в ссылке t.me/nft/<b>Название</b>-1)</label>
   <input type="text" id="slug" placeholder="напр. PlushPepe — узнаем, когда выйдут улучшения" autocapitalize="off">
-  <label for="early">Стрелять за <b id="earlyVal">3</b> номер(а) до цели</label>
-  <input type="range" id="early" min="0" max="30" step="1">
+  <label class="switch" style="margin-top:14px"><input type="checkbox" id="eauto">
+    <span>Упреждение автоматически</span></label>
+  <div class="muted" id="eautoInfo" style="margin-top:4px">Бот сам замерит скорость счётчика и задержку связи и посчитает, когда стрелять.</div>
+  <div id="earlyBox">
+    <label for="early">Стрелять за <b id="earlyVal">0</b> номер(а) до цели</label>
+    <input type="range" id="early" min="0" max="30" step="1">
+  </div>
   <label for="rate">Проверок счётчика в секунду (на все аккаунты): <b id="rateVal">5</b></label>
   <input type="range" id="rate" min="1" max="100" step="1">
   <div class="warn" id="rateWarn" style="display:none">Больше ~10 в секунду на аккаунт — риск паузы от Telegram.</div>
   <label for="idle">Пока улучшений нет, проверять раз в <b id="idleVal">30</b> с</label>
   <input type="range" id="idle" min="5" max="300" step="5">
+  <div class="boostbox">
+    <label class="switch"><input type="checkbox" id="boost"><span>⚡ Экстра-режим у цели</span></label>
+    <div id="boostOpts">
+      <label for="bwin">Включать за <b id="bwinVal">10</b> номеров до цели</label>
+      <input type="range" id="bwin" min="1" max="100" step="1">
+      <label for="brate">Проверок в секунду в экстра-режиме: <b id="brateVal">10</b>
+        <span class="muted">(раз в <span id="bint">0.1</span> с)</span></label>
+      <input type="range" id="brate" min="1" max="50" step="1">
+      <div class="warn" id="brateWarn" style="display:none">На аккаунт выходит больше ~10 в секунду — выше риск паузы от Telegram.</div>
+    </div>
+  </div>
   <div class="btns" style="grid-template-columns:1fr">
     <button id="saveBtn">Сохранить</button>
   </div>
@@ -174,8 +195,9 @@ async function run(btn, action, body, after) {
 function render(s) {
   state = s;
   const hot = s.enabled && s.phase === "hot";
-  $("pill").className = "pill" + (hot ? " hot" : s.enabled ? " on" : "");
-  $("pillText").textContent = s.enabled ? "Охота включена" : "Охота выключена";
+  $("pill").className = "pill" + (s.boosting ? " boost" : hot ? " hot" : s.enabled ? " on" : "");
+  $("pillText").textContent = s.boosting ? `⚡ Экстра-режим · ${s.rate_now} проверок/с` :
+                              s.enabled ? "Охота включена" : "Охота выключена";
   $("phase").textContent = PHASES[s.phase] || s.phase;
   $("issued").textContent = s.issued ?? "—";
   $("next").textContent = s.next_target ?? (s.plan[0]?.t ?? "—");
@@ -188,14 +210,22 @@ function render(s) {
     renderPlan();
     $("slug").value = s.slug_base || "";
     $("early").value = s.early; $("earlyVal").textContent = s.early;
+    $("eauto").checked = s.early_auto;
     $("rate").value = Math.min(100, Math.round(s.rate)); $("rateVal").textContent = s.rate;
     $("idle").value = s.idle_poll; $("idleVal").textContent = s.idle_poll;
+    $("boost").checked = s.boost;
+    $("bwin").value = s.boost_window; $("bwinVal").textContent = s.boost_window;
+    $("brate").value = Math.min(50, Math.round(s.boost_rate)); $("brateVal").textContent = s.boost_rate;
     rateWarn();
   }
   $("accounts").innerHTML = s.accounts.map(a =>
     `<div class="row" style="padding:4px 0"><span>${esc(a.name)}</span><span class="muted">` +
     `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</span></div>`).join("");
   renderModels(s);
+  const live = s.phase === "hot" && s.speed !== undefined;
+  $("eautoInfo").textContent = live
+    ? `Сейчас: счётчик +${s.speed}/с, задержка ${s.rtt_ms ?? "—"} мс → стрелять за ${s.early_now} до цели`
+    : "Бот сам замерит скорость счётчика и задержку связи и посчитает, когда стрелять.";
 }
 
 function renderModels(s) {
@@ -248,11 +278,17 @@ function addNumbers() {
 
 const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rateWarn() {
-  const per = $("rate").value / Math.max(1, state?.accounts.length || 1);
-  $("rateWarn").style.display = per > 10 ? "block" : "none";
+  const n = Math.max(1, state?.accounts.length || 1);
+  $("rateWarn").style.display = $("rate").value / n > 10 ? "block" : "none";
+  $("brateWarn").style.display = $("brate").value / n > 10 ? "block" : "none";
+  $("earlyBox").style.display = $("eauto").checked ? "none" : "block";
+  $("bint").textContent = (1 / $("brate").value).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  $("boostOpts").style.opacity = $("boost").checked ? 1 : .4;
 }
 
-for (const [id, val] of [["early", "earlyVal"], ["rate", "rateVal"], ["idle", "idleVal"]])
+$("boost").onchange = $("eauto").onchange = () => { dirty = true; rateWarn(); };
+for (const [id, val] of [["early", "earlyVal"], ["rate", "rateVal"], ["idle", "idleVal"],
+                         ["bwin", "bwinVal"], ["brate", "brateVal"]])
   $(id).oninput = () => { dirty = true; $(val).textContent = $(id).value; rateWarn(); };
 $("slug").oninput = () => { dirty = true; };
 $("addBtn").onclick = addNumbers;
@@ -260,7 +296,9 @@ $("addNum").onkeydown = e => { if (e.key === "Enter") addNumbers(); };
 
 $("saveBtn").onclick = () => run($("saveBtn"), "settings", {
   plan: plan.map(({t, n}) => ({t, n})), slug: $("slug").value, early: +$("early").value,
+  early_auto: $("eauto").checked,
   rate: +$("rate").value, idle_poll: +$("idle").value,
+  boost: $("boost").checked, boost_window: +$("bwin").value, boost_rate: +$("brate").value,
 }, () => { dirty = false; showOut("Сохранено ✅"); });
 $("huntBtn").onclick = () => run($("huntBtn"), "hunt", {on: !state?.enabled});
 $("testBtn").onclick = () => run($("testBtn"), "test");

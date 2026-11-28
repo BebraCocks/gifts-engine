@@ -8,6 +8,7 @@
 """
 
 import asyncio
+import collections
 import json
 import re
 import statistics
@@ -27,9 +28,13 @@ DEFAULTS = {
     "enabled": False,       # охота включена
     "gifts": [],            # выбранные подарки: account / msg_id / saved_id / gift_id / title
     "plan": [{"t": 777, "n": 1}],  # номера и сколько подарков на каждый
-    "early": 3,             # за сколько номеров до цели стрелять
+    "early": 0,             # за сколько номеров до цели стрелять (если не авто)
+    "early_auto": True,     # считать упреждение само: скорость счётчика × задержка
     "rate": 5.0,            # запросов счётчика в секунду (всего, на все аккаунты)
     "idle_poll": 30.0,      # секунд между проверками, пока улучшений нет
+    "boost": True,          # экстра-режим у самой цели
+    "boost_window": 10,     # за сколько номеров до цели включать экстра-режим
+    "boost_rate": 10.0,     # проверок в секунду в экстра-режиме (10 = раз в 0,1 с)
     "slug": None,           # основа ссылки коллекции, напр. "PlushPepe"
     "keep_details": False,  # сохранять подпись отправителя на коллекционке
 }
@@ -42,7 +47,7 @@ HELP = """🎯 Gift Sniper — команды (пишите здесь, в Из�
 /gifts — подарки на всех аккаунтах, которые можно улучшить
 /gift 1 3 — выбрать подарки №1 и №3 (залп), /gift all — все одной модели
 /target 777 1000x2 1111-1115 — номера; x2 — сколько подарков на номер (по умолчанию 1)
-/early 3 — за сколько номеров до цели стрелять
+/early 2 — за сколько номеров до цели стрелять, /early auto — само
 /rate 5 — запросов счётчика в секунду (всего на все аккаунты)
 /idle 30 — раз во сколько секунд проверять, вышли ли улучшения
 /on — включить охоту, /off — выключить
@@ -196,6 +201,9 @@ class Sniper:
         self.shots = []                   # подарки, готовые к улучшению
         self.pool = []                    # ещё не потраченные подарки этой охоты
         self.done = {}                    # номер → итог («поймал #…», «проскочил»)
+        self.boost_for = None             # для какой цели уже включён экстра-режим
+        self.hist = collections.deque(maxlen=400)   # (время, значение счётчика)
+        self.rtts = collections.deque(maxlen=50)    # задержки запросов счётчика, с
         self.forms = {}                   # заранее полученные формы оплаты
         self.pollers = []
         self.last_note = ""
@@ -312,17 +320,52 @@ class Sniper:
         r = await acc.client(functions.payments.GetUniqueStarGiftRequest(slug=slug))
         return r.gift.availability_issued
 
+    def boosting(self):
+        """Экстра-режим: до ближайшей цели осталось не больше boost_window номеров."""
+        cfg = self.cfg
+        if not cfg.get("boost") or self.issued is None or self.phase != "hot":
+            return False
+        target = self.next_target(self.issued)
+        return target is not None and target - self.issued <= cfg["boost_window"]
+
+    def speed(self):
+        """Сколько номеров в секунду улучшают сейчас (по последним ~3 с)."""
+        now = time.monotonic()
+        pts = [(t, v) for t, v in self.hist if now - t <= 3]
+        if len(pts) < 2 or pts[-1][0] - pts[0][0] < 0.3:
+            return 0.0
+        return max(0.0, (max(v for _, v in pts) - pts[0][1]) / (pts[-1][0] - pts[0][0]))
+
+    def rtt(self):
+        return statistics.median(self.rtts) if self.rtts else 0.05
+
+    def early_now(self):
+        """Упреждение: сколько чужих улучшений пройдёт, пока наш запрос в пути."""
+        if self.cfg.get("early_auto", True):
+            return int(round(self.speed() * self.rtt()))
+        return self.cfg["early"]
+
+    def effective_rate(self):
+        cfg = self.cfg
+        if self.boosting():
+            return max(cfg["rate"], cfg["boost_rate"])
+        return cfg["rate"]
+
     async def poller(self, acc, offset):
-        """Каждый аккаунт опрашивает счётчик в своё окно, вместе — /rate в секунду."""
+        """Каждый аккаунт опрашивает счётчик в своё окно, вместе — rate в секунду."""
         await asyncio.sleep(offset)
         while self.phase == "hot":
-            interval = len(self.accounts) / max(self.cfg["rate"], 0.01)
+            interval = len(self.accounts) / max(self.effective_rate(), 0.01)
             now = time.monotonic()
             if now < acc.cooldown_until:
                 await asyncio.sleep(min(acc.cooldown_until - now, 5))
                 continue
             try:
+                t0 = time.monotonic()
                 value = await self.read_counter(acc)
+                now = time.monotonic()
+                self.rtts.append(now - t0)
+                self.hist.append((now, value))
                 self.issued = max(self.issued or 0, value)
                 self.counter_error = None
             except FloodWaitError as e:
@@ -505,10 +548,16 @@ class Sniper:
             return
         target = entry["t"]
         batch = self.pool[:entry["n"]]
+        if self.boosting() and self.boost_for != target:
+            self.boost_for = target
+            await self.say(f"⚡ Экстра-режим: до #{target} осталось "
+                           f"{target - self.issued}, проверяю счётчик "
+                           f"{self.effective_rate():g} раз/с.")
         gap = target - (self.issued + 1)       # сколько номеров до цели
-        if gap <= cfg["early"] + 30:
+        early = self.early_now()
+        if gap <= early + 30:
             await self.prepare_all(batch)       # оплату готовим заранее
-        if gap <= cfg["early"]:
+        if gap <= early:
             self.pool = self.pool[len(batch):]
             results = await self.fire_all(batch)
             got = [num for _, num, _, err in results if num and not err]
@@ -524,7 +573,7 @@ class Sniper:
                            f"\nОсталось подарков: {len(self.pool)}, номеров: "
                            f"{len([e for e in self.pending() if e['t'] > self.issued])}")
             return
-        await asyncio.sleep(min(0.5, max(0.002, 0.5 / max(cfg["rate"], 1))))
+        await asyncio.sleep(min(0.5, max(0.002, 0.5 / max(self.effective_rate(), 1))))
 
     async def check_upgrades(self):
         cfg = self.cfg
@@ -557,15 +606,17 @@ class Sniper:
             await asyncio.sleep(cfg["idle_poll"])
             return
         self.shots, self.issued, self.forms = ready, None, {}
-        self.pool, self.done = list(ready), {}
+        self.pool, self.done, self.boost_for = list(ready), {}, None
+        self.hist.clear()
+        self.rtts.clear()
         self.phase = "hot"
         self.start_pollers()
         need = sum(e["n"] for e in cfg["plan"])
         warn = (f"\n⚠️ Подарков ({len(ready)}) меньше, чем нужно по плану ({need}): "
                 "последним номерам может не хватить." if need > len(ready) else "")
         await self.say(f"🔥 Улучшения доступны! Подарков готово: {len(ready)}. "
-                       f"Номера: {plan_text(cfg['plan'])}. Стреляю за "
-                       f"{cfg['early']} номер(а) до цели, счётчик — "
+                       f"Номера: {plan_text(cfg['plan'])}. Упреждение: "
+                       f"{'авто' if cfg.get('early_auto', True) else cfg['early']}, счётчик — "
                        f"{cfg['rate']:g} запр/с на {len(self.accounts)} аккаунт(а).{warn}")
 
     # ---------- команды ----------
@@ -597,9 +648,14 @@ class Sniper:
                 await self.say(f"🎯 Номера ({len(plan)}): {plan_text(plan)}\n"
                                f"Нужно подарков: {sum(e['n'] for e in plan)}")
             elif cmd == "/early":
-                cfg["early"] = max(0, int(arg))
+                if arg.strip().lower() in ("auto", "авто"):
+                    cfg["early_auto"] = True
+                    msg = "⏱ Упреждение считается автоматически."
+                else:
+                    cfg["early"], cfg["early_auto"] = max(0, int(arg)), False
+                    msg = f"⏱ Стреляю за {cfg['early']} номер(а) до цели."
                 save_config(cfg)
-                await self.say(f"⏱ Стреляю за {cfg['early']} номер(а) до цели.")
+                await self.say(msg)
             elif cmd == "/rate":
                 cfg["rate"] = min(1000.0, max(0.1, float(arg.replace(",", "."))))
                 save_config(cfg)
@@ -647,8 +703,10 @@ class Sniper:
             + (f" — {cfg['gifts'][0]['title']}" if cfg["gifts"] else " (выберите: /gifts)"),
             f"Номера: {plan_text(cfg['plan'])} (нужно подарков: "
             f"{sum(e['n'] for e in cfg['plan'])})",
-            f"Стреляю за {cfg['early']} до цели · счётчик {cfg['rate']:g} запр/с · "
+            f"Упреждение: {'авто' if cfg.get('early_auto', True) else cfg['early']} · счётчик {cfg['rate']:g} запр/с · "
             f"ожидание раз в {cfg['idle_poll']:g} с",
+            ("Экстра-режим: " + (f"за {cfg['boost_window']} номеров до цели — "
+                                 f"{cfg['boost_rate']:g} проверок/с" if cfg["boost"] else "выключен")),
         ]
         if self.issued is not None:
             lines.append(f"Улучшено в коллекции: {self.issued}")

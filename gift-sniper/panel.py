@@ -66,8 +66,13 @@ class Panel:
             "pool": len(s.pool) if s.phase == "hot" else None,
             "next_target": s.next_target(s.issued) if s.issued is not None else None,
             "early": cfg["early"],
+            "early_auto": cfg.get("early_auto", True), "early_now": s.early_now(),
+            "speed": round(s.speed(), 1), "rtt_ms": round(s.rtt() * 1000, 1) if s.rtts else None,
             "rate": cfg["rate"],
             "idle_poll": cfg["idle_poll"],
+            "boost": cfg["boost"], "boost_window": cfg["boost_window"],
+            "boost_rate": cfg["boost_rate"], "boosting": s.boosting(),
+            "rate_now": s.effective_rate(),
             "slug": s.collection_slug(),
             "slug_base": cfg.get("slug") or "",
             "selected": {"count": len(gifts),
@@ -117,10 +122,18 @@ class Panel:
             cfg["plan"] = plan
         if "early" in body:
             cfg["early"] = max(0, int(body["early"]))
+        if "early_auto" in body:
+            cfg["early_auto"] = bool(body["early_auto"])
         if "rate" in body:
             cfg["rate"] = min(1000.0, max(0.1, float(body["rate"])))
         if "idle_poll" in body:
             cfg["idle_poll"] = max(5.0, float(body["idle_poll"]))
+        if "boost" in body:
+            cfg["boost"] = bool(body["boost"])
+        if "boost_window" in body:
+            cfg["boost_window"] = max(1, min(1000, int(body["boost_window"])))
+        if "boost_rate" in body:
+            cfg["boost_rate"] = min(1000.0, max(0.5, float(body["boost_rate"])))
         if "slug" in body:
             cfg["slug"] = core.slug_base(str(body["slug"])) or None
         core.save_config(cfg)

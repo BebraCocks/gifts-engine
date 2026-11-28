@@ -4,8 +4,9 @@
   полный круг — buy.poll секунд на аккаунт.
 - При включении запоминается всё, что уже есть в каталоге: покупаются только
   подарки, которые появились ПОСЛЕ включения.
-- Фильтр: цена от min до max ⭐, по желанию только лимитированные; аукционы и
-  распроданные пропускаются. Каждый подходящий подарок — count штук.
+- Фильтр — блоки rules: [{min, max, count}] — «от min до max ⭐ покупать по count шт.»
+  (блоков сколько угодно; если диапазоны пересекаются, берётся блок с меньшим min).
+  По желанию только лимитированные; аукционы и распроданные пропускаются.
 - Бюджет: всего не больше budget ⭐ (счётчик spent), иначе покупка пропускается.
 - Покупает главный аккаунт себе: getPaymentForm(inputInvoiceStarGift) +
   sendStarsForm, штуки одного подарка — параллельно.
@@ -22,9 +23,7 @@ TEDDY_ID = 5170233102089322756          # 🧸 за 15⭐ — для тесто�
 
 BUY_DEFAULTS = {
     "enabled": False,
-    "min": 1,               # цена от, ⭐
-    "max": 1000,            # цена до, ⭐
-    "count": 1,             # сколько штук каждого подходящего подарка
+    "rules": None,          # блоки [{min, max, count}]: цена от/до ⭐, сколько штук
     "budget": 1000,         # всего можно потратить, ⭐
     "spent": 0,             # уже потрачено автопокупкой, ⭐
     "poll": 10.0,           # каждый аккаунт смотрит каталог раз в N секунд
@@ -41,6 +40,9 @@ class Buyer:
         b = cfg.setdefault("buy", {})
         for k, v in BUY_DEFAULTS.items():
             b.setdefault(k, v)
+        if b["rules"] is None:                # перенос старых настроек в первый блок
+            b["rules"] = [{"min": b.pop("min", 1), "max": b.pop("max", 1000),
+                           "count": b.pop("count", 1)}]
         self.hash = {}                        # хэш каталога по аккаунтам
         self.log = collections.deque(maxlen=30)
         self.balance = None
@@ -63,13 +65,14 @@ class Buyer:
         self.hash[acc.name] = r.hash
         return [g for g in r.gifts if isinstance(g, types.StarGift)]
 
-    def matches(self, g):
+    def rule_for(self, g):
+        """Блок, под который подходит подарок, или None."""
         b = self.b
         if g.sold_out or getattr(g, "auction", False):
-            return False
+            return None
         if b["limited_only"] and not g.limited:
-            return False
-        return b["min"] <= g.stars <= b["max"]
+            return None
+        return next((r for r in b["rules"] if r["min"] <= g.stars <= r["max"]), None)
 
     # ---------- покупка ----------
 
@@ -106,10 +109,11 @@ class Buyer:
 
     async def consider(self, g):
         """Новый подарок в каталоге: купить, если подходит под фильтр и бюджет."""
-        if not self.matches(g):
+        rule = self.rule_for(g)
+        if rule is None:
             return
         b = self.b
-        count = b["count"]
+        count = rule["count"]
         if g.limited_per_user and g.per_user_remains is not None:
             count = min(count, g.per_user_remains)
         left = b["budget"] - b["spent"]
@@ -200,22 +204,27 @@ class Buyer:
 
     def apply(self, body):
         b = self.b
-        for key, lo, hi, cast in (("min", 1, 10**7, int), ("max", 1, 10**7, int),
-                                  ("count", 1, 100, int), ("budget", 0, 10**7, int),
-                                  ("poll", 2, 3600, float)):
+        if "rules" in body:
+            rules = []
+            for r in body["rules"]:
+                lo_, hi_ = sorted((int(r["min"]), int(r["max"])))
+                rules.append({"min": max(1, lo_), "max": min(10**7, hi_),
+                              "count": max(1, min(1000, int(r.get("count", 1))))})
+            if not rules:
+                raise ValueError("нужен хотя бы один блок")
+            b["rules"] = sorted(rules, key=lambda r: (r["min"], r["max"]))
+        for key, lo, hi, cast in (("budget", 0, 10**7, int), ("poll", 2, 3600, float)):
             if key in body:
                 b[key] = max(lo, min(hi, cast(float(body[key]))))
         if "limited_only" in body:
             b["limited_only"] = bool(body["limited_only"])
         if body.get("reset_spent"):
             b["spent"] = 0
-        if b["min"] > b["max"]:
-            raise ValueError("цена «от» больше цены «до»")
         self.save(self.cfg)
 
     def state(self):
         b = self.b
-        return {k: b[k] for k in ("enabled", "min", "max", "count", "budget", "spent",
+        return {k: b[k] for k in ("enabled", "rules", "budget", "spent",
                                   "poll", "limited_only")} | {
             "known": len(b["known"]) if b["known"] is not None else None,
             "balance": self.balance,

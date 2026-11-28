@@ -16,7 +16,7 @@ for f in bot.py buyer.py login.py panel.py panel.html panel-setup.sh requirement
   curl -fsSL "$BASE/$f" -o "$DIR/$f"
 done
 mkdir -p "$DIR/sounds"
-for v in plan_add plan_count slug early rate idle bwin brate buy_min buy_max buy_count buy_budget buy_poll; do
+for v in plan_add plan_count slug early rate idle bwin brate buy_min buy_max buy_count buy_budget buy_poll buy_range; do
   curl -fsSL "$BASE/sounds/$v.mp3" -o "$DIR/sounds/$v.mp3"
 done
 

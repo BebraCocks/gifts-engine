@@ -179,6 +179,16 @@
 </div>
 
 <h2>Что покупать</h2>
+<div class="card">
+  <div id="bRules"></div>
+  <div class="btns" style="grid-template-columns:1fr 58px">
+    <button id="bAdd">➕ Добавить блок</button>
+    <button class="say" data-voice="buy_range" aria-label="Озвучить">🔊</button>
+  </div>
+  <div class="muted" id="bRulesInfo" style="margin-top:10px"></div>
+</div>
+
+<h2>Общие настройки</h2>
 <div class="card" id="bSettings"></div>
 
 <h2>Тест</h2>
@@ -257,7 +267,7 @@ player.preload = "auto";
 function speak(name) {
   try {
     player.pause();
-    const src = "sounds/" + name + ".mp3?v=3";
+    const src = "sounds/" + name + ".mp3?v=4";
     if (!player.src.endsWith(src)) player.src = src;
     player.currentTime = 0;
     player.play().catch(() => {});
@@ -491,12 +501,6 @@ showTab(tab);
 
 // ---------- покупка ----------
 const BFIELDS = [
-  {key: "min", title: "Цена от", unit: "звёзд — дешевле не покупать", min: 1, max: 1e7, int: true,
-   voice: "buy_min", show: v => `${v} <small>⭐</small>`},
-  {key: "max", title: "Цена до", unit: "звёзд — дороже не покупать", min: 1, max: 1e7, int: true,
-   voice: "buy_max", show: v => `${v} <small>⭐</small>`},
-  {key: "count", title: "Сколько штук каждого подарка?", unit: "штук (от 1 до 100)", min: 1, max: 100, int: true,
-   voice: "buy_count", show: v => `${v} <small>шт.</small>`},
   {key: "budget", title: "Сколько всего можно потратить?", unit: "звёзд — больше бот не потратит", min: 0, max: 1e7,
    int: true, voice: "buy_budget", show: v => `${v} <small>⭐</small>`},
   {key: "poll", title: "Раз во сколько секунд проверять новые подарки?", unit: "секунд, каждым аккаунтом (от 2)",
@@ -504,6 +508,67 @@ const BFIELDS = [
   {key: "limited_only", toggle: true, title: "Только лимитированные", hint: "обычные подарки не покупать"},
 ];
 const saveBuy = body => api("buy_settings", body);
+const saveRules = rules => {
+  if (!rules.length) throw new Error("Нужен хотя бы один блок");
+  return saveBuy({rules: rules.map(({min, max, count}) => ({min, max, count}))});
+};
+function parseRange(raw) {
+  const m = String(raw).match(/^\s*(\d+)\s*(?:[-–—]|до)\s*(\d+)\s*$/i);
+  if (!m) throw new Error("Введите два числа через дефис, например 1-100");
+  let a = +m[1], b = +m[2]; if (a > b) [a, b] = [b, a];
+  if (a < 1) throw new Error("Цена — от 1 звезды");
+  return [a, b];
+}
+
+function renderRules(b) {
+  const rules = b.rules;
+  $("bRules").innerHTML = rules.map((r, i) =>
+    `<div class="prow"><div style="flex:1;min-width:0">` +
+    `<div class="muted">Блок ${i + 1}</div>` +
+    `<button class="main" data-rr="${i}"><div class="num" style="font-size:28px">${r.min}–${r.max} ⭐</div>` +
+    `<div class="cnt">цена ✎</div></button>` +
+    `<button class="main" data-rc="${i}" style="margin-top:6px"><div class="cnt" style="font-size:22px">по ${r.count} шт. ✎</div></button>` +
+    `</div><button class="del" data-rd="${i}" aria-label="Удалить">✕</button></div>`).join("");
+  const over = rules.some((r, i) => i && r.min <= rules[i - 1].max);
+  $("bRulesInfo").innerHTML = "Подарок покупается по первому блоку, в цену которого он попал." +
+    (over ? `<div class="warn">Диапазоны пересекаются — для общих цен сработает блок выше.</div>` : "");
+  const cur = () => state.buy.rules.map(r => ({...r}));
+  $("bRules").querySelectorAll("[data-rr]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rr, r = state.buy.rules[i];
+    openModal({title: `Блок ${i + 1}: цена от и до`, unit: "звёзд, через дефис — например 1-100",
+      value: `${r.min}-${r.max}`, voice: "buy_range", text: true, save: async raw => {
+        const [a, z] = parseRange(raw); const rs = cur(); rs[i].min = a; rs[i].max = z; await saveRules(rs);
+      }});
+  });
+  $("bRules").querySelectorAll("[data-rc]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rc, r = state.buy.rules[i];
+    openModal({title: `Блок ${i + 1}: сколько штук каждого подарка?`, unit: "штук (от 1 до 1000)",
+      value: r.count, voice: "buy_count", save: async raw => {
+        const rs = cur(); rs[i].count = parseNum(raw, {min: 1, max: 1000, int: true}); await saveRules(rs);
+      }});
+  });
+  $("bRules").querySelectorAll("[data-rd]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rd, r = state.buy.rules[i];
+    const go = async () => { try { await saveRules(cur().filter((_, j) => j !== i)); toast("Удалено"); } catch (e) { showErr(e); } };
+    tg?.showConfirm ? tg.showConfirm(`Удалить блок ${r.min}–${r.max}⭐?`, ok => ok && go()) : confirm("Удалить блок?") && go();
+  });
+}
+
+$("bAdd").onclick = () => openModal({
+  title: "Новый блок: цена от и до", unit: "звёзд, через дефис — например 150-1000",
+  voice: "buy_range", text: true, save: async raw => {
+    const [a, z] = parseRange(raw);
+    const rs = state.buy.rules.map(r => ({...r})); rs.push({min: a, max: z, count: 1});
+    await saveRules(rs);
+    setTimeout(() => {
+      const i = state.buy.rules.findIndex(r => r.min === a && r.max === z);
+      openModal({title: `${a}–${z}⭐: сколько штук каждого подарка?`, unit: "штук (от 1 до 1000)", value: 1,
+        voice: "buy_count", save: async raw2 => {
+          const rs2 = state.buy.rules.map(r => ({...r}));
+          rs2[i].count = parseNum(raw2, {min: 1, max: 1000, int: true}); await saveRules(rs2);
+        }});
+    }, 250);
+  }});
 
 function renderBuy(b) {
   if (!b) return;
@@ -517,6 +582,7 @@ function renderBuy(b) {
   $("bSpent").textContent = `${b.spent} / ${b.budget} ⭐`;
   $("bToggle").textContent = b.enabled ? "Выключить автопокупку" : "Включить автопокупку";
   $("bToggle").className = b.enabled ? "danger" : "";
+  renderRules(b);
   $("bSettings").innerHTML = BFIELDS.map(f => {
     const v = b[f.key];
     if (f.toggle) return `<div class="set"><button class="main" data-bk="${f.key}">` +
@@ -549,8 +615,9 @@ $("bToggle").onclick = () => {
   const go = () => run($("bToggle"), "buy_toggle", {on});
   if (!on) return go();
   const b = state.buy;
-  const msg = `Включить автопокупку? Бот будет покупать новые ${b.limited_only ? "лимитированные " : ""}подарки ` +
-              `за ${b.min}–${b.max}⭐, по ${b.count} шт., всего не больше ${b.budget - b.spent}⭐.`;
+  const msg = `Включить автопокупку? Новые ${b.limited_only ? "лимитированные " : ""}подарки: ` +
+              b.rules.map(r => `${r.min}–${r.max}⭐ по ${r.count} шт.`).join("; ") +
+              `. Всего не больше ${b.budget - b.spent}⭐.`;
   tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
 };
 $("bBalBtn").onclick = () => run($("bBalBtn"), "balance");

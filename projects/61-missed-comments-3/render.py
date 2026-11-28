@@ -328,8 +328,10 @@ def s4(t):
         for i, (x, h_, col, lab) in enumerate(((270, 320, BLUE, '2'), (540, 480, RED, '1'), (810, 220, PINK, '3'))):
             k = eo((v - 0.1 * i) / 0.4)
             top = 1700 - h_ * k
-            d.rectangle((x - 140 + 12, top + 14, x + 140 + 12, 1700), fill=INK)
-            d.rectangle((x - 140, top, x + 140, 1700), fill=col, outline=INK, width=10)
+            if top + 14 < 1700:                                  # столбик ещё не вырос — тень не рисуем
+                d.rectangle((x - 140 + 12, top + 14, x + 140 + 12, 1700), fill=INK)
+            if top < 1690:
+                d.rectangle((x - 140, top, x + 140, 1700), fill=col, outline=INK, width=10)
             d.text((x, top + 70), lab, font=font('Heavy', 110), anchor='mm', fill=WHITE, stroke_width=8, stroke_fill=INK)
             put(im, comment_icon(150), x, top - 90 + 8 * math.sin(t * 4 + i), k)
         # подарок над первым местом

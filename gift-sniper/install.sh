@@ -27,7 +27,7 @@ systemctl daemon-reload
 
 cat > /usr/local/bin/giftsniper-login <<EOF
 #!/bin/sh
-cd $DIR && exec $DIR/venv/bin/python login.py
+cd $DIR && exec $DIR/venv/bin/python login.py "\$@"
 EOF
 chmod +x /usr/local/bin/giftsniper-login
 

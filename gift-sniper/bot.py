@@ -26,7 +26,7 @@ MAIN = "main"
 DEFAULTS = {
     "enabled": False,       # охота включена
     "gifts": [],            # выбранные подарки: account / msg_id / saved_id / gift_id / title
-    "targets": [777],       # номера, которые ловим
+    "plan": [{"t": 777, "n": 1}],  # номера и сколько подарков на каждый
     "early": 3,             # за сколько номеров до цели стрелять
     "rate": 5.0,            # запросов счётчика в секунду (всего, на все аккаунты)
     "idle_poll": 30.0,      # секунд между проверками, пока улучшений нет
@@ -41,7 +41,7 @@ HELP = """🎯 Gift Sniper — команды (пишите здесь, в Из�
 /accounts — подключённые аккаунты
 /gifts — подарки на всех аккаунтах, которые можно улучшить
 /gift 1 3 — выбрать подарки №1 и №3 (залп), /gift all — все одной модели
-/target 777 — какие номера ловить: /target 777 1000 1111-1115
+/target 777 1000x2 1111-1115 — номера; x2 — сколько подарков на номер (по умолчанию 1)
 /early 3 — за сколько номеров до цели стрелять
 /rate 5 — запросов счётчика в секунду (всего на все аккаунты)
 /idle 30 — раз во сколько секунд проверять, вышли ли улучшения
@@ -59,6 +59,10 @@ def load_config():
     cfg = dict(DEFAULTS)
     if CONFIG.exists():
         cfg.update(json.loads(CONFIG.read_text()))
+    if "targets" in cfg:                          # формат до «плана»
+        if "plan" not in json.loads(CONFIG.read_text() if CONFIG.exists() else "{}"):
+            cfg["plan"] = [{"t": n, "n": 1} for n in cfg["targets"]]
+        cfg.pop("targets")
     if cfg.get("gift") and not cfg["gifts"]:      # формат первой версии
         cfg["gifts"] = [dict(cfg["gift"], account=MAIN)]
     cfg.pop("gift", None)
@@ -113,6 +117,51 @@ def parse_targets(text):
     return sorted(nums)
 
 
+def parse_plan(text):
+    """«777 1000x2 1111-1115» → [{t: 777, n: 1}, {t: 1000, n: 2}, {t: 1111, n: 1}, …].
+
+    x2 / ×2 / *2 после номера или диапазона — сколько подарков тратить на номер.
+    """
+    plan = {}
+    rx = r"(\d+)(?:\s*[-–—]\s*(\d+))?(?:\s*[xх×*]\s*(\d+))?"
+    for a, b, n in re.findall(rx, text, flags=re.I):
+        lo, hi = (int(a), int(b or a))
+        lo, hi = min(lo, hi), max(lo, hi)
+        for num in range(lo, hi + 1):
+            if num > 0:
+                plan[num] = max(1, min(100, int(n or 1)))
+        if len(plan) > MAX_TARGETS:
+            raise ValueError(f"слишком много номеров (больше {MAX_TARGETS})")
+    return [{"t": k, "n": v} for k, v in sorted(plan.items())]
+
+
+def clean_plan(items):
+    """План из панели: список {t, n} → проверенный и отсортированный."""
+    plan = {}
+    for e in items:
+        num, n = int(e["t"]), int(e.get("n", 1))
+        if num > 0:
+            plan[num] = max(1, min(100, n))
+    if len(plan) > MAX_TARGETS:
+        raise ValueError(f"слишком много номеров (больше {MAX_TARGETS})")
+    return [{"t": k, "n": v} for k, v in sorted(plan.items())]
+
+
+def plan_text(plan, limit=12):
+    """«777, 1000×2, 1111–1115»: ×N — только если подарков на номер больше одного."""
+    parts, i = [], 0
+    while i < len(plan):
+        j = i
+        while (j + 1 < len(plan) and plan[j + 1]["t"] == plan[j]["t"] + 1
+               and plan[j + 1]["n"] == plan[i]["n"]):
+            j += 1
+        a, b, n = plan[i]["t"], plan[j]["t"], plan[i]["n"]
+        parts.append((str(a) if a == b else f"{a}–{b}") + (f"×{n}" if n > 1 else ""))
+        i = j + 1
+    text = ", ".join(parts[:limit]) or "—"
+    return text + (f" … (+{len(parts) - limit})" if len(parts) > limit else "")
+
+
 def short_targets(nums, limit=12):
     """Короткая запись списка целей: 777, 1000, 1111–1115."""
     parts, i = [], 0
@@ -145,6 +194,8 @@ class Sniper:
         self.issued = None                # сколько уже улучшено в коллекции
         self.counter_error = None
         self.shots = []                   # подарки, готовые к улучшению
+        self.pool = []                    # ещё не потраченные подарки этой охоты
+        self.done = {}                    # номер → итог («поймал #…», «проскочил»)
         self.forms = {}                   # заранее полученные формы оплаты
         self.pollers = []
         self.last_note = ""
@@ -312,8 +363,8 @@ class Sniper:
             invoice=invoice))
         self.forms[k] = (form, invoice, time.monotonic())
 
-    async def prepare_all(self):
-        await asyncio.gather(*(self.prepare_form(i) for i in self.shots),
+    async def prepare_all(self, gifts=None):
+        await asyncio.gather(*(self.prepare_form(i) for i in (gifts or self.shots)),
                              return_exceptions=True)
 
     async def fire_one(self, info):
@@ -333,9 +384,9 @@ class Sniper:
         except Exception as e:
             return info, None, (time.monotonic() - t0) * 1000, e
 
-    async def fire_all(self):
-        """Залп: все готовые подарки улучшаются одновременно."""
-        return await asyncio.gather(*(self.fire_one(i) for i in self.shots))
+    async def fire_all(self, gifts=None):
+        """Залп: подарки улучшаются одновременно."""
+        return await asyncio.gather(*(self.fire_one(i) for i in (gifts or self.shots)))
 
     @staticmethod
     def find_num(res):
@@ -363,8 +414,9 @@ class Sniper:
             elif num is None:
                 lines.append(f"✅ {who}: улучшен за {ms:.0f} мс, номер смотрите в профиле")
             else:
-                mark = "🎉" if num in self.cfg["targets"] else "•"
-                hit |= num in self.cfg["targets"]
+                wanted = num in self.plan_targets()
+                mark = "🎉" if wanted else "•"
+                hit |= wanted
                 lines.append(f"{mark} {who}: #{num} ({ms:.0f} мс)")
         head = ("🎉 ПОЙМАЛ!" if hit else
                 f"Залп выполнен{f', цель была #{target}' if target else ''}:")
@@ -372,11 +424,25 @@ class Sniper:
 
     # ---------- главный цикл ----------
 
+    def plan_targets(self):
+        return {e["t"] for e in self.cfg["plan"]}
+
+    def pending(self):
+        return [e for e in self.cfg["plan"] if e["t"] not in self.done]
+
     def next_target(self, issued):
-        for t in self.cfg["targets"]:
-            if t > issued:
-                return t
+        for e in self.pending():
+            if e["t"] > issued:
+                return e["t"]
         return None
+
+    def summary(self):
+        lines = ["📋 Итог охоты:"]
+        for e in self.cfg["plan"][:40]:
+            lines.append(f"• #{e['t']}: {self.done.get(e['t'], 'не стреляли')}")
+        if self.pool:
+            lines.append(f"Не потрачено подарков: {len(self.pool)}")
+        return "\n".join(lines)
 
     def finish(self, phase="done"):
         self.cfg["enabled"] = False
@@ -400,7 +466,8 @@ class Sniper:
 
     async def step(self):
         cfg = self.cfg
-        if not cfg["enabled"] or not cfg["gifts"] or self.busy:
+        if (not cfg["enabled"] or self.busy
+                or (not cfg["gifts"] and self.phase != "hot")):
             if self.phase == "hot":
                 self.stop_pollers()
             self.phase = "idle"
@@ -422,19 +489,40 @@ class Sniper:
                     "Если долго так — задайте /slug.")
             await asyncio.sleep(0.05)
             return
-        target = self.next_target(self.issued)
-        if target is None:
+        # номера, которые счётчик уже проскочил, а мы не стреляли
+        missed = [e["t"] for e in self.pending() if e["t"] <= self.issued]
+        for num in missed:
+            self.done[num] = f"проскочил (счётчик уже {self.issued}), подарок сохранён"
+        if missed:
+            await self.say(f"⚠️ Проскочили: {', '.join(map(str, missed[:20]))}. "
+                           "Их подарки остаются для следующих номеров.")
+        entry = next((e for e in self.pending() if e["t"] > self.issued), None)
+        if entry is None or not self.pool:
             self.finish()
-            await self.say(f"😔 Все цели уже прошли (улучшено {self.issued}). "
-                           "Охота выключена. Задайте новые /target.")
+            why = ("все номера отработаны" if entry is None else
+                   "подарки закончились")
+            await self.say(f"🏁 Охота завершена: {why}.\n" + self.summary())
             return
+        target = entry["t"]
+        batch = self.pool[:entry["n"]]
         gap = target - (self.issued + 1)       # сколько номеров до цели
         if gap <= cfg["early"] + 30:
-            await self.prepare_all()            # оплату готовим заранее
+            await self.prepare_all(batch)       # оплату готовим заранее
         if gap <= cfg["early"]:
-            results = await self.fire_all()
-            self.finish()
-            await self.say(self.report(results, target))
+            self.pool = self.pool[len(batch):]
+            results = await self.fire_all(batch)
+            got = [num for _, num, _, err in results if num and not err]
+            self.done[target] = (f"🎉 поймал #{target}" if target in got else
+                                 "выстрел: " + (", ".join(f"#{n}" for n in got) or "номер не прочитан"))
+            for num in got:                     # попали в другой номер из плана
+                if num != target and num in self.plan_targets() and num not in self.done:
+                    self.done[num] = f"🎉 поймал #{num} (залпом на #{target})"
+            fired = {self.key(i) for i in batch}
+            cfg["gifts"] = [g for g in cfg["gifts"] if self.key(g) not in fired]
+            save_config(cfg)
+            await self.say(self.report(results, target) +
+                           f"\nОсталось подарков: {len(self.pool)}, номеров: "
+                           f"{len([e for e in self.pending() if e['t'] > self.issued])}")
             return
         await asyncio.sleep(min(0.5, max(0.002, 0.5 / max(cfg["rate"], 1))))
 
@@ -469,12 +557,16 @@ class Sniper:
             await asyncio.sleep(cfg["idle_poll"])
             return
         self.shots, self.issued, self.forms = ready, None, {}
+        self.pool, self.done = list(ready), {}
         self.phase = "hot"
         self.start_pollers()
-        await self.say(f"🔥 Улучшения доступны! Готово к залпу: {len(ready)} подарк. "
-                       f"Цели: {short_targets(cfg['targets'])}. Стреляю за "
+        need = sum(e["n"] for e in cfg["plan"])
+        warn = (f"\n⚠️ Подарков ({len(ready)}) меньше, чем нужно по плану ({need}): "
+                "последним номерам может не хватить." if need > len(ready) else "")
+        await self.say(f"🔥 Улучшения доступны! Подарков готово: {len(ready)}. "
+                       f"Номера: {plan_text(cfg['plan'])}. Стреляю за "
                        f"{cfg['early']} номер(а) до цели, счётчик — "
-                       f"{cfg['rate']:g} запр/с на {len(self.accounts)} аккаунт(а).")
+                       f"{cfg['rate']:g} запр/с на {len(self.accounts)} аккаунт(а).{warn}")
 
     # ---------- команды ----------
 
@@ -497,12 +589,13 @@ class Sniper:
             elif cmd == "/gift":
                 await self.say(await self.cmd_gift(arg))
             elif cmd == "/target":
-                nums = parse_targets(arg)
-                if not nums:
-                    raise ValueError("укажите номер: /target 777 или /target 1000-1010")
-                cfg["targets"] = nums
+                plan = parse_plan(arg)
+                if not plan:
+                    raise ValueError("укажите номер: /target 777 1000x2 1111-1115")
+                cfg["plan"] = plan
                 save_config(cfg)
-                await self.say(f"🎯 Цели ({len(nums)}): {short_targets(nums)}")
+                await self.say(f"🎯 Номера ({len(plan)}): {plan_text(plan)}\n"
+                               f"Нужно подарков: {sum(e['n'] for e in plan)}")
             elif cmd == "/early":
                 cfg["early"] = max(0, int(arg))
                 save_config(cfg)
@@ -552,7 +645,8 @@ class Sniper:
             f"Аккаунтов: {len(self.accounts)}",
             f"Подарков в залпе: {len(cfg['gifts'])}"
             + (f" — {cfg['gifts'][0]['title']}" if cfg["gifts"] else " (выберите: /gifts)"),
-            f"Цели: {short_targets(cfg['targets'])}",
+            f"Номера: {plan_text(cfg['plan'])} (нужно подарков: "
+            f"{sum(e['n'] for e in cfg['plan'])})",
             f"Стреляю за {cfg['early']} до цели · счётчик {cfg['rate']:g} запр/с · "
             f"ожидание раз в {cfg['idle_poll']:g} с",
         ]

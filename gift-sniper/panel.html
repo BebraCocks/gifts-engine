@@ -63,6 +63,18 @@
   pre { white-space: pre-wrap; font: 13px/1.45 ui-monospace, Menlo, monospace; margin: 0; }
   #out { margin-top: 8px; display: none; }
   #err { color: var(--danger); font-size: 14px; margin-top: 8px; display: none; }
+  .prow { display: flex; align-items: center; gap: 10px; padding: 8px 0;
+          border-top: 1px solid var(--line); }
+  .prow:first-child { border-top: 0; }
+  .prow .num { font-weight: 700; font-size: 17px; min-width: 70px; font-variant-numeric: tabular-nums; }
+  .prow .st { flex: 1; font-size: 12px; color: var(--hint); min-width: 0; }
+  .step { display: flex; align-items: center; gap: 6px; }
+  .step button, .prow .del { width: 32px; height: 32px; padding: 0; border-radius: 9px; font-size: 18px;
+          background: var(--line); color: var(--text); }
+  .step b { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+  .prow .del { color: var(--danger); }
+  .addrow { display: flex; gap: 8px; margin-top: 8px; }
+  .addrow button { width: auto; padding: 10px 14px; }
   .warn { color: var(--warn); font-size: 13px; margin-top: 6px; }
 </style>
 </head>
@@ -98,8 +110,13 @@
 
 <h2>Цели и скорость</h2>
 <div class="card">
-  <label for="targets">Номера (через пробел, диапазоны через дефис)</label>
-  <input type="text" id="targets" placeholder="777 1000 1111-1115" inputmode="numeric">
+  <label>Номера и сколько подарков тратить на каждый</label>
+  <div id="plan"></div>
+  <div class="addrow">
+    <input type="text" id="addNum" placeholder="777 или 1111-1115" inputmode="text">
+    <button id="addBtn">Добавить</button>
+  </div>
+  <div class="muted" id="planInfo" style="margin-top:6px"></div>
   <label for="slug">Название коллекции (как в ссылке t.me/nft/<b>Название</b>-1)</label>
   <input type="text" id="slug" placeholder="напр. PlushPepe — узнаем, когда выйдут улучшения" autocapitalize="off">
   <label for="early">Стрелять за <b id="earlyVal">3</b> номер(а) до цели</label>
@@ -129,7 +146,7 @@ tg?.ready(); tg?.expand();
 const $ = id => document.getElementById(id);
 const PHASES = {idle: "ожидание команды", wait: "ждём выхода улучшений",
                 hot: "охота: следим за счётчиком", done: "залп выполнен"};
-let state = null, dirty = false;
+let state = null, dirty = false, plan = [];
 
 async function api(action, body) {
   const r = await fetch("api/" + action, {
@@ -161,13 +178,14 @@ function render(s) {
   $("pillText").textContent = s.enabled ? "Охота включена" : "Охота выключена";
   $("phase").textContent = PHASES[s.phase] || s.phase;
   $("issued").textContent = s.issued ?? "—";
-  $("next").textContent = s.next_target ?? (s.targets || "—");
+  $("next").textContent = s.next_target ?? (s.plan[0]?.t ?? "—");
   $("selCount").textContent = s.selected.count;
   $("accCount").textContent = s.accounts.length;
   $("huntBtn").textContent = s.enabled ? "Выключить охоту" : "Включить охоту";
   $("huntBtn").className = s.enabled ? "danger" : "";
   if (!dirty) {
-    $("targets").value = s.targets;
+    plan = s.plan.map(e => ({t: e.t, n: e.n, status: e.status}));
+    renderPlan();
     $("slug").value = s.slug_base || "";
     $("early").value = s.early; $("earlyVal").textContent = s.early;
     $("rate").value = Math.min(100, Math.round(s.rate)); $("rateVal").textContent = s.rate;
@@ -196,6 +214,38 @@ function renderModels(s) {
     b.onclick = () => run(b, "select", {gift_id: b.dataset.id}));
 }
 
+function renderPlan() {
+  $("plan").innerHTML = plan.length ? plan.map((e, i) =>
+    `<div class="prow"><span class="num">#${e.t}</span>` +
+    `<span class="st">${e.status ? esc(e.status) : (e.n === 1 ? "1 подарок" : e.n + " подарка")}</span>` +
+    `<span class="step"><button data-i="${i}" data-d="-1">−</button><b>${e.n}</b>` +
+    `<button data-i="${i}" data-d="1">+</button></span>` +
+    `<button class="del" data-del="${i}">✕</button></div>`).join("")
+    : `<div class="muted">Номеров нет — добавьте ниже.</div>`;
+  const need = plan.reduce((a, e) => a + e.n, 0), have = state?.selected.count ?? 0;
+  $("planInfo").innerHTML = `Нужно подарков: <b>${need}</b> · выбрано: <b>${have}</b>` +
+    (need > have ? ` <span style="color:var(--warn)">— последним номерам не хватит</span>` : "");
+  document.querySelectorAll(".step button").forEach(b => b.onclick = () => {
+    const e = plan[+b.dataset.i]; e.n = Math.max(1, Math.min(100, e.n + +b.dataset.d));
+    dirty = true; renderPlan();
+  });
+  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    plan.splice(+b.dataset.del, 1); dirty = true; renderPlan();
+  });
+}
+
+function addNumbers() {
+  const added = [];
+  for (const m of $("addNum").value.matchAll(/(\d+)(?:\s*[-–—]\s*(\d+))?/g)) {
+    let a = +m[1], b = +(m[2] || m[1]); if (a > b) [a, b] = [b, a];
+    if (b - a > 10000) { showErr("Слишком большой диапазон"); return; }
+    for (let x = a; x <= b; x++) if (x > 0 && !plan.some(e => e.t === x)) added.push({t: x, n: 1});
+  }
+  if (!added.length) return;
+  plan = plan.concat(added).sort((p, q) => p.t - q.t);
+  $("addNum").value = ""; dirty = true; showErr(null); renderPlan();
+}
+
 const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function rateWarn() {
   const per = $("rate").value / Math.max(1, state?.accounts.length || 1);
@@ -204,10 +254,12 @@ function rateWarn() {
 
 for (const [id, val] of [["early", "earlyVal"], ["rate", "rateVal"], ["idle", "idleVal"]])
   $(id).oninput = () => { dirty = true; $(val).textContent = $(id).value; rateWarn(); };
-$("targets").oninput = $("slug").oninput = () => { dirty = true; };
+$("slug").oninput = () => { dirty = true; };
+$("addBtn").onclick = addNumbers;
+$("addNum").onkeydown = e => { if (e.key === "Enter") addNumbers(); };
 
 $("saveBtn").onclick = () => run($("saveBtn"), "settings", {
-  targets: $("targets").value, slug: $("slug").value, early: +$("early").value,
+  plan: plan.map(({t, n}) => ({t, n})), slug: $("slug").value, early: +$("early").value,
   rate: +$("rate").value, idle_poll: +$("idle").value,
 }, () => { dirty = false; showOut("Сохранено ✅"); });
 $("huntBtn").onclick = () => run($("huntBtn"), "hunt", {on: !state?.enabled});

@@ -60,7 +60,10 @@ class Panel:
             "enabled": cfg["enabled"],
             "phase": s.phase,
             "issued": s.issued,
-            "targets": core.short_targets(cfg["targets"], limit=40),
+            "plan": [dict(e, status=s.done.get(e["t"])) for e in cfg["plan"][:300]],
+            "plan_size": len(cfg["plan"]),
+            "plan_need": sum(e["n"] for e in cfg["plan"]),
+            "pool": len(s.pool) if s.phase == "hot" else None,
             "next_target": s.next_target(s.issued) if s.issued is not None else None,
             "early": cfg["early"],
             "rate": cfg["rate"],
@@ -107,11 +110,11 @@ class Panel:
 
     def apply_settings(self, body):
         cfg = self.cfg
-        if "targets" in body:
-            nums = core.parse_targets(str(body["targets"]))
-            if not nums:
-                raise ValueError("укажите хотя бы один номер")
-            cfg["targets"] = nums
+        if "plan" in body:
+            plan = core.clean_plan(body["plan"])
+            if not plan:
+                raise ValueError("добавьте хотя бы один номер")
+            cfg["plan"] = plan
         if "early" in body:
             cfg["early"] = max(0, int(body["early"]))
         if "rate" in body:

@@ -96,6 +96,7 @@ class Panel:
                           "cooldown": max(0, round(a.cooldown_until - now))}
                          for a in s.accounts.values()],
             "models": self.models,
+            "buy": self.s.buyer.state() if getattr(self.s, "buyer", None) else None,
         }
 
     async def load_models(self):
@@ -188,6 +189,14 @@ class Panel:
                     s.phase, s.last_note = "idle", ""
                 else:
                     s.finish("idle")
+            elif action == "buy_settings":
+                s.buyer.apply(body)
+            elif action == "buy_toggle":
+                s.buyer.set_enabled(body.get("on"))
+            elif action == "buy_test":
+                text = await s.buyer.test_buy()
+            elif action == "balance":
+                await s.buyer.refresh_balance()
             elif action == "test":
                 text = await s.cmd_test()
             elif action == "ping":

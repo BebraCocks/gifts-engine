@@ -12,11 +12,11 @@ apt-get install -y -qq python3 python3-venv curl >/dev/null
 
 echo "== Скачиваю бота…"
 mkdir -p "$DIR"
-for f in bot.py login.py panel.py panel.html panel-setup.sh requirements.txt giftsniper.service; do
+for f in bot.py buyer.py login.py panel.py panel.html panel-setup.sh requirements.txt giftsniper.service; do
   curl -fsSL "$BASE/$f" -o "$DIR/$f"
 done
 mkdir -p "$DIR/sounds"
-for v in plan_add plan_count slug early rate idle bwin brate; do
+for v in plan_add plan_count slug early rate idle bwin brate buy_min buy_max buy_count buy_budget buy_poll; do
   curl -fsSL "$BASE/sounds/$v.mp3" -o "$DIR/sounds/$v.mp3"
 done
 

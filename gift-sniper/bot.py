@@ -909,7 +909,11 @@ async def main():
     async def _(event):
         await sniper.on_command(event)
 
-    tasks = [sniper.main.client.run_until_disconnected(), sniper.loop()]
+    import buyer
+    sniper.buyer = buyer.Buyer(sniper, cfg, save_config)
+    await sniper.buyer.refresh_balance()
+    tasks = [sniper.main.client.run_until_disconnected(), sniper.loop(),
+             sniper.buyer.loop()]
     hello = ""
     if cfg.get("panel"):
         try:

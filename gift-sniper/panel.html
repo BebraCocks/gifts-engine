@@ -81,6 +81,12 @@
   pre { white-space: pre-wrap; font: 16px/1.5 ui-monospace, Menlo, monospace; margin: 0; }
   #out { margin-top: 12px; display: none; background: var(--bg); }
   #err { color: var(--danger); font-size: 18px; font-weight: 600; margin-top: 12px; display: none; }
+  .tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+          background: var(--bg); padding: 4px 0 12px; }
+  .tab { background: var(--card); color: var(--hint); min-height: 56px; font-size: 19px; }
+  .tab.active { background: var(--accent); color: var(--accent-text); }
+  .logrow { padding: 10px 0; border-top: 1px solid var(--line); }
+  .logrow:first-child { border-top: 0; padding-top: 0; }
   .warn { color: var(--warn); font-size: 16px; margin-top: 6px; }
 
   #modal { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
@@ -102,6 +108,11 @@
 </style>
 </head>
 <body style="visibility:hidden">
+<div class="tabs">
+  <button class="tab active" data-tab="up">🎯 Улучшение</button>
+  <button class="tab" data-tab="buy">🛒 Покупка</button>
+</div>
+<div id="tab-up">
 
 <div class="card">
   <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
@@ -149,6 +160,37 @@
     <button class="secondary" id="pingBtn">Пинг Telegram</button>
     <button class="danger" id="nowBtn">Улучшить сейчас</button>
   </div>
+</div>
+
+</div>
+
+<div id="tab-buy" style="display:none">
+<div class="card">
+  <span id="bPill" class="pill"><span class="dot"></span><span id="bPillText">…</span></span>
+  <div class="phase" id="bPhase"></div>
+  <div class="stats" style="grid-template-columns:1fr 1fr">
+    <div class="stat"><span>Баланс</span><b id="bBalance">—</b></div>
+    <div class="stat"><span>Потрачено</span><b id="bSpent">—</b></div>
+  </div>
+  <div class="btns">
+    <button id="bToggle">Включить автопокупку</button>
+    <button class="secondary" id="bBalBtn">Обновить баланс</button>
+  </div>
+</div>
+
+<h2>Что покупать</h2>
+<div class="card" id="bSettings"></div>
+
+<h2>Тест</h2>
+<div class="card">
+  <div class="muted">Купить одного мишку 🧸 за 15⭐ на свой аккаунт — проверить, что покупка работает. В бюджет не входит.</div>
+  <div class="btns" style="grid-template-columns:1fr">
+    <button class="secondary" id="bTest">🧸 Купить мишку за 15⭐</button>
+  </div>
+</div>
+
+<h2>Покупки</h2>
+<div class="card" id="bLog"><div class="muted">Покупок пока не было.</div></div>
 </div>
 
 <div id="modal">
@@ -215,7 +257,7 @@ player.preload = "auto";
 function speak(name) {
   try {
     player.pause();
-    const src = "sounds/" + name + ".mp3?v=2";
+    const src = "sounds/" + name + ".mp3?v=3";
     if (!player.src.endsWith(src)) player.src = src;
     player.currentTime = 0;
     player.play().catch(() => {});
@@ -258,7 +300,8 @@ $("rClose").onclick = () => $("result").classList.remove("open");
 function toast(t) { const el = $("toast"); el.textContent = t || "Сохранено ✅"; el.style.display = "block";
                     clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = "none", 1600); }
 
-const TITLES = {ping: "📶 Пинг Telegram", test: "🧪 Пробный прогон", now: "Улучшение", gifts: "Подарки"};
+const TITLES = {ping: "📶 Пинг Telegram", test: "🧪 Пробный прогон", now: "Улучшение", gifts: "Подарки",
+                buy_test: "🧸 Тестовая покупка"};
 async function run(btn, action, body, after) {
   const label = btn.textContent;
   btn.disabled = true; btn.textContent = "⏳ Подождите…"; showErr(null);
@@ -319,7 +362,7 @@ function render(s) {
   $("accCount").textContent = s.accounts.length;
   $("huntBtn").textContent = s.enabled ? "Выключить охоту" : "Включить охоту";
   $("huntBtn").className = s.enabled ? "danger" : "";
-  renderPlan(s); renderSettings(s); renderModels(s);
+  renderPlan(s); renderSettings(s); renderModels(s); renderBuy(s.buy);
   $("accounts").innerHTML = s.accounts.map(a =>
     `<div style="padding:6px 0"><b>${esc(a.name)}</b><div class="muted">` +
     `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</div></div>`).join("");
@@ -429,6 +472,91 @@ $("giftsBtn").onclick = () => run($("giftsBtn"), "gifts");
 $("nowBtn").onclick = () => {
   const go = () => run($("nowBtn"), "now");
   const msg = "Улучшить все выбранные подарки прямо сейчас? Звёзды спишутся.";
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+
+// ---------- вкладки ----------
+let tab = "up";
+try { tab = localStorage.getItem("tab") || "up"; } catch (e) {}
+function showTab(t) {
+  tab = t;
+  try { localStorage.setItem("tab", t); } catch (e) {}
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  $("tab-up").style.display = t === "up" ? "" : "none";
+  $("tab-buy").style.display = t === "buy" ? "" : "none";
+  player.pause();
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+showTab(tab);
+
+// ---------- покупка ----------
+const BFIELDS = [
+  {key: "min", title: "Цена от", unit: "звёзд — дешевле не покупать", min: 1, max: 1e7, int: true,
+   voice: "buy_min", show: v => `${v} <small>⭐</small>`},
+  {key: "max", title: "Цена до", unit: "звёзд — дороже не покупать", min: 1, max: 1e7, int: true,
+   voice: "buy_max", show: v => `${v} <small>⭐</small>`},
+  {key: "count", title: "Сколько штук каждого подарка?", unit: "штук (от 1 до 100)", min: 1, max: 100, int: true,
+   voice: "buy_count", show: v => `${v} <small>шт.</small>`},
+  {key: "budget", title: "Сколько всего можно потратить?", unit: "звёзд — больше бот не потратит", min: 0, max: 1e7,
+   int: true, voice: "buy_budget", show: v => `${v} <small>⭐</small>`},
+  {key: "poll", title: "Раз во сколько секунд проверять новые подарки?", unit: "секунд, каждым аккаунтом (от 2)",
+   min: 2, max: 3600, voice: "buy_poll", show: (v, b) => `${fmt(v)} <small>с · вместе ~раз в ${fmt(v / Math.max(1, b.accounts))} с</small>`},
+  {key: "limited_only", toggle: true, title: "Только лимитированные", hint: "обычные подарки не покупать"},
+];
+const saveBuy = body => api("buy_settings", body);
+
+function renderBuy(b) {
+  if (!b) return;
+  $("bPill").className = "pill" + (b.enabled ? " on" : "");
+  $("bPillText").textContent = b.enabled ? "Автопокупка включена" : "Автопокупка выключена";
+  $("bPhase").textContent = b.enabled
+    ? (b.known === null ? "запоминаю текущий каталог…" :
+       `жду новые подарки · в каталоге ${b.known}` + (b.last_check !== null ? ` · проверка ${b.last_check} с назад` : ""))
+    : "ничего не покупается";
+  $("bBalance").textContent = b.balance !== null ? b.balance + " ⭐" : "—";
+  $("bSpent").textContent = `${b.spent} / ${b.budget} ⭐`;
+  $("bToggle").textContent = b.enabled ? "Выключить автопокупку" : "Включить автопокупку";
+  $("bToggle").className = b.enabled ? "danger" : "";
+  $("bSettings").innerHTML = BFIELDS.map(f => {
+    const v = b[f.key];
+    if (f.toggle) return `<div class="set"><button class="main" data-bk="${f.key}">` +
+      `<div class="lbl">${f.title}</div><div class="toggle ${v ? "on" : "off"}">${v ? "Включено ✅" : "Выключено"}</div>` +
+      `<div class="muted">${f.hint} · нажмите, чтобы переключить</div></button></div>`;
+    return `<div class="set"><button class="main" data-bk="${f.key}"><div class="lbl">${f.title}</div>` +
+      `<div class="val">${f.show(v, b)} <small>✎</small></div></button>` +
+      `<button class="say" data-voice="${f.voice}" aria-label="Озвучить">🔊</button></div>`;
+  }).join("") + (b.spent ? `<div class="btns" style="grid-template-columns:1fr">` +
+      `<button class="secondary" id="bReset">Сбросить «потрачено» (${b.spent}⭐)</button></div>` : "");
+  $("bSettings").querySelectorAll(".main").forEach(btn => btn.onclick = () => {
+    const f = BFIELDS.find(x => x.key === btn.dataset.bk);
+    if (f.toggle) { saveBuy({[f.key]: !state.buy[f.key]}).then(() => toast()).catch(showErr); return; }
+    openModal({title: f.title + "?", unit: f.unit, voice: f.voice, value: state.buy[f.key],
+      save: raw => saveBuy({[f.key]: parseNum(raw, f)})});
+  });
+  $("bReset")?.addEventListener("click", () => {
+    const go = () => saveBuy({reset_spent: true}).then(() => toast("Сброшено")).catch(showErr);
+    tg?.showConfirm ? tg.showConfirm("Обнулить счётчик потраченного?", ok => ok && go()) : confirm("Обнулить?") && go();
+  });
+  bindSay($("bSettings"));
+  $("bLog").innerHTML = b.log.length ? b.log.map(e =>
+    `<div class="logrow"><b>${esc(e.label)}</b>${e.test ? " · тест" : ""}<div class="muted">${e.t} · ` +
+    `${e.ok} из ${e.of} шт. · ${e.stars}⭐${e.err ? ` · <span style="color:var(--danger)">${esc(e.err)}</span>` : ""}</div></div>`).join("")
+    : `<div class="muted">Покупок пока не было.</div>`;
+}
+
+$("bToggle").onclick = () => {
+  const on = !state?.buy?.enabled;
+  const go = () => run($("bToggle"), "buy_toggle", {on});
+  if (!on) return go();
+  const b = state.buy;
+  const msg = `Включить автопокупку? Бот будет покупать новые ${b.limited_only ? "лимитированные " : ""}подарки ` +
+              `за ${b.min}–${b.max}⭐, по ${b.count} шт., всего не больше ${b.budget - b.spent}⭐.`;
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+$("bBalBtn").onclick = () => run($("bBalBtn"), "balance");
+$("bTest").onclick = () => {
+  const go = () => run($("bTest"), "buy_test");
+  const msg = "Купить одного мишку за 15⭐ на этот аккаунт?";
   tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
 };
 

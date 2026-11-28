@@ -222,6 +222,7 @@ class Panel:
         app = web.Application()
         app.router.add_get("/", self.index)
         app.router.add_post("/api/{action}", self.handle)
+        app.router.add_static("/voice/", HERE / "voice")   # озвучка подсказок
         runner = web.AppRunner(app)
         await runner.setup()
         await web.TCPSite(runner, "127.0.0.1", PORT).start()

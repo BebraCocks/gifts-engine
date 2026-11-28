@@ -10,145 +10,133 @@
     --bg: var(--tg-theme-secondary-bg-color, #0f1115);
     --card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #1a1d24));
     --text: var(--tg-theme-text-color, #f2f3f5);
-    --hint: var(--tg-theme-hint-color, #8b919c);
+    --hint: var(--tg-theme-hint-color, #9aa0aa);
     --accent: var(--tg-theme-button-color, #3d8bfd);
     --accent-text: var(--tg-theme-button-text-color, #fff);
-    --danger: var(--tg-theme-destructive-text-color, #ff5d5d);
+    --danger: #ff5d5d;
     --ok: #34c77b;
     --warn: #f5a623;
-    --line: color-mix(in srgb, var(--hint) 25%, transparent);
+    --line: color-mix(in srgb, var(--hint) 28%, transparent);
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
-    padding: 12px 12px calc(24px + env(safe-area-inset-bottom));
+    font: 19px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    padding: 12px 12px calc(32px + env(safe-area-inset-bottom));
   }
-  h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
-       color: var(--hint); margin: 18px 4px 8px; }
-  .card { background: var(--card); border-radius: 14px; padding: 14px; }
-  .card + .card { margin-top: 8px; }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .muted { color: var(--hint); font-size: 13px; }
-  .big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
-          padding: 4px 10px; border-radius: 999px; background: var(--line); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hint); }
-  .pill.on .dot { background: var(--ok); } .pill.hot .dot { background: var(--warn); }
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-  .stat { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
-  .stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  h2 { font-size: 17px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+       color: var(--hint); margin: 26px 6px 10px; }
+  .card { background: var(--card); border-radius: 18px; padding: 16px; }
+  .muted { color: var(--hint); font-size: 16px; }
   button {
-    font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 12px 14px;
-    background: var(--accent); color: var(--accent-text); width: 100%; cursor: pointer;
+    font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 16px;
+    background: var(--accent); color: var(--accent-text); width: 100%; cursor: pointer; min-height: 58px;
   }
   button.secondary { background: var(--line); color: var(--text); }
   button.danger { background: var(--danger); color: #fff; }
   button:disabled { opacity: .5; }
-  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-  label { display: block; font-size: 13px; color: var(--hint); margin: 12px 0 6px; }
-  label:first-child { margin-top: 0; }
-  input[type=text], input[type=number] {
-    width: 100%; font: inherit; color: var(--text); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
-  }
-  input[type=range] { width: 100%; accent-color: var(--accent); }
-  .model { display: flex; align-items: center; gap: 10px; padding: 10px 0;
-           border-top: 1px solid var(--line); }
-  .model:first-of-type { border-top: 0; padding-top: 0; }
-  .model .info { flex: 1; min-width: 0; }
-  .model .info div:first-child { font-weight: 600; }
-  .model button { width: auto; padding: 8px 12px; font-size: 14px; }
-  .model.sel button { background: var(--ok); }
-  pre { white-space: pre-wrap; font: 13px/1.45 ui-monospace, Menlo, monospace; margin: 0; }
-  #out { margin-top: 8px; display: none; }
-  #err { color: var(--danger); font-size: 14px; margin-top: 8px; display: none; }
-  .prow { display: flex; align-items: center; gap: 10px; padding: 8px 0;
-          border-top: 1px solid var(--line); }
-  .prow:first-child { border-top: 0; }
-  .prow .num { font-weight: 700; font-size: 17px; min-width: 70px; font-variant-numeric: tabular-nums; }
-  .prow .st { flex: 1; font-size: 12px; color: var(--hint); min-width: 0; }
-  .step { display: flex; align-items: center; gap: 6px; }
-  .step button, .prow .del { width: 32px; height: 32px; padding: 0; border-radius: 9px; font-size: 18px;
-          background: var(--line); color: var(--text); }
-  .step b { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; }
-  .prow .del { color: var(--danger); }
-  .addrow { display: flex; gap: 8px; margin-top: 8px; }
-  .addrow button { width: auto; padding: 10px 14px; }
-  .boostbox { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
-  .switch { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600;
-            font-size: 15px; margin: 0; cursor: pointer; }
-  .switch input { width: 20px; height: 20px; accent-color: var(--accent); }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700;
+          padding: 6px 14px; border-radius: 999px; background: var(--line); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--hint); }
+  .pill.on .dot { background: var(--ok); } .pill.hot .dot { background: var(--warn); }
   .pill.boost .dot { background: #ff3b7f; }
-  .warn { color: var(--warn); font-size: 13px; margin-top: 6px; }
+  .phase { font-size: 17px; color: var(--hint); margin-top: 8px; }
+  .big { font-size: 46px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .stat { background: var(--bg); border-radius: 12px; padding: 10px; }
+  .stat span { font-size: 15px; color: var(--hint); }
+  .stat b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+
+  .set { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .set:first-child { border-top: 0; padding-top: 0; }
+  .set .main { flex: 1; min-width: 0; text-align: left; background: none; color: var(--text);
+               padding: 4px 0; min-height: 0; font-weight: 400; border-radius: 0; }
+  .set .lbl { font-size: 18px; }
+  .set .val { font-size: 30px; font-weight: 800; color: var(--accent); margin-top: 2px; }
+  .set .val small { font-size: 18px; font-weight: 600; color: var(--hint); }
+  .say { width: 58px; min-width: 58px; height: 58px; padding: 0; font-size: 28px;
+         background: var(--line); border-radius: 50%; min-height: 0; }
+  .toggle { font-size: 22px; font-weight: 800; }
+  .toggle.on { color: var(--ok); } .toggle.off { color: var(--hint); }
+
+  .prow { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .prow:first-child { border-top: 0; }
+  .prow .main { flex: 1; text-align: left; background: none; color: var(--text); padding: 0;
+                min-height: 0; font-weight: 400; }
+  .prow .num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .prow .cnt { font-size: 18px; color: var(--accent); font-weight: 700; }
+  .prow .st { font-size: 16px; color: var(--hint); }
+  .del { width: 58px; min-width: 58px; height: 58px; padding: 0; font-size: 26px; min-height: 0;
+         background: var(--line); color: var(--danger); }
+
+  .model { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .model:first-child { border-top: 0; padding-top: 0; }
+  .model .info { flex: 1; min-width: 0; }
+  .model .info div:first-child { font-weight: 700; font-size: 20px; }
+  .model button { width: auto; padding: 12px 16px; font-size: 17px; }
+  .model.sel button { background: var(--ok); }
+
+  pre { white-space: pre-wrap; font: 16px/1.5 ui-monospace, Menlo, monospace; margin: 0; }
+  #out { margin-top: 12px; display: none; background: var(--bg); }
+  #err { color: var(--danger); font-size: 18px; font-weight: 600; margin-top: 12px; display: none; }
+  .warn { color: var(--warn); font-size: 16px; margin-top: 6px; }
+
+  #modal { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
+           align-items: flex-start; justify-content: center; padding: 16px; z-index: 10; overflow-y: auto; }
+  #modal.open { display: flex; }
+  .sheet { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 520px; margin-top: 8vh; }
+  .sheet .head { display: flex; gap: 12px; align-items: flex-start; }
+  .sheet h3 { flex: 1; margin: 0; font-size: 26px; line-height: 1.25; }
+  .sheet .unit { font-size: 18px; color: var(--hint); margin: 10px 0 6px; }
+  .sheet input { width: 100%; font-weight: 800; font-size: 36px; line-height: 1.2; font-family: inherit;
+                 color: var(--text); background: var(--bg); border: 2px solid var(--accent);
+                 border-radius: 14px; padding: 14px 16px; }
+  .sheet .merr { color: var(--danger); font-size: 18px; font-weight: 600; min-height: 26px; margin-top: 8px; }
+  #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ok);
+           color: #fff; font-weight: 800; font-size: 20px; padding: 14px 22px; border-radius: 14px;
+           display: none; z-index: 20; }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <div class="row">
-    <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
-    <span class="muted" id="phase"></span>
-  </div>
-  <div style="margin-top:12px" class="muted">Улучшено в коллекции</div>
+  <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
+  <div class="phase" id="phase"></div>
+  <div class="muted" style="margin-top:12px">Улучшено в коллекции</div>
   <div class="big" id="issued">—</div>
   <div class="stats">
-    <div class="stat"><span class="muted">След. цель</span><b id="next">—</b></div>
-    <div class="stat"><span class="muted">В залпе</span><b id="selCount">0</b></div>
-    <div class="stat"><span class="muted">Аккаунтов</span><b id="accCount">0</b></div>
+    <div class="stat"><span>След. цель</span><b id="next">—</b></div>
+    <div class="stat"><span>Подарков</span><b id="selCount">0</b></div>
+    <div class="stat"><span>Аккаунтов</span><b id="accCount">0</b></div>
   </div>
   <div class="btns">
     <button id="huntBtn">Включить охоту</button>
     <button class="secondary" id="testBtn">Пробный прогон</button>
   </div>
   <div id="err"></div>
-  <div class="card" id="out" style="background:var(--bg)"><pre id="outText"></pre></div>
+  <div class="card" id="out"><pre id="outText"></pre></div>
 </div>
+
+<h2>Номера</h2>
+<div class="card">
+  <div id="plan"></div>
+  <div class="btns" style="grid-template-columns:1fr 58px">
+    <button id="addBtn">➕ Добавить номер</button>
+    <button class="say" data-voice="plan_add" aria-label="Озвучить">🔊</button>
+  </div>
+  <div class="muted" id="planInfo" style="margin-top:10px"></div>
+</div>
+
+<h2>Настройки</h2>
+<div class="card" id="settings"></div>
 
 <h2>Подарки</h2>
 <div class="card">
-  <div id="models" class="muted">Нажмите «Обновить», чтобы загрузить подарки со всех аккаунтов.</div>
+  <div id="models" class="muted">Нажмите «Обновить список», чтобы загрузить подарки со всех аккаунтов.</div>
   <div class="btns" style="grid-template-columns:1fr">
     <button class="secondary" id="giftsBtn">Обновить список</button>
-  </div>
-</div>
-
-<h2>Цели и скорость</h2>
-<div class="card">
-  <label>Номера и сколько подарков тратить на каждый</label>
-  <div id="plan"></div>
-  <div class="addrow">
-    <input type="text" id="addNum" placeholder="777 или 1111-1115" inputmode="text">
-    <button id="addBtn">Добавить</button>
-  </div>
-  <div class="muted" id="planInfo" style="margin-top:6px"></div>
-  <label for="slug">Название коллекции (как в ссылке t.me/nft/<b>Название</b>-1)</label>
-  <input type="text" id="slug" placeholder="напр. PlushPepe — узнаем, когда выйдут улучшения" autocapitalize="off">
-  <label class="switch" style="margin-top:14px"><input type="checkbox" id="eauto">
-    <span>Упреждение автоматически</span></label>
-  <div class="muted" id="eautoInfo" style="margin-top:4px">Бот сам замерит скорость счётчика и задержку связи и посчитает, когда стрелять.</div>
-  <div id="earlyBox">
-    <label for="early">Стрелять за <b id="earlyVal">0</b> номер(а) до цели</label>
-    <input type="range" id="early" min="0" max="30" step="1">
-  </div>
-  <label for="rate">Проверок счётчика в секунду (на все аккаунты): <b id="rateVal">5</b></label>
-  <input type="range" id="rate" min="1" max="100" step="1">
-  <div class="warn" id="rateWarn" style="display:none">Больше ~10 в секунду на аккаунт — риск паузы от Telegram.</div>
-  <label for="idle">Пока улучшений нет, проверять раз в <b id="idleVal">30</b> с</label>
-  <input type="range" id="idle" min="5" max="300" step="5">
-  <div class="boostbox">
-    <label class="switch"><input type="checkbox" id="boost"><span>⚡ Экстра-режим у цели</span></label>
-    <div id="boostOpts">
-      <label for="bwin">Включать за <b id="bwinVal">10</b> номеров до цели</label>
-      <input type="range" id="bwin" min="1" max="100" step="1">
-      <label for="brate">Проверок в секунду в экстра-режиме: <b id="brateVal">10</b>
-        <span class="muted">(раз в <span id="bint">0.1</span> с)</span></label>
-      <input type="range" id="brate" min="1" max="50" step="1">
-      <div class="warn" id="brateWarn" style="display:none">На аккаунт выходит больше ~10 в секунду — выше риск паузы от Telegram.</div>
-    </div>
-  </div>
-  <div class="btns" style="grid-template-columns:1fr">
-    <button id="saveBtn">Сохранить</button>
   </div>
 </div>
 
@@ -161,13 +149,59 @@
   </div>
 </div>
 
+<div id="modal">
+  <div class="sheet">
+    <div class="head">
+      <h3 id="mTitle"></h3>
+      <button class="say" id="mSay" aria-label="Озвучить">🔊</button>
+    </div>
+    <div class="unit" id="mUnit"></div>
+    <input id="mInput">
+    <div class="merr" id="mErr"></div>
+    <div class="btns">
+      <button class="secondary" id="mCancel">Отмена</button>
+      <button id="mOk">Сохранить</button>
+    </div>
+  </div>
+</div>
+<div id="toast">Сохранено ✅</div>
+
 <script>
 const tg = window.Telegram?.WebApp;
 tg?.ready(); tg?.expand();
 const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => String(+(+n).toFixed(2)).replace(".", ",");
 const PHASES = {idle: "ожидание команды", wait: "ждём выхода улучшений",
-                hot: "охота: следим за счётчиком", done: "залп выполнен"};
-let state = null, dirty = false, plan = [];
+                hot: "охота: следим за счётчиком", done: "охота завершена"};
+
+// Настройки: вопрос, единицы, пределы, файл озвучки
+const FIELDS = [
+  {key: "rate", title: "Сколько раз в секунду проверять счётчик?", unit: "раз в секунду, на все аккаунты вместе",
+   min: 0.1, max: 1000, voice: "rate", show: v => `${fmt(v)} <small>раз/с</small>`},
+  {key: "idle_poll", title: "Раз во сколько секунд проверять, вышли ли улучшения?", unit: "секунд (от 5)",
+   min: 5, max: 3600, voice: "idle", show: v => `${fmt(v)} <small>с</small>`},
+  {key: "early_auto", toggle: true, title: "Упреждение автоматически",
+   hint: "бот сам считает, когда стрелять"},
+  {key: "early", title: "За сколько номеров до цели стрелять?", unit: "номеров (0 — ровно перед целью)",
+   min: 0, max: 1000, int: true, voice: "early", show: v => `${v} <small>ном.</small>`,
+   hidden: s => s.early_auto},
+  {key: "boost", toggle: true, title: "⚡ Экстра-режим у цели", hint: "у цели проверять чаще"},
+  {key: "boost_window", title: "За сколько номеров до цели включать экстра-режим?", unit: "номеров",
+   min: 1, max: 1000, int: true, voice: "bwin", show: v => `за ${v} <small>ном.</small>`, hidden: s => !s.boost},
+  {key: "boost_rate", title: "Сколько раз в секунду проверять в экстра-режиме?",
+   unit: "раз в секунду (10 — это раз в 0,1 секунды)", min: 0.5, max: 1000, voice: "brate",
+   show: v => `${fmt(v)} <small>раз/с · раз в ${fmt(1 / v)} с</small>`, hidden: s => !s.boost},
+  {key: "slug", text: true, title: "Название коллекции", voice: "slug",
+   unit: "латиницей без пробелов, как в ссылке t.me/nft/Название-1. Пусто — бот определит сам",
+   show: v => v ? esc(v) : `<small>определится само</small>`, get: s => s.slug_base},
+];
+
+let state = null;
+
+function speak(name) {
+  try { new Audio("voice/" + name + ".mp3").play(); } catch (e) {}
+}
 
 async function api(action, body) {
   const r = await fetch("api/" + action, {
@@ -184,6 +218,8 @@ async function api(action, body) {
 
 function showErr(e) { const el = $("err"); el.textContent = e ? String(e.message || e) : ""; el.style.display = e ? "block" : "none"; }
 function showOut(t) { $("out").style.display = t ? "block" : "none"; $("outText").textContent = t || ""; }
+function toast(t) { const el = $("toast"); el.textContent = t || "Сохранено ✅"; el.style.display = "block";
+                    clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = "none", 1600); }
 
 async function run(btn, action, body, after) {
   btn.disabled = true; showErr(null);
@@ -192,41 +228,143 @@ async function run(btn, action, body, after) {
   finally { btn.disabled = false; }
 }
 
+// ---------- окно ввода ----------
+let modalSave = null;
+function openModal({title, unit, value, text, voice, save}) {
+  $("mTitle").textContent = title;
+  $("mUnit").textContent = unit || "";
+  const inp = $("mInput");
+  inp.type = "text";
+  inp.inputMode = text ? "text" : "decimal";
+  inp.autocapitalize = "off";
+  inp.value = value ?? "";
+  $("mErr").textContent = "";
+  $("mSay").style.display = voice ? "" : "none";
+  $("mSay").onclick = () => speak(voice);
+  modalSave = save;
+  $("modal").classList.add("open");
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
+}
+function closeModal() { $("modal").classList.remove("open"); $("mInput").blur(); }
+$("mCancel").onclick = closeModal;
+$("modal").onclick = e => { if (e.target === $("modal")) closeModal(); };
+$("mInput").onkeydown = e => { if (e.key === "Enter") $("mOk").click(); };
+$("mOk").onclick = async () => {
+  $("mOk").disabled = true;
+  try { await modalSave($("mInput").value.trim()); closeModal(); toast(); tg?.HapticFeedback?.notificationOccurred("success"); }
+  catch (e) { $("mErr").textContent = e.message || e; tg?.HapticFeedback?.notificationOccurred("error"); }
+  finally { $("mOk").disabled = false; }
+};
+function parseNum(raw, f) {
+  const v = Number(String(raw).replace(",", "."));
+  if (raw === "" || !isFinite(v)) throw new Error("Введите число");
+  if (f.int && !Number.isInteger(v)) throw new Error("Введите целое число");
+  if (v < f.min || v > f.max) throw new Error(`Можно от ${fmt(f.min)} до ${fmt(f.max)}`);
+  return v;
+}
+const saveSettings = body => api("settings", body);
+
+// ---------- отрисовка ----------
 function render(s) {
   state = s;
   const hot = s.enabled && s.phase === "hot";
   $("pill").className = "pill" + (s.boosting ? " boost" : hot ? " hot" : s.enabled ? " on" : "");
-  $("pillText").textContent = s.boosting ? `⚡ Экстра-режим · ${s.rate_now} проверок/с` :
-                              s.enabled ? "Охота включена" : "Охота выключена";
-  $("phase").textContent = PHASES[s.phase] || s.phase;
+  $("pillText").textContent = s.boosting ? "⚡ Экстра-режим" : s.enabled ? "Охота включена" : "Охота выключена";
+  let ph = PHASES[s.phase] || s.phase;
+  if (hot) ph += ` · ${fmt(s.rate_now)} проверок/с` + (s.speed ? ` · счётчик +${fmt(s.speed)}/с` : "");
+  $("phase").textContent = ph;
   $("issued").textContent = s.issued ?? "—";
   $("next").textContent = s.next_target ?? (s.plan[0]?.t ?? "—");
   $("selCount").textContent = s.selected.count;
   $("accCount").textContent = s.accounts.length;
   $("huntBtn").textContent = s.enabled ? "Выключить охоту" : "Включить охоту";
   $("huntBtn").className = s.enabled ? "danger" : "";
-  if (!dirty) {
-    plan = s.plan.map(e => ({t: e.t, n: e.n, status: e.status}));
-    renderPlan();
-    $("slug").value = s.slug_base || "";
-    $("early").value = s.early; $("earlyVal").textContent = s.early;
-    $("eauto").checked = s.early_auto;
-    $("rate").value = Math.min(100, Math.round(s.rate)); $("rateVal").textContent = s.rate;
-    $("idle").value = s.idle_poll; $("idleVal").textContent = s.idle_poll;
-    $("boost").checked = s.boost;
-    $("bwin").value = s.boost_window; $("bwinVal").textContent = s.boost_window;
-    $("brate").value = Math.min(50, Math.round(s.boost_rate)); $("brateVal").textContent = s.boost_rate;
-    rateWarn();
-  }
+  renderPlan(s); renderSettings(s); renderModels(s);
   $("accounts").innerHTML = s.accounts.map(a =>
-    `<div class="row" style="padding:4px 0"><span>${esc(a.name)}</span><span class="muted">` +
-    `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</span></div>`).join("");
-  renderModels(s);
-  const live = s.phase === "hot" && s.speed !== undefined;
-  $("eautoInfo").textContent = live
-    ? `Сейчас: счётчик +${s.speed}/с, задержка ${s.rtt_ms ?? "—"} мс → стрелять за ${s.early_now} до цели`
-    : "Бот сам замерит скорость счётчика и задержку связи и посчитает, когда стрелять.";
+    `<div style="padding:6px 0"><b>${esc(a.name)}</b><div class="muted">` +
+    `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</div></div>`).join("");
 }
+
+function renderPlan(s) {
+  const plan = s.plan;
+  $("plan").innerHTML = plan.length ? plan.map((e, i) =>
+    `<div class="prow"><button class="main" data-i="${i}"><div class="num">#${e.t}</div>` +
+    `<div class="cnt">подарков: ${e.n} ✎</div>${e.status ? `<div class="st">${esc(e.status)}</div>` : ""}</button>` +
+    `<button class="say" data-voice="plan_count" aria-label="Озвучить">🔊</button>` +
+    `<button class="del" data-del="${i}" aria-label="Удалить">✕</button></div>`).join("")
+    : `<div class="muted">Номеров нет — нажмите «Добавить номер».</div>`;
+  const need = s.plan_need, have = s.selected.count;
+  $("planInfo").innerHTML = `Нужно подарков: <b>${need}</b> · выбрано: <b>${have}</b>` +
+    (need > have ? `<div class="warn">Подарков не хватит на все номера</div>` : "");
+  $("plan").querySelectorAll(".main").forEach(b => b.onclick = () => {
+    const e = state.plan[+b.dataset.i];
+    openModal({title: `Сколько подарков потратить на #${e.t}?`, unit: "подарков (от 1 до 100)",
+      value: e.n, voice: "plan_count", save: async raw => {
+        const n = parseNum(raw, {min: 1, max: 100, int: true});
+        await savePlan(state.plan.map(x => x.t === e.t ? {t: x.t, n} : x));
+      }});
+  });
+  $("plan").querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const e = state.plan[+b.dataset.del];
+    const go = async () => { try { await savePlan(state.plan.filter(x => x.t !== e.t)); toast("Удалено"); } catch (er) { showErr(er); } };
+    tg?.showConfirm ? tg.showConfirm(`Убрать номер #${e.t}?`, ok => ok && go()) : confirm(`Убрать #${e.t}?`) && go();
+  });
+  bindSay($("plan"));
+}
+
+async function savePlan(plan) {
+  if (!plan.length) throw new Error("Нужен хотя бы один номер");
+  return saveSettings({plan: plan.map(({t, n}) => ({t, n}))});
+}
+
+$("addBtn").onclick = () => openModal({
+  title: "Какой номер хотите поймать?", unit: "например 777, несколько через пробел или диапазон 1111-1115",
+  voice: "plan_add", save: async raw => {
+    const add = [];
+    for (const m of raw.matchAll(/(\d+)(?:\s*[-–—]\s*(\d+))?/g)) {
+      let a = +m[1], b = +(m[2] || m[1]); if (a > b) [a, b] = [b, a];
+      if (b - a > 10000) throw new Error("Слишком большой диапазон");
+      for (let x = a; x <= b; x++) if (x > 0) add.push(x);
+    }
+    if (!add.length) throw new Error("Введите номер, например 777");
+    const plan = state.plan.map(({t, n}) => ({t, n}));
+    for (const t of add) if (!plan.some(e => e.t === t)) plan.push({t, n: 1});
+    await savePlan(plan.sort((p, q) => p.t - q.t));
+  }});
+
+function renderSettings(s) {
+  const rows = FIELDS.filter(f => !f.hidden?.(s)).map(f => {
+    const v = f.get ? f.get(s) : s[f.key];
+    if (f.toggle) return `<div class="set"><button class="main" data-k="${f.key}">` +
+      `<div class="lbl">${f.title}</div><div class="toggle ${v ? "on" : "off"}">${v ? "Включено ✅" : "Выключено"}</div>` +
+      `<div class="muted">${f.hint} · нажмите, чтобы переключить</div></button></div>`;
+    return `<div class="set"><button class="main" data-k="${f.key}"><div class="lbl">${f.title}</div>` +
+      `<div class="val">${f.show(v)} <small>✎</small></div></button>` +
+      `<button class="say" data-voice="${f.voice}" aria-label="Озвучить">🔊</button></div>`;
+  });
+  let extra = "";
+  if (s.early_auto && s.phase === "hot")
+    extra = `<div class="muted" style="margin-top:8px">Сейчас стреляю за ${s.early_now} до цели (задержка ${s.rtt_ms ?? "—"} мс)</div>`;
+  const per = s.boost_rate / Math.max(1, s.accounts.length);
+  if (s.boost && per > 10) extra += `<div class="warn">В экстра-режиме больше ~10 проверок/с на аккаунт — выше риск паузы от Telegram.</div>`;
+  $("settings").innerHTML = rows.join("") + extra;
+  $("settings").querySelectorAll(".main").forEach(b => b.onclick = () => {
+    const f = FIELDS.find(x => x.key === b.dataset.k);
+    if (f.toggle) {
+      saveSettings({[f.key]: !state[f.key]}).then(() => toast()).catch(showErr);
+      return;
+    }
+    openModal({title: f.title, unit: f.unit, voice: f.voice, text: f.text,
+      value: f.get ? f.get(state) : state[f.key],
+      save: raw => saveSettings({[f.key]: f.text ? raw : parseNum(raw, f)})});
+  });
+  bindSay($("settings"));
+}
+
+function bindSay(root) {
+  root.querySelectorAll("[data-voice]").forEach(b => b.onclick = ev => { ev.stopPropagation(); speak(b.dataset.voice); });
+}
+bindSay(document);
 
 function renderModels(s) {
   if (!s.models.length) return;
@@ -237,69 +375,13 @@ function renderModels(s) {
     const st = m.numbered ? `у ${m.numbered} номер уже назначен` :
                m.can_upgrade ? `улучшение доступно (${m.can_upgrade})` : "улучшений пока нет";
     return `<div class="model${sel ? " sel" : ""}"><div class="info"><div>${esc(m.label)} ×${m.count}</div>` +
-           `<div class="muted">${st} · ${accs}</div><div class="muted">id ${m.gift_id}</div></div>` +
+           `<div class="muted">${st} · ${accs}</div></div>` +
            `<button data-id="${m.gift_id}">${sel ? "Выбрано (" + s.selected.count + ")" : "Выбрать все"}</button></div>`;
   }).join("");
-  document.querySelectorAll(".model button").forEach(b =>
+  $("models").querySelectorAll("button").forEach(b =>
     b.onclick = () => run(b, "select", {gift_id: b.dataset.id}));
 }
 
-function renderPlan() {
-  $("plan").innerHTML = plan.length ? plan.map((e, i) =>
-    `<div class="prow"><span class="num">#${e.t}</span>` +
-    `<span class="st">${e.status ? esc(e.status) : (e.n === 1 ? "1 подарок" : e.n + " подарка")}</span>` +
-    `<span class="step"><button data-i="${i}" data-d="-1">−</button><b>${e.n}</b>` +
-    `<button data-i="${i}" data-d="1">+</button></span>` +
-    `<button class="del" data-del="${i}">✕</button></div>`).join("")
-    : `<div class="muted">Номеров нет — добавьте ниже.</div>`;
-  const need = plan.reduce((a, e) => a + e.n, 0), have = state?.selected.count ?? 0;
-  $("planInfo").innerHTML = `Нужно подарков: <b>${need}</b> · выбрано: <b>${have}</b>` +
-    (need > have ? ` <span style="color:var(--warn)">— последним номерам не хватит</span>` : "");
-  document.querySelectorAll(".step button").forEach(b => b.onclick = () => {
-    const e = plan[+b.dataset.i]; e.n = Math.max(1, Math.min(100, e.n + +b.dataset.d));
-    dirty = true; renderPlan();
-  });
-  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
-    plan.splice(+b.dataset.del, 1); dirty = true; renderPlan();
-  });
-}
-
-function addNumbers() {
-  const added = [];
-  for (const m of $("addNum").value.matchAll(/(\d+)(?:\s*[-–—]\s*(\d+))?/g)) {
-    let a = +m[1], b = +(m[2] || m[1]); if (a > b) [a, b] = [b, a];
-    if (b - a > 10000) { showErr("Слишком большой диапазон"); return; }
-    for (let x = a; x <= b; x++) if (x > 0 && !plan.some(e => e.t === x)) added.push({t: x, n: 1});
-  }
-  if (!added.length) return;
-  plan = plan.concat(added).sort((p, q) => p.t - q.t);
-  $("addNum").value = ""; dirty = true; showErr(null); renderPlan();
-}
-
-const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function rateWarn() {
-  const n = Math.max(1, state?.accounts.length || 1);
-  $("rateWarn").style.display = $("rate").value / n > 10 ? "block" : "none";
-  $("brateWarn").style.display = $("brate").value / n > 10 ? "block" : "none";
-  $("earlyBox").style.display = $("eauto").checked ? "none" : "block";
-  $("bint").textContent = (1 / $("brate").value).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  $("boostOpts").style.opacity = $("boost").checked ? 1 : .4;
-}
-
-$("boost").onchange = $("eauto").onchange = () => { dirty = true; rateWarn(); };
-for (const [id, val] of [["early", "earlyVal"], ["rate", "rateVal"], ["idle", "idleVal"],
-                         ["bwin", "bwinVal"], ["brate", "brateVal"]])
-  $(id).oninput = () => { dirty = true; $(val).textContent = $(id).value; rateWarn(); };
-$("slug").oninput = () => { dirty = true; };
-$("addBtn").onclick = addNumbers;
-$("addNum").onkeydown = e => { if (e.key === "Enter") addNumbers(); };
-
-$("saveBtn").onclick = () => run($("saveBtn"), "settings", {
-  plan: plan.map(({t, n}) => ({t, n})), slug: $("slug").value, early: +$("early").value,
-  early_auto: $("eauto").checked,
-  rate: +$("rate").value, idle_poll: +$("idle").value,
-  boost: $("boost").checked, boost_window: +$("bwin").value, boost_rate: +$("brate").value,
-}, () => { dirty = false; showOut("Сохранено ✅"); });
 $("huntBtn").onclick = () => run($("huntBtn"), "hunt", {on: !state?.enabled});
 $("testBtn").onclick = () => run($("testBtn"), "test");
 $("pingBtn").onclick = () => run($("pingBtn"), "ping");
@@ -311,7 +393,9 @@ $("nowBtn").onclick = () => {
 };
 
 async function tick() {
-  try { await api("state"); showErr(null); } catch (e) { showErr(e); }
+  if (!$("modal").classList.contains("open")) {
+    try { await api("state"); showErr(null); } catch (e) { showErr(e); }
+  }
   setTimeout(tick, state?.phase === "hot" ? 1000 : 3000);
 }
 tick();

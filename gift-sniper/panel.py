@@ -153,17 +153,14 @@ class Panel:
     # ---------- HTTP ----------
 
     def auth(self, request):
+        """Пускаем только наши аккаунты. Чужим — без подробностей (причина — в журнал)."""
         raw = request.headers.get("X-Init-Data", "")
-        if not raw:
-            raise web.HTTPForbidden(text="Telegram не передал данные входа — "
-                                         "откройте панель кнопкой «Панель» в боте.")
-        uid = check_init_data(raw, self.token)
-        if uid is None:
-            raise web.HTTPForbidden(text="подпись Telegram не прошла проверку "
-                                         "(панель открыта не из этого бота?)")
-        if uid not in self.s.owner_ids:
-            raise web.HTTPForbidden(text=f"аккаунт id {uid} не подключён к боту. "
-                                         "Откройте панель с Hateless или Alex.")
+        uid = check_init_data(raw, self.token) if raw else None
+        if uid is None or uid not in self.s.owner_ids:
+            why = ("нет данных входа" if not raw else
+                   "неверная подпись" if uid is None else f"чужой аккаунт id {uid}")
+            print(f"Панель: отказ в доступе ({why})")
+            raise web.HTTPForbidden(text="locked")
 
     async def handle(self, request):
         self.auth(request)

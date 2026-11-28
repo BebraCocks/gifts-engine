@@ -99,7 +99,7 @@
            display: none; z-index: 20; }
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
 
 <div class="card">
   <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
@@ -209,11 +209,23 @@ async function api(action, body) {
     headers: {"Content-Type": "application/json", "X-Init-Data": tg?.initData || ""},
     body: JSON.stringify(body || {}),
   });
-  if (r.status === 403) throw new Error("Нет доступа: " + await r.text());
+  if (r.status === 403) { lockScreen(); throw new Error("locked"); }
   const j = await r.json();
   if (j.state) render(j.state);
   if (j.error) throw new Error(j.error);
   return j;
+}
+
+let locked = false;
+function lockScreen() {
+  if (locked) return;
+  locked = true;
+  document.body.style.visibility = "visible";
+  document.body.innerHTML = `<div style="min-height:80vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;gap:14px">
+    <div style="font-size:72px">🔒</div>
+    <div style="font-size:28px;font-weight:800">Доступ закрыт</div>
+    <div class="muted" style="font-size:18px">Эта панель личная.</div></div>`;
 }
 
 function showErr(e) { const el = $("err"); el.textContent = e ? String(e.message || e) : ""; el.style.display = e ? "block" : "none"; }
@@ -267,6 +279,7 @@ const saveSettings = body => api("settings", body);
 // ---------- отрисовка ----------
 function render(s) {
   state = s;
+  document.body.style.visibility = "visible";
   const hot = s.enabled && s.phase === "hot";
   $("pill").className = "pill" + (s.boosting ? " boost" : hot ? " hot" : s.enabled ? " on" : "");
   $("pillText").textContent = s.boosting ? "⚡ Экстра-режим" : s.enabled ? "Охота включена" : "Охота выключена";
@@ -396,6 +409,7 @@ async function tick() {
   if (!$("modal").classList.contains("open")) {
     try { await api("state"); showErr(null); } catch (e) { showErr(e); }
   }
+  if (locked) return;
   setTimeout(tick, state?.phase === "hot" ? 1000 : 3000);
 }
 tick();

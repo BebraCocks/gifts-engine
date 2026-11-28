@@ -145,6 +145,20 @@ def to_pil(premul):
     return Image.fromarray((np.clip(np.concatenate([rgb, a], -1), 0, 1) * 255 + 0.5).astype(np.uint8), 'RGBA')
 
 
+def _meta_read(p):
+    try:
+        return pickle.loads(p.read_bytes()) if p.is_file() else None
+    except Exception:
+        return None
+
+
+def _meta_write(p, v):
+    CACHE.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(f'.{os.getpid()}.tmp')
+    tmp.write_bytes(pickle.dumps(v))
+    os.replace(tmp, p)
+
+
 def hkey(*parts):
     return hashlib.md5(pickle.dumps(parts)).hexdigest()[:12]
 
@@ -212,25 +226,25 @@ def actor(img, name, lk, kind, x, yfloor, hpx, fc=None, t=0.0, talk=None, light=
     bkey = 'b' + hkey(base)
     meta = CACHE / f'meta_{bkey}.pkl'
     if body and not head_only:
-        if meta.is_file():
-            ox, oy = pickle.loads(meta.read_bytes())
-            spr = sprite(bkey, lambda: Image.new('RGBA', (1, 1)))
+        m_ = _meta_read(meta)
+        if m_ is not None and (CACHE / f'spr_{bkey}.png').is_file():
+            ox, oy = m_
+            spr = sprite(bkey, lambda: to_pil(body_spr()[0]))
         else:
             a, (ox, oy) = body_spr()
             spr = sprite(bkey, lambda: to_pil(a))
-            CACHE.mkdir(parents=True, exist_ok=True)
-            meta.write_bytes(pickle.dumps((ox, oy)))
+            _meta_write(meta, (ox, oy))
         _place(img, spr, x, yfloor, ox, oy, rot, flip, shadow, hpx)
     fkey = 'h' + hkey(base, tuple(sorted((k, (v if not isinstance(v, float) else round(v, 3))) for k, v in fc.items())))
     hmeta = CACHE / f'meta_{fkey}.pkl'
-    if hmeta.is_file():
-        ox, oy = pickle.loads(hmeta.read_bytes())
-        spr = sprite(fkey, lambda: Image.new('RGBA', (1, 1)))
+    m_ = _meta_read(hmeta)
+    if m_ is not None and (CACHE / f'spr_{fkey}.png').is_file():
+        ox, oy = m_
+        spr = sprite(fkey, lambda: to_pil(head_spr()[0]))
     else:
         a, (ox, oy) = head_spr()
         spr = sprite(fkey, lambda: to_pil(a))
-        CACHE.mkdir(parents=True, exist_ok=True)
-        hmeta.write_bytes(pickle.dumps((ox, oy)))
+        _meta_write(hmeta, (ox, oy))
     _place(img, spr, x, yfloor, ox, oy, rot, flip, 0, hpx)
     hx, hy = j['head']
     return (x + hx, yfloor + hy)

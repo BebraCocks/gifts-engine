@@ -236,7 +236,7 @@ class Sniper:
         while True:
             r = await acc.client(functions.payments.GetSavedStarGiftsRequest(
                 peer=types.InputPeerSelf(), offset=offset, limit=100,
-                exclude_unique=True))
+                exclude_unique=True, exclude_unlimited=True))   # только лимитки
             result += r.gifts
             if not r.next_offset:
                 return result

@@ -200,7 +200,7 @@ const FIELDS = [
 let state = null;
 
 function speak(name) {
-  try { new Audio("voice/" + name + ".mp3").play(); } catch (e) {}
+  try { new Audio("sounds/" + name + ".mp3").play(); } catch (e) {}
 }
 
 async function api(action, body) {

@@ -15,9 +15,9 @@ mkdir -p "$DIR"
 for f in bot.py login.py panel.py panel.html panel-setup.sh requirements.txt giftsniper.service; do
   curl -fsSL "$BASE/$f" -o "$DIR/$f"
 done
-mkdir -p "$DIR/voice"
+mkdir -p "$DIR/sounds"
 for v in plan_add plan_count slug early rate idle bwin brate; do
-  curl -fsSL "$BASE/voice/$v.mp3" -o "$DIR/voice/$v.mp3"
+  curl -fsSL "$BASE/sounds/$v.mp3" -o "$DIR/sounds/$v.mp3"
 done
 
 echo "== Ставлю библиотеки…"

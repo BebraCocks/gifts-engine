@@ -22,4 +22,6 @@
 квадрат, треугольный бас, шум, арпеджио, джинглы level up и монеток). SFX Botanica через `sfxkit` (`audio.py`).
 
 ### Статус
-- 2026-11-28: собирается `comments_contest_ch4_v1.mp4`.
+- 2026-11-28: собран `renders/62-missed-comments-4/comments_contest_ch4_v1.mp4` (1080×1920, 60 fps, 33,1 с),
+  полностью декодируется, кадры проверены раз в 2,2 с; просмотр в движении и звук — за автором.
+  Drive: https://drive.google.com/file/d/1T07QynlVHgNDOBoVo1nPcM0lbuBp0li4/view

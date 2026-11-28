@@ -88,7 +88,7 @@ class Panel:
             "slug": s.collection_slug(),
             "slug_base": cfg.get("slug") or "",
             "selected": {"count": len(gifts),
-                         "gift_id": gifts[0]["gift_id"] if gifts else None,
+                         "gift_id": str(gifts[0]["gift_id"]) if gifts else None,
                          "accounts": sorted({g["account"] for g in gifts})},
             "accounts": [{"name": a.name, "requests": a.requests, "floods": a.floods,
                           "cooldown": max(0, round(a.cooldown_until - now))}

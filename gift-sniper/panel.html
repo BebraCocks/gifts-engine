@@ -137,7 +137,7 @@ async function api(action, body) {
     headers: {"Content-Type": "application/json", "X-Init-Data": tg?.initData || ""},
     body: JSON.stringify(body || {}),
   });
-  if (r.status === 403) throw new Error("Нет доступа: откройте панель из своего бота и аккаунта.");
+  if (r.status === 403) throw new Error("Нет доступа: " + await r.text());
   const j = await r.json();
   if (j.state) render(j.state);
   if (j.error) throw new Error(j.error);

@@ -27,7 +27,7 @@ MAX_AGE = 24 * 3600          # подпись initData действительн�
 def check_init_data(init_data, token):
     """Проверка подписи Telegram Mini App. Возвращает user id или None."""
     try:
-        data = dict(parse_qsl(init_data, strict_parsing=True))
+        data = dict(parse_qsl(init_data, keep_blank_values=True))
         got = data.pop("hash")
         check = "\n".join(f"{k}={v}" for k, v in sorted(data.items()))
         secret = hmac.new(b"WebAppData", token.encode(), hashlib.sha256).digest()
@@ -125,9 +125,17 @@ class Panel:
     # ---------- HTTP ----------
 
     def auth(self, request):
-        uid = check_init_data(request.headers.get("X-Init-Data", ""), self.token)
-        if uid is None or uid not in self.s.owner_ids:
-            raise web.HTTPForbidden(text="нет доступа")
+        raw = request.headers.get("X-Init-Data", "")
+        if not raw:
+            raise web.HTTPForbidden(text="Telegram не передал данные входа — "
+                                         "откройте панель кнопкой «Панель» в боте.")
+        uid = check_init_data(raw, self.token)
+        if uid is None:
+            raise web.HTTPForbidden(text="подпись Telegram не прошла проверку "
+                                         "(панель открыта не из этого бота?)")
+        if uid not in self.s.owner_ids:
+            raise web.HTTPForbidden(text=f"аккаунт id {uid} не подключён к боту. "
+                                         "Откройте панель с Hateless или Alex.")
 
     async def handle(self, request):
         self.auth(request)

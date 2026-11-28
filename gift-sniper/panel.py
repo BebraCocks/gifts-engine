@@ -23,6 +23,18 @@ HERE = Path(__file__).parent
 PORT = 8088
 MAX_AGE = 24 * 3600          # подпись initData действительна сутки
 
+# Тексты профиля бота: ставятся при каждом запуске (менять здесь)
+BOT_DESCRIPTION = """🎯 Numbe Help — помощник для улучшения подарков Telegram.
+
+🎁 Следит за выходом улучшений
+🔢 Ловит нужные номера: 777, 1000 и другие
+⚡ Ускоряется у самой цели
+🔔 Присылает уведомления о результате
+
+Нажмите «Панель» внизу, чтобы открыть настройки.
+🔒 Работает только для владельца."""
+BOT_ABOUT = "🎯 Ловлю красивые номера при улучшении подарков. Управление — кнопка «Панель»."
+
 
 def check_init_data(init_data, token):
     """Проверка подписи Telegram Mini App. Возвращает user id или None."""
@@ -203,6 +215,11 @@ class Panel:
         await self.bot(functions.bots.SetBotMenuButtonRequest(
             user_id=types.InputUserEmpty(),
             button=types.BotMenuButton(text="Панель", url=self.url)))
+        try:
+            await self.bot(functions.bots.SetBotInfoRequest(
+                lang_code="", about=BOT_ABOUT, description=BOT_DESCRIPTION))
+        except Exception as e:      # тексты не важнее запуска панели
+            print("Не удалось обновить описание бота:", e)
 
         @self.bot.on(events.NewMessage(incoming=True))
         async def _(event):

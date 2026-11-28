@@ -208,8 +208,18 @@ const FIELDS = [
 
 let state = null;
 
+// Озвучка: играет всегда одна подсказка. Новое нажатие останавливает прошлую
+// и начинает нужную с начала (в том числе ту же самую).
+const player = new Audio();
+player.preload = "auto";
 function speak(name) {
-  try { new Audio("sounds/" + name + ".mp3").play(); } catch (e) {}
+  try {
+    player.pause();
+    const src = "sounds/" + name + ".mp3?v=2";
+    if (!player.src.endsWith(src)) player.src = src;
+    player.currentTime = 0;
+    player.play().catch(() => {});
+  } catch (e) {}
 }
 
 async function api(action, body) {
@@ -274,7 +284,7 @@ function openModal({title, unit, value, text, voice, save}) {
   $("modal").classList.add("open");
   setTimeout(() => { inp.focus(); inp.select(); }, 50);
 }
-function closeModal() { $("modal").classList.remove("open"); $("mInput").blur(); }
+function closeModal() { $("modal").classList.remove("open"); $("mInput").blur(); player.pause(); }
 $("mCancel").onclick = closeModal;
 $("modal").onclick = e => { if (e.target === $("modal")) closeModal(); };
 $("mInput").onkeydown = e => { if (e.key === "Enter") $("mOk").click(); };

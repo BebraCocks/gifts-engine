@@ -27,6 +27,14 @@ giftsniper-login acc2     # дополнительный (по желанию)
 Полезное: `systemctl status giftsniper`, `journalctl -u giftsniper -f`,
 `systemctl stop giftsniper`.
 
+## Панель (бот + мини-апп)
+
+`giftsniper-panel` спрашивает токен бота от @BotFather (ввод скрыт), ставит
+Caddy с HTTPS для адреса `<ip-через-дефисы>.sslip.io` и включает в боте кнопку
+меню «Панель». API панели (`panel.py`, порт 8088 только на localhost) принимает
+запросы, подписанные Telegram (initData), и только от подключённых аккаунтов.
+Уведомления идут в чат бота (после /start), иначе — в «Избранное».
+
 ## Как считается номер
 
 - Счётчик — `availability_issued` коллекционки `<Название>-1`

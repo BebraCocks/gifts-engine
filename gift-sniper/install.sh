@@ -12,7 +12,7 @@ apt-get install -y -qq python3 python3-venv curl >/dev/null
 
 echo "== Скачиваю бота…"
 mkdir -p "$DIR"
-for f in bot.py login.py requirements.txt giftsniper.service; do
+for f in bot.py login.py panel.py panel.html panel-setup.sh requirements.txt giftsniper.service; do
   curl -fsSL "$BASE/$f" -o "$DIR/$f"
 done
 
@@ -30,6 +30,8 @@ cat > /usr/local/bin/giftsniper-login <<EOF
 cd $DIR && exec $DIR/venv/bin/python login.py "\$@"
 EOF
 chmod +x /usr/local/bin/giftsniper-login
+cp "$DIR/panel-setup.sh" /usr/local/bin/giftsniper-panel
+chmod +x /usr/local/bin/giftsniper-panel
 
 if ls /root/.giftsniper/accounts/*.session >/dev/null 2>&1; then
   systemctl restart giftsniper

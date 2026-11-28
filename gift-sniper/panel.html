@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gift Sniper</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-secondary-bg-color, #0f1115);
+    --card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #1a1d24));
+    --text: var(--tg-theme-text-color, #f2f3f5);
+    --hint: var(--tg-theme-hint-color, #8b919c);
+    --accent: var(--tg-theme-button-color, #3d8bfd);
+    --accent-text: var(--tg-theme-button-text-color, #fff);
+    --danger: var(--tg-theme-destructive-text-color, #ff5d5d);
+    --ok: #34c77b;
+    --warn: #f5a623;
+    --line: color-mix(in srgb, var(--hint) 25%, transparent);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    padding: 12px 12px calc(24px + env(safe-area-inset-bottom));
+  }
+  h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+       color: var(--hint); margin: 18px 4px 8px; }
+  .card { background: var(--card); border-radius: 14px; padding: 14px; }
+  .card + .card { margin-top: 8px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .muted { color: var(--hint); font-size: 13px; }
+  .big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+          padding: 4px 10px; border-radius: 999px; background: var(--line); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hint); }
+  .pill.on .dot { background: var(--ok); } .pill.hot .dot { background: var(--warn); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .stat { background: var(--bg); border-radius: 10px; padding: 8px 10px; }
+  .stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  button {
+    font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 12px 14px;
+    background: var(--accent); color: var(--accent-text); width: 100%; cursor: pointer;
+  }
+  button.secondary { background: var(--line); color: var(--text); }
+  button.danger { background: var(--danger); color: #fff; }
+  button:disabled { opacity: .5; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  label { display: block; font-size: 13px; color: var(--hint); margin: 12px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=number] {
+    width: 100%; font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+  }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .model { display: flex; align-items: center; gap: 10px; padding: 10px 0;
+           border-top: 1px solid var(--line); }
+  .model:first-of-type { border-top: 0; padding-top: 0; }
+  .model .info { flex: 1; min-width: 0; }
+  .model .info div:first-child { font-weight: 600; }
+  .model button { width: auto; padding: 8px 12px; font-size: 14px; }
+  .model.sel button { background: var(--ok); }
+  pre { white-space: pre-wrap; font: 13px/1.45 ui-monospace, Menlo, monospace; margin: 0; }
+  #out { margin-top: 8px; display: none; }
+  #err { color: var(--danger); font-size: 14px; margin-top: 8px; display: none; }
+  .warn { color: var(--warn); font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="row">
+    <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
+    <span class="muted" id="phase"></span>
+  </div>
+  <div style="margin-top:12px" class="muted">Улучшено в коллекции</div>
+  <div class="big" id="issued">—</div>
+  <div class="stats">
+    <div class="stat"><span class="muted">След. цель</span><b id="next">—</b></div>
+    <div class="stat"><span class="muted">В залпе</span><b id="selCount">0</b></div>
+    <div class="stat"><span class="muted">Аккаунтов</span><b id="accCount">0</b></div>
+  </div>
+  <div class="btns">
+    <button id="huntBtn">Включить охоту</button>
+    <button class="secondary" id="testBtn">Пробный прогон</button>
+  </div>
+  <div id="err"></div>
+  <div class="card" id="out" style="background:var(--bg)"><pre id="outText"></pre></div>
+</div>
+
+<h2>Подарки</h2>
+<div class="card">
+  <div id="models" class="muted">Нажмите «Обновить», чтобы загрузить подарки со всех аккаунтов.</div>
+  <div class="btns" style="grid-template-columns:1fr">
+    <button class="secondary" id="giftsBtn">Обновить список</button>
+  </div>
+</div>
+
+<h2>Цели и скорость</h2>
+<div class="card">
+  <label for="targets">Номера (через пробел, диапазоны через дефис)</label>
+  <input type="text" id="targets" placeholder="777 1000 1111-1115" inputmode="numeric">
+  <label for="slug">Название коллекции (как в ссылке t.me/nft/<b>Название</b>-1)</label>
+  <input type="text" id="slug" placeholder="напр. PlushPepe — узнаем, когда выйдут улучшения" autocapitalize="off">
+  <label for="early">Стрелять за <b id="earlyVal">3</b> номер(а) до цели</label>
+  <input type="range" id="early" min="0" max="30" step="1">
+  <label for="rate">Проверок счётчика в секунду (на все аккаунты): <b id="rateVal">5</b></label>
+  <input type="range" id="rate" min="1" max="100" step="1">
+  <div class="warn" id="rateWarn" style="display:none">Больше ~10 в секунду на аккаунт — риск паузы от Telegram.</div>
+  <label for="idle">Пока улучшений нет, проверять раз в <b id="idleVal">30</b> с</label>
+  <input type="range" id="idle" min="5" max="300" step="5">
+  <div class="btns" style="grid-template-columns:1fr">
+    <button id="saveBtn">Сохранить</button>
+  </div>
+</div>
+
+<h2>Аккаунты</h2>
+<div class="card">
+  <div id="accounts" class="muted">…</div>
+  <div class="btns">
+    <button class="secondary" id="pingBtn">Пинг Telegram</button>
+    <button class="danger" id="nowBtn">Улучшить сейчас</button>
+  </div>
+</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+const $ = id => document.getElementById(id);
+const PHASES = {idle: "ожидание команды", wait: "ждём выхода улучшений",
+                hot: "охота: следим за счётчиком", done: "залп выполнен"};
+let state = null, dirty = false;
+
+async function api(action, body) {
+  const r = await fetch("api/" + action, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "X-Init-Data": tg?.initData || ""},
+    body: JSON.stringify(body || {}),
+  });
+  if (r.status === 403) throw new Error("Нет доступа: откройте панель из своего бота и аккаунта.");
+  const j = await r.json();
+  if (j.state) render(j.state);
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+function showErr(e) { const el = $("err"); el.textContent = e ? String(e.message || e) : ""; el.style.display = e ? "block" : "none"; }
+function showOut(t) { $("out").style.display = t ? "block" : "none"; $("outText").textContent = t || ""; }
+
+async function run(btn, action, body, after) {
+  btn.disabled = true; showErr(null);
+  try { const j = await api(action, body); if (j.text) showOut(j.text); after?.(j); tg?.HapticFeedback?.notificationOccurred("success"); }
+  catch (e) { showErr(e); tg?.HapticFeedback?.notificationOccurred("error"); }
+  finally { btn.disabled = false; }
+}
+
+function render(s) {
+  state = s;
+  const hot = s.enabled && s.phase === "hot";
+  $("pill").className = "pill" + (hot ? " hot" : s.enabled ? " on" : "");
+  $("pillText").textContent = s.enabled ? "Охота включена" : "Охота выключена";
+  $("phase").textContent = PHASES[s.phase] || s.phase;
+  $("issued").textContent = s.issued ?? "—";
+  $("next").textContent = s.next_target ?? (s.targets || "—");
+  $("selCount").textContent = s.selected.count;
+  $("accCount").textContent = s.accounts.length;
+  $("huntBtn").textContent = s.enabled ? "Выключить охоту" : "Включить охоту";
+  $("huntBtn").className = s.enabled ? "danger" : "";
+  if (!dirty) {
+    $("targets").value = s.targets;
+    $("slug").value = s.slug_base || "";
+    $("early").value = s.early; $("earlyVal").textContent = s.early;
+    $("rate").value = Math.min(100, Math.round(s.rate)); $("rateVal").textContent = s.rate;
+    $("idle").value = s.idle_poll; $("idleVal").textContent = s.idle_poll;
+    rateWarn();
+  }
+  $("accounts").innerHTML = s.accounts.map(a =>
+    `<div class="row" style="padding:4px 0"><span>${esc(a.name)}</span><span class="muted">` +
+    `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</span></div>`).join("");
+  renderModels(s);
+}
+
+function renderModels(s) {
+  if (!s.models.length) return;
+  $("models").className = "";
+  $("models").innerHTML = s.models.map(m => {
+    const sel = s.selected.gift_id && String(s.selected.gift_id) === m.gift_id;
+    const accs = Object.entries(m.by_account).map(([a, n]) => `${esc(a)}: ${n}`).join(", ");
+    const st = m.numbered ? `у ${m.numbered} номер уже назначен` :
+               m.can_upgrade ? `улучшение доступно (${m.can_upgrade})` : "улучшений пока нет";
+    return `<div class="model${sel ? " sel" : ""}"><div class="info"><div>${esc(m.label)} ×${m.count}</div>` +
+           `<div class="muted">${st} · ${accs}</div><div class="muted">id ${m.gift_id}</div></div>` +
+           `<button data-id="${m.gift_id}">${sel ? "Выбрано (" + s.selected.count + ")" : "Выбрать все"}</button></div>`;
+  }).join("");
+  document.querySelectorAll(".model button").forEach(b =>
+    b.onclick = () => run(b, "select", {gift_id: b.dataset.id}));
+}
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function rateWarn() {
+  const per = $("rate").value / Math.max(1, state?.accounts.length || 1);
+  $("rateWarn").style.display = per > 10 ? "block" : "none";
+}
+
+for (const [id, val] of [["early", "earlyVal"], ["rate", "rateVal"], ["idle", "idleVal"]])
+  $(id).oninput = () => { dirty = true; $(val).textContent = $(id).value; rateWarn(); };
+$("targets").oninput = $("slug").oninput = () => { dirty = true; };
+
+$("saveBtn").onclick = () => run($("saveBtn"), "settings", {
+  targets: $("targets").value, slug: $("slug").value, early: +$("early").value,
+  rate: +$("rate").value, idle_poll: +$("idle").value,
+}, () => { dirty = false; showOut("Сохранено ✅"); });
+$("huntBtn").onclick = () => run($("huntBtn"), "hunt", {on: !state?.enabled});
+$("testBtn").onclick = () => run($("testBtn"), "test");
+$("pingBtn").onclick = () => run($("pingBtn"), "ping");
+$("giftsBtn").onclick = () => run($("giftsBtn"), "gifts");
+$("nowBtn").onclick = () => {
+  const go = () => run($("nowBtn"), "now");
+  const msg = "Улучшить все выбранные подарки прямо сейчас? Звёзды спишутся.";
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+
+async function tick() {
+  try { await api("state"); showErr(null); } catch (e) { showErr(e); }
+  setTimeout(tick, state?.phase === "hot" ? 1000 : 3000);
+}
+tick();
+</script>
+</body>
+</html>

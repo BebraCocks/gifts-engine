@@ -101,7 +101,7 @@ def slug_base(title):
 def parse_targets(text):
     """«777 1000 1111-1115» → [777, 1000, 1111, …, 1115]."""
     nums = set()
-    for a, b, single in re.findall(r"(\d+)\s*-\s*(\d+)|(\d+)", text):
+    for a, b, single in re.findall(r"(\d+)\s*[-–—]\s*(\d+)|(\d+)", text):
         if single:
             nums.add(int(single))
         else:
@@ -149,10 +149,20 @@ class Sniper:
         self.pollers = []
         self.last_note = ""
         self.busy = False
+        self.notifier = None              # отправка в чат бота-панели
+        self.owner_ids = set()            # id наших аккаунтов (доступ к панели)
+        self.main_id = None               # id главного аккаунта
 
     # ---------- общение ----------
 
-    async def say(self, text):
+    async def say(self, text, saved=False):
+        """Уведомление: в чат бота-панели (если подключён), иначе в Избранное."""
+        if self.notifier and not saved:
+            try:
+                await self.notifier(text)
+                return
+            except Exception:
+                pass
         await self.main.client.send_message("me", text)
 
     async def note_once(self, text):
@@ -233,13 +243,22 @@ class Sniper:
     # ---------- счётчик коллекции ----------
 
     def collection_slug(self):
-        title = self.cfg["gifts"][0]["title"] if self.cfg["gifts"] else ""
-        return f"{self.cfg.get('slug') or slug_base(title)}-1"
+        """Ссылка на коллекционку №1: «PlushPepe-1». None — название неизвестно."""
+        if self.cfg.get("slug"):
+            return f"{self.cfg['slug']}-1"
+        src = self.shots or self.cfg["gifts"]
+        title = src[0]["title"] if src else ""
+        if not title or title.startswith("Подарок "):   # у подарка нет названия
+            return None
+        return f"{slug_base(title)}-1"
 
     async def read_counter(self, acc):
+        slug = self.collection_slug()
+        if slug is None:
+            raise ValueError("не знаю название коллекции — задайте его (/slug "
+                             "НазваниеБезПробелов или поле в панели)")
         acc.requests += 1
-        r = await acc.client(functions.payments.GetUniqueStarGiftRequest(
-            slug=self.collection_slug()))
+        r = await acc.client(functions.payments.GetUniqueStarGiftRequest(slug=slug))
         return r.gift.availability_issued
 
     async def poller(self, acc, offset):
@@ -261,7 +280,7 @@ class Sniper:
                 await self.say(f"⏳ [{acc.name}] Telegram просит паузу {e.seconds} с "
                                "— этот аккаунт отдыхает, остальные работают. "
                                "Если такое часто — уменьшите /rate.")
-            except RPCError as e:
+            except (RPCError, ValueError) as e:
                 self.counter_error = e
             await asyncio.sleep(interval)
 
@@ -394,7 +413,9 @@ class Sniper:
 
         # фаза hot: решения по счётчику, который обновляют опросчики
         if self.issued is None:
-            if self.counter_error:
+            if isinstance(self.counter_error, ValueError):
+                await self.note_once(f"⚠️ {self.counter_error}")
+            elif self.counter_error:
                 await self.note_once(
                     "🔎 Коллекция ещё не появилась (никто не улучшил первым) "
                     f"или ссылка «{self.collection_slug()}» не та. Жду… "
@@ -462,17 +483,19 @@ class Sniper:
         cmd, _, arg = text.partition(" ")
         cmd = cmd.lower().split("@")[0]
         cfg = self.cfg
+        say = self.say
+        self.say = lambda text: say(text, saved=True)
         try:
             if cmd in ("/help", "/start"):
                 await self.say(HELP)
             elif cmd == "/status":
                 await self.say(self.status_text())
             elif cmd == "/accounts":
-                await self.cmd_accounts()
+                await self.say(await self.cmd_accounts())
             elif cmd == "/gifts":
-                await self.cmd_gifts()
+                await self.say(await self.cmd_gifts())
             elif cmd == "/gift":
-                await self.cmd_gift(arg)
+                await self.say(await self.cmd_gift(arg))
             elif cmd == "/target":
                 nums = parse_targets(arg)
                 if not nums:
@@ -500,7 +523,7 @@ class Sniper:
             elif cmd == "/slug":
                 cfg["slug"] = slug_base(arg) or None
                 save_config(cfg)
-                await self.say(f"🔗 Коллекция: {self.collection_slug()}")
+                await self.say(f"🔗 Коллекция: {self.collection_slug() or 'не задана'}")
             elif cmd == "/on":
                 if not cfg["gifts"]:
                     raise ValueError("сначала выберите подарки: /gifts, потом /gift N")
@@ -512,13 +535,15 @@ class Sniper:
                 self.finish("idle")
                 await self.say("⏹ Охота выключена.")
             elif cmd == "/ping":
-                await self.cmd_ping()
+                await self.say(await self.cmd_ping())
             elif cmd == "/test":
-                await self.cmd_test()
+                await self.say(await self.cmd_test())
             elif cmd == "/now":
-                await self.cmd_now()
+                await self.say(await self.cmd_now())
         except Exception as e:
             await self.say(f"⚠️ {e}")
+        finally:
+            self.say = say
 
     def status_text(self):
         cfg = self.cfg
@@ -544,7 +569,7 @@ class Sniper:
             lines.append(f"• {acc.name}: {me.first_name} (@{me.username or '-'}), "
                          f"запросов {acc.requests}, пауз {acc.floods}{extra}")
         lines.append("\nДобавить: на сервере giftsniper-login имя")
-        await self.say("\n".join(lines))
+        return "\n".join(lines)
 
     async def cmd_gifts(self):
         gifts = []
@@ -552,8 +577,7 @@ class Sniper:
             gifts += [self.describe(sg, acc.name) for sg in await self.saved_gifts(acc)]
         self.gift_list = gifts
         if not gifts:
-            await self.say("Подарков, которые можно улучшить, не найдено.")
-            return
+            return "Подарков, которые можно улучшить, не найдено."
         # одинаковые подарки (модель + аккаунт + состояние) — одной строкой
         groups = {}
         for i, d in enumerate(gifts, 1):
@@ -573,7 +597,7 @@ class Sniper:
             count = f" ×{len(idx)}" if len(idx) > 1 else ""
             lines.append(f"{nums}. [{acc}] {d['label']}{count} — " + ", ".join(extra)
                          + f"\n    id {gid}")
-        await self.say("\n".join(lines))
+        return "\n".join(lines)
 
     async def cmd_gift(self, arg):
         if not self.gift_list:
@@ -598,7 +622,7 @@ class Sniper:
         for d in picked:
             num = f" — номер уже #{d['gift_num']}, скорость не важна" if d["gift_num"] else ""
             lines.append(f"• [{d['account']}]{num}")
-        await self.say("\n".join(lines))
+        return "\n".join(lines)
 
     async def cmd_ping(self):
         lines = ["📶 Отклик Telegram:"]
@@ -610,12 +634,12 @@ class Sniper:
                 samples.append((time.monotonic() - t0) * 1000)
             lines.append(f"• {acc.name} (DC{acc.client.session.dc_id}): мин "
                          f"{min(samples):.1f} мс, медиана {statistics.median(samples):.1f} мс")
-        await self.say("\n".join(lines))
+        return "\n".join(lines)
 
     async def cmd_test(self):
         if not self.cfg["gifts"]:
             raise ValueError("сначала выберите подарки: /gifts, потом /gift N")
-        lines = ["🧪 Пробный прогон (без улучшения):"]
+        lines = []
         for g, info in await self.fresh():
             if info is None:
                 lines.append(f"• [{g['account']}] {g['title']}: не найден")
@@ -635,15 +659,23 @@ class Sniper:
                 except Exception as e:
                     line += f", форма оплаты: ошибка {e}"
             lines.append(line)
+        counts = {}
+        for line in lines:
+            line = re.sub(r"форма оплаты за \d+ мс", "форма оплаты готова", line)
+            counts[line] = counts.get(line, 0) + 1
+        lines = ["🧪 Пробный прогон (без улучшения):"] + [
+            line + (f" ×{n}" if n > 1 else "") for line, n in counts.items()]
         try:
             t0 = time.monotonic()
             issued = await self.read_counter(self.main)
             lines.append(f"• счётчик «{self.collection_slug()}»: {issued} "
                          f"({(time.monotonic() - t0) * 1000:.0f} мс)")
+        except ValueError as e:
+            lines.append(f"• счётчик: {e}")
         except RPCError as e:
             lines.append(f"• счётчик «{self.collection_slug()}» недоступен "
-                         f"({e.__class__.__name__}): коллекции ещё нет или нужен /slug")
-        await self.say("\n".join(lines))
+                         f"({e.__class__.__name__}): коллекции ещё нет или название не то")
+        return "\n".join(lines)
 
     async def cmd_now(self):
         if not self.cfg["gifts"]:
@@ -658,7 +690,7 @@ class Sniper:
         finally:
             self.busy = False
         self.finish("idle")
-        await self.say(self.report(results))
+        return self.report(results)
 
 
 async def main():
@@ -677,14 +709,28 @@ async def main():
     if not accounts:
         raise SystemExit("Нет авторизованных аккаунтов: выполните giftsniper-login")
     sniper = Sniper(accounts, cfg)
+    for acc in accounts.values():
+        sniper.owner_ids.add((await acc.client.get_me()).id)
+    sniper.main_id = (await sniper.main.client.get_me()).id
 
     @sniper.main.client.on(events.NewMessage(chats="me", pattern=r"^/"))
     async def _(event):
         await sniper.on_command(event)
 
+    tasks = [sniper.main.client.run_until_disconnected(), sniper.loop()]
+    hello = ""
+    if cfg.get("panel"):
+        try:
+            import panel
+            bot_client = await panel.Panel(sniper, cfg).start()
+            tasks.append(bot_client.run_until_disconnected())
+            hello = "\nПанель: кнопка «Панель» в чате вашего бота."
+        except Exception as e:
+            hello = f"\n⚠️ Панель не запустилась: {e!r}"
+
     await sniper.say(f"🤖 Gift Sniper запущен, аккаунтов: {len(accounts)}. "
-                     "/help — команды.\n\n" + sniper.status_text())
-    await asyncio.gather(sniper.main.client.run_until_disconnected(), sniper.loop())
+                     f"/help — команды.{hello}\n\n" + sniper.status_text())
+    await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":

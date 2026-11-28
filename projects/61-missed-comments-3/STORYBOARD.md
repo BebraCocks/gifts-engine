@@ -22,4 +22,7 @@
 whoosh-organic, popup, error, coin, cartoon-move, whoosh-short, boing, confirm, power-up, sparkle, click, riser.
 
 ### Статус
-- 2026-11-28: собирается `comments_contest_ch3_v1.mp4`.
+- 2026-11-28: собран `renders/61-missed-comments-3/comments_contest_ch3_v1.mp4` (1080×1920, 60 fps, 34,1 с),
+  полностью декодируется, кадры проверены раз в 2,2 с; просмотр в движении и звук — за автором.
+  Первая сборка падала на 70 % (пьедестал с отрицательной высотой) — исправлено.
+  Drive: https://drive.google.com/file/d/1YftM-lZnKO2XgPwGDvPJnmbysgdLiGGU/view

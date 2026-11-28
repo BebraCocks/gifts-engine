@@ -25,3 +25,6 @@ pop/select-soft, power-up, sparkle, boing.
 
 ### Статус
 - 2026-11-28: автор сказал «собирай», полная сборка запущена.
+- 2026-11-28: собран `renders/59-missed-comments/comments_contest_v1.mp4` (1080×1920, 60 fps, H.264 + AAC, 30,7 с),
+  полностью декодируется; проверены кадры раз в 2 с. Просмотр в движении и прослушивание — за автором.
+  Drive: https://drive.google.com/file/d/1rluxEeRf4IgNeC6Ow32CidN-RtSEGCae/view

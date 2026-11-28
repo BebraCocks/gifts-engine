@@ -238,6 +238,9 @@ const PHASES = {idle: "ожидание команды", wait: "ждём вых�
 
 // Настройки: вопрос, единицы, пределы, файл озвучки
 const FIELDS = [
+  {key: "up_budget", title: "Сколько звёзд можно потратить на улучшения?", unit: "звёзд — больше бот на улучшения не потратит",
+   min: 0, max: 1e7, int: true, voice: "up_budget",
+   show: (v, s) => `${v} <small>⭐ · потрачено ${s.up_spent}</small>`},
   {key: "rate", title: "Сколько раз в секунду проверять счётчик?", unit: "раз в секунду, на все аккаунты вместе",
    min: 0.1, max: 1000, voice: "rate", show: v => `${fmt(v)} <small>раз/с</small>`},
   {key: "idle_poll", title: "Раз во сколько секунд проверять, вышли ли улучшения?", unit: "секунд (от 5)",
@@ -267,7 +270,7 @@ player.preload = "auto";
 function speak(name) {
   try {
     player.pause();
-    const src = "sounds/" + name + ".mp3?v=4";
+    const src = "sounds/" + name + ".mp3?v=5";
     if (!player.src.endsWith(src)) player.src = src;
     player.currentTime = 0;
     player.play().catch(() => {});
@@ -432,7 +435,7 @@ function renderSettings(s) {
       `<div class="lbl">${f.title}</div><div class="toggle ${v ? "on" : "off"}">${v ? "Включено ✅" : "Выключено"}</div>` +
       `<div class="muted">${f.hint} · нажмите, чтобы переключить</div></button></div>`;
     return `<div class="set"><button class="main" data-k="${f.key}"><div class="lbl">${f.title}</div>` +
-      `<div class="val">${f.show(v)} <small>✎</small></div></button>` +
+      `<div class="val">${f.show(v, s)} <small>✎</small></div></button>` +
       `<button class="say" data-voice="${f.voice}" aria-label="Озвучить">🔊</button></div>`;
   });
   let extra = "";
@@ -440,7 +443,13 @@ function renderSettings(s) {
     extra = `<div class="muted" style="margin-top:8px">Сейчас стреляю за ${s.early_now} до цели (задержка ${s.rtt_ms ?? "—"} мс)</div>`;
   const per = s.boost_rate / Math.max(1, s.accounts.length);
   if (s.boost && per > 10) extra += `<div class="warn">В экстра-режиме больше ~10 проверок/с на аккаунт — выше риск паузы от Telegram.</div>`;
+  if (s.up_spent) extra += `<div class="btns" style="grid-template-columns:1fr">` +
+    `<button class="secondary" id="upReset">Сбросить «потрачено на улучшения» (${s.up_spent}⭐)</button></div>`;
   $("settings").innerHTML = rows.join("") + extra;
+  $("upReset")?.addEventListener("click", () => {
+    const go = () => saveSettings({up_reset: true}).then(() => toast("Сброшено")).catch(showErr);
+    tg?.showConfirm ? tg.showConfirm("Обнулить счётчик потраченного на улучшения?", ok => ok && go()) : confirm("Обнулить?") && go();
+  });
   $("settings").querySelectorAll(".main").forEach(b => b.onclick = () => {
     const f = FIELDS.find(x => x.key === b.dataset.k);
     if (f.toggle) {

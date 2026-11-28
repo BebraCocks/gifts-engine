@@ -35,6 +35,8 @@ DEFAULTS = {
     "boost": True,          # экстра-режим у самой цели
     "boost_window": 10,     # за сколько номеров до цели включать экстра-режим
     "boost_rate": 10.0,     # проверок в секунду в экстра-режиме (10 = раз в 0,1 с)
+    "up_budget": 1000,      # лимит звёзд на улучшения (охота за номерами)
+    "up_spent": 0,          # уже потрачено на улучшения
     "slug": None,           # основа ссылки коллекции, напр. "PlushPepe"
     "keep_details": False,  # сохранять подпись отправителя на коллекционке
 }
@@ -412,6 +414,29 @@ class Sniper:
         await asyncio.gather(*(self.prepare_form(i) for i in (gifts or self.shots)),
                              return_exceptions=True)
 
+    def price(self, info):
+        """Цена улучшения в звёздах: 0 — оплачено заранее, None — неизвестна."""
+        if info["prepaid"]:
+            return 0
+        f = self.forms.get(self.key(info))
+        if not f:
+            return None
+        return sum(p.amount for p in f[0].invoice.prices)
+
+    def affordable(self, batch):
+        """Сколько подарков из залпа влезает в лимит на улучшения."""
+        left = self.cfg["up_budget"] - self.cfg["up_spent"]
+        out, total = [], 0
+        for info in batch:
+            p = self.price(info)
+            if p is None:           # формы нет — цену не знаем, не рискуем
+                continue
+            if total + p > left:
+                break
+            out.append(info)
+            total += p
+        return out, max(0, left)
+
     async def fire_one(self, info):
         acc = self.accounts[info["account"]]
         t0 = time.monotonic()
@@ -560,8 +585,19 @@ class Sniper:
         if gap <= early + 30:
             await self.prepare_all(batch)       # оплату готовим заранее
         if gap <= early:
+            await self.prepare_all(batch)
+            batch, left = self.affordable(batch)
+            if not batch:
+                self.done[target] = f"пропущен: не хватает лимита на улучшения ({left}⭐)"
+                await self.say(f"💸 #{target}: не хватает лимита на улучшения — осталось "
+                               f"{left}⭐ из {cfg['up_budget']}⭐. Не улучшаю.")
+                return
             self.pool = self.pool[len(batch):]
             results = await self.fire_all(batch)
+            for info, _, _, err in results:
+                if not err:
+                    cfg["up_spent"] += self.price(info) or 0
+            save_config(cfg)
             got = [num for _, num, _, err in results if num and not err]
             self.done[target] = (f"🎉 поймал #{target}" if target in got else
                                  "выстрел: " + (", ".join(f"#{n}" for n in got) or "номер не прочитан"))
@@ -745,6 +781,7 @@ class Sniper:
             f"{sum(e['n'] for e in cfg['plan'])})",
             f"Упреждение: {'авто' if cfg.get('early_auto', True) else cfg['early']} · счётчик {cfg['rate']:g} запр/с · "
             f"ожидание раз в {cfg['idle_poll']:g} с",
+            f"Лимит на улучшения: потрачено {cfg['up_spent']} из {cfg['up_budget']}⭐",
             ("Экстра-режим: " + (f"за {cfg['boost_window']} номеров до цели — "
                                  f"{cfg['boost_rate']:g} проверок/с" if cfg["boost"] else "выключен")),
         ]

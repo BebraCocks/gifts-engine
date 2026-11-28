@@ -84,6 +84,7 @@ class Panel:
             "speed": round(s.speed(), 1), "rtt_ms": round(s.rtt() * 1000, 1) if s.rtts else None,
             "rate": cfg["rate"],
             "idle_poll": cfg["idle_poll"],
+            "up_budget": cfg["up_budget"], "up_spent": cfg["up_spent"],
             "boost": cfg["boost"], "boost_window": cfg["boost_window"],
             "boost_rate": cfg["boost_rate"], "boosting": s.boosting(),
             "rate_now": s.effective_rate(),
@@ -130,6 +131,10 @@ class Panel:
 
     def apply_settings(self, body):
         cfg = self.cfg
+        if "up_budget" in body:
+            cfg["up_budget"] = max(0, min(10**7, int(float(body["up_budget"]))))
+        if body.get("up_reset"):
+            cfg["up_spent"] = 0
         if "plan" in body:
             plan = core.clean_plan(body["plan"])
             if not plan:

@@ -581,7 +581,9 @@ class Sniper:
                            f"{target - self.issued}, проверяю счётчик "
                            f"{self.effective_rate():g} раз/с.")
         gap = target - (self.issued + 1)       # сколько номеров до цели
-        early = self.early_now()
+        # цель — в середине залпа: N подарков → стреляем на N//2 номеров раньше
+        # (3 шт. на #777 → при 775 улучшенных: 776, 777, 778), плюс упреждение на задержку
+        early = self.early_now() + len(batch) // 2
         if gap <= early + 30:
             await self.prepare_all(batch)       # оплату готовим заранее
         if gap <= early:

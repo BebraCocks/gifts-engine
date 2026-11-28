@@ -174,13 +174,28 @@ class Sniper:
             offset = r.next_offset
 
     @staticmethod
-    def describe(sg, account):
+    def label(gift):
+        """«🧸 15⭐ · лимит 1200/5000» — как узнать подарок без названия."""
+        emoji = ""
+        for a in getattr(getattr(gift, "sticker", None), "attributes", []) or []:
+            if isinstance(a, types.DocumentAttributeSticker) and a.alt:
+                emoji = a.alt
+        parts = [x for x in (emoji, getattr(gift, "title", None)) if x]
+        parts.append(f"{getattr(gift, 'stars', '?')}⭐")
+        if getattr(gift, "limited", False):
+            total = gift.availability_total or "?"
+            parts.append(f"лимитка, осталось {gift.availability_remains}/{total}")
+        return " ".join(parts[:-1]) + " · " + parts[-1] if len(parts) > 1 else parts[0]
+
+    @classmethod
+    def describe(cls, sg, account):
         gift = sg.gift
         return {
             "account": account,
             "msg_id": sg.msg_id,
             "saved_id": sg.saved_id,
             "gift_id": gift.id,
+            "label": cls.label(gift),
             "title": getattr(gift, "title", None) or f"Подарок {gift.id}",
             "gift_num": sg.gift_num,
             "can_upgrade": bool(sg.can_upgrade),
@@ -539,16 +554,25 @@ class Sniper:
         if not gifts:
             await self.say("Подарков, которые можно улучшить, не найдено.")
             return
-        lines = ["Подарки (выбор: /gift 1 3 или /gift all 1):"]
+        # одинаковые подарки (модель + аккаунт + состояние) — одной строкой
+        groups = {}
         for i, d in enumerate(gifts, 1):
-            extra = []
-            if d["gift_num"]:
-                extra.append(f"номер уже #{d['gift_num']}")
-            extra.append("улучшение доступно" if d["can_upgrade"]
-                         else "улучшений пока нет")
-            if d["prepaid"]:
+            k = (d["gift_id"], d["account"], d["can_upgrade"], d["prepaid"],
+                 d["gift_num"])
+            groups.setdefault(k, []).append(i)
+        lines = ["Подарки (выбор: /gift 3, /gift 1 3, /gift all 3 — все той же модели):"]
+        for (gid, acc, can, pre, num), idx in groups.items():
+            d = gifts[idx[0] - 1]
+            nums = (f"{idx[0]}" if len(idx) == 1 else
+                    f"{idx[0]}–{idx[-1]}" if idx[-1] - idx[0] == len(idx) - 1 else
+                    ", ".join(map(str, idx)))
+            extra = [f"номер уже #{num}"] if num else []
+            extra.append("улучшение доступно" if can else "улучшений пока нет")
+            if pre:
                 extra.append("оплачено")
-            lines.append(f"{i}. [{d['account']}] {d['title']} — " + ", ".join(extra))
+            count = f" ×{len(idx)}" if len(idx) > 1 else ""
+            lines.append(f"{nums}. [{acc}] {d['label']}{count} — " + ", ".join(extra)
+                         + f"\n    id {gid}")
         await self.say("\n".join(lines))
 
     async def cmd_gift(self, arg):

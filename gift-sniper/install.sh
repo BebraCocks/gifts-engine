@@ -31,5 +31,11 @@ cd $DIR && exec $DIR/venv/bin/python login.py "\$@"
 EOF
 chmod +x /usr/local/bin/giftsniper-login
 
-echo
-echo "Готово. Теперь введите:  giftsniper-login"
+if ls /root/.giftsniper/accounts/*.session >/dev/null 2>&1; then
+  systemctl restart giftsniper
+  echo
+  echo "Готово. Бот обновлён и перезапущен."
+else
+  echo
+  echo "Готово. Теперь введите:  giftsniper-login"
+fi

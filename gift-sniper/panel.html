@@ -85,7 +85,9 @@
 
   #modal { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
            align-items: flex-start; justify-content: center; padding: 16px; z-index: 10; overflow-y: auto; }
-  #modal.open { display: flex; }
+  #modal.open, .overlay.open { display: flex; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
+             align-items: flex-start; justify-content: center; padding: 16px; z-index: 11; overflow-y: auto; }
   .sheet { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 520px; margin-top: 8vh; }
   .sheet .head { display: flex; gap: 12px; align-items: flex-start; }
   .sheet h3 { flex: 1; margin: 0; font-size: 26px; line-height: 1.25; }
@@ -164,6 +166,13 @@
     </div>
   </div>
 </div>
+<div id="result" class="overlay">
+  <div class="sheet">
+    <h3 id="rTitle">Результат</h3>
+    <pre id="rText" style="font-size:19px;line-height:1.5;margin-top:14px;white-space:pre-wrap"></pre>
+    <div class="btns" style="grid-template-columns:1fr"><button id="rClose">Понятно</button></div>
+  </div>
+</div>
 <div id="toast">Сохранено ✅</div>
 
 <script>
@@ -229,15 +238,23 @@ function lockScreen() {
 }
 
 function showErr(e) { const el = $("err"); el.textContent = e ? String(e.message || e) : ""; el.style.display = e ? "block" : "none"; }
-function showOut(t) { $("out").style.display = t ? "block" : "none"; $("outText").textContent = t || ""; }
+function showOut(t, title) {
+  if (!t) return;
+  $("rTitle").textContent = title || "Результат";
+  $("rText").textContent = t;
+  $("result").classList.add("open");
+}
+$("rClose").onclick = () => $("result").classList.remove("open");
 function toast(t) { const el = $("toast"); el.textContent = t || "Сохранено ✅"; el.style.display = "block";
                     clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = "none", 1600); }
 
+const TITLES = {ping: "📶 Пинг Telegram", test: "🧪 Пробный прогон", now: "Улучшение", gifts: "Подарки"};
 async function run(btn, action, body, after) {
-  btn.disabled = true; showErr(null);
-  try { const j = await api(action, body); if (j.text) showOut(j.text); after?.(j); tg?.HapticFeedback?.notificationOccurred("success"); }
-  catch (e) { showErr(e); tg?.HapticFeedback?.notificationOccurred("error"); }
-  finally { btn.disabled = false; }
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = "⏳ Подождите…"; showErr(null);
+  try { const j = await api(action, body); if (j.text) showOut(j.text, TITLES[action]); after?.(j); tg?.HapticFeedback?.notificationOccurred("success"); }
+  catch (e) { if (String(e.message) !== "locked") showOut(String(e.message || e), "⚠️ Ошибка"); tg?.HapticFeedback?.notificationOccurred("error"); }
+  finally { btn.disabled = false; if (btn.textContent === "⏳ Подождите…") btn.textContent = label; }
 }
 
 // ---------- окно ввода ----------
@@ -406,7 +423,7 @@ $("nowBtn").onclick = () => {
 };
 
 async function tick() {
-  if (!$("modal").classList.contains("open")) {
+  if (!$("modal").classList.contains("open") && !$("result").classList.contains("open")) {
     try { await api("state"); showErr(null); } catch (e) { showErr(e); }
   }
   if (locked) return;

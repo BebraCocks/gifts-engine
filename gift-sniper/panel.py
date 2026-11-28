@@ -3,6 +3,8 @@
 - бот присылает уведомления и открывает мини-апп кнопкой меню «Панель»;
 - мини-апп (panel.html) ходит в JSON API ниже; каждый запрос подписан
   Telegram (initData) и принимается только от наших аккаунтов.
+Доступ к панели и боту — только у главного аккаунта; остальные аккаунты —
+помощники без доступа.
 Настройка: giftsniper-panel (токен бота и адрес вводятся на сервере).
 """
 
@@ -156,7 +158,7 @@ class Panel:
         """Пускаем только наши аккаунты. Чужим — без подробностей (причина — в журнал)."""
         raw = request.headers.get("X-Init-Data", "")
         uid = check_init_data(raw, self.token) if raw else None
-        if uid is None or uid not in self.s.owner_ids:
+        if uid is None or uid != self.s.main_id:      # панель — только главный аккаунт
             why = ("нет данных входа" if not raw else
                    "неверная подпись" if uid is None else f"чужой аккаунт id {uid}")
             print(f"Панель: отказ в доступе ({why})")
@@ -220,7 +222,7 @@ class Panel:
 
         @self.bot.on(events.NewMessage(incoming=True))
         async def _(event):
-            if event.sender_id not in self.s.owner_ids:
+            if event.sender_id != self.s.main_id:      # помощникам бот не отвечает
                 return
             await event.reply("Нажмите кнопку «Панель» слева от поля ввода. "
                               "Сюда будут приходить уведомления бота.")

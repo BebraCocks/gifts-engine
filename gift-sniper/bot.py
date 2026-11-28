@@ -202,6 +202,8 @@ class Sniper:
         self.pool = []                    # ещё не потраченные подарки этой охоты
         self.done = {}                    # номер → итог («поймал #…», «проскочил»)
         self.boost_for = None             # для какой цели уже включён экстра-режим
+        self.catalog_hash = {}            # хэш каталога подарков по аккаунтам
+        self.catalog_open = {}
         self.hist = collections.deque(maxlen=400)   # (время, значение счётчика)
         self.rtts = collections.deque(maxlen=50)    # задержки запросов счётчика, с
         self.forms = {}                   # заранее полученные формы оплаты
@@ -575,6 +577,41 @@ class Sniper:
             return
         await asyncio.sleep(min(0.5, max(0.002, 0.5 / max(self.effective_rate(), 1))))
 
+    async def release_seen(self, acc, gift_ids):
+        """Есть ли у этих моделей цена улучшения в каталоге Telegram (= улучшения вышли).
+
+        Каталог запрашивается с хэшем: если ничего не менялось, ответ пустой и лёгкий.
+        """
+        r = await acc.client(functions.payments.GetStarGiftsRequest(
+            hash=self.catalog_hash.get(acc.name, 0)))
+        if isinstance(r, types.payments.StarGiftsNotModified):
+            return self.catalog_open.get(acc.name, False)
+        self.catalog_hash[acc.name] = r.hash
+        is_open = any(getattr(g, "id", None) in gift_ids and getattr(g, "upgrade_stars", None)
+                      for g in r.gifts)
+        self.catalog_open[acc.name] = is_open
+        return is_open
+
+    async def watch_release(self, gift_ids):
+        """Аккаунты по очереди смотрят каталог; полный круг — idle_poll секунд."""
+        accs = list(self.accounts.values())
+        step = self.cfg["idle_poll"] / len(accs)
+        for acc in accs:
+            await asyncio.sleep(step)
+            if not self.cfg["enabled"]:
+                return
+            if time.monotonic() < acc.cooldown_until:
+                continue
+            try:
+                acc.requests += 1
+                if await self.release_seen(acc, gift_ids):
+                    return            # сразу перепроверим подарки на главном аккаунте
+            except FloodWaitError as e:
+                acc.floods += 1
+                acc.cooldown_until = time.monotonic() + e.seconds + 1
+            except RPCError:
+                pass
+
     async def check_upgrades(self):
         cfg = self.cfg
         ready, waiting, notes = [], [], []
@@ -601,9 +638,12 @@ class Sniper:
             return
         if not ready:
             self.phase = "wait"
-            await self.note_once(f"🕐 Жду выхода улучшений ({len(waiting)} подарк.). "
-                                 f"Проверяю раз в {cfg['idle_poll']:.0f} с.")
-            await asyncio.sleep(cfg["idle_poll"])
+            n = len(self.accounts)
+            await self.note_once(
+                f"🕐 Жду выхода улучшений ({len(waiting)} подарк.). Каждый из {n} "
+                f"аккаунт(ов) проверяет раз в {cfg['idle_poll']:.0f} с, вместе — "
+                f"примерно раз в {cfg['idle_poll'] / n:.0f} с.")
+            await self.watch_release({w["gift_id"] for w in waiting})
             return
         self.shots, self.issued, self.forms = ready, None, {}
         self.pool, self.done, self.boost_for = list(ready), {}, None

@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gift Sniper</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-secondary-bg-color, #0f1115);
+    --card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #1a1d24));
+    --text: var(--tg-theme-text-color, #f2f3f5);
+    --hint: var(--tg-theme-hint-color, #9aa0aa);
+    --accent: var(--tg-theme-button-color, #3d8bfd);
+    --accent-text: var(--tg-theme-button-text-color, #fff);
+    --danger: #ff5d5d;
+    --ok: #34c77b;
+    --warn: #f5a623;
+    --line: color-mix(in srgb, var(--hint) 28%, transparent);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 19px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    padding: 12px 12px calc(32px + env(safe-area-inset-bottom));
+  }
+  h2 { font-size: 17px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+       color: var(--hint); margin: 26px 6px 10px; }
+  .card { background: var(--card); border-radius: 18px; padding: 16px; }
+  .muted { color: var(--hint); font-size: 16px; }
+  button {
+    font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 16px;
+    background: var(--accent); color: var(--accent-text); width: 100%; cursor: pointer; min-height: 58px;
+  }
+  button.secondary { background: var(--line); color: var(--text); }
+  button.danger { background: var(--danger); color: #fff; }
+  button:disabled { opacity: .5; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700;
+          padding: 6px 14px; border-radius: 999px; background: var(--line); }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--hint); }
+  .pill.on .dot { background: var(--ok); } .pill.hot .dot { background: var(--warn); }
+  .pill.boost .dot { background: #ff3b7f; }
+  .phase { font-size: 17px; color: var(--hint); margin-top: 8px; }
+  .big { font-size: 46px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .stat { background: var(--bg); border-radius: 12px; padding: 10px; }
+  .stat span { font-size: 15px; color: var(--hint); }
+  .stat b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+
+  .set { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .set:first-child { border-top: 0; padding-top: 0; }
+  .set .main { flex: 1; min-width: 0; text-align: left; background: none; color: var(--text);
+               padding: 4px 0; min-height: 0; font-weight: 400; border-radius: 0; }
+  .set .lbl { font-size: 18px; }
+  .set .val { font-size: 30px; font-weight: 800; color: var(--accent); margin-top: 2px; }
+  .set .val small { font-size: 18px; font-weight: 600; color: var(--hint); }
+  .say { width: 58px; min-width: 58px; height: 58px; padding: 0; font-size: 28px;
+         background: var(--line); border-radius: 50%; min-height: 0; }
+  .toggle { font-size: 22px; font-weight: 800; }
+  .toggle.on { color: var(--ok); } .toggle.off { color: var(--hint); }
+
+  .prow { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .prow:first-child { border-top: 0; }
+  .prow .main { flex: 1; text-align: left; background: none; color: var(--text); padding: 0;
+                min-height: 0; font-weight: 400; }
+  .prow .num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .prow .cnt { font-size: 18px; color: var(--accent); font-weight: 700; }
+  .prow .st { font-size: 16px; color: var(--hint); }
+  .del { width: 58px; min-width: 58px; height: 58px; padding: 0; font-size: 26px; min-height: 0;
+         background: var(--line); color: var(--danger); }
+
+  .model { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .model:first-child { border-top: 0; padding-top: 0; }
+  .model .info { flex: 1; min-width: 0; }
+  .model .info div:first-child { font-weight: 700; font-size: 20px; }
+  .model button { width: auto; padding: 12px 16px; font-size: 17px; }
+  .model.sel button { background: var(--ok); }
+
+  pre { white-space: pre-wrap; font: 16px/1.5 ui-monospace, Menlo, monospace; margin: 0; }
+  #out { margin-top: 12px; display: none; background: var(--bg); }
+  #err { color: var(--danger); font-size: 18px; font-weight: 600; margin-top: 12px; display: none; }
+  .tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+          background: var(--bg); padding: 4px 0 12px; }
+  .tab { background: var(--card); color: var(--hint); min-height: 56px; font-size: 19px; }
+  .tab.active { background: var(--accent); color: var(--accent-text); }
+  .logrow { padding: 10px 0; border-top: 1px solid var(--line); }
+  .logrow:first-child { border-top: 0; padding-top: 0; }
+  .warn { color: var(--warn); font-size: 16px; margin-top: 6px; }
+
+  #modal { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
+           align-items: flex-start; justify-content: center; padding: 16px; z-index: 10; overflow-y: auto; }
+  #modal.open, .overlay.open { display: flex; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.65); display: none;
+             align-items: flex-start; justify-content: center; padding: 16px; z-index: 11; overflow-y: auto; }
+  .sheet { background: var(--card); border-radius: 20px; padding: 20px; width: 100%; max-width: 520px; margin-top: 8vh; }
+  .sheet .head { display: flex; gap: 12px; align-items: flex-start; }
+  .sheet h3 { flex: 1; margin: 0; font-size: 26px; line-height: 1.25; }
+  .sheet .unit { font-size: 18px; color: var(--hint); margin: 10px 0 6px; }
+  .sheet input { width: 100%; font-weight: 800; font-size: 36px; line-height: 1.2; font-family: inherit;
+                 color: var(--text); background: var(--bg); border: 2px solid var(--accent);
+                 border-radius: 14px; padding: 14px 16px; }
+  .sheet .merr { color: var(--danger); font-size: 18px; font-weight: 600; min-height: 26px; margin-top: 8px; }
+  #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ok);
+           color: #fff; font-weight: 800; font-size: 20px; padding: 14px 22px; border-radius: 14px;
+           display: none; z-index: 20; }
+</style>
+</head>
+<body style="visibility:hidden">
+<div class="tabs">
+  <button class="tab active" data-tab="up">🎯 Улучшение</button>
+  <button class="tab" data-tab="buy">🛒 Покупка</button>
+</div>
+<div id="tab-up">
+
+<div class="card">
+  <span id="pill" class="pill"><span class="dot"></span><span id="pillText">…</span></span>
+  <div class="phase" id="phase"></div>
+  <div class="muted" style="margin-top:12px">Улучшено в коллекции</div>
+  <div class="big" id="issued">—</div>
+  <div class="stats">
+    <div class="stat"><span>След. цель</span><b id="next">—</b></div>
+    <div class="stat"><span>Подарков</span><b id="selCount">0</b></div>
+    <div class="stat"><span>Аккаунтов</span><b id="accCount">0</b></div>
+  </div>
+  <div class="btns">
+    <button id="huntBtn">Включить охоту</button>
+    <button class="secondary" id="testBtn">Пробный прогон</button>
+  </div>
+  <div id="err"></div>
+  <div class="card" id="out"><pre id="outText"></pre></div>
+</div>
+
+<h2>Номера</h2>
+<div class="card">
+  <div id="plan"></div>
+  <div class="btns" style="grid-template-columns:1fr 58px">
+    <button id="addBtn">➕ Добавить номер</button>
+    <button class="say" data-voice="plan_add" aria-label="Озвучить">🔊</button>
+  </div>
+  <div class="muted" id="planInfo" style="margin-top:10px"></div>
+</div>
+
+<h2>Настройки</h2>
+<div class="card" id="settings"></div>
+
+<h2>Подарки</h2>
+<div class="card">
+  <div id="models" class="muted">Нажмите «Обновить список», чтобы загрузить подарки со всех аккаунтов.</div>
+  <div class="btns" style="grid-template-columns:1fr">
+    <button class="secondary" id="giftsBtn">Обновить список</button>
+  </div>
+</div>
+
+<h2>Аккаунты</h2>
+<div class="card">
+  <div id="accounts" class="muted">…</div>
+  <div class="btns">
+    <button class="secondary" id="pingBtn">Пинг Telegram</button>
+    <button class="danger" id="nowBtn">Улучшить сейчас</button>
+  </div>
+</div>
+
+</div>
+
+<div id="tab-buy" style="display:none">
+<div class="card">
+  <span id="bPill" class="pill"><span class="dot"></span><span id="bPillText">…</span></span>
+  <div class="phase" id="bPhase"></div>
+  <div class="stats" style="grid-template-columns:1fr 1fr">
+    <div class="stat"><span>Баланс</span><b id="bBalance">—</b></div>
+    <div class="stat"><span>Потрачено</span><b id="bSpent">—</b></div>
+  </div>
+  <div class="btns">
+    <button id="bToggle">Включить автопокупку</button>
+    <button class="secondary" id="bBalBtn">Обновить баланс</button>
+  </div>
+</div>
+
+<h2>Что покупать</h2>
+<div class="card">
+  <div id="bRules"></div>
+  <div class="btns" style="grid-template-columns:1fr 58px">
+    <button id="bAdd">➕ Добавить блок</button>
+    <button class="say" data-voice="buy_range" aria-label="Озвучить">🔊</button>
+  </div>
+  <div class="muted" id="bRulesInfo" style="margin-top:10px"></div>
+</div>
+
+<h2>Общие настройки</h2>
+<div class="card" id="bSettings"></div>
+
+<h2>Тест</h2>
+<div class="card">
+  <div class="muted">Купить одного мишку 🧸 за 15⭐ на свой аккаунт — проверить, что покупка работает. В бюджет не входит.</div>
+  <div class="btns" style="grid-template-columns:1fr">
+    <button class="secondary" id="bTest">🧸 Купить мишку за 15⭐</button>
+  </div>
+</div>
+
+<h2>Покупки</h2>
+<div class="card" id="bLog"><div class="muted">Покупок пока не было.</div></div>
+</div>
+
+<div id="modal">
+  <div class="sheet">
+    <div class="head">
+      <h3 id="mTitle"></h3>
+      <button class="say" id="mSay" aria-label="Озвучить">🔊</button>
+    </div>
+    <div class="unit" id="mUnit"></div>
+    <input id="mInput">
+    <div class="merr" id="mErr"></div>
+    <div class="btns">
+      <button class="secondary" id="mCancel">Отмена</button>
+      <button id="mOk">Сохранить</button>
+    </div>
+  </div>
+</div>
+<div id="result" class="overlay">
+  <div class="sheet">
+    <h3 id="rTitle">Результат</h3>
+    <pre id="rText" style="font-size:19px;line-height:1.5;margin-top:14px;white-space:pre-wrap"></pre>
+    <div class="btns" style="grid-template-columns:1fr"><button id="rClose">Понятно</button></div>
+  </div>
+</div>
+<div id="toast">Сохранено ✅</div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => String(+(+n).toFixed(2)).replace(".", ",");
+const PHASES = {idle: "ожидание команды", wait: "ждём выхода улучшений",
+                hot: "охота: следим за счётчиком", done: "охота завершена"};
+
+// Настройки: вопрос, единицы, пределы, файл озвучки
+const FIELDS = [
+  {key: "up_budget", title: "Сколько звёзд можно потратить на улучшения?", unit: "звёзд — больше бот на улучшения не потратит",
+   min: 0, max: 1e7, int: true, voice: "up_budget",
+   show: (v, s) => `${v} <small>⭐ · потрачено ${s.up_spent}</small>`},
+  {key: "rate", title: "Сколько раз в секунду проверять счётчик?", unit: "раз в секунду, на все аккаунты вместе",
+   min: 0.1, max: 1000, voice: "rate", show: v => `${fmt(v)} <small>раз/с</small>`},
+  {key: "idle_poll", title: "Раз во сколько секунд проверять, вышли ли улучшения?", unit: "секунд (от 5)",
+   min: 5, max: 3600, voice: "idle", show: v => `${fmt(v)} <small>с</small>`},
+  {key: "early_auto", toggle: true, title: "Упреждение автоматически",
+   hint: "бот сам считает, когда стрелять"},
+  {key: "early", title: "За сколько номеров до цели стрелять?", unit: "номеров (0 — ровно перед целью)",
+   min: 0, max: 1000, int: true, voice: "early", show: v => `${v} <small>ном.</small>`,
+   hidden: s => s.early_auto},
+  {key: "boost", toggle: true, title: "⚡ Экстра-режим у цели", hint: "у цели проверять чаще"},
+  {key: "boost_window", title: "За сколько номеров до цели включать экстра-режим?", unit: "номеров",
+   min: 1, max: 1000, int: true, voice: "bwin", show: v => `за ${v} <small>ном.</small>`, hidden: s => !s.boost},
+  {key: "boost_rate", title: "Сколько раз в секунду проверять в экстра-режиме?",
+   unit: "раз в секунду (10 — это раз в 0,1 секунды)", min: 0.5, max: 1000, voice: "brate",
+   show: v => `${fmt(v)} <small>раз/с · раз в ${fmt(1 / v)} с</small>`, hidden: s => !s.boost},
+  {key: "slug", text: true, title: "Название коллекции", voice: "slug",
+   unit: "латиницей без пробелов, как в ссылке t.me/nft/Название-1. Пусто — бот определит сам",
+   show: v => v ? esc(v) : `<small>определится само</small>`, get: s => s.slug_base},
+];
+
+let state = null;
+
+// Озвучка: играет всегда одна подсказка. Новое нажатие останавливает прошлую
+// и начинает нужную с начала (в том числе ту же самую).
+const player = new Audio();
+player.preload = "auto";
+function speak(name) {
+  try {
+    player.pause();
+    const src = "sounds/" + name + ".mp3?v=5";
+    if (!player.src.endsWith(src)) player.src = src;
+    player.currentTime = 0;
+    player.play().catch(() => {});
+  } catch (e) {}
+}
+
+async function api(action, body) {
+  const r = await fetch("api/" + action, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "X-Init-Data": tg?.initData || ""},
+    body: JSON.stringify(body || {}),
+  });
+  if (r.status === 403) { lockScreen(); throw new Error("locked"); }
+  const j = await r.json();
+  if (j.state) render(j.state);
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+let locked = false;
+function lockScreen() {
+  if (locked) return;
+  locked = true;
+  document.body.style.visibility = "visible";
+  document.body.innerHTML = `<div style="min-height:80vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;gap:14px">
+    <div style="font-size:72px">🔒</div>
+    <div style="font-size:28px;font-weight:800">Доступ закрыт</div>
+    <div class="muted" style="font-size:18px">Эта панель личная.</div></div>`;
+}
+
+function showErr(e) { const el = $("err"); el.textContent = e ? String(e.message || e) : ""; el.style.display = e ? "block" : "none"; }
+function showOut(t, title) {
+  if (!t) return;
+  $("rTitle").textContent = title || "Результат";
+  $("rText").textContent = t;
+  $("result").classList.add("open");
+}
+$("rClose").onclick = () => $("result").classList.remove("open");
+function toast(t) { const el = $("toast"); el.textContent = t || "Сохранено ✅"; el.style.display = "block";
+                    clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = "none", 1600); }
+
+const TITLES = {ping: "📶 Пинг Telegram", test: "🧪 Пробный прогон", now: "Улучшение", gifts: "Подарки",
+                buy_test: "🧸 Тестовая покупка"};
+async function run(btn, action, body, after) {
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = "⏳ Подождите…"; showErr(null);
+  try { const j = await api(action, body); if (j.text) showOut(j.text, TITLES[action]); after?.(j); tg?.HapticFeedback?.notificationOccurred("success"); }
+  catch (e) { if (String(e.message) !== "locked") showOut(String(e.message || e), "⚠️ Ошибка"); tg?.HapticFeedback?.notificationOccurred("error"); }
+  finally { btn.disabled = false; if (btn.textContent === "⏳ Подождите…") btn.textContent = label; }
+}
+
+// ---------- окно ввода ----------
+let modalSave = null;
+function openModal({title, unit, value, text, voice, save}) {
+  $("mTitle").textContent = title;
+  $("mUnit").textContent = unit || "";
+  const inp = $("mInput");
+  inp.type = "text";
+  inp.inputMode = text ? "text" : "decimal";
+  inp.autocapitalize = "off";
+  inp.value = value ?? "";
+  $("mErr").textContent = "";
+  $("mSay").style.display = voice ? "" : "none";
+  $("mSay").onclick = () => speak(voice);
+  modalSave = save;
+  $("modal").classList.add("open");
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
+}
+function closeModal() { $("modal").classList.remove("open"); $("mInput").blur(); player.pause(); }
+$("mCancel").onclick = closeModal;
+$("modal").onclick = e => { if (e.target === $("modal")) closeModal(); };
+$("mInput").onkeydown = e => { if (e.key === "Enter") $("mOk").click(); };
+$("mOk").onclick = async () => {
+  $("mOk").disabled = true;
+  try { await modalSave($("mInput").value.trim()); closeModal(); toast(); tg?.HapticFeedback?.notificationOccurred("success"); }
+  catch (e) { $("mErr").textContent = e.message || e; tg?.HapticFeedback?.notificationOccurred("error"); }
+  finally { $("mOk").disabled = false; }
+};
+function parseNum(raw, f) {
+  const v = Number(String(raw).replace(",", "."));
+  if (raw === "" || !isFinite(v)) throw new Error("Введите число");
+  if (f.int && !Number.isInteger(v)) throw new Error("Введите целое число");
+  if (v < f.min || v > f.max) throw new Error(`Можно от ${fmt(f.min)} до ${fmt(f.max)}`);
+  return v;
+}
+const saveSettings = body => api("settings", body);
+
+// ---------- отрисовка ----------
+function render(s) {
+  state = s;
+  document.body.style.visibility = "visible";
+  const hot = s.enabled && s.phase === "hot";
+  $("pill").className = "pill" + (s.boosting ? " boost" : hot ? " hot" : s.enabled ? " on" : "");
+  $("pillText").textContent = s.boosting ? "⚡ Экстра-режим" : s.enabled ? "Охота включена" : "Охота выключена";
+  let ph = PHASES[s.phase] || s.phase;
+  if (hot) ph += ` · ${fmt(s.rate_now)} проверок/с` + (s.speed ? ` · счётчик +${fmt(s.speed)}/с` : "");
+  $("phase").textContent = ph;
+  $("issued").textContent = s.issued ?? "—";
+  $("next").textContent = s.next_target ?? (s.plan[0]?.t ?? "—");
+  $("selCount").textContent = s.selected.count;
+  $("accCount").textContent = s.accounts.length;
+  $("huntBtn").textContent = s.enabled ? "Выключить охоту" : "Включить охоту";
+  $("huntBtn").className = s.enabled ? "danger" : "";
+  renderPlan(s); renderSettings(s); renderModels(s); renderBuy(s.buy);
+  $("accounts").innerHTML = s.accounts.map(a =>
+    `<div style="padding:6px 0"><b>${esc(a.name)}</b><div class="muted">` +
+    `запросов ${a.requests} · пауз ${a.floods}${a.cooldown ? ` · отдыхает ${a.cooldown} с` : ""}</div></div>`).join("");
+}
+
+function renderPlan(s) {
+  const plan = s.plan;
+  $("plan").innerHTML = plan.length ? plan.map((e, i) =>
+    `<div class="prow"><button class="main" data-i="${i}"><div class="num">#${e.t}</div>` +
+    `<div class="cnt">подарков: ${e.n} ✎</div>${e.status ? `<div class="st">${esc(e.status)}</div>` : ""}</button>` +
+    `<button class="say" data-voice="plan_count" aria-label="Озвучить">🔊</button>` +
+    `<button class="del" data-del="${i}" aria-label="Удалить">✕</button></div>`).join("")
+    : `<div class="muted">Номеров нет — нажмите «Добавить номер».</div>`;
+  const need = s.plan_need, have = s.selected.count;
+  $("planInfo").innerHTML = `Нужно подарков: <b>${need}</b> · выбрано: <b>${have}</b>` +
+    (need > have ? `<div class="warn">Подарков не хватит на все номера</div>` : "");
+  $("plan").querySelectorAll(".main").forEach(b => b.onclick = () => {
+    const e = state.plan[+b.dataset.i];
+    openModal({title: `Сколько подарков потратить на #${e.t}?`, unit: "подарков (от 1 до 100)",
+      value: e.n, voice: "plan_count", save: async raw => {
+        const n = parseNum(raw, {min: 1, max: 100, int: true});
+        await savePlan(state.plan.map(x => x.t === e.t ? {t: x.t, n} : x));
+      }});
+  });
+  $("plan").querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    const e = state.plan[+b.dataset.del];
+    const go = async () => { try { await savePlan(state.plan.filter(x => x.t !== e.t)); toast("Удалено"); } catch (er) { showErr(er); } };
+    tg?.showConfirm ? tg.showConfirm(`Убрать номер #${e.t}?`, ok => ok && go()) : confirm(`Убрать #${e.t}?`) && go();
+  });
+  bindSay($("plan"));
+}
+
+async function savePlan(plan) {
+  if (!plan.length) throw new Error("Нужен хотя бы один номер");
+  return saveSettings({plan: plan.map(({t, n}) => ({t, n}))});
+}
+
+$("addBtn").onclick = () => openModal({
+  title: "Какой номер хотите поймать?", unit: "например 777, несколько через пробел или диапазон 1111-1115",
+  voice: "plan_add", save: async raw => {
+    const add = [];
+    for (const m of raw.matchAll(/(\d+)(?:\s*[-–—]\s*(\d+))?/g)) {
+      let a = +m[1], b = +(m[2] || m[1]); if (a > b) [a, b] = [b, a];
+      if (b - a > 10000) throw new Error("Слишком большой диапазон");
+      for (let x = a; x <= b; x++) if (x > 0) add.push(x);
+    }
+    if (!add.length) throw new Error("Введите номер, например 777");
+    const plan = state.plan.map(({t, n}) => ({t, n}));
+    for (const t of add) if (!plan.some(e => e.t === t)) plan.push({t, n: 1});
+    await savePlan(plan.sort((p, q) => p.t - q.t));
+  }});
+
+function renderSettings(s) {
+  const rows = FIELDS.filter(f => !f.hidden?.(s)).map(f => {
+    const v = f.get ? f.get(s) : s[f.key];
+    if (f.toggle) return `<div class="set"><button class="main" data-k="${f.key}">` +
+      `<div class="lbl">${f.title}</div><div class="toggle ${v ? "on" : "off"}">${v ? "Включено ✅" : "Выключено"}</div>` +
+      `<div class="muted">${f.hint} · нажмите, чтобы переключить</div></button></div>`;
+    return `<div class="set"><button class="main" data-k="${f.key}"><div class="lbl">${f.title}</div>` +
+      `<div class="val">${f.show(v, s)} <small>✎</small></div></button>` +
+      `<button class="say" data-voice="${f.voice}" aria-label="Озвучить">🔊</button></div>`;
+  });
+  let extra = "";
+  if (s.early_auto && s.phase === "hot")
+    extra = `<div class="muted" style="margin-top:8px">Сейчас стреляю за ${s.early_now} до цели (задержка ${s.rtt_ms ?? "—"} мс)</div>`;
+  const per = s.boost_rate / Math.max(1, s.accounts.length);
+  if (s.boost && per > 10) extra += `<div class="warn">В экстра-режиме больше ~10 проверок/с на аккаунт — выше риск паузы от Telegram.</div>`;
+  if (s.up_spent) extra += `<div class="btns" style="grid-template-columns:1fr">` +
+    `<button class="secondary" id="upReset">Сбросить «потрачено на улучшения» (${s.up_spent}⭐)</button></div>`;
+  $("settings").innerHTML = rows.join("") + extra;
+  $("upReset")?.addEventListener("click", () => {
+    const go = () => saveSettings({up_reset: true}).then(() => toast("Сброшено")).catch(showErr);
+    tg?.showConfirm ? tg.showConfirm("Обнулить счётчик потраченного на улучшения?", ok => ok && go()) : confirm("Обнулить?") && go();
+  });
+  $("settings").querySelectorAll(".main").forEach(b => b.onclick = () => {
+    const f = FIELDS.find(x => x.key === b.dataset.k);
+    if (f.toggle) {
+      saveSettings({[f.key]: !state[f.key]}).then(() => toast()).catch(showErr);
+      return;
+    }
+    openModal({title: f.title, unit: f.unit, voice: f.voice, text: f.text,
+      value: f.get ? f.get(state) : state[f.key],
+      save: raw => saveSettings({[f.key]: f.text ? raw : parseNum(raw, f)})});
+  });
+  bindSay($("settings"));
+}
+
+function bindSay(root) {
+  root.querySelectorAll("[data-voice]").forEach(b => b.onclick = ev => { ev.stopPropagation(); speak(b.dataset.voice); });
+}
+bindSay(document);
+
+function renderModels(s) {
+  if (!s.models.length) return;
+  $("models").className = "";
+  $("models").innerHTML = s.models.map(m => {
+    const sel = s.selected.gift_id && String(s.selected.gift_id) === m.gift_id;
+    const accs = Object.entries(m.by_account).map(([a, n]) => `${esc(a)}: ${n}`).join(", ");
+    const st = m.numbered ? `у ${m.numbered} номер уже назначен` :
+               m.can_upgrade ? `улучшение доступно (${m.can_upgrade})` : "улучшений пока нет";
+    return `<div class="model${sel ? " sel" : ""}"><div class="info"><div>${esc(m.label)} ×${m.count}</div>` +
+           `<div class="muted">${st} · ${accs}</div></div>` +
+           `<button data-id="${m.gift_id}">${sel ? "Выбрано (" + s.selected.count + ")" : "Выбрать все"}</button></div>`;
+  }).join("");
+  $("models").querySelectorAll("button").forEach(b =>
+    b.onclick = () => run(b, "select", {gift_id: b.dataset.id}));
+}
+
+$("huntBtn").onclick = () => run($("huntBtn"), "hunt", {on: !state?.enabled});
+$("testBtn").onclick = () => run($("testBtn"), "test");
+$("pingBtn").onclick = () => run($("pingBtn"), "ping");
+$("giftsBtn").onclick = () => run($("giftsBtn"), "gifts");
+$("nowBtn").onclick = () => {
+  const go = () => run($("nowBtn"), "now");
+  const msg = "Улучшить все выбранные подарки прямо сейчас? Звёзды спишутся.";
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+
+// ---------- вкладки ----------
+let tab = "up";
+try { tab = localStorage.getItem("tab") || "up"; } catch (e) {}
+function showTab(t) {
+  tab = t;
+  try { localStorage.setItem("tab", t); } catch (e) {}
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  $("tab-up").style.display = t === "up" ? "" : "none";
+  $("tab-buy").style.display = t === "buy" ? "" : "none";
+  player.pause();
+}
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+showTab(tab);
+
+// ---------- покупка ----------
+const BFIELDS = [
+  {key: "budget", title: "Сколько всего можно потратить?", unit: "звёзд — больше бот не потратит", min: 0, max: 1e7,
+   int: true, voice: "buy_budget", show: v => `${v} <small>⭐</small>`},
+  {key: "poll", title: "Раз во сколько секунд проверять новые подарки?", unit: "секунд, каждым аккаунтом (от 2)",
+   min: 2, max: 3600, voice: "buy_poll", show: (v, b) => `${fmt(v)} <small>с · вместе ~раз в ${fmt(v / Math.max(1, b.accounts))} с</small>`},
+  {key: "limited_only", toggle: true, title: "Только лимитированные", hint: "обычные подарки не покупать"},
+];
+const saveBuy = body => api("buy_settings", body);
+const saveRules = rules => {
+  if (!rules.length) throw new Error("Нужен хотя бы один блок");
+  return saveBuy({rules: rules.map(({min, max, count}) => ({min, max, count}))});
+};
+function parseRange(raw) {
+  const m = String(raw).match(/^\s*(\d+)\s*(?:[-–—]|до)\s*(\d+)\s*$/i);
+  if (!m) throw new Error("Введите два числа через дефис, например 1-100");
+  let a = +m[1], b = +m[2]; if (a > b) [a, b] = [b, a];
+  if (a < 1) throw new Error("Цена — от 1 звезды");
+  return [a, b];
+}
+
+function renderRules(b) {
+  const rules = b.rules;
+  $("bRules").innerHTML = rules.map((r, i) =>
+    `<div class="prow"><div style="flex:1;min-width:0">` +
+    `<div class="muted">Блок ${i + 1}</div>` +
+    `<button class="main" data-rr="${i}"><div class="num" style="font-size:28px">${r.min}–${r.max} ⭐</div>` +
+    `<div class="cnt">цена ✎</div></button>` +
+    `<button class="main" data-rc="${i}" style="margin-top:6px"><div class="cnt" style="font-size:22px">по ${r.count} шт. ✎</div></button>` +
+    `</div><button class="del" data-rd="${i}" aria-label="Удалить">✕</button></div>`).join("");
+  const over = rules.some((r, i) => i && r.min <= rules[i - 1].max);
+  $("bRulesInfo").innerHTML = "Подарок покупается по первому блоку, в цену которого он попал." +
+    (over ? `<div class="warn">Диапазоны пересекаются — для общих цен сработает блок выше.</div>` : "");
+  const cur = () => state.buy.rules.map(r => ({...r}));
+  $("bRules").querySelectorAll("[data-rr]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rr, r = state.buy.rules[i];
+    openModal({title: `Блок ${i + 1}: цена от и до`, unit: "звёзд, через дефис — например 1-100",
+      value: `${r.min}-${r.max}`, voice: "buy_range", text: true, save: async raw => {
+        const [a, z] = parseRange(raw); const rs = cur(); rs[i].min = a; rs[i].max = z; await saveRules(rs);
+      }});
+  });
+  $("bRules").querySelectorAll("[data-rc]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rc, r = state.buy.rules[i];
+    openModal({title: `Блок ${i + 1}: сколько штук каждого подарка?`, unit: "штук (от 1 до 1000)",
+      value: r.count, voice: "buy_count", save: async raw => {
+        const rs = cur(); rs[i].count = parseNum(raw, {min: 1, max: 1000, int: true}); await saveRules(rs);
+      }});
+  });
+  $("bRules").querySelectorAll("[data-rd]").forEach(btn => btn.onclick = () => {
+    const i = +btn.dataset.rd, r = state.buy.rules[i];
+    const go = async () => { try { await saveRules(cur().filter((_, j) => j !== i)); toast("Удалено"); } catch (e) { showErr(e); } };
+    tg?.showConfirm ? tg.showConfirm(`Удалить блок ${r.min}–${r.max}⭐?`, ok => ok && go()) : confirm("Удалить блок?") && go();
+  });
+}
+
+$("bAdd").onclick = () => openModal({
+  title: "Новый блок: цена от и до", unit: "звёзд, через дефис — например 150-1000",
+  voice: "buy_range", text: true, save: async raw => {
+    const [a, z] = parseRange(raw);
+    const rs = state.buy.rules.map(r => ({...r})); rs.push({min: a, max: z, count: 1});
+    await saveRules(rs);
+    setTimeout(() => {
+      const i = state.buy.rules.findIndex(r => r.min === a && r.max === z);
+      openModal({title: `${a}–${z}⭐: сколько штук каждого подарка?`, unit: "штук (от 1 до 1000)", value: 1,
+        voice: "buy_count", save: async raw2 => {
+          const rs2 = state.buy.rules.map(r => ({...r}));
+          rs2[i].count = parseNum(raw2, {min: 1, max: 1000, int: true}); await saveRules(rs2);
+        }});
+    }, 250);
+  }});
+
+function renderBuy(b) {
+  if (!b) return;
+  $("bPill").className = "pill" + (b.enabled ? " on" : "");
+  $("bPillText").textContent = b.enabled ? "Автопокупка включена" : "Автопокупка выключена";
+  $("bPhase").textContent = b.enabled
+    ? (b.known === null ? "запоминаю текущий каталог…" :
+       `жду новые подарки · в каталоге ${b.known}` + (b.last_check !== null ? ` · проверка ${b.last_check} с назад` : ""))
+    : "ничего не покупается";
+  $("bBalance").textContent = b.balance !== null ? b.balance + " ⭐" : "—";
+  $("bSpent").textContent = `${b.spent} / ${b.budget} ⭐`;
+  $("bToggle").textContent = b.enabled ? "Выключить автопокупку" : "Включить автопокупку";
+  $("bToggle").className = b.enabled ? "danger" : "";
+  renderRules(b);
+  $("bSettings").innerHTML = BFIELDS.map(f => {
+    const v = b[f.key];
+    if (f.toggle) return `<div class="set"><button class="main" data-bk="${f.key}">` +
+      `<div class="lbl">${f.title}</div><div class="toggle ${v ? "on" : "off"}">${v ? "Включено ✅" : "Выключено"}</div>` +
+      `<div class="muted">${f.hint} · нажмите, чтобы переключить</div></button></div>`;
+    return `<div class="set"><button class="main" data-bk="${f.key}"><div class="lbl">${f.title}</div>` +
+      `<div class="val">${f.show(v, b)} <small>✎</small></div></button>` +
+      `<button class="say" data-voice="${f.voice}" aria-label="Озвучить">🔊</button></div>`;
+  }).join("") + (b.spent ? `<div class="btns" style="grid-template-columns:1fr">` +
+      `<button class="secondary" id="bReset">Сбросить «потрачено» (${b.spent}⭐)</button></div>` : "");
+  $("bSettings").querySelectorAll(".main").forEach(btn => btn.onclick = () => {
+    const f = BFIELDS.find(x => x.key === btn.dataset.bk);
+    if (f.toggle) { saveBuy({[f.key]: !state.buy[f.key]}).then(() => toast()).catch(showErr); return; }
+    openModal({title: f.title + "?", unit: f.unit, voice: f.voice, value: state.buy[f.key],
+      save: raw => saveBuy({[f.key]: parseNum(raw, f)})});
+  });
+  $("bReset")?.addEventListener("click", () => {
+    const go = () => saveBuy({reset_spent: true}).then(() => toast("Сброшено")).catch(showErr);
+    tg?.showConfirm ? tg.showConfirm("Обнулить счётчик потраченного?", ok => ok && go()) : confirm("Обнулить?") && go();
+  });
+  bindSay($("bSettings"));
+  $("bLog").innerHTML = b.log.length ? b.log.map(e =>
+    `<div class="logrow"><b>${esc(e.label)}</b>${e.test ? " · тест" : ""}<div class="muted">${e.t} · ` +
+    `${e.ok} из ${e.of} шт. · ${e.stars}⭐${e.err ? ` · <span style="color:var(--danger)">${esc(e.err)}</span>` : ""}</div></div>`).join("")
+    : `<div class="muted">Покупок пока не было.</div>`;
+}
+
+$("bToggle").onclick = () => {
+  const on = !state?.buy?.enabled;
+  const go = () => run($("bToggle"), "buy_toggle", {on});
+  if (!on) return go();
+  const b = state.buy;
+  const msg = `Включить автопокупку? Новые ${b.limited_only ? "лимитированные " : ""}подарки: ` +
+              b.rules.map(r => `${r.min}–${r.max}⭐ по ${r.count} шт.`).join("; ") +
+              `. Всего не больше ${b.budget - b.spent}⭐.`;
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+$("bBalBtn").onclick = () => run($("bBalBtn"), "balance");
+$("bTest").onclick = () => {
+  const go = () => run($("bTest"), "buy_test");
+  const msg = "Купить одного мишку за 15⭐ на этот аккаунт?";
+  tg?.showConfirm ? tg.showConfirm(msg, ok => ok && go()) : confirm(msg) && go();
+};
+
+async function tick() {
+  if (!$("modal").classList.contains("open") && !$("result").classList.contains("open")) {
+    try { await api("state"); showErr(null); } catch (e) { showErr(e); }
+  }
+  if (locked) return;
+  setTimeout(tick, state?.phase === "hot" ? 1000 : 3000);
+}
+tick();
+</script>
+</body>
+</html>

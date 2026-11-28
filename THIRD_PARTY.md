@@ -7,6 +7,8 @@
 | Данные и анимации подарков | API GiftChanges: https://api.changes.tg/; скачиваются отдельно |
 | Python-библиотеки | устанавливаются из `requirements.txt`, лицензии сохраняются у соответствующих пакетов |
 | Fish Audio | необязательный сервис нового аккаунта, условия сервиса применяются отдельно |
+| Oswald 600/700 (`projects/63-nizshii-1/fonts/`) | Google Fonts через npm `@fontsource/oswald` 5.0.17, SIL Open Font License 1.1; латиница и кириллица слиты в TTF |
+| JetBrains Mono Bold/Medium (`projects/63-nizshii-1/fonts/`) | JetBrains, SIL Open Font License 1.1 |
 
 Комплект не устанавливает общую открытую лицензию на сторонние медиа.
 Право публичного распространения включённых шрифтов и баннера здесь не подтверждалось.

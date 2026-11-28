@@ -1,0 +1,14 @@
+[Unit]
+Description=Gift Sniper (Telegram gift upgrade bot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/giftsniper
+ExecStart=/opt/giftsniper/venv/bin/python bot.py
+Restart=always
+RestartSec=5
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

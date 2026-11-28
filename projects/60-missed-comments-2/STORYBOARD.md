@@ -28,4 +28,6 @@ Resistance Dog! А за миллион — Heart Locket!» / «Себе я ни�
 whoosh-deep, flip/counter, confirm, riser, sparkle, error, coin, pop, cartoon-move, power-up, typing, popup.
 
 ### Статус
-- 2026-11-28: собирается `comments_contest_ch2_v1.mp4`.
+- 2026-11-28: собран `renders/60-missed-comments-2/comments_contest_ch2_v1.mp4` (1080×1920, 60 fps, 39,3 с), полностью
+  декодируется, кадры проверены раз в 2,5 с; просмотр в движении и звук — за автором.
+  Drive: https://drive.google.com/file/d/1g8T2dzy_Z0HoagXln5KKxsq-xI73FJ0Y/view
